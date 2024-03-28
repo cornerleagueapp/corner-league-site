@@ -1,0 +1,53 @@
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  darkMode: 'class',
+  content: [
+    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
+  ],
+  theme: {
+    extend: {
+      display: ['dark'],
+      fontFamily: {
+        'dm-sans': ['var(--font-dm-sans)'],
+        'dm-serif': ['var(--font-dm-serif)'],
+      },
+      backgroundImage: {
+        lightHero: "url('/img/light-hero-bg.jpg')",
+        darkHero: "url('/img/dark-hero-bg.jpg')",
+        lightPlayer: "url('/img/player-light.jpg')",
+        darkPlayer: "url('/img/player-dark.jpg')",
+        blog1: "url('/img/blog/1.jpg')",
+        blog2: "url('/img/blog/2.jpg')",
+        blog3: "url('/img/blog/3.jpg')",
+        blog4: "url('/img/blog/4.jpg')",
+        club1: "url('/img/club/1.jpg')",
+        club2: "url('/img/club/2.jpg')",
+        club3: "url('/img/club/3.jpg')",
+        club4: "url('/img/club/4.jpg')",
+        aboutBlog1: "url('/img/blog/a-1.jpg')",
+        aboutBlog2: "url('/img/blog/a-2.jpg')",
+        aboutBlog3: "url('/img/blog/a-3.jpg')",
+        aboutBlog4: "url('/img/blog/a-4.jpg')",
+      },
+      colors: {
+        body: '#ffffff',
+        'w-100': '#FAF7F0',
+        'w-200': '#E3E1DE',
+        'w-300': '#BDB9B2',
+        'w-400': '#ABA69C',
+        'w-500': '#989286',
+        'w-600': '#6E695E',
+        'w-700': '#423f38',
+        'w-800': '#EFE5D2',
+        'w-900': '#BDBAB2',
+        'b-100': '#2C2A26',
+        'b-200': '#201F1D',
+        'b-300': '#151514',
+        'b-400': '#0B0A09',
+      },
+    },
+  },
+  plugins: [],
+};
