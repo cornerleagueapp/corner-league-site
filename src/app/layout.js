@@ -6,7 +6,7 @@ import Footer from './components/Footer';
 
 export const metadata = {
   title: 'Corner League',
-  description: 'The Premier Sports Media App with AI Companion',
+  description: 'The Center of All Things Sports',
 };
 
 export const dm_sans_init = DM_Sans({
