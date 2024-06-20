@@ -6,7 +6,7 @@ export default function Header() {
       <div className="container p-5 md:mx-auto">
         <div className="flex items-center justify-between ">
           <Link href="/">
-            <Image src="/img/logo.svg" alt="logo" width={169} height={48} />
+            <Image src="/img/cl-logo.jpg" alt="logo" width={50} height={48} />
           </Link>
 
           <nav>

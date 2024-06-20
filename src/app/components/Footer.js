@@ -13,16 +13,16 @@ export default function Footer() {
               <Animate>
                 <Link href="/" className="inline-block">
                   <Image
-                    src="/img/footer-logo.svg"
+                    src="/img/CL-logo.jpg"
                     alt="logo"
-                    width={169}
+                    width={50}
                     height={48}
                     className="block dark:hidden"
                   />
                   <Image
-                    src="/img/logo.svg"
+                    src="/img/CL-logo.jpg"
                     alt="logo"
-                    width={169}
+                    width={50}
                     height={48}
                     className="hidden dark:block"
                   />
