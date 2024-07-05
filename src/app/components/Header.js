@@ -1,12 +1,13 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import Logo from '../../../public/img/CL-logo.jpg';
 export default function Header() {
   return (
     <header className="absolute w-full border-b border-w-100 border-opacity-20">
       <div className="container p-5 md:mx-auto">
         <div className="flex items-center justify-between ">
           <Link href="/">
-            <Image src="/img/cl-logo.jpg" alt="logo" width={50} height={48} />
+            <Image src={Logo} alt="logo" width={50} height={48} />
           </Link>
 
           <nav>

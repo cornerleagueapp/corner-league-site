@@ -2,6 +2,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import Animate from './Animate';
+import Logo from '../../../public/img/CL-logo.jpg';
 
 export default function Footer() {
   return (
@@ -13,14 +14,14 @@ export default function Footer() {
               <Animate>
                 <Link href="/" className="inline-block">
                   <Image
-                    src="/img/CL-logo.jpg"
+                    src={Logo}
                     alt="logo"
                     width={50}
                     height={48}
                     className="block dark:hidden"
                   />
                   <Image
-                    src="/img/CL-logo.jpg"
+                    src={Logo}
                     alt="logo"
                     width={50}
                     height={48}
