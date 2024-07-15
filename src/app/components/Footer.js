@@ -1,7 +1,7 @@
-'use client';
-import Image from 'next/image';
-import Link from 'next/link';
-import Animate from './Animate';
+"use client";
+import Image from "next/image";
+import Link from "next/link";
+import Animate from "./Animate";
 import Logo from '../../../public/img/CL-logo.jpg';
 
 export default function Footer() {

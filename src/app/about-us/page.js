@@ -1,10 +1,10 @@
-'use client';
-import Image from 'next/image';
-import HeaderTwo from '../components/HeaderTwo';
-import SectionTitle from '../components/SectionTitle';
-import Newsletter from '../components/Newsletter';
-import DarkModeToggle from '../components/DarkModeToggle';
-import Animate from '../components/Animate';
+"use client";
+import Image from "next/image";
+import HeaderTwo from "../components/HeaderTwo";
+import SectionTitle from "../components/SectionTitle";
+import Newsletter from "../components/Newsletter";
+import DarkModeToggle from "../components/DarkModeToggle";
+import Animate from "../components/Animate";
 export default function About() {
   return (
     <>

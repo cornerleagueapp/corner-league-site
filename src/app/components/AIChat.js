@@ -1,7 +1,7 @@
-'use client';
-import Image from 'next/image';
-import SectionTitle from './SectionTitle';
-import Animate from './Animate';
+"use client";
+import Image from "next/image";
+import SectionTitle from "./SectionTitle";
+import Animate from "./Animate";
 export default function AIChat() {
   return (
     <div className="px-5 py-16 md:py-24 bg-w-100 dark:bg-b-200">

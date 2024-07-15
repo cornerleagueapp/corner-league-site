@@ -1,6 +1,6 @@
-'use client';
-import React from 'react';
-import Animate from './Animate';
+"use client";
+import React from "react";
+import Animate from "./Animate";
 export default function SectionTitle({ title, content }) {
   return (
     <div className="mb-16 text-center">

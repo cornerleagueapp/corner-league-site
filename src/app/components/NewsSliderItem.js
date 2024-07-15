@@ -1,5 +1,5 @@
-import React from 'react';
-import Image from 'next/image';
+import React from "react";
+import Image from "next/image";
 export default function NewsSliderItem({ title, content, img }) {
   return (
     <li className="glide__slide">
