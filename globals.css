@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+.dark .theme-dark {
+  display: block;
+}
+.dark .theme-light {
+  display: none;
+}
+
+.light .theme-dark {
+  display: none;
+}
+.light .theme-light {
+  display: block;
+}
