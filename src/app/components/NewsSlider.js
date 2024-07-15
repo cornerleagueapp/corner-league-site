@@ -1,16 +1,16 @@
-'use client';
-import { useEffect } from 'react';
-import '@glidejs/glide/src/assets/sass/glide.core.scss';
-import '@glidejs/glide/src/assets/sass/glide.theme.scss';
-import Glide from '@glidejs/glide';
+"use client";
+import { useEffect } from "react";
+import "@glidejs/glide/src/assets/sass/glide.core.scss";
+import "@glidejs/glide/src/assets/sass/glide.theme.scss";
+import Glide from "@glidejs/glide";
 
-import SectionTitle from './SectionTitle';
-import NewsSliderItem from './NewsSliderItem';
+import SectionTitle from "./SectionTitle";
+import NewsSliderItem from "./NewsSliderItem";
 export default function NewsSlider() {
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const glideMulti1 = new Glide('.glide', {
-        type: 'carousel',
+    if (typeof window !== "undefined") {
+      const glideMulti1 = new Glide(".glide", {
+        type: "carousel",
         autoplay: 3500,
         peek: 84,
         perView: 4,

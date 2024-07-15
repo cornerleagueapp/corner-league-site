@@ -1,7 +1,7 @@
-'use client';
-import React, { useState } from 'react';
-import Accordion from '../components/Accordion';
-import SectionTitle from './SectionTitle';
+"use client";
+import React, { useState } from "react";
+import Accordion from "../components/Accordion";
+import SectionTitle from "./SectionTitle";
 
 const AccordionArea = () => {
   const [openAccordion, setOpenAccordion] = useState(null);

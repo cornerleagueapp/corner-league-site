@@ -1,6 +1,6 @@
-'use client';
-import CountUp from 'react-countup';
-import SectionTitle from './SectionTitle';
+"use client";
+import CountUp from "react-countup";
+import SectionTitle from "./SectionTitle";
 
 const Counter = () => {
   return (

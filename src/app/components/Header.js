@@ -1,5 +1,5 @@
-import Image from 'next/image';
-import Link from 'next/link';
+import Image from "next/image";
+import Link from "next/link";
 import Logo from '../../../public/img/CL-logo.jpg';
 export default function Header() {
   return (

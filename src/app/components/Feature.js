@@ -1,21 +1,21 @@
-'use client';
-import { useState } from 'react';
-import Image from 'next/image';
+"use client";
+import { useState } from "react";
+import Image from "next/image";
 
-import SectionTitle from './SectionTitle';
-import Animate from './Animate';
+import SectionTitle from "./SectionTitle";
+import Animate from "./Animate";
 export default function Feature() {
-  const [activeTab, setActiveTab] = useState('live');
+  const [activeTab, setActiveTab] = useState("live");
   const getImageSource = () => {
     switch (activeTab) {
-      case 'live':
-        return '/img/fea-chat.png';
-      case 'groups':
-        return '/img/fea-chat.png';
-      case 'chat':
-        return '/img/fea-chat.png';
+      case "live":
+        return "/img/fea-chat.png";
+      case "groups":
+        return "/img/fea-chat.png";
+      case "chat":
+        return "/img/fea-chat.png";
       default:
-        return '/img/fea-chat.png';
+        return "/img/fea-chat.png";
     }
   };
   return (
@@ -29,9 +29,9 @@ export default function Feature() {
         <div className="flex flex-col items-center gap-6 lg:flex-row">
           <div className="flex flex-col w-full gap-6 lg:w-1/2">
             <div
-              onClick={() => setActiveTab('live')}
+              onClick={() => setActiveTab("live")}
               className={`flex items-start gap-6 p-6 rounded-2xl cursor-pointer ${
-                activeTab === 'live' ? 'bg-white dark:bg-b-300' : ''
+                activeTab === "live" ? "bg-white dark:bg-b-300" : ""
               }`}
             >
               <div>
@@ -61,9 +61,9 @@ export default function Feature() {
               </div>
             </div>
             <div
-              onClick={() => setActiveTab('groups')}
+              onClick={() => setActiveTab("groups")}
               className={`flex items-start gap-6 p-6 rounded-2xl cursor-pointer ${
-                activeTab === 'groups' ? 'bg-white dark:bg-b-300' : ''
+                activeTab === "groups" ? "bg-white dark:bg-b-300" : ""
               }`}
             >
               <div>
@@ -95,9 +95,9 @@ export default function Feature() {
               </div>
             </div>
             <div
-              onClick={() => setActiveTab('chat')}
+              onClick={() => setActiveTab("chat")}
               className={`flex items-start gap-6 p-6 rounded-2xl cursor-pointer ${
-                activeTab === 'chat' ? 'bg-white dark:bg-b-300' : ''
+                activeTab === "chat" ? "bg-white dark:bg-b-300" : ""
               }`}
             >
               <div>

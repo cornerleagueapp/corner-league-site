@@ -1,6 +1,6 @@
-import React from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
+import React from "react";
+import Image from "next/image";
+import Link from "next/link";
 export default function HeaderTwo() {
   return (
     <header className="absolute w-full border-b border-w-200 dark:border-b-100">

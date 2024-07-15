@@ -1,7 +1,7 @@
-'use client';
-import React from 'react';
-import SectionTitle from './SectionTitle';
-import Animate from './Animate';
+"use client";
+import React from "react";
+import SectionTitle from "./SectionTitle";
+import Animate from "./Animate";
 export default function Blog() {
   return (
     <div className="bg-body dark:bg-b-300">

@@ -1,6 +1,6 @@
-'use client';
-import Image from 'next/image';
-import Animate from './Animate';
+"use client";
+import Image from "next/image";
+import Animate from "./Animate";
 
 export default function Hero() {
   return (

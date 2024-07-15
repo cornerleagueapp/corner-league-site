@@ -1,6 +1,6 @@
-'use client';
-import Animate from './Animate';
-import SectionTitle from './SectionTitle';
+"use client";
+import Animate from "./Animate";
+import SectionTitle from "./SectionTitle";
 
 export default function JoinClub() {
   return (
