@@ -46,11 +46,13 @@ export default function Newsletter() {
             content="Join our Waitlist to be notified when our platform becomes available."
           />
           <Animate delay="3">
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={(e) => e.preventDefault()}>
               <div className="flex justify-center items-center md:max-w-xl md:mx-auto">
                 <a
                   href="https://mailchi.mp/cornerleague/join-waitlist"
                   disabled={!input}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   type="submit"
                   className="px-8 py-3 rounded-full right-3 bg-b-400 text-w-100  font-dm-sans font-bold hover:bg-w-800 hover:text-b-400 dark:bg-w-100 dark:text-b-300 dark:hover:bg-w-800"
                 >
