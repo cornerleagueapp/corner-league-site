@@ -1,114 +1,142 @@
-import { useState } from "react";
+// src/pages/AuthPage.tsx
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useMutation } from "@tanstack/react-query";
-import { queryClient, apiRequest } from "@/lib/queryClient";
+import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { CacheManager } from "@/lib/cacheManager";
 import { useAuth } from "@/hooks/useAuth";
+import { apiRequest } from "@/lib/apiClient";
+import { setTokens, setUsername } from "@/lib/token";
+import { User } from "@/types/user";
 import { FaApple, FaGoogle, FaEnvelope, FaArrowLeft } from "react-icons/fa";
 import logoPath from "@assets/CL Logo Mark-02_1754280692282.png";
 
+type LoginResponse = {
+  data?: { accessToken: string; refreshToken: string; user: User };
+  accessToken?: string;
+  refreshToken?: string;
+  user?: User;
+};
+type RegisterResponse = LoginResponse;
+
 export default function AuthPage() {
   const [, setLocation] = useLocation();
-  const [authMethod, setAuthMethod] = useState<'welcome' | 'email' | 'apple' | 'google'>('welcome');
+  const [authMethod, setAuthMethod] = useState<
+    "welcome" | "email" | "apple" | "google"
+  >("welcome");
   const [isLogin, setIsLogin] = useState(true);
   const { toast } = useToast();
   const { isAuthenticated } = useAuth();
-  
-  const [loginData, setLoginData] = useState({
-    username: "",
-    password: ""
-  });
-  
+
+  const [loginData, setLoginData] = useState({ identifier: "", password: "" });
   const [registerData, setRegisterData] = useState({
     firstName: "",
     lastName: "",
     username: "",
     email: "",
     password: "",
-    confirmPassword: ""
+    confirmPassword: "",
   });
 
   // Redirect if already authenticated
-  if (isAuthenticated) {
-    setLocation("/");
-    return null;
-  }
+  useEffect(() => {
+    if (isAuthenticated) setLocation("/");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
 
   const loginMutation = useMutation({
-    mutationFn: async (credentials: any) => {
-      const res = await apiRequest("POST", "/api/login", credentials);
-      return await res.json();
+    mutationFn: async (credentials: typeof loginData) => {
+      // If you ONLY want email (mobile parity), use the simple line:
+      // const payload = { email: credentials.identifier, password: credentials.password };
+
+      // If you want to accept either email OR username:
+      const isEmail = credentials.identifier.includes("@");
+      const payload = isEmail
+        ? { email: credentials.identifier, password: credentials.password }
+        : { username: credentials.identifier, password: credentials.password };
+
+      const json = await apiRequest<LoginResponse>(
+        "POST",
+        "/auth/sign-in",
+        payload
+      );
+      const data = json.data ?? json;
+      if (!data?.accessToken || !data?.refreshToken || !data?.user) {
+        throw new Error("Invalid login response");
+      }
+      return data;
     },
-    onSuccess: (user) => {
-      queryClient.setQueryData(["/api/user"], user);
+    onSuccess: ({ accessToken, refreshToken, user }) => {
+      setTokens(accessToken, refreshToken);
+      if (user?.username) setUsername(user.username);
+
+      // prime the user cache used by useAuth()
+      queryClient.setQueryData(["/auth/me"], user);
+
       toast({
         title: "Welcome back!",
-        description: `Hello ${user.firstName}!`,
+        description: `Hello ${user.firstName ?? user.username}!`,
       });
       setLocation("/clubs");
     },
-    onError: (error: any) => {
+    onError: (err: any) => {
       toast({
         title: "Invalid username or password",
-        description: "Please check your credentials and try again.",
+        description:
+          (err?.message as string) ??
+          "Please check your credentials and try again.",
         variant: "destructive",
       });
     },
   });
 
   const registerMutation = useMutation({
-    mutationFn: async (userData: any) => {
-      const res = await apiRequest("POST", "/api/register", userData);
-      return await res.json();
+    mutationFn: async (
+      payload: Omit<typeof registerData, "confirmPassword">
+    ) => {
+      const json = await apiRequest<RegisterResponse>(
+        "POST",
+        "/auth/sign-up",
+        payload
+      );
+      const data = json.data ?? json;
+      if (!data?.accessToken || !data?.refreshToken || !data?.user) {
+        throw new Error("Invalid registration response");
+      }
+      return data;
     },
-    onSuccess: (user) => {
-      queryClient.setQueryData(["/api/user"], user);
+    onSuccess: ({ accessToken, refreshToken, user }) => {
+      setTokens(accessToken, refreshToken);
+      if (user?.username) setUsername(user.username);
+
+      queryClient.setQueryData(["/auth/me"], user);
+
       toast({
         title: "Welcome to Corner League!",
-        description: `Account created for ${user.firstName}!`,
+        description: `Account created for ${user.firstName ?? user.username}!`,
       });
       setLocation("/clubs");
     },
-    onError: (error: any) => {
+    onError: (err: any) => {
+      const msg = (err?.message as string) || "";
       let title = "Registration failed";
       let description = "Please try again with different information.";
-      
-      if (error.message === "Username already exists") {
+
+      if (/username/i.test(msg) && /exists|taken/i.test(msg)) {
         title = "Username already taken";
         description = "Please choose a different username.";
-      } else if (error.message === "Email already exists") {
+      } else if (/email/i.test(msg) && /exists|registered/i.test(msg)) {
         title = "Email already registered";
         description = "Please use a different email address or try logging in.";
       }
-      
-      toast({
-        title,
-        description,
-        variant: "destructive",
-      });
+
+      toast({ title, description, variant: "destructive" });
     },
   });
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     loginMutation.mutate(loginData);
-  };
-
-  const handleRegister = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (registerData.password !== registerData.confirmPassword) {
-      toast({
-        title: "Passwords don't match",
-        description: "Please make sure your passwords match",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const { confirmPassword, ...dataToSend } = registerData;
-    registerMutation.mutate(dataToSend);
   };
 
   const handleAppleLogin = () => {
@@ -127,16 +155,30 @@ export default function AuthPage() {
     });
   };
 
+  const handleRegister = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (registerData.password !== registerData.confirmPassword) {
+      toast({
+        title: "Passwords don't match",
+        description: "Please make sure your passwords match",
+        variant: "destructive",
+      });
+      return;
+    }
+    const { confirmPassword, ...payload } = registerData;
+    registerMutation.mutate(payload);
+  };
+
   return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center p-6">
       <div className="w-full max-w-md">
-        {authMethod === 'welcome' ? (
+        {authMethod === "welcome" ? (
           /* Welcome Screen */
           <>
             {/* Back Arrow */}
             <div className="absolute top-6 left-6">
               <button
-                onClick={() => setLocation('/')}
+                onClick={() => setLocation("/")}
                 className="text-gray-400 hover:text-white transition-colors"
               >
                 <FaArrowLeft size={24} />
@@ -146,9 +188,9 @@ export default function AuthPage() {
             {/* Logo */}
             <div className="text-center mb-16">
               <div className="flex justify-center mb-8">
-                <img 
-                  src={logoPath} 
-                  alt="Corner League Logo" 
+                <img
+                  src={logoPath}
+                  alt="Corner League Logo"
                   className="w-16 h-16 object-contain"
                 />
               </div>
@@ -162,7 +204,10 @@ export default function AuthPage() {
                 onClick={handleAppleLogin}
                 className="w-20 h-20 rounded-full border border-gray-600 hover:border-gray-400 transition-colors duration-300 flex items-center justify-center group"
               >
-                <FaApple size={28} className="text-gray-400 group-hover:text-white transition-colors" />
+                <FaApple
+                  size={28}
+                  className="text-gray-400 group-hover:text-white transition-colors"
+                />
               </button>
 
               {/* Google */}
@@ -170,15 +215,21 @@ export default function AuthPage() {
                 onClick={handleGoogleLogin}
                 className="w-20 h-20 rounded-full border border-gray-600 hover:border-gray-400 transition-colors duration-300 flex items-center justify-center group"
               >
-                <FaGoogle size={24} className="text-gray-400 group-hover:text-white transition-colors" />
+                <FaGoogle
+                  size={24}
+                  className="text-gray-400 group-hover:text-white transition-colors"
+                />
               </button>
 
               {/* Email */}
               <button
-                onClick={() => setAuthMethod('email')}
+                onClick={() => setAuthMethod("email")}
                 className="w-20 h-20 rounded-full border border-gray-600 hover:border-gray-400 transition-colors duration-300 flex items-center justify-center group"
               >
-                <FaEnvelope size={24} className="text-gray-400 group-hover:text-white transition-colors" />
+                <FaEnvelope
+                  size={24}
+                  className="text-gray-400 group-hover:text-white transition-colors"
+                />
               </button>
             </div>
 
@@ -187,13 +238,13 @@ export default function AuthPage() {
               By continuing, you agree to our Terms and Privacy Policy.
             </p>
           </>
-        ) : authMethod === 'email' ? (
+        ) : authMethod === "email" ? (
           /* Email Auth Form */
           <>
             {/* Back Button */}
             <div className="absolute top-6 left-6">
               <button
-                onClick={() => setAuthMethod('welcome')}
+                onClick={() => setAuthMethod("welcome")}
                 className="text-gray-400 hover:text-white transition-colors"
               >
                 <FaArrowLeft size={24} />
@@ -203,10 +254,12 @@ export default function AuthPage() {
             {/* Header */}
             <div className="text-center mb-8">
               <h1 className="text-3xl font-light mb-4">
-                {isLogin ? 'Sign In' : 'Create Account'}
+                {isLogin ? "Sign In" : "Create Account"}
               </h1>
               <p className="text-gray-400">
-                {isLogin ? "Sign in to access clubs and connect with other fans" : "Create your account to get started"}
+                {isLogin
+                  ? "Sign in to access clubs and connect with other fans"
+                  : "Create your account to get started"}
               </p>
             </div>
 
@@ -215,7 +268,9 @@ export default function AuthPage() {
               <button
                 onClick={() => setIsLogin(true)}
                 className={`flex-1 py-3 px-4 rounded-md transition-colors ${
-                  isLogin ? 'bg-white text-black' : 'text-gray-400 hover:text-white'
+                  isLogin
+                    ? "bg-white text-black"
+                    : "text-gray-400 hover:text-white"
                 }`}
               >
                 Sign In
@@ -223,7 +278,9 @@ export default function AuthPage() {
               <button
                 onClick={() => setIsLogin(false)}
                 className={`flex-1 py-3 px-4 rounded-md transition-colors ${
-                  !isLogin ? 'bg-white text-black' : 'text-gray-400 hover:text-white'
+                  !isLogin
+                    ? "bg-white text-black"
+                    : "text-gray-400 hover:text-white"
                 }`}
               >
                 Sign Up
@@ -238,19 +295,26 @@ export default function AuthPage() {
                   <div>
                     <input
                       type="text"
-                      value={loginData.username}
-                      onChange={(e) => setLoginData({...loginData, username: e.target.value})}
+                      value={loginData.identifier}
+                      onChange={(e) =>
+                        setLoginData({
+                          ...loginData,
+                          identifier: e.target.value,
+                        })
+                      }
                       className="w-full px-4 py-4 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
-                      placeholder="Username"
+                      placeholder="Email"
                       required
                     />
                   </div>
-                  
+
                   <div>
                     <input
                       type="password"
                       value={loginData.password}
-                      onChange={(e) => setLoginData({...loginData, password: e.target.value})}
+                      onChange={(e) =>
+                        setLoginData({ ...loginData, password: e.target.value })
+                      }
                       className="w-full px-4 py-4 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
                       placeholder="Password"
                       required
@@ -264,9 +328,25 @@ export default function AuthPage() {
                   >
                     {loginMutation.isPending ? (
                       <>
-                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        <svg
+                          className="animate-spin -ml-1 mr-3 h-5 w-5 text-black"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
                         </svg>
                         Signing in...
                       </>
@@ -282,7 +362,12 @@ export default function AuthPage() {
                     <input
                       type="text"
                       value={registerData.firstName}
-                      onChange={(e) => setRegisterData({...registerData, firstName: e.target.value})}
+                      onChange={(e) =>
+                        setRegisterData({
+                          ...registerData,
+                          firstName: e.target.value,
+                        })
+                      }
                       className="w-full px-4 py-4 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
                       placeholder="First name"
                       required
@@ -290,7 +375,12 @@ export default function AuthPage() {
                     <input
                       type="text"
                       value={registerData.lastName}
-                      onChange={(e) => setRegisterData({...registerData, lastName: e.target.value})}
+                      onChange={(e) =>
+                        setRegisterData({
+                          ...registerData,
+                          lastName: e.target.value,
+                        })
+                      }
                       className="w-full px-4 py-4 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
                       placeholder="Last name"
                       required
@@ -300,7 +390,12 @@ export default function AuthPage() {
                   <input
                     type="text"
                     value={registerData.username}
-                    onChange={(e) => setRegisterData({...registerData, username: e.target.value})}
+                    onChange={(e) =>
+                      setRegisterData({
+                        ...registerData,
+                        username: e.target.value,
+                      })
+                    }
                     className="w-full px-4 py-4 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
                     placeholder="Choose a username"
                     required
@@ -309,7 +404,12 @@ export default function AuthPage() {
                   <input
                     type="email"
                     value={registerData.email}
-                    onChange={(e) => setRegisterData({...registerData, email: e.target.value})}
+                    onChange={(e) =>
+                      setRegisterData({
+                        ...registerData,
+                        email: e.target.value,
+                      })
+                    }
                     className="w-full px-4 py-4 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
                     placeholder="Enter your email"
                     required
@@ -318,7 +418,12 @@ export default function AuthPage() {
                   <input
                     type="password"
                     value={registerData.password}
-                    onChange={(e) => setRegisterData({...registerData, password: e.target.value})}
+                    onChange={(e) =>
+                      setRegisterData({
+                        ...registerData,
+                        password: e.target.value,
+                      })
+                    }
                     className="w-full px-4 py-4 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
                     placeholder="Create a password"
                     required
@@ -327,7 +432,12 @@ export default function AuthPage() {
                   <input
                     type="password"
                     value={registerData.confirmPassword}
-                    onChange={(e) => setRegisterData({...registerData, confirmPassword: e.target.value})}
+                    onChange={(e) =>
+                      setRegisterData({
+                        ...registerData,
+                        confirmPassword: e.target.value,
+                      })
+                    }
                     className="w-full px-4 py-4 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
                     placeholder="Confirm your password"
                     required
@@ -340,9 +450,25 @@ export default function AuthPage() {
                   >
                     {registerMutation.isPending ? (
                       <>
-                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        <svg
+                          className="animate-spin -ml-1 mr-3 h-5 w-5 text-black"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
                         </svg>
                         Creating account...
                       </>
@@ -355,7 +481,8 @@ export default function AuthPage() {
 
               {/* Terms */}
               <p className="text-center text-xs text-gray-500 mt-8">
-                By {isLogin ? 'signing in' : 'creating an account'}, you agree to our Terms and Privacy Policy.
+                By {isLogin ? "signing in" : "creating an account"}, you agree
+                to our Terms and Privacy Policy.
               </p>
             </div>
           </>
