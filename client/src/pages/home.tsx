@@ -4,6 +4,9 @@ import { useAuth } from "@/hooks/useAuth";
 import logoPath from "@assets/CL Logo Mark-02_1754280692282.png";
 import { CacheManager } from "@/lib/cacheManager";
 import { apiRequest } from "@/lib/apiClient";
+import { clearTokens } from "@/lib/token";
+import { queryClient } from "@/lib/queryClient";
+import { logout } from "@/lib/logout";
 
 import image4 from "@assets/20250602_1433_Basketball Motion Scene_remix_01jws8ysn9fx1s6c0mgqw48t2g_1754356174336.png";
 import image5 from "@assets/20250603_0933_Vibrant Portrait Art_remix_01jwva54bwfxrsakzx26a3y7mb_1754356174336.png";
@@ -68,15 +71,7 @@ export default function Home() {
   };
 
   const handleLogout = async () => {
-    try {
-      await apiRequest("POST", "/api/logout");
-      // Clear all cache data on logout
-      CacheManager.handleUserAction("logout");
-      console.log("Cache cleared on logout");
-      window.location.reload();
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
+    await logout("/auth");
   };
 
   return (

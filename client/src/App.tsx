@@ -1,3 +1,5 @@
+// src/App.tsx
+import { useEffect } from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -16,6 +18,14 @@ import NotFound from "@/pages/not-found";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
+
+  function AuthBootstrap() {
+    useEffect(() => {
+      // If tokens exist, this will hydrate the cache and keep the user signed in
+      queryClient.prefetchQuery({ queryKey: ["/auth/me"] });
+    }, []);
+    return null;
+  }
 
   return (
     <Switch>

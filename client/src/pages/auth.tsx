@@ -6,7 +6,7 @@ import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/apiClient";
-import { setTokens, setUsername } from "@/lib/token";
+import { setTokens, setUsername, saveUser } from "@/lib/token";
 import { User } from "@/types/user";
 import { FaApple, FaGoogle, FaEnvelope, FaArrowLeft } from "react-icons/fa";
 import logoPath from "@assets/CL Logo Mark-02_1754280692282.png";
@@ -69,7 +69,7 @@ export default function AuthPage() {
     onSuccess: ({ accessToken, refreshToken, user }) => {
       setTokens(accessToken, refreshToken);
       if (user?.username) setUsername(user.username);
-
+      saveUser(user);
       // prime the user cache used by useAuth()
       queryClient.setQueryData(["/auth/me"], user);
 
@@ -108,7 +108,7 @@ export default function AuthPage() {
     onSuccess: ({ accessToken, refreshToken, user }) => {
       setTokens(accessToken, refreshToken);
       if (user?.username) setUsername(user.username);
-
+      saveUser(user);
       queryClient.setQueryData(["/auth/me"], user);
 
       toast({

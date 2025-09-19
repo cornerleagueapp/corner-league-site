@@ -80,17 +80,23 @@ export async function apiFetch(
   init: ApiInit = {}
 ): Promise<Response> {
   const url = path.startsWith("http") ? path : `${API_URL}${path}`;
-
   const headers: HeadersInit = {
     ...(init.headers || {}),
     ...(init.skipAuth ? {} : getAuthHeaders()),
   };
 
-  let res = await fetch(url, { ...init, headers });
+  if (!init.skipAuth && !getAccessToken() && getRefreshToken()) {
+    try {
+      await ensureRefreshedOnce();
+    } catch {
+      // ignore; we'll fall through and the call may 401
+    }
+  }
 
+  let res = await fetch(url, { ...init, headers });
   if (res.status !== 401) return res;
 
-  // Try refresh once if we had an access token attached
+  // Retry once after refreshing if we had both tokens
   if (!init.skipAuth && getAccessToken() && getRefreshToken()) {
     try {
       await ensureRefreshedOnce();
@@ -100,13 +106,11 @@ export async function apiFetch(
       };
       res = await fetch(url, { ...init, headers: retryHeaders });
       if (res.status !== 401) return res;
-    } catch {
-      // fall through
-    }
+    } catch {}
   }
 
   clearTokens();
-  return res; // let caller decide how to handle 401
+  return res;
 }
 
 export async function apiRequest<T = any>(
