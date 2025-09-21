@@ -15,6 +15,7 @@ import ContactPage from "@/pages/contact";
 import TermsPage from "@/pages/terms";
 import AuthPage from "@/pages/auth";
 import NotFound from "@/pages/not-found";
+import ClubDetailsPage from "./pages/clubDetails";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -41,6 +42,7 @@ function Router() {
           <Route path="/create-club" component={CreateClub} />
           <Route path="/extension" component={Extension} />
           <Route path="/settings" component={Settings} />
+          <Route path="/clubs/:id" component={ClubDetailsPage} />
         </>
       )}
       <Route component={NotFound} />

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { apiRequest } from "@/lib/apiClient";
@@ -23,6 +23,7 @@ function pullClubs(json: ClubsPayload): any[] {
 
 export default function Clubs() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [, navigate] = useLocation();
   const [activeView, setActiveView] = useState<"discover" | "my">("discover");
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
     show: boolean;
@@ -116,7 +117,9 @@ export default function Clubs() {
     setDeleteConfirmation({ show: true, clubId, clubName });
   };
 
-  const navigateToClub = (club: any) => {
+  const openClub = (club: any) => {
+    console.log("[Clubs] openClub ->", club);
+
     setIsSidebarOpen(false);
     localStorage.setItem(
       "currentClub",
@@ -130,6 +133,8 @@ export default function Clubs() {
         ownerId: club.ownerId,
       })
     );
+
+    navigate(`/clubs/${club.id}`);
   };
 
   return (
@@ -228,9 +233,9 @@ export default function Clubs() {
               {userClubs.map((club: any) => (
                 <div key={club.id} className="relative group">
                   <div className="flex items-center gap-1">
-                    <Link href="/extension" className="flex-1">
+                    <Link href={`/clubs/${club.id}`} className="flex-1">
                       <button
-                        onClick={() => navigateToClub(club)}
+                        onClick={() => openClub(club)}
                         className="w-full text-left px-3 py-2 text-gray-300 hover:text-white hover:bg-gray-800 rounded-md transition-colors flex items-center gap-2"
                       >
                         <div
@@ -242,7 +247,7 @@ export default function Clubs() {
                           <div className="flex items-center justify-between">
                             <div className="flex-1">
                               <span>{club.name}</span>
-                              {club.description && (
+                              {!!club.description && (
                                 <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">
                                   {club.description}
                                 </p>
@@ -257,7 +262,7 @@ export default function Clubs() {
                         </div>
                       </button>
                     </Link>
-                    <button
+                    {/* <button
                       onClick={() => showDeleteConfirmation(club.id, club.name)}
                       className="p-2 text-gray-500 hover:text-red-400 hover:bg-gray-800 rounded-md transition-colors opacity-0 group-hover:opacity-100"
                       title="Delete club"
@@ -275,7 +280,7 @@ export default function Clubs() {
                           d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                         />
                       </svg>
-                    </button>
+                    </button> */}
                   </div>
                 </div>
               ))}
@@ -353,7 +358,12 @@ export default function Clubs() {
                     key={club.id}
                     role="button"
                     tabIndex={0}
+                    onClick={() => openClub(club)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") openClub(club);
+                    }}
                     className="group cursor-pointer overflow-hidden rounded-xl border border-gray-700 bg-[#161616] hover:border-gray-500 transition"
+                    aria-label={`Open ${club.name}`}
                   >
                     <div className="h-40 w-full bg-gray-800">
                       {img ? (
