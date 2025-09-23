@@ -2,11 +2,12 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
-import { apiRequest } from "@/lib/apiClient";
+import { ApiError, apiRequest } from "@/lib/apiClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { ClubsCache } from "@/lib/cache";
+import { getAccessToken } from "@/lib/token";
 
 export default function CreateClub() {
   const [, setLocation] = useLocation();
@@ -29,6 +30,98 @@ export default function CreateClub() {
     };
   }, [imagePreview]);
 
+  async function runOwnerProbe() {
+    try {
+      const sample: any = await apiRequest("GET", "/clubs?limit=1");
+      const knownOwner = "657663bf-f13c-45d6-b0f2-52a80592a5e9";
+
+      console.log("[probe] knownOwner =", knownOwner);
+
+      const slug = `probe-club-${Date.now()}`;
+
+      const res = await apiRequest("POST", "/clubs", {
+        name: "probe-club",
+        slug,
+        isPrivate: false,
+        description: "probe",
+        ownerId: knownOwner,
+      });
+
+      console.log("[probe] create result:", res);
+    } catch (e: any) {
+      console.error("[probe] failed", e?.body || e);
+    }
+  }
+
+  function decodeJwt(): any | null {
+    const raw = getAccessToken?.() || "";
+    const jwt = raw.startsWith("Bearer ") ? raw.slice(7) : raw;
+    if (!jwt || jwt.split(".").length !== 3) return null;
+    try {
+      let b64 = jwt.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+      while (b64.length % 4) b64 += "=";
+      return JSON.parse(atob(b64));
+    } catch {
+      return null;
+    }
+  }
+
+  function toId(v: unknown): string | null {
+    if (typeof v === "number") return String(v);
+    if (typeof v === "string" && v.trim().length > 0) return v;
+    return null;
+  }
+
+  async function getBackendOwnerId(): Promise<string | null> {
+    const payload = decodeJwt();
+    const firebaseUid: string | undefined = payload?.user_id ?? payload?.sub;
+    const email: string | undefined = payload?.email;
+
+    if (firebaseUid) {
+      try {
+        const res: any = await apiRequest(
+          "GET",
+          `/users/get-user-by-uid/${encodeURIComponent(firebaseUid)}`
+        );
+        const id =
+          res?.data?.user?.id ??
+          res?.data?.id ??
+          res?.user?.id ??
+          res?.id ??
+          res?.data?.userId ??
+          res?.userId;
+        const str = toId(id);
+        if (str) return str;
+        console.warn("[CreateClub] get-user-by-uid returned no id:", res);
+      } catch (e) {
+        console.warn("[CreateClub] get-user-by-uid failed:", e);
+      }
+    }
+
+    if (email) {
+      try {
+        const res: any = await apiRequest(
+          "GET",
+          `/users/get-user-by-email/${encodeURIComponent(email)}`
+        );
+        const id =
+          res?.data?.user?.id ??
+          res?.data?.id ??
+          res?.user?.id ??
+          res?.id ??
+          res?.data?.userId ??
+          res?.userId;
+        const str = toId(id);
+        if (str) return str;
+        console.warn("[CreateClub] get-user-by-email returned no id:", res);
+      } catch (e) {
+        console.warn("[CreateClub] get-user-by-email failed:", e);
+      }
+    }
+
+    return null;
+  }
+
   // helper to upload the club picture first and return a URL
   async function uploadClubImageToClubId(clubId: string, file: File) {
     const fd = new FormData();
@@ -39,121 +132,228 @@ export default function CreateClub() {
       credentials: "include",
     });
     if (!res.ok) throw new Error(`Upload failed (${res.status})`);
-    return res.json(); // returns updated club (often with image url)
+    return res.json();
   }
 
   async function resolveUsernamesToIds(usernames: string[]): Promise<string[]> {
-    // Example options:
-    // 1) await apiRequest("GET", `/users?usernames=${encodeURIComponent(usernames.join(","))}`);
-    // 2) await apiRequest("POST", "/users/lookup", { usernames });
-    // Return an array of userId strings.
-    return [];
+    const results: string[] = [];
+    for (const u of usernames) {
+      try {
+        const res: any = await apiRequest(
+          "GET",
+          `/users/get-user-by-username/${encodeURIComponent(u)}`
+        );
+        const id =
+          res?.data?.user?.id ?? res?.data?.id ?? res?.user?.id ?? res?.id;
+        if (typeof id === "string" && id) results.push(id);
+      } catch (e) {
+        console.warn("[CreateClub] resolve username failed:", u, e);
+      }
+    }
+    return results;
+  }
+
+  async function findClubIdByName(name: string): Promise<string | null> {
+    try {
+      const res: any = await apiRequest(
+        "GET",
+        `/clubs?search=${encodeURIComponent(name)}&limit=1`
+      );
+      const list = res?.clubs ?? res?.data?.clubs ?? [];
+      const match = (list as any[]).find(
+        (c) => c?.name?.toLowerCase?.() === name.trim().toLowerCase()
+      );
+      return match?.id ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  const toSlug = (s: string) =>
+    s.trim().toLowerCase().replace(/\s+/g, "-").slice(0, 255);
+
+  async function findClubIdBySlug(slug: string): Promise<string | null> {
+    try {
+      const res: any = await apiRequest(
+        "GET",
+        `/clubs?search=${encodeURIComponent(slug)}&limit=1`
+      );
+      const list = res?.clubs ?? res?.data?.clubs ?? [];
+      const match = (list as any[]).find(
+        (c) => c?.slug?.toLowerCase?.() === slug
+      );
+      return match?.id ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  function makeSlug(s: string) {
+    const base = s
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-");
+    const out = base.slice(0, 50).replace(/^-+|-+$/g, "");
+    return out || `club-${Date.now()}`;
+  }
+
+  const UUID_RE =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+  async function ensureOwnerId(): Promise<string> {
+    const id = await getBackendOwnerId();
+    if (!id || !UUID_RE.test(id)) {
+      throw new ApiError(
+        400,
+        "We couldn't link your account to a user profile. Please sign out/in and try again."
+      );
+    }
+    return id;
   }
 
   const createClubMutation = useMutation({
     mutationFn: async () => {
-      if (!user?.id) {
-        throw new Error("Missing user id. Please sign in again.");
+      if (!user?.id) throw new Error("Missing user id. Please sign in again.");
+
+      const name = formData.clubName.trim();
+      const slug = makeSlug(name);
+
+      if (await findClubIdByName(name)) {
+        throw new ApiError(400, "A club with this name already exists.", {
+          field: "clubName",
+        });
+      }
+      if (await findClubIdBySlug(slug)) {
+        throw new ApiError(400, "A club with this name/URL already exists.", {
+          field: "clubName",
+        });
       }
 
-      const toSlug = (s: string) =>
-        s.trim().toLowerCase().replace(/\s+/g, "-").slice(0, 255);
+      const coOwnerIds = (
+        await resolveUsernamesToIds(
+          (formData.coOwners || "")
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
+        )
+      )
+        .map(String)
+        .filter((id) => UUID_RE.test(id))
+        .filter((id) => id !== String(user?.id));
+
+      const ownerId = await ensureOwnerId();
+      console.log("[CreateClub] ownerId (backend UUID) =", ownerId);
+
+      const byUid = await apiRequest(
+        "GET",
+        `/users/get-user-by-uid/${encodeURIComponent(
+          decodeJwt()?.user_id || ""
+        )}`
+      ).catch(() => null);
+      const byMail = await apiRequest(
+        "GET",
+        `/users/get-user-by-email/${encodeURIComponent(
+          decodeJwt()?.email || ""
+        )}`
+      ).catch(() => null);
+
+      console.log(
+        "[CreateClub] sanity ids:",
+        byUid?.data?.user?.id || byUid?.data?.id || byUid?.id,
+        byMail?.data?.user?.id || byMail?.data?.id || byMail?.id
+      );
 
       const payload: Record<string, any> = {
-        name: formData.clubName.trim(),
-        slug: toSlug(formData.clubName),
+        name,
+        slug,
         isPrivate: formData.isPrivate,
-        ownerId: user.id,
+        ...(formData.description.trim()
+          ? { description: formData.description.trim() }
+          : {}),
+        ownerId,
+        ...(coOwnerIds.length
+          ? { coOwners: coOwnerIds.map((id) => ({ id })) }
+          : {}),
       };
-      if (formData.description.trim()) {
-        payload.description = formData.description.trim();
-      }
+      console.log("[CreateClub] create payload", payload);
 
-      const usernames = (formData.coOwners || "")
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean);
+      let createdId: string | null = null;
+      try {
+        const createdResp: any = await apiRequest("POST", "/clubs", payload);
+        createdId =
+          createdResp?.data?.club?.id ??
+          createdResp?.club?.id ??
+          createdResp?.id ??
+          createdResp?._id ??
+          createdResp?.clubId ??
+          null;
+      } catch (err: any) {
+        const status = err instanceof ApiError ? err.status : undefined;
+        const msg =
+          err?.body?.response?.message ?? err?.body?.message ?? err?.message;
 
-      if (usernames.length) {
-        const coOwnerIdList = await resolveUsernamesToIds(usernames);
-        if (coOwnerIdList.length) {
-          payload.coOwnerIds = coOwnerIdList.join(",");
+        if (
+          status === 500 ||
+          (status === 400 &&
+            String(msg).toLowerCase().includes("validation") === false)
+        ) {
+          console.warn("[CreateClub] POST failed; probing by slug/name");
+          createdId =
+            (await findClubIdBySlug(slug)) || (await findClubIdByName(name));
+          if (!createdId) throw err;
+        } else {
+          throw err;
         }
       }
 
-      console.log("[CreateClub] create payload", payload);
-      const createdResp = await apiRequest("POST", "/clubs", payload);
-
-      const created =
-        createdResp?.data?.club ?? createdResp?.data ?? createdResp;
-      const createdId = created?.id ?? created?._id ?? created?.clubId;
-
       if (!createdId) throw new Error("Create club: missing id in response");
-      console.log("[CreateClub] created id =", createdId);
 
       if (imageFile) {
         try {
           await uploadClubImageToClubId(createdId, imageFile);
-          console.log("[CreateClub] image uploaded");
         } catch (e) {
           console.warn("[CreateClub] picture upload failed, continuing", e);
         }
       }
 
-      return created;
-    },
-
-    onSuccess: (json: any) => {
-      const created = json?.data?.club ?? json?.data ?? json;
-      const createdId = created?.id ?? created?._id ?? created?.clubId;
-      const createdName =
-        created?.clubName ?? created?.name ?? formData.clubName;
-
-      toast({
-        title: "Club created",
-        description: `${createdName} has been created successfully!`,
-      });
-
-      // persist for details page
-      localStorage.setItem(
-        "currentClub",
-        JSON.stringify({
-          id: createdId,
-          clubName: created?.name ?? formData.clubName,
-          description: created?.description ?? formData.description,
-          isPrivate: created?.isPrivate ?? formData.isPrivate,
-          image:
-            created?.clubImage ||
-            created?.imageUrl ||
-            created?.image ||
-            created?.club_picture ||
-            null,
-        })
-      );
-
-      ClubsCache.clearClubs();
-      queryClient.invalidateQueries({ queryKey: ["clubs-and-myclubs"] });
-      queryClient.refetchQueries({ queryKey: ["clubs-and-myclubs"] });
-
-      setLocation(`/clubs/${createdId}`);
+      return {
+        data: {
+          club: { id: createdId, name, description: formData.description },
+        },
+      };
     },
 
     onError: (error: any) => {
-      console.error("[CreateClub] create error", error?.data || error);
+      console.error("[CreateClub] create error", error?.body || error);
       if (isUnauthorizedError(error)) {
         toast({
           title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
+          description: "Please sign in to continue…",
           variant: "destructive",
         });
-        setTimeout(() => (window.location.href = "/api/login"), 500);
+        setTimeout(() => (window.location.href = "/api/login"), 400);
         return;
       }
+
+      const resp = error?.body?.response ?? error?.body ?? {};
+      const fieldMsgs = Array.isArray(resp?.errors)
+        ? resp.errors
+            .flatMap((e: any) => e?.errors || e?.message || [])
+            .filter(Boolean)
+            .map(String)
+            .join("; ")
+        : "";
+
       const msg =
-        error?.data?.message ||
-        error?.data?.errors?.[0]?.message ||
+        fieldMsgs ||
+        (Array.isArray(resp?.message)
+          ? resp.message.join("; ")
+          : resp?.message) ||
         error?.message ||
         "Failed to create club. Please check your inputs and try again.";
+
       toast({ title: "Error", description: msg, variant: "destructive" });
     },
   });
@@ -209,6 +409,16 @@ export default function CreateClub() {
             Set up your sports club for fans to join
           </p>
         </div>
+
+        {process.env.NODE_ENV !== "production" && (
+          <button
+            type="button"
+            onClick={runOwnerProbe}
+            className="mt-2 text-xs underline text-gray-400 hover:text-white"
+          >
+            Run FK probe
+          </button>
+        )}
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">

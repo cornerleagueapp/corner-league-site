@@ -313,11 +313,11 @@ export default function Clubs() {
                 : "Your clubs"}
             </p>
           </div>
-          <Link href="/create-club">
+          {/* <Link href="/create-club">
             <button className="px-4 py-2 hover:bg-gray-300 font-medium rounded-md transition-colors text-[#000000] bg-[#f7f7f7]">
               Add Club
             </button>
-          </Link>
+          </Link> */}
         </div>
 
         {/* Content */}
