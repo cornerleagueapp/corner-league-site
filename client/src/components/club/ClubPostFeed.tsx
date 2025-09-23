@@ -1,5 +1,5 @@
-//components/club/ClubPostFeed.tsx
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+// components/club/ClubPostFeed.tsx
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/apiClient";
 import { useToast } from "@/hooks/use-toast";
@@ -48,25 +48,32 @@ const REACTIONS = [
   { type: "clown", emoji: "🤡" },
 ] as const;
 
+const EMOJI: Record<string, string> = {
+  like: "👍",
+  love: "❤️",
+  haha: "😂",
+  sad: "😢",
+  angry: "😡",
+  sigh: "😮‍💨",
+  clown: "🤡",
+};
+
 /* =========================
    Link + Mention helpers
    ========================= */
 
-// TLDs we treat as valid bare-links
 const TLD_PART = "(com|org|net|io|app|ai|dev|co|tv|xyz|gg|gov|edu)";
 const SCHEME_RE = /\bhttps?:\/\/[^\s)]+/gi;
 const BARE_RE = new RegExp(
   `\\b(?:[a-z0-9-]+\\.)+${TLD_PART}(?:\\/[^\\s)]*)?`,
   "gi"
 );
-// @username (2–30 chars, a-z, 0-9, _), with punctuation/space boundaries
 const MENTION_RE = /(^|[\s.,;:!?()'"[\]-])@([a-z0-9_]{2,30})\b/gi;
 
 function normalizeUrl(u: string) {
   return /^https?:\/\//i.test(u) ? u : `https://${u}`;
 }
 
-// Type-safe regexp execAll (avoids TS2802 on matchAll)
 function execAll(re: RegExp, text: string) {
   const rx = new RegExp(re.source, re.flags);
   const out: Array<{ start: number; end: number; val: string }> = [];
@@ -84,7 +91,6 @@ function renderTextWithLinks(
   onLinkClick: (url: string) => void
 ): ReactNode[] {
   if (!text) return [""];
-  // collect links + mentions
   const linkMatches = [...execAll(SCHEME_RE, text), ...execAll(BARE_RE, text)];
   const mentionMatches = execAll(MENTION_RE, text).map((m) => ({
     ...m,
@@ -94,10 +100,8 @@ function renderTextWithLinks(
   const matches = [
     ...linkMatches.map((m) => ({ ...m, link: true as const })),
     ...mentionMatches,
-  ];
-  matches.sort((a, b) => a.start - b.start);
+  ].sort((a, b) => a.start - b.start);
 
-  // merge overlaps (keep earliest)
   const merged: typeof matches = [];
   for (const m of matches) {
     if (!merged.length || m.start > merged[merged.length - 1].end)
@@ -183,13 +187,52 @@ function normalizePost(p: any): FeedPost {
    API helpers
    ========================= */
 
-async function searchUsers(q: string) {
-  if (!q.trim()) return [] as MentionUser[];
-  const r = await apiRequest<any>(
-    "GET",
-    `/users/search?q=${encodeURIComponent(q)}`
-  );
-  return (r?.data?.users ?? []) as MentionUser[];
+async function searchUsers(query: string) {
+  const q = query.trim().toLowerCase();
+  if (!q) return [] as MentionUser[];
+
+  try {
+    const r = await apiRequest<any>("GET", "/users");
+    const raw: MentionUser[] = Array.isArray(r?.data?.users)
+      ? r.data.users
+      : Array.isArray(r?.data)
+      ? r.data
+      : [];
+
+    const seen = new Set<string>();
+    const out = raw.filter((u) => {
+      const username = (u?.username ?? "").toLowerCase();
+      const first = (u?.firstName ?? "").toLowerCase();
+      const last = (u?.lastName ?? "").toLowerCase();
+      const full = `${first} ${last}`.trim();
+
+      const match =
+        username.includes(q) ||
+        first.includes(q) ||
+        last.includes(q) ||
+        full.includes(q);
+
+      if (match && !seen.has(u.id)) {
+        seen.add(u.id);
+        return true;
+      }
+      return false;
+    });
+
+    return out.slice(0, 8);
+  } catch {
+    // Fallback: exact username lookup
+    try {
+      const r2 = await apiRequest<any>(
+        "GET",
+        `/users/get-user-by-username/${encodeURIComponent(q)}`
+      );
+      const user = r2?.data?.user ?? r2?.data;
+      return user ? [user as MentionUser] : [];
+    } catch {
+      return [];
+    }
+  }
 }
 
 async function createComment(postId: string, userId: string, content: string) {
@@ -204,7 +247,7 @@ async function getReaction(postId: string, userId: string) {
     "GET",
     `/club-social/club-post-reactions/${postId}/${userId}`
   );
-  return r?.data?.reaction ?? null;
+  return r?.data?.reaction?.reaction ?? null;
 }
 async function getReactionCount(postId: string) {
   const r = await apiRequest<any>(
@@ -245,7 +288,7 @@ async function deletePost(clubId: string, postId: string, userId: string) {
 }
 
 /* =========================
-   Mentions: suggestion list
+   Mentions UI + controller
    ========================= */
 
 function MentionSuggestions({
@@ -301,7 +344,7 @@ function buildMentionController(
       const at = before.lastIndexOf("@");
       if (at < 0) return { open: false, list: [] as MentionUser[] } as const;
       const frag = before.slice(at + 1);
-      if (/\s/.test(frag) || !frag || frag.length > 30)
+      if (/\s/.test(frag) || frag.length > 30)
         return { open: false, list: [] as MentionUser[] } as const;
       const list = await searchUsers(frag.toLowerCase());
       return { open: list.length > 0, list } as const;
@@ -334,13 +377,12 @@ function CommentsModal({
   userId?: string;
   onClose: () => void;
   onLinkClick: (url: string) => void;
-  onToggleLike: (p: FeedPost) => void;
-  onSelectReaction: (p: FeedPost, value: string) => void;
+  onToggleLike: (p: FeedPost) => Promise<void> | void;
+  onSelectReaction: (p: FeedPost, value: string) => Promise<void> | void;
   onCommentMade?: () => void | Promise<void>;
 }) {
   const [draft, setDraft] = useState("");
 
-  // mention state for the modal composer
   const ctrlCmt = buildMentionController(() => draft, setDraft);
   const [mentionCmt, setMentionCmt] = useState<{
     open: boolean;
@@ -446,7 +488,7 @@ function CommentsModal({
               title="Like"
               type="button"
             >
-              {post.reaction ? "❤️" : "♡"}
+              {post.reaction ? EMOJI[post.reaction] ?? "👍" : "♡"}
             </button>
             <div className="text-white/70 text-sm">
               {post.reactionCount ?? 0}
@@ -591,7 +633,7 @@ export default function ClubPostsFeed({
     (async () => setMentionFeed(await ctrlFeed.state()))();
   }, [composer]);
 
-  // Feed loader (enriched counts/reactions)
+  // Load posts with counts/reactions
   const {
     data: posts,
     isLoading,
@@ -660,6 +702,13 @@ export default function ClubPostsFeed({
     }
   }
 
+  // Optimistic sync between modal and feed
+  function patchIfModalTarget(id: string, patch: Partial<FeedPost>) {
+    setCommentsFor((cur) =>
+      cur && cur.id === id ? { ...cur, ...patch } : cur
+    );
+  }
+
   async function toggleLike(post: FeedPost) {
     if (!userId) {
       toast({
@@ -669,11 +718,24 @@ export default function ClubPostsFeed({
       });
       return;
     }
+    // optimistic next state
+    const nextReaction = post.reaction ? null : "like";
+    const nextCount = (post.reactionCount ?? 0) + (post.reaction ? -1 : 1);
+    patchIfModalTarget(post.id, {
+      reaction: nextReaction,
+      reactionCount: Math.max(0, nextCount),
+    });
+
     try {
       if (post.reaction) await deleteReaction(post.id, userId);
       else await createReaction(post.id, userId, "like");
       await refetch();
     } catch (e: any) {
+      // revert
+      patchIfModalTarget(post.id, {
+        reaction: post.reaction,
+        reactionCount: post.reactionCount,
+      });
       const msg = String(e?.message ?? "");
       if (
         msg.includes("401") ||
@@ -697,12 +759,25 @@ export default function ClubPostsFeed({
 
   async function selectReaction(post: FeedPost, value: string) {
     if (!userId) return;
+    // optimistic
+    const was = post.reaction;
+    const add = was ? 0 : 1;
+    patchIfModalTarget(post.id, {
+      reaction: value,
+      reactionCount: Math.max(0, (post.reactionCount ?? 0) + add),
+    });
     try {
       if (post.reaction) await deleteReaction(post.id, userId);
       await createReaction(post.id, userId, value);
       setShowPickerFor(null);
       await refetch();
-    } catch {}
+    } catch {
+      // revert
+      patchIfModalTarget(post.id, {
+        reaction: was,
+        reactionCount: post.reactionCount,
+      });
+    }
   }
 
   async function onDelete(post: FeedPost) {
@@ -763,6 +838,13 @@ export default function ClubPostsFeed({
     }
     return out;
   }, [posts]);
+
+  // long-press handler state (prevents click when picker opens)
+  const longPress = useRef<{
+    tid: number | null;
+    did: boolean;
+    id: string | null;
+  }>({ tid: null, did: false, id: null });
 
   return (
     <div className="max-w-3xl">
@@ -876,23 +958,44 @@ export default function ClubPostsFeed({
                 <footer className="mt-3 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <button
-                      onClick={() => toggleLike(row.post!)}
-                      onMouseDown={() => {
-                        const t = setTimeout(
-                          () => setShowPickerFor(row.post!.id),
-                          400
-                        );
-                        const up = () => (
-                          clearTimeout(t),
-                          window.removeEventListener("mouseup", up)
-                        );
-                        window.addEventListener("mouseup", up);
+                      onClick={(e) => {
+                        if (
+                          longPress.current.did &&
+                          longPress.current.id === row.post!.id
+                        ) {
+                          longPress.current.did = false;
+                          return; // swallow click triggered by long-press
+                        }
+                        toggleLike(row.post!); // single tap = 👍 like
+                      }}
+                      onPointerDown={(e) => {
+                        e.preventDefault();
+                        longPress.current.id = row.post!.id;
+                        longPress.current.did = false;
+                        longPress.current.tid = window.setTimeout(() => {
+                          setShowPickerFor(row.post!.id);
+                          longPress.current.did = true;
+                        }, 350);
+                      }}
+                      onPointerUp={() => {
+                        if (longPress.current.tid) {
+                          clearTimeout(longPress.current.tid);
+                          longPress.current.tid = null;
+                        }
+                      }}
+                      onPointerLeave={() => {
+                        if (longPress.current.tid) {
+                          clearTimeout(longPress.current.tid);
+                          longPress.current.tid = null;
+                        }
                       }}
                       className="rounded-full px-3 py-1 bg-white/5 border border-white/10 hover:bg-white/10 text-sm"
                       title="Like"
                       type="button"
                     >
-                      {row.post!.reaction ? "❤️" : "♡"}
+                      {row.post!.reaction
+                        ? EMOJI[row.post!.reaction] ?? "👍"
+                        : "♡"}
                     </button>
                     <div className="text-white/70 text-sm">
                       {row.post!.reactionCount ?? 0}
@@ -958,6 +1061,7 @@ export default function ClubPostsFeed({
           )
         )}
       </div>
+
       {/* Link modal */}
       {linkToOpen && (
         <div
@@ -1016,7 +1120,7 @@ export default function ClubPostsFeed({
           post={commentsFor}
           userId={userId}
           onClose={() => setCommentsFor(null)}
-          onLinkClick={(u: string) => setLinkToOpen(u)}
+          onLinkClick={(u) => setLinkToOpen(u)}
           onToggleLike={toggleLike}
           onSelectReaction={selectReaction}
           onCommentMade={refetch}
