@@ -1,6 +1,6 @@
 // src/App.tsx
 import { useEffect } from "react";
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -16,6 +16,25 @@ import TermsPage from "@/pages/terms";
 import AuthPage from "@/pages/auth";
 import NotFound from "@/pages/not-found";
 import ClubDetailsPage from "./pages/clubDetails";
+
+function ProtectedRoute({
+  component: Comp,
+}: {
+  component: React.ComponentType;
+}) {
+  const { isAuthenticated, isLoading } = useAuth();
+  const [location, navigate] = useLocation();
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      const next = encodeURIComponent(location);
+      navigate(`/auth?next=${next}`, { replace: true });
+    }
+  }, [isAuthenticated, isLoading, location, navigate]);
+
+  if (isLoading) return null; // or a spinner
+  return isAuthenticated ? <Comp /> : null;
+}
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -34,17 +53,26 @@ function Router() {
       <Route path="/contact" component={ContactPage} />
       <Route path="/terms" component={TermsPage} />
       <Route path="/auth" component={AuthPage} />
-      {isLoading || !isAuthenticated ? (
-        <Route path="/clubs" component={AuthPage} />
-      ) : (
-        <>
-          <Route path="/clubs" component={Clubs} />
-          <Route path="/create-club" component={CreateClub} />
-          <Route path="/extension" component={Extension} />
-          <Route path="/settings" component={Settings} />
-          <Route path="/clubs/:id" component={ClubDetailsPage} />
-        </>
-      )}
+      <Route
+        path="/clubs"
+        component={() => <ProtectedRoute component={Clubs} />}
+      />
+      <Route
+        path="/create-club"
+        component={() => <ProtectedRoute component={CreateClub} />}
+      />
+      <Route
+        path="/extension"
+        component={() => <ProtectedRoute component={Extension} />}
+      />
+      <Route
+        path="/settings"
+        component={() => <ProtectedRoute component={Settings} />}
+      />
+      <Route
+        path="/clubs/:id"
+        component={() => <ProtectedRoute component={ClubDetailsPage} />}
+      />
       <Route component={NotFound} />
     </Switch>
   );

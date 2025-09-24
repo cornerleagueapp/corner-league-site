@@ -5,7 +5,11 @@ import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { apiRequest, apiFetch } from "@/lib/apiClient";
+import {
+  apiRequest,
+  apiFetch,
+  scheduleProactiveRefresh,
+} from "@/lib/apiClient";
 import { setTokens, setUsername, saveUser } from "@/lib/token";
 import { User } from "@/types/user";
 import { FaApple, FaGoogle, FaEnvelope, FaArrowLeft } from "react-icons/fa";
@@ -77,7 +81,10 @@ export default function AuthPage() {
 
   // Redirect if already authenticated
   useEffect(() => {
-    if (isAuthenticated) setLocation("/");
+    if (!isAuthenticated) return;
+    const next =
+      new URLSearchParams(window.location.search).get("next") || "/clubs";
+    setLocation(next, { replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated]);
 
@@ -106,16 +113,19 @@ export default function AuthPage() {
     },
     onSuccess: ({ accessToken, refreshToken, user }) => {
       setTokens(accessToken, refreshToken);
+      scheduleProactiveRefresh(accessToken);
       if (user?.username) setUsername(user.username);
       saveUser(user);
-      // prime the user cache used by useAuth()
       queryClient.setQueryData(["/auth/me"], user);
 
       toast({
         title: "Welcome back!",
         description: `Hello ${user.firstName ?? user.username}!`,
       });
-      setLocation("/clubs");
+
+      const next =
+        new URLSearchParams(window.location.search).get("next") || "/clubs";
+      setLocation(next, { replace: true });
     },
     onError: (err: any) => {
       toast({
@@ -277,6 +287,7 @@ export default function AuthPage() {
     },
     onSuccess: ({ accessToken, refreshToken, user }) => {
       setTokens(accessToken, refreshToken);
+      scheduleProactiveRefresh(accessToken);
       if (user?.username) setUsername(user.username);
       saveUser(user);
       queryClient.setQueryData(["/auth/me"], user);
@@ -285,7 +296,10 @@ export default function AuthPage() {
         title: "Welcome to Corner League!",
         description: `Account created for ${user.firstName ?? user.username}!`,
       });
-      setLocation("/clubs");
+
+      const next =
+        new URLSearchParams(window.location.search).get("next") || "/clubs";
+      setLocation(next, { replace: true });
     },
     onError: (err: any) => {
       const apiErr = err as any;
