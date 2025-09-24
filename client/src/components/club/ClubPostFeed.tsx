@@ -1,5 +1,12 @@
 // components/club/ClubPostFeed.tsx
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useLayoutEffect,
+  type ReactNode,
+} from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/apiClient";
 import { useToast } from "@/hooks/use-toast";
@@ -61,6 +68,22 @@ const EMOJI: Record<string, string> = {
 /* =========================
    Link + Mention helpers
    ========================= */
+
+function makeMentionRefresher(
+  ctrl: ReturnType<typeof buildMentionController>,
+  setState: (s: { open: boolean; list: MentionUser[] }) => void,
+  tag: string
+) {
+  let raf: number | null = null;
+  return () => {
+    if (raf) cancelAnimationFrame(raf);
+    // Wait until the browser updates selectionStart
+    raf = requestAnimationFrame(async () => {
+      const s = await ctrl.state();
+      setState(s);
+    });
+  };
+}
 
 const TLD_PART = "(com|org|net|io|app|ai|dev|co|tv|xyz|gg|gov|edu)";
 const SCHEME_RE = /\bhttps?:\/\/[^\s)]+/gi;
@@ -160,6 +183,33 @@ function formatWhen(d?: string) {
   return `${datePart} • ${timePart}`;
 }
 
+function timeAgo(d?: string | number | Date) {
+  if (!d) return "";
+  const t = new Date(d).getTime();
+  const now = Date.now();
+  const s = Math.max(0, Math.floor((now - t) / 1000));
+  const m = Math.floor(s / 60);
+  const h = Math.floor(m / 60);
+  const dys = Math.floor(h / 24);
+  const w = Math.floor(dys / 7);
+
+  if (s < 5) return "just now";
+  if (s < 60) return `${s}${s === 1 ? "s" : "s"} ago`;
+  if (m < 60) return `${m}${m === 1 ? "m" : "m"} ago`;
+  if (h < 24) return `${h}${h === 1 ? "h" : "h"} ago`;
+  if (dys < 7) return `${dys}${dys === 1 ? "d" : "d"} ago`;
+  return `${w}${w === 1 ? "w" : "w"} ago`;
+}
+
+function buildWebPostUrl(postId: string, openComments = false) {
+  if (typeof window === "undefined")
+    return `/?post=${postId}${openComments ? "&comments=1" : ""}`;
+  const url = new URL(window.location.href);
+  url.searchParams.set("post", postId);
+  if (openComments) url.searchParams.set("comments", "1");
+  return url.toString();
+}
+
 function onlyTopLevelCount(list: any[]) {
   return (Array.isArray(list) ? list : []).filter(
     (c) => c?.parentComment == null
@@ -188,8 +238,7 @@ function normalizePost(p: any): FeedPost {
    ========================= */
 
 async function searchUsers(query: string) {
-  const q = query.trim().toLowerCase();
-  if (!q) return [] as MentionUser[];
+  const q = (query ?? "").trim().toLowerCase();
 
   try {
     const r = await apiRequest<any>("GET", "/users");
@@ -199,39 +248,38 @@ async function searchUsers(query: string) {
       ? r.data
       : [];
 
-    const seen = new Set<string>();
-    const out = raw.filter((u) => {
-      const username = (u?.username ?? "").toLowerCase();
-      const first = (u?.firstName ?? "").toLowerCase();
-      const last = (u?.lastName ?? "").toLowerCase();
-      const full = `${first} ${last}`.trim();
+    // “@” only: show first 8 so the UI proves it’s working
+    if (!q) {
+      const pick = raw.slice(0, 8);
 
-      const match =
-        username.includes(q) ||
-        first.includes(q) ||
-        last.includes(q) ||
-        full.includes(q);
-
-      if (match && !seen.has(u.id)) {
-        seen.add(u.id);
-        return true;
-      }
-      return false;
-    });
-
-    return out.slice(0, 8);
-  } catch {
-    // Fallback: exact username lookup
-    try {
-      const r2 = await apiRequest<any>(
-        "GET",
-        `/users/get-user-by-username/${encodeURIComponent(q)}`
-      );
-      const user = r2?.data?.user ?? r2?.data;
-      return user ? [user as MentionUser] : [];
-    } catch {
-      return [];
+      return pick;
     }
+
+    const seen = new Set<string>();
+    const out = raw
+      .filter((u) => {
+        const username = (u?.username ?? "").toLowerCase();
+        const first = (u?.firstName ?? "").toLowerCase();
+        const last = (u?.lastName ?? "").toLowerCase();
+        const full = `${first} ${last}`.trim();
+
+        const match =
+          username.includes(q) ||
+          first.includes(q) ||
+          last.includes(q) ||
+          full.includes(q);
+
+        if (match && !seen.has(u.id)) {
+          seen.add(u.id);
+          return true;
+        }
+        return false;
+      })
+      .slice(0, 8);
+
+    return out;
+  } catch (e) {
+    return [];
   }
 }
 
@@ -293,34 +341,43 @@ async function deletePost(clubId: string, postId: string, userId: string) {
 
 function MentionSuggestions({
   users,
+  open,
   onPick,
 }: {
   users: MentionUser[];
+  open: boolean;
   onPick: (u: MentionUser) => void;
 }) {
-  if (!users?.length) return null;
+  if (!open) return null;
   return (
-    <div className="absolute bottom-full mb-2 left-0 right-0 max-h-60 overflow-y-auto rounded-lg border border-white/10 bg-[#1a1a1a] shadow-lg">
-      {users.map((u) => (
-        <button
-          key={u.id}
-          onClick={() => onPick(u)}
-          className="w-full flex items-center gap-3 px-3 py-2 hover:bg-white/5 text-left"
-          type="button"
-        >
-          <img
-            src={u.profilePicture || "https://unavatar.io/placeholder"}
-            className="h-7 w-7 rounded-full object-cover"
-            alt=""
-          />
-          <div className="text-sm">
-            <div className="font-medium text-white">@{u.username}</div>
-            <div className="text-white/50 text-xs">
-              {u.firstName} {u.lastName}
+    <div className="absolute bottom-full mb-2 left-0 right-0 max-h-60 overflow-y-auto rounded-lg border border-white/10 bg-[#1a1a1a] shadow-lg z-[9999]">
+      {users.length === 0 ? (
+        <div className="px-3 py-2 text-sm text-white/50">No matches</div>
+      ) : (
+        users.map((u) => (
+          <button
+            key={u.id}
+            onMouseDown={(e) => {
+              e.preventDefault();
+              onPick(u);
+            }}
+            className="w-full flex items-center gap-3 px-3 py-2 hover:bg-white/5 text-left"
+            type="button"
+          >
+            <img
+              src={u.profilePicture || "https://unavatar.io/placeholder"}
+              className="h-7 w-7 rounded-full object-cover"
+              alt=""
+            />
+            <div className="text-sm">
+              <div className="font-medium text-white">@{u.username}</div>
+              <div className="text-white/50 text-xs">
+                {u.firstName} {u.lastName}
+              </div>
             </div>
-          </div>
-        </button>
-      ))}
+          </button>
+        ))
+      )}
     </div>
   );
 }
@@ -341,21 +398,34 @@ function buildMentionController(
     async state() {
       const text = getText();
       const before = text.slice(0, caret);
-      const at = before.lastIndexOf("@");
-      if (at < 0) return { open: false, list: [] as MentionUser[] } as const;
-      const frag = before.slice(at + 1);
-      if (/\s/.test(frag) || frag.length > 30)
-        return { open: false, list: [] as MentionUser[] } as const;
+      const AT_RX = /(^|[\s.,;:!?()[\]'"-])[@＠]([^\s@＠]{0,30})$/u;
+      const m = AT_RX.exec(before);
+      if (!m) return { open: false, list: [] as MentionUser[] } as const;
+
+      const frag = m[2] ?? "";
       const list = await searchUsers(frag.toLowerCase());
-      return { open: list.length > 0, list } as const;
+      return { open: true, list } as const;
     },
-    applyPick(user: MentionUser) {
-      const t = getText();
-      const at = t.lastIndexOf("@", caret);
-      const prefix = t.slice(0, at);
-      const suffix = t.slice(caret);
-      const insertion = `@${user.username}`;
-      setText(prefix + insertion + suffix);
+
+    applyPick(user: MentionUser, opts?: { addSpace?: boolean }): number {
+      const text = getText();
+      const left = text.slice(0, caret);
+      const right = text.slice(caret);
+
+      const insertion =
+        `@${user.username}` + (opts?.addSpace ?? true ? " " : "");
+
+      const triggerMatch = /[@＠][^\s@＠]{0,30}$/u.exec(left);
+      const start = triggerMatch
+        ? left.length - triggerMatch[0].length
+        : left.length;
+
+      const next = left.slice(0, start) + insertion + right;
+      setText(next);
+
+      const newCaret = start + insertion.length;
+      caret = newCaret;
+      return newCaret;
     },
   };
 }
@@ -381,18 +451,33 @@ function CommentsModal({
   onSelectReaction: (p: FeedPost, value: string) => Promise<void> | void;
   onCommentMade?: () => void | Promise<void>;
 }) {
+  const { toast } = useToast();
   const [draft, setDraft] = useState("");
 
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
+  const pendingCaretRef = useRef<number | null>(null);
+
   const ctrlCmt = buildMentionController(() => draft, setDraft);
-  const [mentionCmt, setMentionCmt] = useState<{
-    open: boolean;
-    list: MentionUser[];
-  }>({
+  const [mentionCmt, setMentionCmt] = useState({
     open: false,
-    list: [],
+    list: [] as MentionUser[],
   });
+  const refreshCmt = makeMentionRefresher(ctrlCmt, setMentionCmt, "modal");
+
   useEffect(() => {
-    (async () => setMentionCmt(await ctrlCmt.state()))();
+    (async () => {
+      const s = await ctrlCmt.state();
+      setMentionCmt(s);
+    })();
+  }, [draft]);
+
+  useLayoutEffect(() => {
+    if (pendingCaretRef.current != null && inputRef.current) {
+      const el = inputRef.current;
+      el.focus();
+      el.selectionStart = el.selectionEnd = pendingCaretRef.current;
+      pendingCaretRef.current = null;
+    }
   }, [draft]);
 
   const {
@@ -413,6 +498,7 @@ function CommentsModal({
         user?: {
           firstName?: string;
           lastName?: string;
+          username?: string;
           profilePicture?: string;
         };
       }>;
@@ -460,8 +546,13 @@ function CommentsModal({
               alt=""
             />
             <div className="text-sm">
-              <div className="font-medium">
+              <div className="font-medium flex items-center gap-1">
                 {post.user?.firstName} {post.user?.lastName}
+                {post.user?.username ? (
+                  <span className="text-white/60 text-[11px]">
+                    @{post.user.username}
+                  </span>
+                ) : null}
               </div>
               <div className="text-white/50 text-xs">
                 {formatWhen(post.createdAt)}
@@ -476,7 +567,7 @@ function CommentsModal({
           {post.mediaUrls?.[0] && (
             <img
               src={post.mediaUrls[0]}
-              className="mt-3 rounded-lg border border-gray-800 max-h-[420px] object-cover"
+              className="mt-3 rounded-lg border border-gray-800 w-full max-h-[240px] object-contain"
               alt=""
             />
           )}
@@ -493,6 +584,20 @@ function CommentsModal({
             <div className="text-white/70 text-sm">
               {post.reactionCount ?? 0}
             </div>
+
+            <button
+              onClick={async () => {
+                try {
+                  const link = buildWebPostUrl(post.id, true);
+                  await navigator.clipboard.writeText(link);
+                  toast({ title: "Link copied to clipboard" });
+                } catch {}
+              }}
+              className="rounded-full px-3 py-1 bg-white/5 border border-white/10 hover:bg-white/10 text-sm"
+              type="button"
+            >
+              Share
+            </button>
 
             <div className="ml-auto flex gap-1">
               {REACTIONS.map((r) => (
@@ -532,12 +637,20 @@ function CommentsModal({
                     alt=""
                   />
                   <div className="flex-1">
-                    <div className="text-xs text-white/60 mb-1">
-                      <span className="text-white">
+                    <div className="text-xs text-white/60 mb-1 flex items-center gap-1">
+                      <span className="text-white font-medium">
                         {c.user?.firstName} {c.user?.lastName}
-                      </span>{" "}
-                      • {new Date(c.createdAt).toLocaleString()}
+                      </span>
+                      {c.user?.username ? (
+                        <span className="text-white/60 text-[11px]">
+                          @{c.user.username}
+                        </span>
+                      ) : null}
+                      <span className="text-white/40">
+                        • {timeAgo(c.createdAt)}
+                      </span>
                     </div>
+
                     <div className="text-sm whitespace-pre-wrap">
                       {renderTextWithLinks(c.content, onLinkClick)}
                     </div>
@@ -555,19 +668,31 @@ function CommentsModal({
           <div className="relative">
             <div className="flex items-end gap-2">
               <textarea
+                ref={inputRef}
                 value={draft}
-                onChange={(e) => setDraft(e.target.value)}
+                onChange={(e) => {
+                  setDraft(e.target.value);
+                  const el = e.currentTarget;
+                  setTimeout(() => {
+                    ctrlCmt.setCaret(el.selectionStart ?? 0);
+                    refreshCmt(); // <-- refresh after caret set
+                  }, 0);
+                }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
                     submitComment();
                   }
                   const el = e.currentTarget;
-                  setTimeout(() => ctrlCmt.setCaret(el.selectionStart ?? 0), 0);
+                  setTimeout(() => {
+                    ctrlCmt.setCaret(el.selectionStart ?? 0);
+                    refreshCmt();
+                  }, 0);
                 }}
                 onClick={(e) => {
                   const el = e.currentTarget;
                   ctrlCmt.setCaret(el.selectionStart ?? 0);
+                  refreshCmt();
                 }}
                 rows={2}
                 placeholder="Write a comment…"
@@ -583,15 +708,20 @@ function CommentsModal({
               </button>
             </div>
 
-            {mentionCmt.open && (
-              <MentionSuggestions
-                users={mentionCmt.list}
-                onPick={(u) => {
-                  ctrlCmt.applyPick(u);
-                  setTimeout(() => setMentionCmt({ open: false, list: [] }), 0);
-                }}
-              />
-            )}
+            <MentionSuggestions
+              users={mentionCmt.list}
+              open={mentionCmt.open}
+              onPick={(u) => {
+                if (inputRef.current) {
+                  ctrlCmt.setCaret(
+                    inputRef.current.selectionStart ?? draft.length
+                  );
+                }
+                const pos = ctrlCmt.applyPick(u, { addSpace: true });
+                pendingCaretRef.current = pos;
+                setMentionCmt({ open: false, list: [] });
+              }}
+            />
           </div>
         </div>
       </div>
@@ -621,16 +751,30 @@ export default function ClubPostsFeed({
   const [commentsFor, setCommentsFor] = useState<FeedPost | null>(null);
 
   // mention state for the feed composer
+  const feedRef = useRef<HTMLTextAreaElement | null>(null);
+  const pendingFeedCaretRef = useRef<number | null>(null);
+
   const ctrlFeed = buildMentionController(() => composer, setComposer);
-  const [mentionFeed, setMentionFeed] = useState<{
-    open: boolean;
-    list: MentionUser[];
-  }>({
+  const [mentionFeed, setMentionFeed] = useState({
     open: false,
-    list: [],
+    list: [] as MentionUser[],
   });
+  const refreshFeed = makeMentionRefresher(ctrlFeed, setMentionFeed, "feed");
+
   useEffect(() => {
-    (async () => setMentionFeed(await ctrlFeed.state()))();
+    (async () => {
+      const s = await ctrlFeed.state();
+      setMentionFeed(s);
+    })();
+  }, [composer]);
+
+  useLayoutEffect(() => {
+    if (pendingFeedCaretRef.current != null && feedRef.current) {
+      const el = feedRef.current;
+      el.focus();
+      el.selectionStart = el.selectionEnd = pendingFeedCaretRef.current;
+      pendingFeedCaretRef.current = null;
+    }
   }, [composer]);
 
   // Load posts with counts/reactions
@@ -853,31 +997,46 @@ export default function ClubPostsFeed({
         <div className="mb-4 rounded-xl border border-gray-800 bg-[#121212] p-4">
           <div className="relative">
             <textarea
+              ref={feedRef}
               value={composer}
-              onChange={(e) => setComposer(e.target.value)}
+              onChange={(e) => {
+                setComposer(e.target.value);
+                const el = e.currentTarget;
+                setTimeout(() => {
+                  ctrlFeed.setCaret(el.selectionStart ?? 0);
+                  refreshFeed();
+                }, 0);
+              }}
               onKeyDown={(e) => {
                 const el = e.currentTarget;
-                setTimeout(() => ctrlFeed.setCaret(el.selectionStart ?? 0), 0);
+                setTimeout(() => {
+                  ctrlFeed.setCaret(el.selectionStart ?? 0);
+                  refreshFeed();
+                }, 0);
               }}
               onClick={(e) => {
                 const el = e.currentTarget;
                 ctrlFeed.setCaret(el.selectionStart ?? 0);
+                refreshFeed();
               }}
               placeholder="Share something with the club..."
               className="w-full bg-transparent outline-none resize-none h-20 text-sm"
             />
-            {mentionFeed.open && (
-              <MentionSuggestions
-                users={mentionFeed.list}
-                onPick={(u) => {
-                  ctrlFeed.applyPick(u);
-                  setTimeout(
-                    () => setMentionFeed({ open: false, list: [] }),
-                    0
+
+            <MentionSuggestions
+              users={mentionFeed.list}
+              open={mentionFeed.open}
+              onPick={(u) => {
+                if (feedRef.current) {
+                  ctrlFeed.setCaret(
+                    feedRef.current.selectionStart ?? composer.length
                   );
-                }}
-              />
-            )}
+                }
+                const pos = ctrlFeed.applyPick(u, { addSpace: true });
+                pendingFeedCaretRef.current = pos;
+                setMentionFeed({ open: false, list: [] });
+              }}
+            />
           </div>
 
           <div className="mt-3 flex justify-end">
@@ -932,8 +1091,13 @@ export default function ClubPostsFeed({
                     alt=""
                   />
                   <div className="text-sm">
-                    <div className="font-medium">
+                    <div className="font-medium flex items-center gap-1">
                       {row.post!.user?.firstName} {row.post!.user?.lastName}
+                      {row.post!.user?.username ? (
+                        <span className="text-white/60 text-[11px]">
+                          @{row.post!.user!.username}
+                        </span>
+                      ) : null}
                     </div>
                     <div className="text-white/50 text-xs">
                       {formatWhen(row.post!.createdAt)}
