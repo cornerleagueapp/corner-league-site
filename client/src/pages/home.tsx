@@ -7,6 +7,7 @@ import { apiRequest } from "@/lib/apiClient";
 import { clearTokens } from "@/lib/token";
 import { queryClient } from "@/lib/queryClient";
 import { logout } from "@/lib/logout";
+import { useLocation } from "wouter";
 
 import image4 from "@assets/20250602_1433_Basketball Motion Scene_remix_01jws8ysn9fx1s6c0mgqw48t2g_1754356174336.png";
 import image5 from "@assets/20250603_0933_Vibrant Portrait Art_remix_01jwva54bwfxrsakzx26a3y7mb_1754356174336.png";
@@ -33,6 +34,8 @@ import image25 from "@assets/riveteammyles_Pink_Floyds_Dark_Side_of_the_Moon_alb
 
 export default function Home() {
   const { user, isAuthenticated, isLoading } = useAuth();
+
+  const [location] = useLocation();
 
   const sportsImages = [
     image4, // Basketball Motion Scene
@@ -67,7 +70,7 @@ export default function Home() {
   ];
 
   const handleLogin = () => {
-    window.location.href = "/auth";
+    window.location.href = `/auth?next=${encodeURIComponent(location)}`;
   };
 
   const handleLogout = async () => {

@@ -1,6 +1,6 @@
 // client/src/hooks/useAuth.ts
 import { useQuery } from "@tanstack/react-query";
-import { apiFetch } from "@/lib/apiClient";
+import { apiFetch, scheduleProactiveRefresh } from "@/lib/apiClient";
 import type { User } from "@/types/user";
 import {
   getAccessToken,
@@ -18,16 +18,24 @@ const ME_ATTEMPTS = [
   "/auth/profile",
 ];
 
+let bootRefreshScheduled = false;
+
 export function useAuth() {
   // Run if we have either token (apiFetch can mint a new AT from RT)
   const hasCreds = !!(getAccessToken() || getRefreshToken());
   const cachedUser = loadUser();
 
+  if (hasCreds && !bootRefreshScheduled) {
+    const at = getAccessToken();
+    if (at) scheduleProactiveRefresh(at); // refresh ~1 min before exp
+    bootRefreshScheduled = true;
+  }
+
   const { data, isLoading } = useQuery<User | null>({
     queryKey: ["/auth/me"],
     enabled: hasCreds,
-    initialData: cachedUser ?? null, // <— show cached user immediately
-    placeholderData: (prev) => prev ?? cachedUser, // <— avoid flash of logged-out
+    initialData: cachedUser ?? null,
+    placeholderData: (prev) => prev ?? cachedUser,
     retry: false,
     staleTime: 5 * 60 * 1000,
     queryFn: async () => {
@@ -36,12 +44,12 @@ export function useAuth() {
         if (res.status === 401) return null; // not authenticated
         if (res.ok) {
           const u = (await res.json()) as User;
-          saveUser(u); // keep storage fresh
+          saveUser(u);
           return u;
         }
-        if (res.status !== 404) break; // other error -> stop trying
+        if (res.status !== 404) break;
       }
-      // No "me" endpoint? fall back to last known user so session persists
+      // No “me” endpoint or non-401 failure → fall back to cached user
       return loadUser();
     },
   });

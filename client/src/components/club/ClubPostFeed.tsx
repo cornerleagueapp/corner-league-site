@@ -749,6 +749,7 @@ export default function ClubPostsFeed({
   const [showPickerFor, setShowPickerFor] = useState<string | null>(null);
   const [linkToOpen, setLinkToOpen] = useState<string | null>(null);
   const [commentsFor, setCommentsFor] = useState<FeedPost | null>(null);
+  const [visibleCount, setVisibleCount] = useState(20);
 
   // mention state for the feed composer
   const feedRef = useRef<HTMLTextAreaElement | null>(null);
@@ -821,6 +822,11 @@ export default function ClubPostsFeed({
       return enriched as FeedPost[];
     },
   });
+
+  useEffect(() => {
+    if (!posts) return;
+    setVisibleCount((v) => Math.min(Math.max(v, 20), posts.length));
+  }, [posts]);
 
   const canPost = Boolean(isMember && userId);
 
@@ -1066,165 +1072,197 @@ export default function ClubPostsFeed({
         {isLoading ? (
           <div className="text-white/70">Loading posts…</div>
         ) : (
-          grouped.map((row, i) =>
-            row.type === "date" ? (
-              <div
-                key={`d-${i}`}
-                className="flex items-center justify-center gap-3 my-3"
-              >
-                <div className="h-px bg-gray-700 flex-1" />
-                <div className="text-sm text-white/80">{row.date}</div>
-                <div className="h-px bg-gray-700 flex-1" />
-              </div>
-            ) : (
-              <article
-                key={row.post!.id}
-                className="rounded-xl border border-gray-800 bg-[#111111] p-4"
-              >
-                <header className="flex items-center gap-3">
-                  <img
-                    src={
-                      row.post!.user?.profilePicture ||
-                      "https://unavatar.io/placeholder"
-                    }
-                    className="h-8 w-8 rounded-full object-cover"
-                    alt=""
-                  />
-                  <div className="text-sm">
-                    <div className="font-medium flex items-center gap-1">
-                      {row.post!.user?.firstName} {row.post!.user?.lastName}
-                      {row.post!.user?.username ? (
-                        <span className="text-white/60 text-[11px]">
-                          @{row.post!.user!.username}
-                        </span>
-                      ) : null}
-                    </div>
-                    <div className="text-white/50 text-xs">
-                      {formatWhen(row.post!.createdAt)}
-                    </div>
-                  </div>
-                </header>
-
-                <div className="mt-3 text-sm whitespace-pre-wrap">
-                  {renderTextWithLinks(row.post!.content, (url) =>
-                    setLinkToOpen(url)
-                  )}
+          // render only the first `visibleCount` posts (with their date headers)
+          (() => {
+            if (!grouped.length) return null;
+            // compute how many rows to show that cover the first `visibleCount` posts
+            let postShown = 0;
+            const limited: typeof grouped = [];
+            for (const row of grouped) {
+              if (row.type === "date") {
+                // include date headers as needed while there are posts to show
+                if (postShown < visibleCount) limited.push(row);
+              } else if (row.type === "post") {
+                if (postShown < visibleCount) {
+                  limited.push(row);
+                  postShown += 1;
+                } else {
+                  break;
+                }
+              }
+            }
+            return limited.map((row, i) =>
+              row.type === "date" ? (
+                <div
+                  key={`d-${i}`}
+                  className="flex items-center justify-center gap-3 my-3"
+                >
+                  <div className="h-px bg-gray-700 flex-1" />
+                  <div className="text-sm text-white/80">{row.date}</div>
+                  <div className="h-px bg-gray-700 flex-1" />
                 </div>
-
-                {row.post!.mediaUrls?.[0] && (
-                  <img
-                    src={row.post!.mediaUrls[0]}
-                    className="mt-3 rounded-lg border border-gray-800 max-h-[420px] object-cover"
-                    alt=""
-                  />
-                )}
-
-                <footer className="mt-3 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={(e) => {
-                        if (
-                          longPress.current.did &&
-                          longPress.current.id === row.post!.id
-                        ) {
-                          longPress.current.did = false;
-                          return; // swallow click triggered by long-press
-                        }
-                        toggleLike(row.post!); // single tap = 👍 like
-                      }}
-                      onPointerDown={(e) => {
-                        e.preventDefault();
-                        longPress.current.id = row.post!.id;
-                        longPress.current.did = false;
-                        longPress.current.tid = window.setTimeout(() => {
-                          setShowPickerFor(row.post!.id);
-                          longPress.current.did = true;
-                        }, 350);
-                      }}
-                      onPointerUp={() => {
-                        if (longPress.current.tid) {
-                          clearTimeout(longPress.current.tid);
-                          longPress.current.tid = null;
-                        }
-                      }}
-                      onPointerLeave={() => {
-                        if (longPress.current.tid) {
-                          clearTimeout(longPress.current.tid);
-                          longPress.current.tid = null;
-                        }
-                      }}
-                      className="rounded-full px-3 py-1 bg-white/5 border border-white/10 hover:bg-white/10 text-sm"
-                      title="Like"
-                      type="button"
-                    >
-                      {row.post!.reaction
-                        ? EMOJI[row.post!.reaction] ?? "👍"
-                        : "♡"}
-                    </button>
-                    <div className="text-white/70 text-sm">
-                      {row.post!.reactionCount ?? 0}
+              ) : (
+                <article
+                  key={row.post!.id}
+                  className="rounded-xl border border-gray-800 bg-[#111111] p-4"
+                >
+                  <header className="flex items-center gap-3">
+                    <img
+                      src={
+                        row.post!.user?.profilePicture ||
+                        "https://unavatar.io/placeholder"
+                      }
+                      className="h-8 w-8 rounded-full object-cover"
+                      alt=""
+                    />
+                    <div className="text-sm">
+                      <div className="font-medium flex items-center gap-1">
+                        {row.post!.user?.firstName} {row.post!.user?.lastName}
+                        {row.post!.user?.username ? (
+                          <span className="text-white/60 text-[11px]">
+                            @{row.post!.user!.username}
+                          </span>
+                        ) : null}
+                      </div>
+                      <div className="text-white/50 text-xs">
+                        {formatWhen(row.post!.createdAt)}
+                      </div>
                     </div>
-                    <button
-                      onClick={() => setCommentsFor(row.post!)}
-                      className="text-white/50 text-sm hover:underline"
-                      title="View comments"
-                      type="button"
-                    >
-                      {row.post!.commentCount ?? 0} comments
-                    </button>
-                  </div>
+                  </header>
 
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => share(row.post!)}
-                      className="rounded-full px-3 py-1 bg-white text-black hover:bg-gray-200 text-sm"
-                      type="button"
-                    >
-                      Share
-                    </button>
-                    {row.post!.user?.id === userId && (
-                      <button
-                        onClick={() => onDelete(row.post!)}
-                        className="rounded-full px-3 py-1 bg-red-600 hover:bg-red-700 text-sm"
-                        type="button"
-                      >
-                        Delete
-                      </button>
+                  <div className="mt-3 text-sm whitespace-pre-wrap">
+                    {renderTextWithLinks(row.post!.content, (url) =>
+                      setLinkToOpen(url)
                     )}
-                    <button
-                      onClick={() => speak(row.post!)}
-                      className="rounded-full px-3 py-1 bg-white/5 border border-white/10 hover:bg-white/10 text-sm"
-                      type="button"
-                    >
-                      🔊
-                    </button>
                   </div>
-                </footer>
 
-                {/* Reaction picker */}
-                {showPickerFor === row.post!.id && (
-                  <div
-                    className="mt-2 flex gap-2 rounded-full border border-gray-700 bg-[#222] px-3 py-2"
-                    onMouseLeave={() => setShowPickerFor(null)}
-                  >
-                    {REACTIONS.map((r) => (
+                  {row.post!.mediaUrls?.[0] && (
+                    <img
+                      src={row.post!.mediaUrls[0]}
+                      className="mt-3 rounded-lg border border-gray-800 max-h-[420px] object-cover"
+                      alt=""
+                    />
+                  )}
+
+                  <footer className="mt-3 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
                       <button
-                        key={r.type}
-                        onClick={() => selectReaction(row.post!, r.type)}
-                        className="text-xl"
-                        title={r.type}
+                        onClick={(e) => {
+                          if (
+                            longPress.current.did &&
+                            longPress.current.id === row.post!.id
+                          ) {
+                            longPress.current.did = false;
+                            return; // swallow click triggered by long-press
+                          }
+                          toggleLike(row.post!); // single tap = 👍 like
+                        }}
+                        onPointerDown={(e) => {
+                          e.preventDefault();
+                          longPress.current.id = row.post!.id;
+                          longPress.current.did = false;
+                          longPress.current.tid = window.setTimeout(() => {
+                            setShowPickerFor(row.post!.id);
+                            longPress.current.did = true;
+                          }, 350);
+                        }}
+                        onPointerUp={() => {
+                          if (longPress.current.tid) {
+                            clearTimeout(longPress.current.tid);
+                            longPress.current.tid = null;
+                          }
+                        }}
+                        onPointerLeave={() => {
+                          if (longPress.current.tid) {
+                            clearTimeout(longPress.current.tid);
+                            longPress.current.tid = null;
+                          }
+                        }}
+                        className="rounded-full px-3 py-1 bg-white/5 border border-white/10 hover:bg-white/10 text-sm"
+                        title="Like"
                         type="button"
                       >
-                        {r.emoji}
+                        {row.post!.reaction
+                          ? EMOJI[row.post!.reaction] ?? "👍"
+                          : "♡"}
                       </button>
-                    ))}
-                  </div>
-                )}
-              </article>
-            )
-          )
+                      <div className="text-white/70 text-sm">
+                        {row.post!.reactionCount ?? 0}
+                      </div>
+                      <button
+                        onClick={() => setCommentsFor(row.post!)}
+                        className="text-white/50 text-sm hover:underline"
+                        title="View comments"
+                        type="button"
+                      >
+                        {row.post!.commentCount ?? 0} comments
+                      </button>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => share(row.post!)}
+                        className="rounded-full px-3 py-1 bg-white text-black hover:bg-gray-200 text-sm"
+                        type="button"
+                      >
+                        Share
+                      </button>
+                      {row.post!.user?.id === userId && (
+                        <button
+                          onClick={() => onDelete(row.post!)}
+                          className="rounded-full px-3 py-1 bg-red-600 hover:bg-red-700 text-sm"
+                          type="button"
+                        >
+                          Delete
+                        </button>
+                      )}
+                      <button
+                        onClick={() => speak(row.post!)}
+                        className="rounded-full px-3 py-1 bg-white/5 border border-white/10 hover:bg-white/10 text-sm"
+                        type="button"
+                      >
+                        🔊
+                      </button>
+                    </div>
+                  </footer>
+
+                  {/* Reaction picker */}
+                  {showPickerFor === row.post!.id && (
+                    <div
+                      className="mt-2 flex gap-2 rounded-full border border-gray-700 bg-[#222] px-3 py-2"
+                      onMouseLeave={() => setShowPickerFor(null)}
+                    >
+                      {REACTIONS.map((r) => (
+                        <button
+                          key={r.type}
+                          onClick={() => selectReaction(row.post!, r.type)}
+                          className="text-xl"
+                          title={r.type}
+                          type="button"
+                        >
+                          {r.emoji}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </article>
+              )
+            );
+          })()
         )}
       </div>
+
+      {!isLoading && posts && posts.length > visibleCount && (
+        <div className="mt-4 flex justify-center">
+          <button
+            onClick={() => setVisibleCount((v) => v + 20)}
+            className="px-4 py-2 rounded-full bg-white text-black hover:bg-gray-200"
+            type="button"
+          >
+            Load more
+          </button>
+        </div>
+      )}
 
       {/* Link modal */}
       {linkToOpen && (
