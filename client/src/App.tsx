@@ -17,6 +17,7 @@ import TermsPage from "@/pages/terms";
 import AuthPage from "@/pages/auth";
 import NotFound from "@/pages/not-found";
 import ClubDetailsPage from "./pages/clubDetails";
+import { useGtagPageview } from "./useGtagPageview";
 
 function ProtectedRoute({
   component: Comp,
@@ -90,6 +91,7 @@ function Router() {
 }
 
 function App() {
+  useGtagPageview();
   return (
     <QueryClientProvider client={queryClient}>
       <BootSanitizeTokens />
