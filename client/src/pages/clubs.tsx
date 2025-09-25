@@ -261,6 +261,33 @@ export default function Clubs() {
         <div className="flex-1 p-4">
           <div className="mb-6">
             <h3 className="text-sm font-medium text-gray-400 mb-3 uppercase tracking-wider">
+              Profile
+            </h3>
+            <div className="space-y-2">
+              <button
+                onClick={() => setActiveView("my")}
+                className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
+                  activeView === "my"
+                    ? "bg-gray-800 text-white"
+                    : "text-gray-300 hover:text-white hover:bg-gray-800"
+                }`}
+              >
+                Account Settings
+              </button>
+              <button
+                onClick={() => setActiveView("discover")}
+                className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
+                  activeView === "discover"
+                    ? "bg-gray-800 text-white"
+                    : "text-gray-300 hover:text-white hover:bg-gray-800"
+                }`}
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+          <div className="mb-6">
+            <h3 className="text-sm font-medium text-gray-400 mb-3 uppercase tracking-wider">
               Clubs
             </h3>
             <div className="space-y-2">
