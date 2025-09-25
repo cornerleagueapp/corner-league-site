@@ -6,7 +6,7 @@ import { queryClient } from "@/lib/queryClient";
 import { apiRequest } from "@/lib/apiClient";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
-import cornerLeagueLogo from "@assets/CL Logo Mark-02_1754280623650.png";
+import cornerLeagueLogo from "@assets/CL_Logo.png";
 
 export default function Settings() {
   const [, setLocation] = useLocation();

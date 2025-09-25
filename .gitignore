@@ -1,3 +1,14 @@
-node_modules
+# dependencies
+node_modules/
+client/node_modules/
 
-.next
+# build output
+dist/
+.next/
+
+# generated
+public/sitemap.xml
+
+# misc
+.DS_Store
+*.log

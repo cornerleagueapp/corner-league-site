@@ -1,32 +1,21 @@
+// vite.config.ts (at repo root)
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import { fileURLToPath } from "node:url";
-import { dirname, resolve } from "node:path";
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const CLIENT = resolve(__dirname, "client");
+import path from "node:path";
 
 export default defineConfig({
-  root: CLIENT,
+  root: "client",
   plugins: [react()],
-  resolve: {
-    alias: {
-      "@": resolve(CLIENT, "src"),
-      "@shared": resolve(__dirname, "shared"),
-      "@assets": resolve(__dirname, "attached_assets"),
-    },
-  },
+  publicDir: path.resolve(__dirname, "public"),
   build: {
-    outDir: resolve(__dirname, "dist/public"),
+    outDir: path.resolve(__dirname, "dist"),
+    assetsDir: "assets",
     emptyOutDir: true,
   },
-  server: {
-    host: "0.0.0.0",
-    port: 3000, // use 3000 (or omit to use Vite default 5173)
-    fs: { strict: true, deny: ["**/.*"] },
-  },
-  preview: {
-    host: "0.0.0.0",
-    port: 3000,
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "client/src"),
+      "@assets": path.resolve(__dirname, "client/src/assets"),
+    },
   },
 });

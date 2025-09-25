@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
-import logoPath from "@assets/CL Logo Mark-02_1754280692282.png";
+import logoPath from "@assets/CL_Logo.png";
 import { CacheManager } from "@/lib/cacheManager";
 import { apiRequest } from "@/lib/apiClient";
 import { clearTokens } from "@/lib/token";

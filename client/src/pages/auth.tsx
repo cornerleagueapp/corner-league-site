@@ -14,7 +14,7 @@ import {
 import { setTokens, setUsername, saveUser } from "@/lib/token";
 import { User } from "@/types/user";
 import { FaApple, FaGoogle, FaEnvelope, FaArrowLeft } from "react-icons/fa";
-import logoPath from "@assets/CL Logo Mark-02_1754280692282.png";
+import logoPath from "@assets/CL_Logo.png";
 
 type AuthSuccess = { accessToken: string; refreshToken?: string; user: User };
 type LoginResponse = {

@@ -1,7 +1,7 @@
 // src/pages/not-found.tsx (or wherever your NotFound lives)
 import { Link } from "wouter";
 import { ArrowLeft } from "lucide-react";
-import logoPath from "@assets/CL Logo Mark-02_1754280692282.png";
+import logoPath from "@assets/CL_Logo.png";
 
 export default function NotFound() {
   return (
