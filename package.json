@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "prebuild": "tsx scripts/make-sitemap.mjs",
-    "build": "cross-env ROLLUP_SKIP_NODE_NATIVE=1 tsc --noEmit && vite build",
+    "build": "cross-env ROLLUP_SKIP_NODEJS_NATIVE=1 tsc --noEmit && vite build",
     "preview": "vite preview --host --port 3000",
     "type-check": "tsc"
   },
