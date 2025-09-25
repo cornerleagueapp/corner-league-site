@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { ClubsCache, ChatCache } from "@/lib/cache";
+import { PageSEO } from "@/seo/usePageSEO";
 import cornerLeagueLogo from "@assets/CL Logo Mark-02_1754280623650.png";
 
 type ClubsPayload = {
@@ -139,6 +140,12 @@ export default function Clubs() {
 
   return (
     <div className="min-h-screen bg-black text-white flex relative">
+      <PageSEO
+        title="Clubs"
+        description="Discover public clubs or manage your own on Corner League. Join live communities for your favorite teams."
+        canonicalPath="/clubs"
+        image="https://cornerleague.com/og/clubs.png"
+      />
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}

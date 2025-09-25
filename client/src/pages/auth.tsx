@@ -4,6 +4,7 @@ import { useLocation } from "wouter";
 import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { PageSEO } from "@/seo/usePageSEO";
 import { useAuth } from "@/hooks/useAuth";
 import {
   apiRequest,
@@ -343,6 +344,7 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center p-6">
+      <PageSEO title="Sign in" canonicalPath="/auth" noindex />
       <div className="w-full max-w-md">
         {authMethod === "welcome" ? (
           /* Welcome Screen */
