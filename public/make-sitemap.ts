@@ -1,4 +1,4 @@
-// scripts/make-sitemap.ts
+// public/make-sitemap.ts
 import fs from "node:fs/promises";
 
 const ORIGIN = "https://cornerleague.com";

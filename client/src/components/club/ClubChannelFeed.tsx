@@ -124,16 +124,10 @@ export default function ClubChannelFeed({
   });
 
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useInfiniteQuery<
-      Page,
-      Error,
-      Page,
-      readonly [string, string, string, string?],
-      string | null
-    >({
+    useInfiniteQuery({
       queryKey: ["club-channel", channelId, clubId, userId] as const,
       enabled: !!channelId && !!clubId,
-      initialPageParam: null, // <-- required in v5
+      initialPageParam: null as string | null,
       queryFn: async ({ pageParam }) => {
         const params = new URLSearchParams();
         params.set("channelId", channelId);
@@ -167,14 +161,14 @@ export default function ClubChannelFeed({
         const nextCursor: string | null = res?.meta?.nextCursor ?? null;
         const hasMore: boolean = !!res?.meta?.hasMore;
 
-        return { items: enriched, nextCursor, hasMore };
+        return { items: enriched, nextCursor, hasMore } as Page;
       },
       getNextPageParam: (lastPage: Page) =>
         lastPage.hasMore ? lastPage.nextCursor : undefined,
     });
 
   const flat = useMemo(
-    () => (data?.pages ?? []).flatMap((p) => p.items),
+    () => (data?.pages ?? []).flatMap((p: Page) => p.items),
     [data]
   );
 
@@ -182,13 +176,15 @@ export default function ClubChannelFeed({
   useEffect(() => {
     const el = scrollerRef.current;
     if (!el) return;
-    function onScroll() {
+    const onScroll = () => {
       if (el.scrollTop < 80 && hasNextPage && !isFetchingNextPage) {
         fetchNextPage();
       }
-    }
+    };
     el.addEventListener("scroll", onScroll);
-    return () => el.removeEventListener("scroll", onScroll);
+    return () => {
+      el?.removeEventListener("scroll", onScroll);
+    };
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   async function onToggleLike(m: Msg) {
@@ -225,7 +221,7 @@ export default function ClubChannelFeed({
             <div className="mt-6 opacity-80 text-4xl">💬</div>
           </div>
         ) : (
-          flat.map((m) => (
+          flat.map((m: Msg) => (
             <div
               key={m.id}
               className="py-3 border-b border-gray-800/60 last:border-b-0"

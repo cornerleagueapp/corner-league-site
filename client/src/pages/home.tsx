@@ -185,8 +185,7 @@ export default function Home() {
               {isAuthenticated ? (
                 <div className="flex flex-col sm:flex-row gap-4 items-center">
                   <span className="text-lg text-gray-300">
-                    Welcome back,{" "}
-                    {(user as User)?.firstName || (user as User)?.email}!
+                    Welcome back, {user?.firstName ?? user?.email}!
                   </span>
                   <Link href="/clubs">
                     <Button
