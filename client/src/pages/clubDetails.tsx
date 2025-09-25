@@ -7,6 +7,8 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/apiClient";
 import ClubPostFeed from "@/components/club/ClubPostFeed";
 import ClubChannelFeed from "@/components/club/ClubChannelFeed";
+import { PageSEO } from "@/seo/usePageSEO";
+import gearIcon from "../assets/clubSettingsIcon.png";
 
 type ClubOwner = {
   id: string;
@@ -167,6 +169,16 @@ export default function ClubDetails() {
   // ----- UI -----
   return (
     <div className="min-h-screen bg-black text-white">
+      <PageSEO
+        title={details?.clubName ?? "Club"}
+        description={(
+          details?.clubDescription ??
+          details?.clubName ??
+          "Join this Corner League club."
+        ).slice(0, 155)}
+        canonicalPath={`/clubs/${clubId}`}
+        image={details?.clubImage || "https://cornerleague.com/og/club.png"}
+      />
       {/* Header */}
       <div className="px-4 sm:px-6 py-4 border-b border-gray-800">
         <div className="mx-auto max-w-6xl flex items-center justify-between">
@@ -181,16 +193,19 @@ export default function ClubDetails() {
           </h1>
 
           <div className="flex items-center gap-2">
-            {isOwner && (
-              <Link href={`/create-club?edit=${clubId}`}>
-                <button
-                  aria-label="Settings"
-                  className="px-4 py-2 rounded-full bg-white/10 hover:bg-white/20"
-                >
-                  Settings
-                </button>
-              </Link>
-            )}
+            <Link href={`/club-settings/${clubId}`}>
+              <button
+                aria-label="Club settings"
+                className="px-3 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                title="Settings"
+              >
+                <img
+                  src={gearIcon}
+                  alt="Settings"
+                  className="h-5 w-5 object-contain"
+                />
+              </button>
+            </Link>
           </div>
         </div>
       </div>

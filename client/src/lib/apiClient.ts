@@ -16,7 +16,8 @@ const REFRESH_PATH =
 const AUTH_SENSITIVE_RE =
   /\/(auth\/me|users\/me|auth\/profile|users\/profile)\b/i;
 
-type FetchOpts = RequestInit & {
+type FetchOpts = Omit<RequestInit, "body"> & {
+  body?: any;
   skipAuth?: boolean;
   withCredentials?: boolean;
 };

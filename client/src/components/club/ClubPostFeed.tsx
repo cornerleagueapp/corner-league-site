@@ -1325,7 +1325,9 @@ export default function ClubPostsFeed({
           onLinkClick={(u) => setLinkToOpen(u)}
           onToggleLike={toggleLike}
           onSelectReaction={selectReaction}
-          onCommentMade={refetch}
+          onCommentMade={async () => {
+            await refetch();
+          }}
         />
       )}
     </div>

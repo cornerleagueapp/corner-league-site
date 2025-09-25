@@ -11,12 +11,14 @@ import Home from "@/pages/home";
 import Extension from "@/pages/extension";
 import Clubs from "@/pages/clubs";
 import CreateClub from "@/pages/create-club";
+import ClubSettings from "./pages/clubSettings";
 import Settings from "@/pages/settings";
 import ContactPage from "@/pages/contact";
 import TermsPage from "@/pages/terms";
 import AuthPage from "@/pages/auth";
 import NotFound from "@/pages/not-found";
 import ClubDetailsPage from "./pages/clubDetails";
+import { useGtagPageview } from "./useGtagPageview";
 
 function ProtectedRoute({
   component: Comp,
@@ -73,6 +75,14 @@ function Router() {
         component={() => <ProtectedRoute component={CreateClub} />}
       />
       <Route
+        path="/club-settings/:id"
+        component={() => <ProtectedRoute component={ClubSettings} />}
+      />
+      {/* <Route
+        path="/edit-club"
+        component={() => <ProtectedRoute component={EditClub} />}
+      /> */}
+      <Route
         path="/extension"
         component={() => <ProtectedRoute component={Extension} />}
       />
@@ -90,6 +100,7 @@ function Router() {
 }
 
 function App() {
+  useGtagPageview();
   return (
     <QueryClientProvider client={queryClient}>
       <BootSanitizeTokens />

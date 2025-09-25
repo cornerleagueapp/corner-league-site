@@ -7,6 +7,7 @@ import { apiRequest } from "@/lib/apiClient";
 import { clearTokens } from "@/lib/token";
 import { queryClient } from "@/lib/queryClient";
 import { logout } from "@/lib/logout";
+import { PageSEO } from "@/seo/usePageSEO";
 import { useLocation } from "wouter";
 
 import image4 from "@assets/20250602_1433_Basketball Motion Scene_remix_01jws8ysn9fx1s6c0mgqw48t2g_1754356174336.png";
@@ -79,6 +80,12 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-black text-white font-sans overflow-x-hidden relative">
+      <PageSEO
+        title="Home"
+        description="Discover public clubs or manage your own on Corner League. Join live communities for your favorite teams."
+        canonicalPath="/"
+        image="https://cornerleague.com/og/clubs.png"
+      />
       <style>{`
         @media (max-width: 767px) {
           .bg-column-0 { left: 0% !important; width: 33.33% !important; }
@@ -178,8 +185,7 @@ export default function Home() {
               {isAuthenticated ? (
                 <div className="flex flex-col sm:flex-row gap-4 items-center">
                   <span className="text-lg text-gray-300">
-                    Welcome back,{" "}
-                    {(user as User)?.firstName || (user as User)?.email}!
+                    Welcome back, {user?.firstName ?? user?.email}!
                   </span>
                   <Link href="/clubs">
                     <Button
