@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { ClubsCache, ChatCache } from "@/lib/cache";
 import { PageSEO } from "@/seo/usePageSEO";
-import cornerLeagueLogo from "@assets/CL Logo Mark-02_1754280623650.png";
+import cornerLeagueLogo from "@assets/CL_Logo.png";
 
 type ClubsPayload = {
   data?: { clubs?: any[]; data?: { clubs?: any[] } };
