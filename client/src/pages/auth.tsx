@@ -15,15 +15,13 @@ import { User } from "@/types/user";
 import { FaApple, FaGoogle, FaEnvelope, FaArrowLeft } from "react-icons/fa";
 import logoPath from "@assets/CL Logo Mark-02_1754280692282.png";
 
-type AuthSuccess = { accessToken: string; refreshToken: string; user: User };
-
+type AuthSuccess = { accessToken: string; refreshToken?: string; user: User };
 type LoginResponse = {
-  data?: { accessToken: string; refreshToken: string; user: User };
+  data?: { accessToken?: string; refreshToken?: string; user?: User };
   accessToken?: string;
   refreshToken?: string;
   user?: User;
 };
-type RegisterResponse = LoginResponse;
 
 export default function AuthPage() {
   const [, setLocation] = useLocation();
@@ -44,13 +42,81 @@ export default function AuthPage() {
     confirmPassword: "",
   });
 
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const next =
+      new URLSearchParams(window.location.search).get("next") || "/clubs";
+    setLocation(next, { replace: true });
+  }, [isAuthenticated, setLocation]);
+
+  const loginMutation = useMutation<AuthSuccess, Error, typeof loginData>({
+    mutationFn: async (credentials) => {
+      const isEmail = credentials.identifier.includes("@");
+      const payload = isEmail
+        ? {
+            email: credentials.identifier.trim(),
+            password: credentials.password,
+          }
+        : {
+            username: credentials.identifier.trim().toLowerCase(),
+            password: credentials.password,
+          };
+
+      // Your API issues JWTs here
+      const json = await apiRequest<LoginResponse>(
+        "POST",
+        "/auth/sign-in",
+        payload
+      );
+      const data = json.data ?? json;
+      const accessToken = data?.accessToken;
+      const refreshToken = data?.refreshToken;
+      const user = data?.user;
+
+      if (!accessToken || !user) throw new Error("Invalid login response");
+      return { accessToken, refreshToken, user } as AuthSuccess;
+    },
+    onSuccess: ({ accessToken, refreshToken, user }) => {
+      setTokens(accessToken, refreshToken);
+      if (refreshToken) scheduleProactiveRefresh(accessToken);
+      if (user?.username) setUsername(user.username);
+      saveUser(user);
+      queryClient.setQueryData(["/auth/me"], user);
+
+      toast({
+        title: "Welcome back!",
+        description: `Hello ${user.firstName ?? user.username}!`,
+      });
+      const next =
+        new URLSearchParams(window.location.search).get("next") || "/clubs";
+      setLocation(next, { replace: true });
+    },
+    onError: (err: any) => {
+      toast({
+        title: "Sign-in failed",
+        description:
+          err?.message || "Please check your credentials and try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // --- Registration (kept from your version, still backend-only) ---
+  const usernameRegex = /^[a-z0-9_]+$/;
+  const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+
+  const [usernameError, setUsernameError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+
   const SPORTS = [
     "MLS",
     "NBA",
     "NFL",
     "MLB",
     "NHL",
-    "Jet-SKi",
+    "Jet-Ski",
     "Tennis",
     "Golf",
     "Cricket",
@@ -66,125 +132,37 @@ export default function AuthPage() {
     "Referee",
     "Parent",
   ];
-
   const [selectedSports, setSelectedSports] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [sportsError, setSportsError] = useState("");
   const [tagsError, setTagsError] = useState("");
 
-  const usernameRegex = /^[a-z0-9_]+$/;
-  const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
-
-  const [usernameError, setUsernameError] = useState("");
-  const [emailError, setEmailError] = useState("");
-  const [passwordError, setPasswordError] = useState("");
-
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    const next =
-      new URLSearchParams(window.location.search).get("next") || "/clubs";
-    setLocation(next, { replace: true });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated]);
-
-  const loginMutation = useMutation<AuthSuccess, Error, typeof loginData>({
-    mutationFn: async (credentials) => {
-      const isEmail = credentials.identifier.includes("@");
-      const payload = isEmail
-        ? {
-            email: credentials.identifier.trim(),
-            password: credentials.password,
-          }
-        : {
-            username: credentials.identifier.trim().toLowerCase(),
-            password: credentials.password,
-          };
-      const json = await apiRequest<LoginResponse>(
-        "POST",
-        "/auth/sign-in",
-        payload
-      );
-      const data = json.data ?? json;
-      if (!data?.accessToken || !data?.refreshToken || !data?.user) {
-        throw new Error("Invalid login response");
-      }
-      return data as AuthSuccess;
-    },
-    onSuccess: ({ accessToken, refreshToken, user }) => {
-      setTokens(accessToken, refreshToken);
-      scheduleProactiveRefresh(accessToken);
-      if (user?.username) setUsername(user.username);
-      saveUser(user);
-      queryClient.setQueryData(["/auth/me"], user);
-
-      toast({
-        title: "Welcome back!",
-        description: `Hello ${user.firstName ?? user.username}!`,
-      });
-
-      const next =
-        new URLSearchParams(window.location.search).get("next") || "/clubs";
-      setLocation(next, { replace: true });
-    },
-    onError: (err: any) => {
-      toast({
-        title: "Invalid username or password",
-        description:
-          (err?.message as string) ??
-          "Please check your credentials and try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
   const toggleFromList = (
     setList: Dispatch<SetStateAction<string[]>>,
-    value: string
-  ) => {
+    v: string
+  ) =>
     setList((prev) =>
-      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
+      prev.includes(v) ? prev.filter((x) => x !== v) : [...prev, v]
+    );
+  const toggleSport = (s: string) => {
+    setSportsError("");
+    toggleFromList(setSelectedSports, s);
+  };
+  const toggleTag = (t: string) => {
+    setTagsError("");
+    setSelectedTags((p) =>
+      p.includes(t) ? p.filter((x) => x !== t) : p.length >= 2 ? p : [...p, t]
     );
   };
 
-  const toggleSport = (sport: string) => {
-    setSportsError("");
-    toggleFromList(setSelectedSports, sport);
-  };
-
-  const toggleTag = (tag: string) => {
-    setTagsError("");
-    setSelectedTags((prev) => {
-      if (prev.includes(tag)) return prev.filter((t) => t !== tag);
-      if (prev.length >= 2) return prev;
-      return [...prev, tag];
-    });
-  };
-
-  function extractValidationMessage(body: any): string | null {
-    // Handles shapes like:
-    // { result: { response: { errors: [{ property, errors: [msg,...] }, ...] } } }
-    const errs = body?.result?.response?.errors;
-    if (Array.isArray(errs) && errs.length) {
-      const e = errs[0];
-      const firstMsg =
-        Array.isArray(e?.errors) && e.errors.length ? e.errors[0] : null;
-      return firstMsg ? `${e.property}: ${firstMsg}` : null;
-    }
-    // Fallbacks
-    return body?.message || body?.error || null;
-  }
-
-  const checkUsernameAvailability = async (): Promise<boolean> => {
+  const checkUsernameAvailability = async () => {
     const username = registerData.username.trim().toLowerCase();
-    if (!username) {
-      setUsernameError("Username is required");
-      return false;
-    }
-    if (!usernameRegex.test(username)) {
-      setUsernameError("Only letters, numbers, and underscores are allowed.");
-      return false;
-    }
+    if (!username) return setUsernameError("Username is required"), false;
+    if (!usernameRegex.test(username))
+      return (
+        setUsernameError("Only letters, numbers, and underscores are allowed."),
+        false
+      );
     try {
       const res = await apiFetch(
         `/users/check-username/${encodeURIComponent(username)}`,
@@ -200,16 +178,11 @@ export default function AuthPage() {
     }
   };
 
-  const checkEmailAvailability = async (): Promise<boolean> => {
+  const checkEmailAvailability = async () => {
     const email = registerData.email.trim();
-    if (!email) {
-      setEmailError("Email is required");
-      return false;
-    }
-    if (!emailRegex.test(email)) {
-      setEmailError("Invalid email format.");
-      return false;
-    }
+    if (!email) return setEmailError("Email is required"), false;
+    if (!emailRegex.test(email))
+      return setEmailError("Invalid email format."), false;
     try {
       const res = await apiFetch(
         `/users/check-email/${encodeURIComponent(email)}`,
@@ -225,15 +198,18 @@ export default function AuthPage() {
     }
   };
 
-  const validatePassword = () => {
-    if (!registerData.password || registerData.password.length < 6) {
-      setPasswordError("Password must be at least 6 characters");
-    } else {
-      setPasswordError("");
-    }
-  };
+  const validatePassword = () =>
+    setPasswordError(
+      !registerData.password || registerData.password.length < 6
+        ? "Password must be at least 6 characters"
+        : ""
+    );
 
-  const isFormValid = () =>
+  const passwordsMatch =
+    registerData.confirmPassword.length === 0 ||
+    registerData.password === registerData.confirmPassword;
+
+  const canSubmit =
     !!(
       registerData.firstName &&
       registerData.lastName &&
@@ -246,13 +222,7 @@ export default function AuthPage() {
       !usernameError &&
       !emailError &&
       !passwordError
-    );
-
-  const passwordsMatch =
-    registerData.confirmPassword.length === 0 ||
-    registerData.password === registerData.confirmPassword;
-
-  const canSubmit = isFormValid() && passwordsMatch;
+    ) && passwordsMatch;
 
   const registerMutation = useMutation<
     AuthSuccess,
@@ -280,14 +250,16 @@ export default function AuthPage() {
         }
       );
       const data = loginJson.data ?? loginJson;
-      if (!data?.accessToken || !data?.refreshToken || !data?.user) {
+      const accessToken = data?.accessToken;
+      const refreshToken = data?.refreshToken;
+      const user = data?.user;
+      if (!accessToken || !user)
         throw new Error("Invalid login response after sign-up");
-      }
-      return data as AuthSuccess;
+      return { accessToken, refreshToken, user } as AuthSuccess;
     },
     onSuccess: ({ accessToken, refreshToken, user }) => {
       setTokens(accessToken, refreshToken);
-      scheduleProactiveRefresh(accessToken);
+      if (refreshToken) scheduleProactiveRefresh(accessToken);
       if (user?.username) setUsername(user.username);
       saveUser(user);
       queryClient.setQueryData(["/auth/me"], user);
@@ -296,28 +268,21 @@ export default function AuthPage() {
         title: "Welcome to Corner League!",
         description: `Account created for ${user.firstName ?? user.username}!`,
       });
-
       const next =
         new URLSearchParams(window.location.search).get("next") || "/clubs";
       setLocation(next, { replace: true });
     },
     onError: (err: any) => {
-      const apiErr = err as any;
-      const body = apiErr?.body; // our apiClient attaches this
-      const specific = extractValidationMessage(body);
-      const msg = (apiErr?.message as string) || "";
-
-      let title = "Registration failed";
-      let description =
-        specific ||
-        (/username/i.test(msg) && /exists|taken/i.test(msg)
-          ? "Username already taken."
-          : /email/i.test(msg) && /exists|registered/i.test(msg)
-          ? "Email already registered."
-          : "Please try again with different information.");
-
-      console.error("Sign-up failed:", { status: apiErr?.status, body }); // helpful during dev
-      toast({ title, description, variant: "destructive" });
+      const msg = err?.body?.message || err?.message || "Please try again.";
+      console.error("Sign-up failed:", {
+        status: err?.status,
+        body: err?.body,
+      });
+      toast({
+        title: "Registration failed",
+        description: msg,
+        variant: "destructive",
+      });
     },
   });
 
@@ -341,10 +306,8 @@ export default function AuthPage() {
       variant: "destructive",
     });
   };
-
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (registerData.password !== registerData.confirmPassword) {
       toast({
         title: "Passwords don't match",
@@ -353,7 +316,6 @@ export default function AuthPage() {
       });
       return;
     }
-
     if (selectedSports.length < 1) {
       setSportsError("Please select at least one sport.");
       return;
@@ -370,13 +332,11 @@ export default function AuthPage() {
       });
       return;
     }
-
     const [okUser, okEmail] = await Promise.all([
       checkUsernameAvailability(),
       checkEmailAvailability(),
     ]);
     if (!okUser || !okEmail) return;
-
     const { confirmPassword, ...payload } = registerData;
     registerMutation.mutate(payload);
   };

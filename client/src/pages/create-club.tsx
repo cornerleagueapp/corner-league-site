@@ -1,28 +1,106 @@
+// src/pages/create-club.tsx
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
-import { ApiError, apiRequest } from "@/lib/apiClient";
+import { ApiError, apiRequest, apiFetch } from "@/lib/apiClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { isUnauthorizedError } from "@/lib/authUtils";
-import { ClubsCache } from "@/lib/cache";
-import { getAccessToken } from "@/lib/token";
+
+// Build a safe slug that satisfies backend constraints (3–255 chars)
+function makeSlug(name: string) {
+  return name
+    .trim()
+    .toLowerCase()
+    .replace(/['’]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 255);
+}
+
+// Upload the picture after club is created (backend expects "club-picture")
+async function uploadClubImage(clubId: string, file: File) {
+  const fd = new FormData();
+  fd.append("club-picture", file, file.name); // ✅ exact field name
+
+  const res = await apiFetch(`/clubs/${clubId}/image`, {
+    method: "PATCH",
+    body: fd,
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Image upload failed: ${res.status} ${text || ""}`);
+  }
+  return res.json();
+}
+
+// Resolve comma-separated usernames → array of backend user IDs (unchanged)
+async function resolveUsernamesToIds(usernamesCsv: string): Promise<string[]> {
+  const usernames = usernamesCsv
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  if (!usernames.length) return [];
+
+  const ids: string[] = [];
+  for (const u of usernames) {
+    try {
+      const r: any = await apiRequest(
+        "GET",
+        `/users/get-user-by-username/${encodeURIComponent(u)}`
+      );
+      const id =
+        r?.data?.user?.id ?? r?.data?.id ?? r?.user?.id ?? r?.id ?? null;
+      if (typeof id === "string" && id) ids.push(id);
+    } catch {
+      /* skip */
+    }
+  }
+  return ids;
+}
+
+// Collect validation messages helper (unchanged)
+function collectValidationMessages(body: any): string[] {
+  if (!body) return [];
+  const errs = body?.result?.response?.errors;
+  if (Array.isArray(errs)) {
+    return errs.flatMap((e: any) => {
+      const prop = e?.property || e?.field || e?.path || "field";
+      const msgs = (Array.isArray(e?.errors) ? e.errors : [e?.message]).filter(
+        Boolean
+      );
+      return (msgs as string[]).map((m) => `${prop}: ${m}`);
+    });
+  }
+  if (Array.isArray(body?.errors)) {
+    return body.errors
+      .map((e: any) => e?.message || (e?.field ? `${e.field}: invalid` : null))
+      .filter(Boolean);
+  }
+  if (Array.isArray(body?.message))
+    return body.message.filter((m: any) => typeof m === "string");
+  if (typeof body?.message === "string") return [body.message];
+  if (typeof body?.error === "string") return [body.error];
+  return [];
+}
 
 export default function CreateClub() {
-  const [, setLocation] = useLocation();
+  const [, navigate] = useLocation();
   const { toast } = useToast();
   const { user } = useAuth();
+
   const [formData, setFormData] = useState({
     clubName: "",
     description: "",
     isPrivate: false,
-    coOwners: "",
+    coOwners: "", // CSV of usernames
   });
 
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -30,355 +108,146 @@ export default function CreateClub() {
     };
   }, [imagePreview]);
 
-  async function runOwnerProbe() {
-    try {
-      const sample: any = await apiRequest("GET", "/clubs?limit=1");
-      const knownOwner = "657663bf-f13c-45d6-b0f2-52a80592a5e9";
-
-      console.log("[probe] knownOwner =", knownOwner);
-
-      const slug = `probe-club-${Date.now()}`;
-
-      const res = await apiRequest("POST", "/clubs", {
-        name: "probe-club",
-        slug,
-        isPrivate: false,
-        description: "probe",
-        ownerId: knownOwner,
-      });
-
-      console.log("[probe] create result:", res);
-    } catch (e: any) {
-      console.error("[probe] failed", e?.body || e);
-    }
-  }
-
-  function decodeJwt(): any | null {
-    const raw = getAccessToken?.() || "";
-    const jwt = raw.startsWith("Bearer ") ? raw.slice(7) : raw;
-    if (!jwt || jwt.split(".").length !== 3) return null;
-    try {
-      let b64 = jwt.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
-      while (b64.length % 4) b64 += "=";
-      return JSON.parse(atob(b64));
-    } catch {
-      return null;
-    }
-  }
-
-  function toId(v: unknown): string | null {
-    if (typeof v === "number") return String(v);
-    if (typeof v === "string" && v.trim().length > 0) return v;
-    return null;
-  }
-
-  async function getBackendOwnerId(): Promise<string | null> {
-    const payload = decodeJwt();
-    const firebaseUid: string | undefined = payload?.user_id ?? payload?.sub;
-    const email: string | undefined = payload?.email;
-
-    if (firebaseUid) {
-      try {
-        const res: any = await apiRequest(
-          "GET",
-          `/users/get-user-by-uid/${encodeURIComponent(firebaseUid)}`
-        );
-        const id =
-          res?.data?.user?.id ??
-          res?.data?.id ??
-          res?.user?.id ??
-          res?.id ??
-          res?.data?.userId ??
-          res?.userId;
-        const str = toId(id);
-        if (str) return str;
-        console.warn("[CreateClub] get-user-by-uid returned no id:", res);
-      } catch (e) {
-        console.warn("[CreateClub] get-user-by-uid failed:", e);
-      }
-    }
-
-    if (email) {
-      try {
-        const res: any = await apiRequest(
-          "GET",
-          `/users/get-user-by-email/${encodeURIComponent(email)}`
-        );
-        const id =
-          res?.data?.user?.id ??
-          res?.data?.id ??
-          res?.user?.id ??
-          res?.id ??
-          res?.data?.userId ??
-          res?.userId;
-        const str = toId(id);
-        if (str) return str;
-        console.warn("[CreateClub] get-user-by-email returned no id:", res);
-      } catch (e) {
-        console.warn("[CreateClub] get-user-by-email failed:", e);
-      }
-    }
-
-    return null;
-  }
-
-  // helper to upload the club picture first and return a URL
-  async function uploadClubImageToClubId(clubId: string, file: File) {
-    const fd = new FormData();
-    fd.append("club-picture", file, file.name);
-    const res = await fetch(`/clubs/${clubId}/image`, {
-      method: "PATCH",
-      body: fd,
-      credentials: "include",
-    });
-    if (!res.ok) throw new Error(`Upload failed (${res.status})`);
-    return res.json();
-  }
-
-  async function resolveUsernamesToIds(usernames: string[]): Promise<string[]> {
-    const results: string[] = [];
-    for (const u of usernames) {
-      try {
-        const res: any = await apiRequest(
-          "GET",
-          `/users/get-user-by-username/${encodeURIComponent(u)}`
-        );
-        const id =
-          res?.data?.user?.id ?? res?.data?.id ?? res?.user?.id ?? res?.id;
-        if (typeof id === "string" && id) results.push(id);
-      } catch (e) {
-        console.warn("[CreateClub] resolve username failed:", u, e);
-      }
-    }
-    return results;
-  }
-
-  async function findClubIdByName(name: string): Promise<string | null> {
-    try {
-      const res: any = await apiRequest(
-        "GET",
-        `/clubs?search=${encodeURIComponent(name)}&limit=1`
-      );
-      const list = res?.clubs ?? res?.data?.clubs ?? [];
-      const match = (list as any[]).find(
-        (c) => c?.name?.toLowerCase?.() === name.trim().toLowerCase()
-      );
-      return match?.id ?? null;
-    } catch {
-      return null;
-    }
-  }
-
-  const toSlug = (s: string) =>
-    s.trim().toLowerCase().replace(/\s+/g, "-").slice(0, 255);
-
-  async function findClubIdBySlug(slug: string): Promise<string | null> {
-    try {
-      const res: any = await apiRequest(
-        "GET",
-        `/clubs?search=${encodeURIComponent(slug)}&limit=1`
-      );
-      const list = res?.clubs ?? res?.data?.clubs ?? [];
-      const match = (list as any[]).find(
-        (c) => c?.slug?.toLowerCase?.() === slug
-      );
-      return match?.id ?? null;
-    } catch {
-      return null;
-    }
-  }
-
-  function makeSlug(s: string) {
-    const base = s
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9\s-]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-");
-    const out = base.slice(0, 50).replace(/^-+|-+$/g, "");
-    return out || `club-${Date.now()}`;
-  }
-
-  const UUID_RE =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
-  async function ensureOwnerId(): Promise<string> {
-    const id = await getBackendOwnerId();
-    if (!id || !UUID_RE.test(id)) {
-      throw new ApiError(
-        400,
-        "We couldn't link your account to a user profile. Please sign out/in and try again."
-      );
-    }
-    return id;
-  }
-
-  const createClubMutation = useMutation({
+  const createClub = useMutation({
     mutationFn: async () => {
-      if (!user?.id) throw new Error("Missing user id. Please sign in again.");
-
-      const name = formData.clubName.trim();
-      const slug = makeSlug(name);
-
-      if (await findClubIdByName(name)) {
-        throw new ApiError(400, "A club with this name already exists.", {
-          field: "clubName",
-        });
-      }
-      if (await findClubIdBySlug(slug)) {
-        throw new ApiError(400, "A club with this name/URL already exists.", {
-          field: "clubName",
-        });
+      if (!user?.id) {
+        throw new ApiError(401, "Please sign in to create a club.");
       }
 
-      const coOwnerIds = (
-        await resolveUsernamesToIds(
-          (formData.coOwners || "")
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean)
-        )
-      )
-        .map(String)
-        .filter((id) => UUID_RE.test(id))
-        .filter((id) => id !== String(user?.id));
+      // Build required slug
+      const slug = makeSlug(formData.clubName);
+      if (slug.length < 3) {
+        throw new ApiError(
+          400,
+          "Club name must produce a slug of at least 3 characters."
+        );
+      }
 
-      const ownerId = await ensureOwnerId();
-      console.log("[CreateClub] ownerId (backend UUID) =", ownerId);
+      // Resolve optional co-owners → IDs → CSV string (backend expects CSV)
+      const coOwnerIdsArray = await resolveUsernamesToIds(formData.coOwners);
+      const coOwnerIdsCsv = coOwnerIdsArray.join(",");
 
-      const byUid = await apiRequest(
-        "GET",
-        `/users/get-user-by-uid/${encodeURIComponent(
-          decodeJwt()?.user_id || ""
-        )}`
-      ).catch(() => null);
-      const byMail = await apiRequest(
-        "GET",
-        `/users/get-user-by-email/${encodeURIComponent(
-          decodeJwt()?.email || ""
-        )}`
-      ).catch(() => null);
-
-      console.log(
-        "[CreateClub] sanity ids:",
-        byUid?.data?.user?.id || byUid?.data?.id || byUid?.id,
-        byMail?.data?.user?.id || byMail?.data?.id || byMail?.id
-      );
-
-      const payload: Record<string, any> = {
-        name,
+      const payload = {
+        name: formData.clubName.trim(),
         slug,
-        isPrivate: formData.isPrivate,
-        ...(formData.description.trim()
-          ? { description: formData.description.trim() }
-          : {}),
-        ownerId,
-        ...(coOwnerIds.length
-          ? { coOwners: coOwnerIds.map((id) => ({ id })) }
-          : {}),
+        ownerId: user.id,
+        description: formData.description.trim() || undefined,
+        isPrivate: !!formData.isPrivate,
+        coOwnerIds: coOwnerIdsCsv,
       };
-      console.log("[CreateClub] create payload", payload);
 
-      let createdId: string | null = null;
-      try {
-        const createdResp: any = await apiRequest("POST", "/clubs", payload);
-        createdId =
-          createdResp?.data?.club?.id ??
-          createdResp?.club?.id ??
-          createdResp?.id ??
-          createdResp?._id ??
-          createdResp?.clubId ??
-          null;
-      } catch (err: any) {
-        const status = err instanceof ApiError ? err.status : undefined;
-        const msg =
-          err?.body?.response?.message ?? err?.body?.message ?? err?.message;
-
-        if (
-          status === 500 ||
-          (status === 400 &&
-            String(msg).toLowerCase().includes("validation") === false)
-        ) {
-          console.warn("[CreateClub] POST failed; probing by slug/name");
-          createdId =
-            (await findClubIdBySlug(slug)) || (await findClubIdByName(name));
-          if (!createdId) throw err;
-        } else {
-          throw err;
-        }
+      if (process.env.NODE_ENV !== "production") {
+        console.groupCollapsed("[CreateClub] POST /clubs payload");
+        console.log(payload);
+        console.groupEnd();
       }
 
-      if (!createdId) throw new Error("Create club: missing id in response");
+      // Create the club
+      const created: any = await apiRequest("POST", "/clubs", payload);
 
-      if (imageFile) {
+      // Some backends return only { message }. Try to obtain the id.
+      let newId =
+        created?.data?.club?.id ?? created?.club?.id ?? created?.id ?? null;
+
+      // Fallback: look up via /clubs?search=<slug>&limit=1
+      if (!newId) {
         try {
-          await uploadClubImageToClubId(createdId, imageFile);
-        } catch (e) {
-          console.warn("[CreateClub] picture upload failed, continuing", e);
+          const lookup: any = await apiRequest(
+            "GET",
+            `/clubs?search=${encodeURIComponent(slug)}&limit=1`
+          );
+          newId = lookup?.clubs?.[0]?.id ?? null;
+        } catch {
+          /* ignore, still create ok */
         }
       }
 
-      return {
-        data: {
-          club: { id: createdId, name, description: formData.description },
-        },
-      };
-    },
+      // Optional image upload
+      if (newId && imageFile) {
+        await uploadClubImage(newId, imageFile).catch((e) => {
+          console.warn("[CreateClub] Image upload failed:", e);
+          toast({
+            title: "Club created (image upload failed)",
+            description:
+              "Your club was created, but we couldn’t upload the picture.",
+            variant: "destructive",
+          });
+        });
+      }
 
-    onError: (error: any) => {
-      console.error("[CreateClub] create error", error?.body || error);
-      if (isUnauthorizedError(error)) {
+      return { id: newId, name: payload.name };
+    },
+    onSuccess: async ({ id, name }) => {
+      toast({ title: "Club created 🎉", description: `“${name}” is live.` });
+
+      await Promise.allSettled([
+        queryClient.invalidateQueries({ queryKey: ["clubs-and-myclubs"] }),
+        queryClient.invalidateQueries({ queryKey: ["/api/clubs"] }),
+      ]);
+
+      // Navigate if we found an id; otherwise back to list
+      navigate(id ? `/clubs/${id}` : "/clubs");
+    },
+    onError: (err: any) => {
+      if (isUnauthorizedError(err)) {
         toast({
-          title: "Unauthorized",
-          description: "Please sign in to continue…",
+          title: "Sign in required",
+          description: "Please sign in to create a club.",
           variant: "destructive",
         });
-        setTimeout(() => (window.location.href = "/api/login"), 400);
+        const next = encodeURIComponent(window.location.pathname);
+        window.location.href = `/auth?next=${next}`;
         return;
       }
 
-      const resp = error?.body?.response ?? error?.body ?? {};
-      const fieldMsgs = Array.isArray(resp?.errors)
-        ? resp.errors
-            .flatMap((e: any) => e?.errors || e?.message || [])
-            .filter(Boolean)
-            .map(String)
-            .join("; ")
-        : "";
+      if (process.env.NODE_ENV !== "production") {
+        console.groupCollapsed("[CreateClub] create error");
+        console.error("status:", err?.status);
+        console.error("body:", err?.body);
+        console.error("message:", err?.message);
+        console.groupEnd();
+      }
 
-      const msg =
-        fieldMsgs ||
-        (Array.isArray(resp?.message)
-          ? resp.message.join("; ")
-          : resp?.message) ||
-        error?.message ||
-        "Failed to create club. Please check your inputs and try again.";
+      const body = err?.body ?? {};
+      const msgs = collectValidationMessages(body);
+      const message =
+        (msgs.length ? msgs.join(" • ") : null) ||
+        body?.message ||
+        body?.error ||
+        err?.message ||
+        "Failed to create club. Please try again.";
 
-      toast({ title: "Error", description: msg, variant: "destructive" });
+      toast({
+        title: "Create failed",
+        description: message,
+        variant: "destructive",
+      });
     },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.clubName.trim()) return;
-    createClubMutation.mutate();
-  };
-
-  const handleInputChange = (
-    field: keyof typeof formData,
-    value: string | boolean
-  ) => {
-    setFormData((prev) => ({ ...prev, [field]: value as any }));
+    if (!formData.clubName.trim()) {
+      toast({ title: "Club name required", variant: "destructive" });
+      return;
+    }
+    if (formData.clubName.trim().length < 3) {
+      toast({
+        title: "Club name too short",
+        description: "Please enter at least 3 characters.",
+        variant: "destructive",
+      });
+      return;
+    }
+    createClub.mutate();
   };
 
   const onPickImage = (file: File | null) => {
     setImageFile(file);
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setImagePreview(url);
-    } else {
-      setImagePreview(null);
-    }
+    setImagePreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return file ? URL.createObjectURL(file) : null;
+    });
   };
 
   return (
@@ -410,16 +279,6 @@ export default function CreateClub() {
           </p>
         </div>
 
-        {process.env.NODE_ENV !== "production" && (
-          <button
-            type="button"
-            onClick={runOwnerProbe}
-            className="mt-2 text-xs underline text-gray-400 hover:text-white"
-          >
-            Run FK probe
-          </button>
-        )}
-
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Club Name */}
@@ -431,12 +290,14 @@ export default function CreateClub() {
               Club Name
             </label>
             <input
-              type="text"
               id="clubName"
+              type="text"
               value={formData.clubName}
-              onChange={(e) => handleInputChange("clubName", e.target.value)}
+              onChange={(e) =>
+                setFormData((p) => ({ ...p, clubName: e.target.value }))
+              }
               placeholder="Enter club name"
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent"
               required
             />
           </div>
@@ -451,15 +312,14 @@ export default function CreateClub() {
             </label>
             <textarea
               id="description"
-              value={formData.description}
-              onChange={(e) => handleInputChange("description", e.target.value)}
-              placeholder="Tell others about your club..."
               rows={3}
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              value={formData.description}
+              onChange={(e) =>
+                setFormData((p) => ({ ...p, description: e.target.value }))
+              }
+              placeholder="Tell others about your club…"
+              className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent resize-none"
             />
-            <p className="text-xs text-gray-500 mt-1">
-              Let members know what your club is about
-            </p>
           </div>
 
           {/* Club Picture */}
@@ -467,7 +327,8 @@ export default function CreateClub() {
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Club Picture (Optional)
             </label>
-            {imagePreview ? (
+
+            {imagePreview && (
               <div className="mb-2">
                 <img
                   src={imagePreview}
@@ -475,7 +336,7 @@ export default function CreateClub() {
                   className="w-full h-40 object-cover rounded-md border border-gray-700"
                 />
               </div>
-            ) : null}
+            )}
 
             <label className="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 border border-gray-600 rounded-md cursor-pointer hover:bg-gray-700">
               <svg
@@ -508,9 +369,6 @@ export default function CreateClub() {
                 Remove
               </button>
             )}
-            {/* <p className="text-xs text-gray-500 mt-1">
-              Recommended: landscape image
-            </p> */}
           </div>
 
           {/* Privacy */}
@@ -524,8 +382,10 @@ export default function CreateClub() {
                   type="radio"
                   name="privacy"
                   checked={!formData.isPrivate}
-                  onChange={() => handleInputChange("isPrivate", false)}
-                  className="w-4 h-4 text-blue-600 bg-gray-800 border-gray-600 focus:ring-blue-500 focus:ring-2"
+                  onChange={() =>
+                    setFormData((p) => ({ ...p, isPrivate: false }))
+                  }
+                  className="w-4 h-4 text-fuchsia-600 bg-gray-800 border-gray-600 focus:ring-fuchsia-500 focus:ring-2"
                 />
                 <div className="ml-3">
                   <div className="text-white font-medium">Public Club</div>
@@ -540,8 +400,10 @@ export default function CreateClub() {
                   type="radio"
                   name="privacy"
                   checked={formData.isPrivate}
-                  onChange={() => handleInputChange("isPrivate", true)}
-                  className="w-4 h-4 text-blue-600 bg-gray-800 border-gray-600 focus:ring-blue-500 focus:ring-2"
+                  onChange={() =>
+                    setFormData((p) => ({ ...p, isPrivate: true }))
+                  }
+                  className="w-4 h-4 text-fuchsia-600 bg-gray-800 border-gray-600 focus:ring-fuchsia-500 focus:ring-2"
                 />
                 <div className="ml-3">
                   <div className="text-white font-medium">Private Club</div>
@@ -553,6 +415,7 @@ export default function CreateClub() {
             </div>
           </div>
 
+          {/* Co-owners */}
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Co-Owners (comma-separated usernames)
@@ -560,9 +423,11 @@ export default function CreateClub() {
             <input
               type="text"
               value={formData.coOwners}
-              onChange={(e) => handleInputChange("coOwners", e.target.value)}
+              onChange={(e) =>
+                setFormData((p) => ({ ...p, coOwners: e.target.value }))
+              }
               placeholder="alice, bob, charlie"
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent"
             />
           </div>
 
@@ -614,20 +479,16 @@ export default function CreateClub() {
           </div>
 
           {/* Action */}
-          <div className="pt-4">
+          <div className="pt-2">
             <button
               type="submit"
-              disabled={
-                !formData.clubName.trim() ||
-                createClubMutation.isPending ||
-                uploading
-              }
-              className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-medium rounded-md transition-colors flex items-center justify-center gap-2"
+              disabled={createClub.isPending || !formData.clubName.trim()}
+              className="w-full px-4 py-3 bg-white text-black font-medium rounded-md hover:bg-gray-200 disabled:bg-gray-600 disabled:text-white disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
             >
-              {uploading || createClubMutation.isPending ? (
+              {createClub.isPending ? (
                 <>
                   <svg
-                    className="animate-spin -ml-1 mr-3 h-4 w-4 text-white"
+                    className="animate-spin -ml-1 mr-3 h-4 w-4 text-black"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
@@ -646,7 +507,7 @@ export default function CreateClub() {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     />
                   </svg>
-                  {uploading ? "Uploading..." : "Creating..."}
+                  Creating…
                 </>
               ) : (
                 "Create Club"

@@ -1,146 +1,195 @@
 // src/lib/apiClient.ts
-import { API_URL } from "@/lib/env";
 import {
   getAccessToken,
   getRefreshToken,
   setTokens,
   clearTokens,
-  getAuthHeaders,
 } from "./token";
 
-let refreshing: Promise<void> | null = null;
+const API_BASE =
+  (import.meta.env.VITE_API_BASE as string | undefined)?.replace(/\/$/, "") ||
+  "/api";
+
+const REFRESH_PATH =
+  (import.meta.env.VITE_REFRESH_PATH as string | undefined) || "";
+
+const AUTH_SENSITIVE_RE =
+  /\/(auth\/me|users\/me|auth\/profile|users\/profile)\b/i;
+
+type FetchOpts = RequestInit & {
+  skipAuth?: boolean;
+  withCredentials?: boolean;
+};
+
+export async function apiFetch(path: string, opts: FetchOpts = {}) {
+  const url = path.startsWith("http") ? path : `${API_BASE}${path}`;
+  const headers: Record<string, string> = {};
+
+  // JSON header only for plain object bodies
+  const isJsonBody =
+    opts.body &&
+    !(opts.body instanceof FormData) &&
+    !(opts.body instanceof Blob) &&
+    typeof opts.body !== "string";
+
+  if (isJsonBody) headers["Content-Type"] = "application/json";
+  headers["Accept"] = "application/json";
+
+  if (!opts.skipAuth) {
+    const at = getAccessToken();
+    if (at) headers["Authorization"] = `Bearer ${at}`;
+  }
+
+  const init: RequestInit = {
+    method: opts.method ?? "GET",
+    // important: do not force cookies (this breaks CORS when server uses `*`)
+    credentials: opts.withCredentials ? "include" : "same-origin",
+    ...opts,
+    headers: { ...(opts.headers as any), ...headers },
+    body: isJsonBody ? JSON.stringify(opts.body) : opts.body,
+  };
+
+  return fetch(url, init);
+}
 
 export class ApiError extends Error {
   status: number;
-  body: unknown;
-  constructor(status: number, message: string, body?: unknown) {
+  body?: any;
+  constructor(status: number, message: string, body?: any) {
     super(message);
-    this.name = "ApiError";
     this.status = status;
     this.body = body;
   }
 }
 
-// proactive refresh scheduler
-let refreshTimer: number | null = null;
-
-export function scheduleProactiveRefresh(fromAccessToken: string) {
+async function parseMaybeJson(res: Response) {
+  const text = await res.text();
   try {
-    const [, payloadB64] = fromAccessToken.split(".");
-    const payload = JSON.parse(atob(payloadB64));
-    const expMs = (payload.exp ?? 0) * 1000;
-    const msUntil = expMs - Date.now() - 60_000; // refresh 60s early
-    if (refreshTimer) window.clearTimeout(refreshTimer);
-    if (msUntil > 5_000) {
-      refreshTimer = window.setTimeout(() => {
-        ensureRefreshedOnce().catch(() => {}); // silent
-      }, msUntil);
-    }
+    return text ? JSON.parse(text) : null;
   } catch {
-    /* no exp → skip */
+    return text;
   }
 }
 
-export function cancelProactiveRefresh() {
-  if (refreshTimer) window.clearTimeout(refreshTimer);
-  refreshTimer = null;
-}
-
-async function doRefresh(): Promise<void> {
-  const rt = getRefreshToken();
-  if (!rt) throw new Error("No refresh token");
-
-  const res = await fetch(`${API_URL}/auth/refresh`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ refreshToken: rt }),
-  });
-  if (!res.ok) throw new Error(`Refresh failed: ${res.status}`);
-
-  const json = await res.json();
-  const data = json?.data ?? json;
-  if (!data?.accessToken) throw new Error("Invalid refresh response");
-
-  setTokens(data.accessToken, data.refreshToken ?? rt);
-  scheduleProactiveRefresh(data.accessToken);
-}
-
-async function ensureRefreshedOnce() {
-  if (!refreshing) refreshing = doRefresh().finally(() => (refreshing = null));
-  return refreshing;
-}
-
-export type ApiInit = RequestInit & { skipAuth?: boolean };
-
-function pickServerMessage(body: any, fallback: string) {
+function pickMsg(body: any, fallback: string) {
   return (
     body?.message || body?.error || body?.result?.response?.message || fallback
   );
 }
 
-async function assertOk(res: Response) {
-  if (res.ok) return;
-  const text = await res.text();
-  let body: any = null;
-  try {
-    body = text ? JSON.parse(text) : null;
-  } catch {
-    body = text;
-  }
-  const msg = pickServerMessage(body, res.statusText || "Request failed");
-  throw new ApiError(res.status, msg, body);
-}
+let refreshUnsupported = !REFRESH_PATH;
+let refreshInFlight: Promise<boolean> | null = null;
 
-export async function apiFetch(
-  path: string,
-  init: ApiInit = {}
-): Promise<Response> {
-  const url = path.startsWith("http") ? path : `${API_URL}${path}`;
+async function tryRefresh(): Promise<boolean> {
+  const rt = getRefreshToken();
+  if (!rt || refreshUnsupported) return false;
 
-  let attempt = 0;
-  while (attempt < 2) {
-    // If we only have RT, try to mint AT first
-    if (!init.skipAuth && !getAccessToken() && getRefreshToken()) {
+  if (!refreshInFlight) {
+    refreshInFlight = (async () => {
       try {
-        await ensureRefreshedOnce();
-      } catch {}
-    }
+        const res = await apiFetch(REFRESH_PATH, {
+          method: "POST",
+          body: { refreshToken: rt },
+          skipAuth: true,
+        });
 
-    // Build headers after a possible refresh
-    const headers: HeadersInit = {
-      ...(init.headers || {}),
-      ...(init.skipAuth ? {} : getAuthHeaders()),
-    };
+        if (res.status === 404 || res.status === 405) {
+          refreshUnsupported = true;
+          return false;
+        }
+        if (!res.ok) return false;
 
-    const res = await fetch(url, { ...init, headers });
-    if (res.status !== 401 || init.skipAuth) return res;
+        const json = await res.json();
+        const at = json?.accessToken ?? json?.data?.accessToken ?? null;
+        const newRt = json?.refreshToken ?? json?.data?.refreshToken ?? rt;
+        if (!at) return false;
 
-    // 401 → one refresh+retry if we can
-    if (attempt === 0 && getRefreshToken()) {
-      try {
-        await ensureRefreshedOnce();
-        attempt++;
-        continue; // loop will rebuild headers and retry
+        setTokens(at, newRt);
+        return true;
       } catch {
-        return res; // no logout here
+        return false;
+      } finally {
+        refreshInFlight = null;
       }
-    }
-    return res;
+    })();
   }
-  return fetch(url, init);
+  return refreshInFlight;
 }
+
+type RequestBehavior = {
+  refreshOn401?: boolean;
+  logoutOn401?: boolean;
+};
 
 export async function apiRequest<T = any>(
   method: string,
   path: string,
-  data?: unknown
+  body?: any,
+  behavior: RequestBehavior = {}
 ): Promise<T> {
-  const res = await apiFetch(path, {
-    method,
-    headers: data ? { "Content-Type": "application/json" } : undefined,
-    body: data ? JSON.stringify(data) : undefined,
-  });
-  await assertOk(res);
+  const pathLower = (path || "").toLowerCase();
+  const refreshOn401 =
+    behavior.refreshOn401 ?? AUTH_SENSITIVE_RE.test(pathLower);
+  const logoutOn401 = behavior.logoutOn401 ?? AUTH_SENSITIVE_RE.test(pathLower);
+
+  const doRequest = () => apiFetch(path, { method, body });
+
+  // first attempt
+  let res = await doRequest();
+
+  // If 401 and we opted-in to refresh (typically only for /auth/me)
+  if (res.status === 401 && refreshOn401) {
+    const ok = await tryRefresh();
+    if (ok) {
+      res = await doRequest();
+    }
+  }
+
+  if (!res.ok) {
+    const bodyJson = await parseMaybeJson(res);
+    const msg = pickMsg(bodyJson, res.statusText || "Request failed");
+
+    // IMPORTANT:
+    // Only clear tokens for identity endpoints (or if you explicitly opt-in).
+    // This prevents logout when the backend uses 401 for “not a member”.
+    if (res.status === 401 && logoutOn401) {
+      // Only nuke tokens if message clearly indicates token problems,
+      // or if we already attempted a refresh for this request.
+      const m = String(msg || "").toLowerCase();
+      if (/token|jwt|expired|signature|unauth/.test(m) || refreshOn401) {
+        clearTokens();
+      }
+    }
+
+    throw new ApiError(res.status, msg, bodyJson);
+  }
+
+  // 204 → no content
   if (res.status === 204) return undefined as T;
-  return (await res.json()) as T;
+
+  const json = (await parseMaybeJson(res)) as T;
+  return json;
+}
+
+/** Optional: decode JWT exp and schedule a refresh call a bit early (only useful if refresh exists). */
+let refreshTimer: number | null = null;
+export function scheduleProactiveRefresh(accessToken: string) {
+  if (refreshTimer) window.clearTimeout(refreshTimer);
+  if (refreshUnsupported) return; // nothing to schedule
+  try {
+    const [, payload] = accessToken.split(".");
+    const data = JSON.parse(atob(payload));
+    const expMs = (data.exp as number) * 1000;
+    const skew = 30_000; // refresh 30s early
+    const inMs = Math.max(5_000, expMs - Date.now() - skew);
+    refreshTimer = window.setTimeout(() => {
+      void tryRefresh();
+    }, inMs) as any;
+  } catch {
+    // ignore if token isn't a JWT
+  }
+}
+export function cancelProactiveRefresh() {
+  if (refreshTimer) window.clearTimeout(refreshTimer);
+  refreshTimer = null;
 }

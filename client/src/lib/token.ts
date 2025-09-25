@@ -4,9 +4,19 @@ const RT_KEY = "cl_refresh_token";
 const UN_KEY = "cl_username";
 const USER_KEY = "cl_user";
 
+function stripBearer(s?: string | null): string | null {
+  if (!s) return s ?? null;
+  return s.startsWith("Bearer ") ? s.slice(7) : s;
+}
+
+/** Save tokens to storage (raw JWTs only). */
 export function setTokens(accessToken: string, refreshToken?: string) {
-  localStorage.setItem(AT_KEY, accessToken);
-  if (refreshToken) localStorage.setItem(RT_KEY, refreshToken);
+  const at = stripBearer(accessToken) ?? "";
+  localStorage.setItem(AT_KEY, at);
+  if (refreshToken) {
+    const rt = stripBearer(refreshToken) ?? "";
+    if (rt) localStorage.setItem(RT_KEY, rt);
+  }
 }
 
 export function clearTokens() {
@@ -17,17 +27,15 @@ export function clearTokens() {
 }
 
 export function getAccessToken(): string | null {
-  return localStorage.getItem(AT_KEY);
+  return stripBearer(localStorage.getItem(AT_KEY));
 }
-
 export function getRefreshToken(): string | null {
-  return localStorage.getItem(RT_KEY);
+  return stripBearer(localStorage.getItem(RT_KEY));
 }
 
 export function setUsername(username: string) {
   localStorage.setItem(UN_KEY, username);
 }
-
 export function getUsername(): string | null {
   return localStorage.getItem(UN_KEY);
 }
@@ -37,7 +45,6 @@ export function saveUser(u: any) {
     localStorage.setItem(USER_KEY, JSON.stringify(u));
   } catch {}
 }
-
 export function loadUser(): any | null {
   try {
     const s = localStorage.getItem(USER_KEY);
@@ -46,11 +53,11 @@ export function loadUser(): any | null {
     return null;
   }
 }
-
 export function clearUser() {
   localStorage.removeItem(USER_KEY);
 }
 
+/** Build Authorization header from stored token. */
 export function getAuthHeaders(): HeadersInit {
   const at = getAccessToken();
   return at ? { Authorization: `Bearer ${at}` } : {};
