@@ -11,6 +11,7 @@ import Home from "@/pages/home";
 import Extension from "@/pages/extension";
 import Clubs from "@/pages/clubs";
 import CreateClub from "@/pages/create-club";
+import ClubSettings from "./pages/clubSettings";
 import Settings from "@/pages/settings";
 import ContactPage from "@/pages/contact";
 import TermsPage from "@/pages/terms";
@@ -73,6 +74,14 @@ function Router() {
         path="/create-club"
         component={() => <ProtectedRoute component={CreateClub} />}
       />
+      <Route
+        path="/club-settings/:id"
+        component={() => <ProtectedRoute component={ClubSettings} />}
+      />
+      {/* <Route
+        path="/edit-club"
+        component={() => <ProtectedRoute component={EditClub} />}
+      /> */}
       <Route
         path="/extension"
         component={() => <ProtectedRoute component={Extension} />}
