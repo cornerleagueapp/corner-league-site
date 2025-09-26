@@ -60,6 +60,26 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   useEffect(() => {
+    const goAuth = () => {
+      const next = encodeURIComponent(location);
+      navigate(`/auth?next=${next}`, { replace: true });
+    };
+
+    const onLogout = () => goAuth();
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === "auth:logout") goAuth();
+    };
+
+    window.addEventListener("auth:logout", onLogout);
+    window.addEventListener("storage", onStorage);
+
+    return () => {
+      window.removeEventListener("auth:logout", onLogout);
+      window.removeEventListener("storage", onStorage);
+    };
+  }, [location, navigate]);
+
+  useEffect(() => {
     if (!showLogoutConfirm) return;
     const onKey = (e: KeyboardEvent) =>
       e.key === "Escape" && setShowLogoutConfirm(false);

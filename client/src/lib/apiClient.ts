@@ -153,13 +153,18 @@ export async function apiRequest<T = any>(
     // IMPORTANT:
     // Only clear tokens for identity endpoints (or if you explicitly opt-in).
     // This prevents logout when the backend uses 401 for “not a member”.
-    if (res.status === 401 && logoutOn401) {
-      // Only nuke tokens if message clearly indicates token problems,
-      // or if we already attempted a refresh for this request.
-      const m = String(msg || "").toLowerCase();
-      if (/token|jwt|expired|signature|unauth/.test(m) || refreshOn401) {
-        clearTokens();
-      }
+    const m = String(msg || "");
+    const looksTokenError = /token|jwt|expired|signature|unauth/i.test(m);
+
+    if (res.status === 401 && (logoutOn401 || looksTokenError)) {
+      clearTokens();
+
+      // 🔔 this tab
+      window.dispatchEvent(new Event("auth:logout"));
+      // 🔁 other tabs
+      try {
+        localStorage.setItem("auth:logout", String(Date.now()));
+      } catch {}
     }
 
     throw new ApiError(res.status, msg, bodyJson);
