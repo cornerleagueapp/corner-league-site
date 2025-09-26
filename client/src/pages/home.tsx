@@ -166,6 +166,28 @@ export default function Home() {
           />
         </div>
 
+        {/* Desktop (md+) auth actions in the top-right */}
+        {isAuthenticated && (
+          <div className="hidden md:flex absolute top-10 right-6 z-30 items-center gap-3">
+            <Link href="/clubs">
+              <Button
+                size="sm"
+                className="rounded-full px-5 py-2 text-sm font-semibold text-black bg-white hover:bg-gray-100 transition"
+              >
+                My Clubs
+              </Button>
+            </Link>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleLogout}
+              className="rounded-full px-5 py-2 text-sm text-white border-white/40 bg-transparent hover:bg-white/10 transition"
+            >
+              Logout
+            </Button>
+          </div>
+        )}
+
         {/* Main Content */}
         <div className="flex-1 flex items-center justify-center px-6 py-12">
           <div className="text-center max-w-4xl mx-auto">
@@ -180,13 +202,18 @@ export default function Home() {
               analysis, and engage with other sports fans around the world.
             </p>
 
+            {/* Centered welcome (only when logged in) */}
+            {isAuthenticated && (
+              <p className="text-lg md:text-xl text-gray-300 mb-8 text-center">
+                Welcome back, {user?.firstName ?? user?.email}!
+              </p>
+            )}
+
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               {isAuthenticated ? (
-                <div className="flex flex-col sm:flex-row gap-4 items-center">
-                  <span className="text-lg text-gray-300">
-                    Welcome back, {user?.firstName ?? user?.email}!
-                  </span>
+                // Mobile-only actions (desktop uses the top-right bar)
+                <div className="flex md:hidden flex-col sm:flex-row gap-4 items-center">
                   <Link href="/clubs">
                     <Button
                       size="lg"
@@ -199,13 +226,14 @@ export default function Home() {
                     variant="outline"
                     size="lg"
                     onClick={handleLogout}
-                    className="btn-login px-8 py-4 text-lg font-semibold text-white border-white border-opacity-30 bg-transparent hover:bg-white hover:bg-opacity-10 hover:text-white transition-all duration-300 ease-out min-w-[120px] rounded-full"
+                    className="btn-login px-8 py-4 text-lg font-semibold text-white border-white/30 bg-transparent hover:bg-white/10 transition-all duration-300 ease-out min-w-[120px] rounded-full"
                   >
                     Logout
                   </Button>
                 </div>
               ) : (
                 <>
+                  {/* LOGGED-OUT: leave exactly as-is */}
                   <Button
                     variant="outline"
                     size="lg"
