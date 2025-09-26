@@ -9,7 +9,6 @@ import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { ClubsCache, ChatCache } from "@/lib/cache";
 import { PageSEO } from "@/seo/usePageSEO";
-import cornerLeagueLogo from "@assets/CL_Logo.png";
 
 type ClubsPayload = {
   data?: { clubs?: any[]; data?: { clubs?: any[] } };
@@ -21,11 +20,19 @@ function pullClubs(json: ClubsPayload): any[] {
 }
 
 export default function Clubs() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [, navigate] = useLocation();
-  const [activeView, setActiveView] = useState<"discover" | "my">("my");
+  const [loc, navigate] = useLocation();
   const [search, setSearch] = useState("");
   const [visibleDiscover, setVisibleDiscover] = useState(20);
+
+  const [activeView, setActiveView] = useState<"discover" | "my">(() => {
+    const saved = sessionStorage.getItem("clubsTab");
+    return saved === "discover" ? "discover" : "my";
+  });
+
+  // NEW: clear the hint once consumed
+  useEffect(() => {
+    sessionStorage.removeItem("clubsTab");
+  }, []);
 
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
     show: boolean;
@@ -39,6 +46,34 @@ export default function Clubs() {
   useEffect(() => {
     ClubsCache.clearClubs();
   }, []);
+
+  useEffect(() => {
+    setActiveView(loc.startsWith("/clubs/discover") ? "discover" : "my");
+  }, [loc]);
+
+  useEffect(() => {
+    if (loc === "/clubs" && window.location.search.includes("tab=discover")) {
+      navigate("/clubs/discover", { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const handler = (e: Event) =>
+      setActiveView((e as CustomEvent<"discover" | "my">).detail);
+    window.addEventListener("clubs:setTab", handler as EventListener);
+    return () =>
+      window.removeEventListener("clubs:setTab", handler as EventListener);
+  }, []);
+
+  // tell AppShell which sub-tab is currently active so it can highlight
+  useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent<"discover" | "my">("clubs:activeTab", {
+        detail: activeView,
+      })
+    );
+  }, [activeView]);
 
   useEffect(() => {
     setVisibleDiscover(20);
@@ -174,7 +209,6 @@ export default function Clubs() {
     setDeleteConfirmation({ show: true, clubId, clubName });
 
   const openClub = (club: any) => {
-    setIsSidebarOpen(false);
     localStorage.setItem(
       "currentClub",
       JSON.stringify({
@@ -202,131 +236,6 @@ export default function Clubs() {
         canonicalPath="/clubs"
         image="https://cornerleague.com/og/clubs.png"
       />
-
-      {/* Mobile Menu Button */}
-      <button
-        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-        className="md:hidden fixed top-4 left-4 z-50 p-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 transition-colors shadow-lg"
-      >
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          {isSidebarOpen ? (
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          ) : (
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 6h16M4 12h16M4 18h16"
-            />
-          )}
-        </svg>
-      </button>
-
-      {/* Mobile Overlay */}
-      {isSidebarOpen && (
-        <div
-          className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      )}
-
-      {/* Left Sidebar */}
-      <div
-        className={`w-64 border-r border-gray-700 flex flex-col z-40 md:relative md:translate-x-0 fixed transition-transform duration-300 ease-in-out bg-[#000000] ${
-          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        {/* Header */}
-        <div className="p-4 border-b border-gray-700">
-          <div className="flex items-center justify-center">
-            <img
-              src={cornerLeagueLogo}
-              alt="Corner League"
-              className="h-8 w-auto"
-            />
-          </div>
-        </div>
-
-        {/* Navigation */}
-        <div className="flex-1 p-4">
-          <div className="mb-6">
-            <h3 className="text-sm font-medium text-gray-400 mb-3 uppercase tracking-wider">
-              Profile
-            </h3>
-            <div className="space-y-2">
-              <button
-                onClick={() => setActiveView("my")}
-                className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
-                  activeView === "my"
-                    ? "bg-gray-800 text-white"
-                    : "text-gray-300 hover:text-white hover:bg-gray-800"
-                }`}
-              >
-                Account Settings
-              </button>
-              <button
-                onClick={() => setActiveView("discover")}
-                className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
-                  activeView === "discover"
-                    ? "bg-gray-800 text-white"
-                    : "text-gray-300 hover:text-white hover:bg-gray-800"
-                }`}
-              >
-                Logout
-              </button>
-            </div>
-          </div>
-          <div className="mb-6">
-            <h3 className="text-sm font-medium text-gray-400 mb-3 uppercase tracking-wider">
-              Clubs
-            </h3>
-            <div className="space-y-2">
-              <button
-                onClick={() => setActiveView("my")}
-                className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
-                  activeView === "my"
-                    ? "bg-gray-800 text-white"
-                    : "text-gray-300 hover:text-white hover:bg-gray-800"
-                }`}
-              >
-                My Clubs
-              </button>
-              <button
-                onClick={() => setActiveView("discover")}
-                className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
-                  activeView === "discover"
-                    ? "bg-gray-800 text-white"
-                    : "text-gray-300 hover:text-white hover:bg-gray-800"
-                }`}
-              >
-                Discover Clubs
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Back to Home */}
-        <div className="p-4 border-t border-gray-700">
-          <Link href="/">
-            <button
-              onClick={() => setIsSidebarOpen(false)}
-              className="w-full px-3 py-2 text-gray-300 hover:text-white hover:bg-gray-800 rounded-md transition-colors text-left"
-            >
-              ← Back to Home
-            </button>
-          </Link>
-        </div>
-      </div>
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col">

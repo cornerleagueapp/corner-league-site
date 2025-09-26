@@ -20,6 +20,14 @@ import NotFound from "@/pages/not-found";
 import ClubDetailsPage from "./pages/clubDetails";
 import { useGtagPageview } from "./useGtagPageview";
 
+import AppShell from "./layout/AppShell";
+import ProfilePage from "@/pages/profile";
+import FeedPage from "@/pages/feed";
+import ExploreFeedPage from "@/pages/explore";
+import ScoresPage from "@/pages/scores";
+import MessagesPage from "@/pages/messages";
+import NotificationsPage from "@/pages/notifications";
+
 function ProtectedRoute({
   component: Comp,
 }: {
@@ -35,7 +43,7 @@ function ProtectedRoute({
     }
   }, [isAuthenticated, isLoading, location, navigate]);
 
-  if (isLoading) return null; // or a spinner
+  if (isLoading) return null;
   return isAuthenticated ? <Comp /> : null;
 }
 
@@ -49,12 +57,33 @@ function BootSanitizeTokens() {
   return null;
 }
 
-function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
+function PrivateRouter() {
+  return (
+    <AppShell>
+      <Switch>
+        <Route path="/profile" component={ProfilePage} />
+        <Route path="/feed" component={FeedPage} />
+        <Route path="/explore" component={ExploreFeedPage} />
+        <Route path="/scores" component={ScoresPage} />
+        <Route path="/messages" component={MessagesPage} />
+        <Route path="/notifications" component={NotificationsPage} />
 
+        {/* existing club flows */}
+        <Route path="/clubs" component={Clubs} />
+        <Route path="/create-club" component={CreateClub} />
+        <Route path="/clubs/:id" component={ClubDetailsPage} />
+        <Route path="/settings" component={Settings} />
+
+        {/* final fallback **inside** shell */}
+        <Route component={NotFound} />
+      </Switch>
+    </AppShell>
+  );
+}
+
+function Router() {
   function AuthBootstrap() {
     useEffect(() => {
-      // If tokens exist, this will hydrate the cache and keep the user signed in
       queryClient.prefetchQuery({ queryKey: ["/auth/me"] });
     }, []);
     return null;
@@ -62,39 +91,17 @@ function Router() {
 
   return (
     <Switch>
+      {/* public */}
       <Route path="/" component={Home} />
       <Route path="/contact" component={ContactPage} />
       <Route path="/terms" component={TermsPage} />
       <Route path="/auth" component={AuthPage} />
+
+      {/* catch-all → try private area */}
       <Route
-        path="/clubs"
-        component={() => <ProtectedRoute component={Clubs} />}
+        path="/:rest*"
+        component={() => <ProtectedRoute component={PrivateRouter} />}
       />
-      <Route
-        path="/create-club"
-        component={() => <ProtectedRoute component={CreateClub} />}
-      />
-      <Route
-        path="/club-settings/:id"
-        component={() => <ProtectedRoute component={ClubSettings} />}
-      />
-      {/* <Route
-        path="/edit-club"
-        component={() => <ProtectedRoute component={EditClub} />}
-      /> */}
-      <Route
-        path="/extension"
-        component={() => <ProtectedRoute component={Extension} />}
-      />
-      <Route
-        path="/settings"
-        component={() => <ProtectedRoute component={Settings} />}
-      />
-      <Route
-        path="/clubs/:id"
-        component={() => <ProtectedRoute component={ClubDetailsPage} />}
-      />
-      <Route component={NotFound} />
     </Switch>
   );
 }
