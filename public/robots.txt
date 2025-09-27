@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 Disallow: /auth
-Sitemap: https://cornerleague.com/sitemap.xml
+Sitemap: https://www.cornerleague.com/sitemap.xml

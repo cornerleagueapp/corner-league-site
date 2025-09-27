@@ -1,7 +1,7 @@
 // scripts/make-sitemap.mjs
 import fs from "node:fs/promises";
 
-const ORIGIN = process.env.SITE_ORIGIN || "https://cornerleague.com";
+const ORIGIN = process.env.SITE_ORIGIN || "https://www.cornerleague.com";
 const staticRoutes = ["/", "/clubs", "/contact", "/terms", "/settings"];
 
 async function fetchClubPaths() {

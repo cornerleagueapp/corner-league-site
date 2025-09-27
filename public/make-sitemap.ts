@@ -1,7 +1,7 @@
 // public/make-sitemap.ts
 import fs from "node:fs/promises";
 
-const ORIGIN = "https://cornerleague.com";
+const ORIGIN = "https://www.cornerleague.com";
 
 async function main() {
   const staticRoutes = ["/", "/clubs", "/contact", "/terms", "/settings"];

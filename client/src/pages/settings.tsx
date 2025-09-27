@@ -229,28 +229,11 @@ export default function Settings() {
       <div className="border-b border-gray-700 bg-gray-900">
         <div className="flex items-center justify-between p-4 max-w-4xl mx-auto">
           <div className="flex items-center gap-4">
-            <Link href="/clubs">
-              <button className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-md transition-colors">
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 19l-7-7 7-7"
-                  />
-                </svg>
-              </button>
-            </Link>
-            <img
+            {/* <img
               src={cornerLeagueLogo}
               alt="Corner League"
               className="h-8 w-auto"
-            />
+            /> */}
             <h1 className="text-xl font-semibold">Settings</h1>
           </div>
         </div>
