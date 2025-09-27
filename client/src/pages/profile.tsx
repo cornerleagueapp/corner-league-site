@@ -1,12 +1,20 @@
 // src/pages/profile.tsx
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { PageSEO } from "@/seo/usePageSEO";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest, apiFetch } from "@/lib/apiClient";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { Image as ImageIcon, X as XIcon } from "lucide-react";
+import {
+  Image as ImageIcon,
+  X as XIcon,
+  Plus as PlusIcon,
+  Heart,
+  MessageCircle,
+  Share2,
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { getTeamLogo } from "@/constants/teamLogos";
 
 // ---- Types ----
@@ -51,11 +59,43 @@ function timeAgo(d: string | number | Date) {
   return `${Math.floor(diff / wk)}w`;
 }
 
+const REACTIONS = [
+  { type: "like", emoji: "👍" },
+  { type: "love", emoji: "❤️" },
+  { type: "haha", emoji: "😂" },
+  { type: "sad", emoji: "😢" },
+  { type: "angry", emoji: "😡" },
+  { type: "sigh", emoji: "😮‍💨" },
+  { type: "clown", emoji: "🤡" },
+] as const;
+
+const EMOJI: Record<string, string> = {
+  like: "👍",
+  love: "❤️",
+  haha: "😂",
+  sad: "😢",
+  angry: "😡",
+  sigh: "😮‍💨",
+  clown: "🤡",
+};
+
 // ---- Page ----
 export default function ProfilePage() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const userId = user?.id;
   const apiGet = <T,>(path: string) => apiRequest<T>("GET", path);
+  const [showPickerFor, setShowPickerFor] = useState<string | null>(null);
+  const longPress = useRef<{
+    tid: number | null;
+    did: boolean;
+    id: string | null;
+  }>({
+    tid: null,
+    did: false,
+    id: null,
+  });
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
 
   const [me, setMe] = useState<ProfileUser | null>(null);
   const [followers, setFollowers] = useState(0);
@@ -102,8 +142,18 @@ export default function ProfilePage() {
   const [savingTeams, setSavingTeams] = useState(false);
   const selectedTeamIds = new Set(teams.map((t) => String(t.id)));
 
-  const apiPost = <T,>(path: string, body?: any) =>
-    apiRequest<T>("POST", path, body);
+  const pickReaction = (r: any): string | null =>
+    r?.reaction?.reaction ?? r?.reaction ?? null;
+
+  useEffect(() => {
+    const anyModal = followersOpen || teamsModalOpen || !!lightboxUrl;
+    const prev = document.body.style.overflow;
+    if (anyModal) document.body.style.overflow = "hidden";
+    else document.body.style.overflow = prev || "";
+    return () => {
+      document.body.style.overflow = prev || "";
+    };
+  }, [followersOpen, teamsModalOpen, lightboxUrl]);
 
   // ---- fetch profile shell ----
   useEffect(() => {
@@ -112,7 +162,6 @@ export default function ProfilePage() {
       if (!userId) return;
       setLoading(true);
       try {
-        // Followers / following & points (same endpoint in your mobile code)
         const counts = await apiGet<{
           data: { followersCount: number; followingCount: number };
         }>(`/users/${userId}/get-followers-count`);
@@ -126,13 +175,11 @@ export default function ProfilePage() {
           firstName?: string | null;
           lastName?: string | null;
           profilePicture?: string | null;
-          // some backends use snake_case:
           first_name?: string | null;
           last_name?: string | null;
           profile_picture?: string | null;
         };
 
-        // In web, we assume user already has names/pic from auth; otherwise compose from auth + counts
         const u = (user || {}) as AuthUser;
         const composed: ProfileUser = {
           id: String(u.id),
@@ -142,9 +189,10 @@ export default function ProfilePage() {
           profilePicture: (u.profilePicture ?? u.profile_picture ?? null) as
             | string
             | null,
-          bio: null, // if you don’t have it yet, keep null
-          tags: { profile: [] }, // default empty
+          bio: null,
+          tags: { profile: [] },
         };
+
         if (!ignore) {
           setMe(composed);
           setFollowers(counts?.data?.followersCount ?? 0);
@@ -164,79 +212,72 @@ export default function ProfilePage() {
     };
   }, [userId]);
 
-  // ---- fetch posts (same shape as mobile) ----
-  useEffect(() => {
-    let ignore = false;
+  async function hydratePosts(raw: any[]) {
+    const mine = raw.filter((p) => String(p?.user?.id) === String(userId));
+    const normalized = mine
+      .map((p) => ({
+        ...p,
+        mediaUrls: Array.isArray(p.mediaUrls)
+          ? p.mediaUrls
+          : Array.isArray(p.media_urls)
+          ? p.media_urls
+          : (() => {
+              try {
+                return JSON.parse(p.mediaUrls ?? "[]");
+              } catch {
+                return [];
+              }
+            })(),
+      }))
+      .sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
 
-    async function loadPosts() {
-      if (!userId) return;
-
-      const res = await apiGet<{ data: { profilePosts: any[] } }>(
-        `/social/profile-posts`
-      );
-      const allPosts = res?.data?.profilePosts || [];
-
-      const filtered = allPosts.filter(
-        (p) => String(p?.user?.id) === String(userId)
-      );
-
-      const normalized = filtered.map((p) => {
-        let media: string[] = [];
-        if (Array.isArray(p.mediaUrls)) media = p.mediaUrls;
-        else if (Array.isArray(p.media_urls)) media = p.media_urls;
-        else if (typeof p.mediaUrls === "string") {
-          try {
-            media = JSON.parse(p.mediaUrls);
-          } catch {}
+    const enriched = await Promise.all(
+      normalized.map(async (p) => {
+        try {
+          const [userReaction, reactionCount, commentCount] = await Promise.all(
+            [
+              apiGet<{ reaction: string | null }>(
+                `/social/post-reactions/${p.id}/${userId}`
+              ),
+              apiGet<{ count: number }>(`/social/post-reactions/count/${p.id}`),
+              apiGet<{ count: number }>(
+                `/social/profile-posts/${p.id}/comments-count`
+              ),
+            ]
+          );
+          return {
+            ...p,
+            reaction: pickReaction(userReaction as any),
+            reactionCount: reactionCount?.count ?? 0,
+            commentCount: commentCount?.count ?? 0,
+          } as ProfilePost;
+        } catch {
+          return {
+            ...p,
+            reaction: null,
+            reactionCount: 0,
+            commentCount: 0,
+          } as ProfilePost;
         }
+      })
+    );
 
-        return {
-          ...p,
-          mediaUrls: media,
-        } as ProfilePost & { mediaUrls: string[] };
-      });
+    setPosts(enriched);
+  }
 
-      normalized.sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
+  async function fetchAndHydrate() {
+    const res = await apiGet<{ data: { profilePosts: any[] } }>(
+      `/social/profile-posts`
+    );
+    await hydratePosts(res?.data?.profilePosts || []);
+  }
 
-      const enriched = await Promise.all(
-        normalized.map(async (p) => {
-          try {
-            const [userReaction, reactionCount, commentCount] =
-              await Promise.all([
-                apiGet<{ reaction: string | null }>(
-                  `/social/post-reactions/${p.id}/${userId}`
-                ),
-                apiGet<{ count: number }>(
-                  `/social/post-reactions/count/${p.id}`
-                ),
-                apiGet<{ count: number }>(
-                  `/social/profile-posts/${p.id}/comments-count`
-                ),
-              ]);
-            return {
-              ...p,
-              reaction: userReaction?.reaction ?? null,
-              reactionCount: reactionCount?.count ?? 0,
-              commentCount: commentCount?.count ?? 0,
-            };
-          } catch {
-            return { ...p, reaction: null, reactionCount: 0, commentCount: 0 };
-          }
-        })
-      );
-
-      console.log("[Profile] posts for user", userId, enriched);
-      setPosts(enriched);
-    }
-
-    loadPosts();
-    return () => {
-      ignore = true;
-    };
+  useEffect(() => {
+    if (userId) fetchAndHydrate();
   }, [userId]);
+  async function reloadPosts() {
+    await fetchAndHydrate();
+  }
 
   if (!userId) {
     return (
@@ -247,34 +288,27 @@ export default function ProfilePage() {
   }
 
   async function loadAllTeams() {
-    // Try a few likely endpoints in order; stop on first success.
     const candidates = [
-      "/sports/teams", // your first attempt (404 on staging)
-      "/teams", // common alias
-      "/sports/all-teams", // sometimes used
-      "/leagues/ALL/teams", // sometimes used
+      "/sports/teams",
+      "/teams",
+      "/sports/all-teams",
+      "/leagues/ALL/teams",
     ];
-
     for (const path of candidates) {
       try {
         const res = await apiGet<{
           data?: { teams?: Array<{ id: string; name: string; logo?: string }> };
           teams?: Array<{ id: string; name: string; logo?: string }>;
         }>(path);
-
         const teamsData =
           res?.data?.teams ??
           (Array.isArray((res as any)?.teams) ? (res as any).teams : null);
-
         if (Array.isArray(teamsData)) {
           setAllTeams(teamsData);
           return;
         }
-      } catch (err) {
-        // try next candidate
-      }
+      } catch {}
     }
-
     console.error("Failed to load all teams from known endpoints");
     setAllTeams([]);
   }
@@ -287,7 +321,6 @@ export default function ProfilePage() {
         userId: String(userId),
         favoriteTeams: newIds,
       });
-
       const favTeams = await apiGet<{ data: { teams: FavoriteTeam[] } }>(
         `/users/${userId}/get-favorite-teams`
       );
@@ -331,8 +364,6 @@ export default function ProfilePage() {
     if (!selectedImage) return [];
     const form = new FormData();
     form.append("media", selectedImage);
-
-    // Raw fetch so we don't force JSON headers
     const res = await apiFetch("/social/profile-posts/upload-media", {
       method: "POST",
       body: form,
@@ -353,84 +384,93 @@ export default function ProfilePage() {
     try {
       setUploading(true);
       const mediaUrls = await uploadMediaIfNeeded();
-
-      // matches mobile: { userId, content, mediaUrls }
       await apiRequest("POST", "/social/profile-posts", {
         userId: userId,
         content: postText.trim(),
         mediaUrls,
       });
-
-      // reset UI
       setPostText("");
       setSelectedImage(null);
       setImagePreview(null);
-
-      // reload posts
       await reloadPosts();
     } catch (e) {
       console.error("Create post failed", e);
       alert("Failed to create post.");
     } finally {
       setUploading(false);
+      await reloadPosts();
     }
   }
 
-  async function reloadPosts() {
-    // same logic as your loadPosts, pulled into a function so we can reuse after posting
-    const res = await apiGet<{ data: { profilePosts: any[] } }>(
-      `/social/profile-posts`
-    );
-    const allPosts = res?.data?.profilePosts || [];
-    const mine = allPosts.filter((p) => String(p?.user?.id) === String(userId));
+  async function authHeaders() {
+    const token = localStorage.getItem("authToken");
+    return {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+  }
 
-    const normalized = mine.map((p) => {
-      let media: string[] = [];
-      if (Array.isArray(p.mediaUrls)) media = p.mediaUrls;
-      else if (Array.isArray(p.media_urls)) media = p.media_urls;
-      else if (typeof p.mediaUrls === "string") {
-        try {
-          media = JSON.parse(p.mediaUrls);
-        } catch {}
-      }
-      return { ...p, mediaUrls: media } as ProfilePost & {
-        mediaUrls: string[];
-      };
+  async function postReaction(postId: string, uid: string, reaction: string) {
+    const body = {
+      profilePostId: String(postId),
+      userId: String(uid),
+      reaction,
+    };
+    console.log("[POST] /social/post-reactions", body);
+    const res = await apiFetch("/social/post-reactions", {
+      method: "POST",
+      headers: await authHeaders(),
+      body: JSON.stringify(body),
     });
+    if (!res.ok) {
+      const text = await res.text();
+      console.error("[postReaction] server said:", text);
+      throw new Error(`postReaction failed: ${res.status} ${text}`);
+    }
+    return res.json();
+  }
 
-    normalized.sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
+  async function deleteReaction(postId: string, uid: string) {
+    const url = `/social/post-reactions/${postId}/${uid}`;
+    console.log("[DELETE]", url);
+    const res = await apiFetch(url, {
+      method: "DELETE",
+      headers: await authHeaders(),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      console.error("[deleteReaction] server said:", text);
+      throw new Error(`deleteReaction failed: ${res.status} ${text}`);
+    }
+  }
 
-    const enriched = await Promise.all(
-      normalized.map(async (p) => {
-        try {
-          const [userReaction, reactionCount, commentCount] = await Promise.all(
-            [
-              apiGet<{ reaction: string | null }>(
-                `/social/post-reactions/${p.id}/${userId}`
-              ),
-              apiGet<{ count: number }>(`/social/post-reactions/count/${p.id}`),
-              apiGet<{ count: number }>(
-                `/social/profile-posts/${p.id}/comments-count`
-              ),
-            ]
-          );
-          return {
-            ...p,
-            reaction: userReaction?.reaction ?? null,
-            reactionCount: reactionCount?.count ?? 0,
-            commentCount: commentCount?.count ?? 0,
-          };
-        } catch {
-          return { ...p, reaction: null, reactionCount: 0, commentCount: 0 };
-        }
-      })
-    );
+  function setPostOptimistic(
+    postId: string,
+    updater: (p: ProfilePost) => ProfilePost
+  ) {
+    setPosts((prev) => prev.map((p) => (p.id === postId ? updater(p) : p)));
+  }
 
-    console.log("[Profile] posts for user", userId, enriched);
-    setPosts(enriched);
+  async function refreshOne(postId: string) {
+    try {
+      const [userReaction, reactionCount, commentCount] = await Promise.all([
+        apiGet<{ reaction: string | null }>(
+          `/social/post-reactions/${postId}/${userId}`
+        ),
+        apiGet<{ count: number }>(`/social/post-reactions/count/${postId}`),
+        apiGet<{ count: number }>(
+          `/social/profile-posts/${postId}/comments-count`
+        ),
+      ]);
+      setPostOptimistic(postId, (p) => ({
+        ...p,
+        reaction: pickReaction(userReaction as any),
+        reactionCount: reactionCount?.count ?? 0,
+        commentCount: commentCount?.count ?? 0,
+      }));
+    } catch (e) {
+      console.warn("[refreshOne] failed", e);
+    }
   }
 
   const normalizedQuery = followSearch.trim().toLowerCase();
@@ -448,6 +488,23 @@ export default function ProfilePage() {
         .toLowerCase()
         .includes(normalizedQuery)
   );
+
+  if (!userId) {
+    return (
+      <div className="p-6 text-center text-muted-foreground text-white">
+        Please sign in to view your profile.
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#090D16] text-white">
+        <PageSEO title="Profile • Corner League" />
+        <ProfileSkeleton />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#090D16] text-white">
@@ -469,7 +526,7 @@ export default function ProfilePage() {
           <div className="relative">
             <div className="p-[2px] rounded-full bg-gradient-to-tr from-violet-500 via-fuchsia-500 to-amber-400 inline-block">
               <img
-                src={me?.profilePicture || "/images/stockProfilePic.png"}
+                src={me?.profilePicture || "../assets/stockprofilepicture.jpeg"}
                 alt="avatar"
                 className="h-28 w-28 sm:h-36 sm:w-36 rounded-full object-cover bg-black"
               />
@@ -480,24 +537,21 @@ export default function ProfilePage() {
             <h1 className="text-2xl sm:text-3xl font-semibold leading-tight">
               {me ? `${me.firstName} ${me.lastName}` : " "}
             </h1>
-            <p className="text-sm text-white/70 mt-1">@{me?.username}</p>
-
-            {/* Tags */}
-            {!!me?.tags?.profile?.length && (
-              <div className="flex flex-wrap gap-2 mt-3">
-                {me.tags!.profile!.map((t, i) => (
+            <div className="mt-1 flex flex-wrap items-center gap-2">
+              <p className="text-sm text-white/70">@{me?.username}</p>
+              {!!me?.tags?.profile?.length &&
+                me.tags!.profile!.map((t, i) => (
                   <span
                     key={i}
-                    className="px-3 py-1 rounded-full border border-white/10 text-xs text-white/90"
+                    className="px-2.5 py-0.5 rounded-full border border-white/10 text-[11px] text-white/90"
                   >
                     {t}
                   </span>
                 ))}
-              </div>
-            )}
+            </div>
 
             {me?.bio && (
-              <p className="text-white/80 mt-3 max-w-2xl">{me.bio}</p>
+              <p className="text-white/80 mt-2 max-w-2xl">{me.bio}</p>
             )}
 
             {/* Stats */}
@@ -517,8 +571,22 @@ export default function ProfilePage() {
               <StatBox label="Points" value={points} trophy />
             </div>
           </div>
+
           <div className="flex gap-2 self-start sm:self-end">
-            <Button className="bg-white text-black hover:bg-white/90">
+            <Button
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(window.location.href);
+                  toast({ title: "Copied to clipboard" });
+                } catch {
+                  toast({
+                    title: "Couldn’t copy URL",
+                    variant: "destructive",
+                  });
+                }
+              }}
+              className="bg-white text-black hover:bg-white/90"
+            >
               Share
             </Button>
           </div>
@@ -547,7 +615,7 @@ export default function ProfilePage() {
 
         {/* Content */}
         <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left column (about) for desktop */}
+          {/* Left column */}
           <div className="order-2 lg:order-1 lg:col-span-1 space-y-6">
             <Card className="relative bg-white/5 border-white/10 p-4">
               <div className="flex items-center justify-between">
@@ -557,38 +625,37 @@ export default function ProfilePage() {
                     setTeamsModalOpen(true);
                     loadAllTeams();
                   }}
-                  className="h-8 w-8 grid place-items-center rounded-full bg-white/10 border border-white/10 text-xl leading-none hover:bg-white/15"
+                  className="h-8 w-8 grid place-items-center rounded-full bg-white/10 border border-white/10 hover:bg-white/15"
                   aria-label="Add favorite team"
                   title="Add favorite team"
                 >
-                  +
+                  <PlusIcon className="text-white" strokeWidth={2.5} />
                 </button>
               </div>
 
-              <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="mt-3 flex flex-wrap gap-3">
                 {teams.map((t) => {
                   const logo = getTeamLogo(t.name);
                   return (
                     <div
                       key={t.id}
-                      className="flex items-center gap-2 rounded-lg bg-white/5 border border-white/10 px-3 py-2"
+                      className="h-12 w-12 rounded-full bg-white/5 border border-white/10 grid place-items-center overflow-hidden"
+                      title={t.name}
                     >
                       {logo ? (
                         <img
                           src={logo}
                           alt={t.name}
-                          className="w-7 h-7 rounded-md object-contain bg-black/30"
+                          className="h-10 w-10 object-contain"
                         />
                       ) : (
-                        <div className="w-7 h-7 rounded-md bg-white/10 grid place-items-center text-[11px]">
+                        <span className="text-xs text-white/70">
                           {t.name.slice(0, 2)}
-                        </div>
+                        </span>
                       )}
-                      <span className="truncate">{t.name}</span>
                     </div>
                   );
                 })}
-
                 {!teams.length && (
                   <p className="text-white/60 text-sm">
                     Add your favorite teams to see scores here.
@@ -600,9 +667,7 @@ export default function ProfilePage() {
 
           {/* Main column */}
           <div className="order-1 lg:order-2 lg:col-span-2">
-            {loading && (
-              <div className="py-10 text-center text-white/60">Loading…</div>
-            )}
+            {/* {loading && <ProfileSkeleton />} */}
 
             {activeTab === "scores" && (
               <Card className="bg-white/5 border-white/10 p-4">
@@ -619,17 +684,19 @@ export default function ProfilePage() {
                 <Card className="bg-white/5 border-white/10 p-4">
                   <div className="flex flex-col md:flex-row gap-3">
                     <img
-                      src={me?.profilePicture || "/images/stockProfilePic.png"}
-                      className="h-10 w-10 rounded-full object-cover self-start md:self-auto"
+                      src={
+                        me?.profilePicture ||
+                        "../assets/stockprofilepicture.jpeg"
+                      }
+                      className="h-12 w-12 rounded-full object-cover self-start md:self-auto"
                     />
-
                     <div className="flex-1">
                       <textarea
                         value={postText}
                         onChange={(e) => setPostText(e.target.value)}
                         placeholder="What's happening?"
                         maxLength={500}
-                        className="w-full min-h-[64px] resize-y rounded-2xl bg-white/5 border border-white/10 px-4 py-3 text-sm outline-none placeholder:text-white/40 focus:bg-white/7"
+                        className="w-full min-h-[64px] resize-y rounded-2xl bg-white/5 border border-white/10 px-4 py-3 text-sm outline-none placeholder:text-white/40 focus:bg-white/7 text-white"
                       />
 
                       {imagePreview && (
@@ -654,13 +721,12 @@ export default function ProfilePage() {
 
                       <div className="mt-3 flex items-center gap-2">
                         <label
-                          className="cursor-pointer inline-flex items-center gap-2 text-sm px-3 py-2 rounded-full border border-white/10 bg-white/5 hover:bg-white/7"
+                          className="cursor-pointer inline-flex items-center gap-2 text-sm px-3 py-2 rounded-full border border-white/10 bg-white/5 hover:bg-white/7 text-white"
                           title="Add photo/video"
                         >
                           <input
                             type="file"
                             accept="image/*"
-                            // on many mobile browsers this opens the camera/album
                             capture="environment"
                             className="hidden"
                             onChange={(e) => {
@@ -671,7 +737,7 @@ export default function ProfilePage() {
                               );
                             }}
                           />
-                          <ImageIcon size={18} />
+                          <ImageIcon size={18} className="text-white" />
                         </label>
 
                         <Button
@@ -688,25 +754,26 @@ export default function ProfilePage() {
                   </div>
                 </Card>
 
-                {/* list */}
+                {/* Posts list */}
                 {posts.length === 0 && (
                   <Card className="bg-white/5 border-white/10 p-6 text-center text-white/70">
                     No posts yet.
                   </Card>
                 )}
+
                 {posts.map((p) => (
                   <Card key={p.id} className="bg-white/5 border-white/10 p-4">
-                    {/* existing post item UI unchanged */}
                     <div className="flex gap-3">
                       <img
                         src={
-                          me?.profilePicture || "/images/stockProfilePic.png"
+                          me?.profilePicture ||
+                          "../assets/stockprofilepicture.jpeg"
                         }
-                        className="h-10 w-10 rounded-full object-cover"
+                        className="h-12 w-12 rounded-full object-cover"
                       />
                       <div className="flex-1">
                         <div className="flex items-center gap-2 text-sm">
-                          <span className="font-medium">
+                          <span className="font-medium text-white">
                             {p.user?.firstName || me?.firstName}{" "}
                             {p.user?.lastName || me?.lastName}
                           </span>
@@ -715,29 +782,171 @@ export default function ProfilePage() {
                             • {timeAgo(p.createdAt)}
                           </span>
                         </div>
+
                         {p.content && (
-                          <p className="mt-2 whitespace-pre-wrap">
+                          <p className="mt-2 whitespace-pre-wrap text-white">
                             {p.content}
                           </p>
                         )}
+
                         {!!p.mediaUrls?.length && (
                           <div className="mt-3 grid grid-cols-2 gap-2">
                             {p.mediaUrls!.map((u, i) => (
                               <img
                                 key={i}
                                 src={u}
-                                className="rounded-lg object-cover w-full aspect-[4/3] bg-black"
+                                onClick={() => setLightboxUrl(u)}
+                                className="cursor-zoom-in rounded-lg object-cover w-full aspect-[4/3] bg-black"
                               />
                             ))}
                           </div>
                         )}
-                        <div className="mt-3 flex items-center gap-5 text-sm text-white/70">
-                          <span>❤ {p.reactionCount ?? 0}</span>
-                          <span>💬 {p.commentCount ?? 0}</span>
-                          <button className="ml-auto hover:underline">
-                            Share
+
+                        <footer className="mt-3 flex items-center gap-5 text-sm text-white/70">
+                          {/* Reaction toggle (tap) */}
+                          <button
+                            onClick={async () => {
+                              setPostOptimistic(p.id, (pp) => ({
+                                ...pp,
+                                reaction: pp.reaction ? null : "like",
+                                reactionCount: Math.max(
+                                  0,
+                                  (pp.reactionCount ?? 0) +
+                                    (pp.reaction ? -1 : 1)
+                                ),
+                              }));
+                              try {
+                                if (p.reaction) {
+                                  await deleteReaction(p.id, String(userId));
+                                } else {
+                                  await postReaction(
+                                    p.id,
+                                    String(userId),
+                                    "like"
+                                  );
+                                }
+                              } catch (e) {
+                                console.error("[reaction:single] failed", e);
+                              } finally {
+                                await refreshOne(p.id);
+                              }
+                            }}
+                            onPointerDown={(e) => {
+                              e.preventDefault();
+                              longPress.current.id = p.id;
+                              longPress.current.did = false;
+                              longPress.current.tid = window.setTimeout(() => {
+                                setShowPickerFor(p.id);
+                                longPress.current.did = true;
+                              }, 350);
+                            }}
+                            onPointerUp={() => {
+                              if (longPress.current.tid) {
+                                clearTimeout(longPress.current.tid);
+                                longPress.current.tid = null;
+                              }
+                            }}
+                            onPointerLeave={() => {
+                              if (longPress.current.tid) {
+                                clearTimeout(longPress.current.tid);
+                                longPress.current.tid = null;
+                              }
+                            }}
+                            className="inline-flex items-center gap-1 text-white/70 hover:text-white"
+                            title="Like"
+                            type="button"
+                          >
+                            {p.reaction ? (
+                              <span className="text-lg leading-none">
+                                {EMOJI[p.reaction] ?? "👍"}
+                              </span>
+                            ) : (
+                              <Heart size={18} className="stroke-current" />
+                            )}
+                            <span className="tabular-nums">
+                              {p.reactionCount ?? 0}
+                            </span>
                           </button>
-                        </div>
+
+                          {/* Comments count (placeholder) */}
+                          <div className="inline-flex items-center gap-1 text-white/70">
+                            <MessageCircle
+                              size={18}
+                              className="stroke-current"
+                            />
+                            <span className="tabular-nums">
+                              {p.commentCount ?? 0}
+                            </span>
+                          </div>
+
+                          {/* Share */}
+                          <button
+                            onClick={async () => {
+                              const url = new URL(window.location.href);
+                              url.searchParams.set("post", p.id);
+                              try {
+                                await navigator.clipboard.writeText(
+                                  url.toString()
+                                );
+                                toast({ title: "Copied to clipboard" });
+                              } catch {}
+                            }}
+                            className="ml-auto inline-flex items-center gap-2 text-white/70 hover:text-white"
+                            title="Share"
+                            type="button"
+                          >
+                            <Share2 size={18} className="stroke-current" />
+                          </button>
+                        </footer>
+
+                        {/* Reaction picker (long‑press) */}
+                        {showPickerFor === p.id && (
+                          <div
+                            className="mt-2 inline-flex w-fit items-center gap-3 rounded-full border border-white/10 bg-white/5 px-4 py-2"
+                            onMouseLeave={() => setShowPickerFor(null)}
+                          >
+                            {REACTIONS.map((r) => (
+                              <button
+                                key={r.type}
+                                className="text-2xl leading-none"
+                                onClick={async () => {
+                                  setShowPickerFor(null);
+                                  setPostOptimistic(p.id, (pp) => ({
+                                    ...pp,
+                                    reaction: r.type,
+                                    reactionCount: pp.reaction
+                                      ? pp.reactionCount ?? 0
+                                      : (pp.reactionCount ?? 0) + 1,
+                                  }));
+                                  try {
+                                    if (p.reaction) {
+                                      await deleteReaction(
+                                        p.id,
+                                        String(userId)
+                                      );
+                                    }
+                                    await postReaction(
+                                      p.id,
+                                      String(userId),
+                                      r.type
+                                    );
+                                  } catch (e) {
+                                    console.error(
+                                      "[reaction:picker] failed",
+                                      e
+                                    );
+                                  } finally {
+                                    await refreshOne(p.id);
+                                  }
+                                }}
+                                title={r.type}
+                                type="button"
+                              >
+                                {r.emoji}
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </Card>
@@ -757,12 +966,10 @@ export default function ProfilePage() {
       {/* Followers/Following Modal */}
       {followersOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          {/* backdrop */}
           <div
             className="absolute inset-0 bg-black/60"
             onClick={() => setFollowersOpen(false)}
           />
-          {/* panel */}
           <div className="relative z-10 w-full max-w-lg rounded-xl border border-white/10 bg-[#0b0f18] p-4">
             <div className="flex items-center justify-between">
               <div className="flex gap-2">
@@ -780,7 +987,6 @@ export default function ProfilePage() {
                 >
                   Followers ({followers})
                 </button>
-
                 <button
                   className={cn(
                     "px-3 py-2 rounded-md text-sm",
@@ -796,7 +1002,6 @@ export default function ProfilePage() {
                   Following ({followingCount})
                 </button>
               </div>
-
               <button
                 className="text-white/70 hover:text-white"
                 onClick={() => setFollowersOpen(false)}
@@ -833,7 +1038,8 @@ export default function ProfilePage() {
                       >
                         <img
                           src={
-                            u.profilePicture || "/images/stockProfilePic.png"
+                            u.profilePicture ||
+                            "../assets/stockprofilepicture.jpeg"
                           }
                           className="h-9 w-9 rounded-full object-cover"
                         />
@@ -860,7 +1066,8 @@ export default function ProfilePage() {
                       >
                         <img
                           src={
-                            u.profilePicture || "/images/stockProfilePic.png"
+                            u.profilePicture ||
+                            "../assets/stockprofilepicture.jpeg"
                           }
                           className="h-9 w-9 rounded-full object-cover"
                         />
@@ -874,6 +1081,29 @@ export default function ProfilePage() {
               )}
             </div>
           </div>
+        </div>
+      )}
+
+      {lightboxUrl && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70"
+          onClick={() => setLightboxUrl(null)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <button
+            onClick={() => setLightboxUrl(null)}
+            className="absolute top-4 right-4 h-9 w-9 grid place-items-center rounded-full bg-white text-black"
+            aria-label="Close image"
+            type="button"
+          >
+            <XIcon size={18} />
+          </button>
+          <img
+            src={lightboxUrl}
+            className="max-h-[85vh] max-w-[92vw] rounded-xl border border-white/10 object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
         </div>
       )}
 
@@ -905,13 +1135,7 @@ export default function ProfilePage() {
               />
             </div>
 
-            <div
-              className="mt-4
-                grid grid-cols-1 gap-3
-                sm:grid-cols-1
-                lg:grid-cols-2
-              "
-            >
+            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-1 lg:grid-cols-2">
               {allTeams
                 .filter(
                   (t) =>
@@ -982,6 +1206,98 @@ export default function ProfilePage() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function ProfileSkeleton() {
+  return (
+    <div className="mx-auto max-w-5xl px-4 mt-16 sm:mt-20 animate-pulse">
+      {/* Header skeleton */}
+      <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+        <div className="relative">
+          <div className="h-28 w-28 sm:h-36 sm:w-36 rounded-full bg-white/10" />
+        </div>
+        <div className="flex-1">
+          <div className="h-6 w-48 bg-white/10 rounded" />
+          <div className="mt-2 flex gap-2">
+            <div className="h-4 w-24 bg-white/10 rounded" />
+            <div className="h-4 w-16 bg-white/10 rounded" />
+          </div>
+          <div className="mt-4 flex gap-3">
+            <div className="min-w-[140px] rounded-lg bg-white/5 border border-white/10 px-4 py-3">
+              <div className="h-7 w-12 bg-white/10 rounded" />
+              <div className="mt-1 h-4 w-20 bg-white/10 rounded" />
+            </div>
+            <div className="min-w-[140px] rounded-lg bg-white/5 border border-white/10 px-4 py-3">
+              <div className="h-7 w-12 bg-white/10 rounded" />
+              <div className="mt-1 h-4 w-14 bg-white/10 rounded" />
+            </div>
+          </div>
+        </div>
+        <div className="h-9 w-24 bg-white/10 rounded-full" />
+      </div>
+
+      {/* Tabs skeleton */}
+      <div className="mt-8 border-b border-white/10">
+        <div className="flex gap-8 text-sm">
+          <div className="h-9 w-16 bg-white/10 rounded" />
+          <div className="h-9 w-16 bg-white/10 rounded" />
+          <div className="h-9 w-16 bg-white/10 rounded" />
+        </div>
+      </div>
+
+      {/* Content skeleton grid */}
+      <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left column card */}
+        <div className="order-2 lg:order-1 lg:col-span-1 space-y-6">
+          <div className="bg-white/5 border border-white/10 p-4 rounded-xl">
+            <div className="flex items-center justify-between">
+              <div className="h-4 w-28 bg-white/10 rounded" />
+              <div className="h-8 w-8 bg-white/10 rounded-full" />
+            </div>
+            <div className="mt-3 flex gap-3">
+              <div className="h-12 w-12 rounded-full bg-white/10" />
+              <div className="h-12 w-12 rounded-full bg-white/10" />
+              <div className="h-12 w-12 rounded-full bg-white/10" />
+            </div>
+          </div>
+        </div>
+
+        {/* Main column */}
+        <div className="order-1 lg:order-2 lg:col-span-2 space-y-3">
+          <div className="bg-white/5 border border-white/10 p-4 rounded-xl">
+            <div className="flex gap-3">
+              <div className="h-12 w-12 rounded-full bg-white/10" />
+              <div className="flex-1 space-y-3">
+                <div className="h-16 bg-white/10 rounded-2xl" />
+                <div className="h-8 w-28 bg-white/10 rounded-full ml-auto" />
+              </div>
+            </div>
+          </div>
+
+          {/* A couple of post skeleton cards */}
+          {[0, 1].map((i) => (
+            <div
+              key={i}
+              className="bg-white/5 border border-white/10 p-4 rounded-xl"
+            >
+              <div className="flex gap-3">
+                <div className="h-12 w-12 rounded-full bg-white/10" />
+                <div className="flex-1">
+                  <div className="h-4 w-40 bg-white/10 rounded" />
+                  <div className="mt-2 h-12 w-full bg-white/10 rounded" />
+                  <div className="mt-3 flex gap-5">
+                    <div className="h-5 w-10 bg-white/10 rounded" />
+                    <div className="h-5 w-10 bg-white/10 rounded" />
+                    <div className="ml-auto h-5 w-5 bg-white/10 rounded" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
