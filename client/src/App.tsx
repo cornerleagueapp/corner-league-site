@@ -19,9 +19,11 @@ import AuthPage from "@/pages/auth";
 import NotFound from "@/pages/not-found";
 import ClubDetailsPage from "./pages/clubDetails";
 import { useGtagPageview } from "./useGtagPageview";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 import AppShell from "./layout/AppShell";
-import ProfilePage from "@/pages/profile";
+import ProfileRedirect from "@/pages/profile";
+import UserProfilePage from "./pages/user-profile";
 import FeedPage from "@/pages/feed";
 import ExploreFeedPage from "@/pages/explore";
 import ScoresPage from "@/pages/scores";
@@ -60,23 +62,28 @@ function BootSanitizeTokens() {
 function PrivateRouter() {
   return (
     <AppShell>
-      <Switch>
-        <Route path="/profile" component={ProfilePage} />
-        <Route path="/feed" component={FeedPage} />
-        <Route path="/explore" component={ExploreFeedPage} />
-        <Route path="/scores" component={ScoresPage} />
-        <Route path="/messages" component={MessagesPage} />
-        <Route path="/notifications" component={NotificationsPage} />
+      <ErrorBoundary>
+        <Switch>
+          <Route path="/profile/:username">
+            {(params) => <UserProfilePage username={params.username} />}
+          </Route>
+          <Route path="/profile" component={ProfileRedirect} />
+          <Route path="/feed" component={FeedPage} />
+          <Route path="/explore" component={ExploreFeedPage} />
+          <Route path="/scores" component={ScoresPage} />
+          <Route path="/messages" component={MessagesPage} />
+          <Route path="/notifications" component={NotificationsPage} />
 
-        {/* existing club flows */}
-        <Route path="/clubs" component={Clubs} />
-        <Route path="/create-club" component={CreateClub} />
-        <Route path="/clubs/:id" component={ClubDetailsPage} />
-        <Route path="/settings" component={Settings} />
+          {/* existing club flows */}
+          <Route path="/clubs" component={Clubs} />
+          <Route path="/create-club" component={CreateClub} />
+          <Route path="/clubs/:id" component={ClubDetailsPage} />
+          <Route path="/settings" component={Settings} />
 
-        {/* final fallback **inside** shell */}
-        <Route component={NotFound} />
-      </Switch>
+          {/* final fallback **inside** shell */}
+          <Route component={NotFound} />
+        </Switch>
+      </ErrorBoundary>
     </AppShell>
   );
 }
@@ -98,10 +105,11 @@ function Router() {
       <Route path="/auth" component={AuthPage} />
 
       {/* catch-all → try private area */}
-      <Route
+      {/* <Route
         path="/:rest*"
         component={() => <ProtectedRoute component={PrivateRouter} />}
-      />
+      /> */}
+      <Route>{() => <ProtectedRoute component={PrivateRouter} />}</Route>
     </Switch>
   );
 }

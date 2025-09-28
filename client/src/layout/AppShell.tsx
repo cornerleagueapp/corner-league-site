@@ -3,13 +3,14 @@ import { useLocation } from "wouter";
 import SidebarPanel, { useAppSidebarSections } from "@/components/sidebarPanel";
 import cornerLeagueLogo from "@assets/CL_Logo.png";
 import { logout } from "@/lib/logout";
+import { useAuth } from "@/hooks/useAuth";
 
 // map sidebar item -> route
 const keyToPath: Record<string, string> = {
   // Profile section
-  profile: "/profile",
+  //   profile: "/profile",
   account: "/settings",
-  logout: "/auth", // handled by onSelect in the hook, this is a fallback
+  logout: "/auth",
 
   // Explore section
   feed: "/feed",
@@ -31,6 +32,7 @@ const keyToPath: Record<string, string> = {
 function activeKeyFromPath(pathname: string): string {
   // exacts first
   if (pathname === "/profile") return "profile";
+  if (pathname.startsWith("/profile/")) return "";
   if (pathname === "/settings") return "account";
 
   if (pathname === "/feed") return "feed";
@@ -54,6 +56,7 @@ function activeKeyFromPath(pathname: string): string {
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [location, navigate] = useLocation();
+  const { user } = useAuth();
 
   const [clubsSubKey, setClubsSubKey] = useState<"" | "my" | "discover">("");
 
@@ -139,6 +142,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         onClose={() => setIsSidebarOpen(false)}
         activeKey={activeKey}
         onChange={(key) => {
+          if (key === activeKey) {
+            return;
+          }
+
           if (key === "my" || key === "discover") {
             if (location === "/clubs") {
               setClubsSubKey(key);
@@ -149,13 +156,29 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               );
               return;
             }
-            sessionStorage.setItem("clubsTab", key);
-            navigate("/clubs");
+            if (location !== "/clubs") navigate("/clubs");
+            return;
+          }
+
+          if (key === "profile") {
+            const uname = (user as any)?.username;
+            const to = uname
+              ? `/profile/${encodeURIComponent(uname)}`
+              : "/profile";
+            if (location !== to) {
+              navigate(to);
+            } else {
+            }
             return;
           }
 
           const path = keyToPath[key];
-          if (path) navigate(path);
+          if (path) {
+            if (location !== path) {
+              navigate(path);
+            } else {
+            }
+          }
         }}
         sections={sections}
         logoSrc={cornerLeagueLogo}
