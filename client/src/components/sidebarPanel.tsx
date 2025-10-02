@@ -57,7 +57,7 @@ export function useAppSidebarSections(opts?: {
       {
         title: "Live Scores",
         items: [
-          { key: "teams", label: "My Teams" },
+          // { key: "teams", label: "My Teams" },
           { key: "scores", label: "All Scores" },
         ],
       },
