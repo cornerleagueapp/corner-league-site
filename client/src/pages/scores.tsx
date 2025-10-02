@@ -1,5 +1,6 @@
 // src/pages/scores.tsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import LiveChatRoom from "@/components/LiveChatRoom";
 
 type TabKey = "AQUA" | "MLB" | "NBA" | "NFL" | "NHL" | "NCAAF";
 const TAB_ORDER: TabKey[] = ["AQUA", "MLB", "NBA", "NFL", "NHL", "NCAAF"];
@@ -12,6 +13,8 @@ const TAB_LABELS: Record<TabKey, string> = {
   NHL: "NHL",
   NCAAF: "NCAAF",
 };
+
+const AQUA_ROOM_ID = "aqua_world_finals_2025";
 
 type ResizeStrategy = "auto" | "scroll";
 
@@ -108,6 +111,7 @@ function ResponsiveFrame({
 
 export default function ScoresPage() {
   const [active, setActive] = useState<TabKey>("MLB");
+  const [showAquaChat, setShowAquaChat] = useState(false);
 
   const MLB_PLAYOFFS_URL =
     "https://widgets.media.sportradar.com/uscommon/en_us/standalone/us.season.mlb.playoffs#border=true&seasonId=125735";
@@ -137,6 +141,21 @@ export default function ScoresPage() {
             <h2 className="text-xl font-semibold text-white/90">
               IJSBA World Finals, Lake Havasu
             </h2>
+
+            <div>
+              <button
+                className="px-4 py-2 rounded-xl border border-white/20 text-white/90 hover:bg-white/10 transition"
+                onClick={() => setShowAquaChat((v) => !v)}
+              >
+                {showAquaChat ? "Hide Chatroom" : "Join Chatroom"}
+              </button>
+            </div>
+
+            {showAquaChat && (
+              <div className="pt-2">
+                <LiveChatRoom roomId={AQUA_ROOM_ID} />
+              </div>
+            )}
           </div>
         );
       case "MLB":
@@ -198,7 +217,7 @@ export default function ScoresPage() {
       case "NHL":
         return (
           <div className="space-y-6">
-            <h2 className="text-xl font-semibold text-white/90">NBA Scores</h2>
+            <h2 className="text-xl font-semibold text-white/90">NHL Scores</h2>
             <ResponsiveFrame
               src={NHL_SCORES_URL}
               title="NHL Season Scores"
@@ -212,7 +231,9 @@ export default function ScoresPage() {
       case "NCAAF":
         return (
           <div className="space-y-6">
-            <h2 className="text-xl font-semibold text-white/90">NBA Scores</h2>
+            <h2 className="text-xl font-semibold text-white/90">
+              NCAAF Scores
+            </h2>
             <ResponsiveFrame
               src={NCAAF_SCORES_URL}
               title="NCAAF Season Scores"
@@ -226,7 +247,7 @@ export default function ScoresPage() {
       default:
         return null;
     }
-  }, [active]);
+  }, [active, showAquaChat]);
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
