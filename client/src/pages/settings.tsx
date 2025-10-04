@@ -1,54 +1,216 @@
-import { useState } from "react";
-import { Link, useLocation } from "wouter";
+// pages/settings.tsx
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
-import { apiRequest } from "@/lib/apiClient";
+import { apiFetch, apiRequest } from "@/lib/apiClient";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
-import cornerLeagueLogo from "@assets/CL_Logo.png";
+import TagsInput from "../components/TagsInput";
+
+type ProfileFromDb = {
+  id: string | number;
+  username: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  bio?: string | null;
+  profilePicture?: string | null;
+  tags?: { profile?: string[] } | null;
+};
 
 export default function Settings() {
   const [, setLocation] = useLocation();
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // Form states
+  // -------- form state --------
+  const [loadingProfile, setLoadingProfile] = useState(true);
   const [profileForm, setProfileForm] = useState({
-    firstName: user?.firstName || "",
-    lastName: user?.lastName || "",
-    username: user?.username || "",
-    email: user?.email || "",
+    firstName: "",
+    lastName: "",
+    username: "",
+    email: "",
+    bio: "",
+    tags: [] as string[],
   });
 
-  const [passwordForm, setPasswordForm] = useState({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-  });
+  // snapshot of what we loaded from the DB to detect changes
+  const [initialProfile, setInitialProfile] = useState<{
+    firstName: string;
+    lastName: string;
+    username: string;
+    email: string;
+    bio: string;
+    tags: string[];
+  } | null>(null);
 
-  const [deleteAccountForm, setDeleteAccountForm] = useState({
-    confirmText: "",
-    password: "",
-  });
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [profilePicFile, setProfilePicFile] = useState<File | null>(null);
 
-  const [activeSection, setActiveSection] = useState<
-    "profile" | "password" | "delete"
-  >("profile");
+  // const [passwordForm, setPasswordForm] = useState({
+  //   currentPassword: "",
+  //   newPassword: "",
+  //   confirmPassword: "",
+  // });
 
-  // Update profile mutation
-  const updateProfileMutation = useMutation({
-    mutationFn: async (data: typeof profileForm) => {
-      const response = await apiRequest("PUT", "/api/user/profile", data);
-      return await response.json();
+  // const [deleteAccountForm, setDeleteAccountForm] = useState({
+  //   confirmText: "",
+  //   password: "",
+  // });
+
+  const [activeSection, setActiveSection] = useState<"profile">("profile");
+  // const [activeSection, setActiveSection] = useState<
+  //   "profile" | "password" | "delete"
+  // >("profile");
+
+  const nameChanged =
+    !!initialProfile &&
+    (profileForm.firstName.trim() !== initialProfile.firstName ||
+      profileForm.lastName.trim() !== initialProfile.lastName);
+
+  const usernameChanged =
+    !!initialProfile && profileForm.username.trim() !== initialProfile.username;
+
+  const emailChanged =
+    !!initialProfile && profileForm.email.trim() !== initialProfile.email;
+
+  const bioChanged =
+    !!initialProfile && (profileForm.bio || "") !== (initialProfile.bio || "");
+
+  const tagsChanged =
+    !!initialProfile &&
+    JSON.stringify(profileForm.tags ?? []) !==
+      JSON.stringify(initialProfile.tags ?? []);
+
+  const pictureChanged = !!profilePicFile;
+
+  const anythingChanged =
+    nameChanged ||
+    usernameChanged ||
+    emailChanged ||
+    bioChanged ||
+    tagsChanged ||
+    pictureChanged;
+
+  // -------- load profile from DB --------
+  useEffect(() => {
+    let ignore = false;
+    (async () => {
+      try {
+        setLoadingProfile(true);
+
+        const uname = user?.username ?? "";
+        if (!uname) throw new Error("No username on session user");
+
+        const res = await apiRequest<{ data: ProfileFromDb }>(
+          "GET",
+          `/users/get-user-by-username/${encodeURIComponent(uname)}`
+        );
+
+        const u = res?.data;
+        if (!u) throw new Error("Profile not found");
+
+        if (ignore) return;
+        const loaded = {
+          firstName: u.firstName || "",
+          lastName: u.lastName || "",
+          username: u.username || "",
+          email: u.email || "",
+          bio: u.bio || "",
+          tags: u.tags?.profile ?? [],
+        };
+        setProfileForm(loaded);
+        setInitialProfile(loaded);
+        setPreviewUrl(u.profilePicture || null);
+      } catch (e: any) {
+        if (!ignore) {
+          toast({
+            title: "Couldn’t load profile",
+            description: e?.message || "Please try again.",
+            variant: "destructive",
+          });
+        }
+      } finally {
+        if (!ignore) setLoadingProfile(false);
+      }
+    })();
+    return () => {
+      ignore = true;
+    };
+  }, [user?.username]);
+
+  async function patchName() {
+    return apiRequest("PATCH", "/users/update-name", {
+      email: profileForm.email,
+      firstName: profileForm.firstName,
+      lastName: profileForm.lastName,
+    });
+  }
+
+  async function patchUsername() {
+    return apiRequest("PATCH", "/users/update-username", {
+      email: profileForm.email,
+      username: profileForm.username,
+    });
+  }
+
+  async function putBioAndTags() {
+    return apiRequest("PUT", "/users/update-bio", {
+      email: profileForm.email,
+      bio: profileForm.bio,
+      tags: { profile: profileForm.tags },
+    });
+  }
+
+  async function postProfilePic() {
+    if (!profilePicFile) return;
+    const form = new FormData();
+    form.append("profilePicture", profilePicFile);
+    form.append("email", profileForm.email);
+    const res = await apiFetch("/users/update-profile-picture", {
+      method: "POST",
+      body: form,
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  }
+
+  const saveAllMutation = useMutation({
+    mutationFn: async () => {
+      const tasks: Promise<any>[] = [];
+
+      if (nameChanged) tasks.push(patchName());
+
+      if (usernameChanged || emailChanged) tasks.push(patchUsername());
+
+      if (bioChanged || tagsChanged) tasks.push(putBioAndTags());
+
+      if (pictureChanged) tasks.push(postProfilePic());
+
+      if (tasks.length === 0) return;
+
+      await Promise.all(tasks);
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       toast({
-        title: "Profile updated",
-        description: "Your profile information has been updated successfully.",
+        title: "Profile saved",
+        description: "Your profile has been updated.",
+      });
+      await queryClient.invalidateQueries({ queryKey: ["/auth/me"] });
+      await queryClient.invalidateQueries();
+      setProfilePicFile(null);
+      setInitialProfile({
+        firstName: profileForm.firstName,
+        lastName: profileForm.lastName,
+        username: profileForm.username,
+        email: profileForm.email,
+        bio: profileForm.bio,
+        tags: profileForm.tags,
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       if (isUnauthorizedError(error)) {
         toast({
           title: "Unauthorized",
@@ -56,191 +218,141 @@ export default function Settings() {
           variant: "destructive",
         });
         setTimeout(() => {
-          window.location.href = "/api/login";
+          window.location.href = "/login";
         }, 500);
         return;
       }
       toast({
         title: "Update failed",
         description:
-          error.message || "Failed to update profile. Please try again.",
+          (error?.status === 409 && "Username or email already in use.") ||
+          error?.message ||
+          "Please try again.",
         variant: "destructive",
       });
     },
   });
 
-  // Forgot password mutation
-  const forgotPasswordMutation = useMutation({
-    mutationFn: async () => {
-      const response = await apiRequest("POST", "/api/user/forgot-password", {
-        email: user?.email,
-      });
-      return await response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "Password reset email sent",
-        description:
-          "Check your email for password reset instructions from support@cornerleague.com.",
-      });
-    },
-    onError: (error) => {
-      if (isUnauthorizedError(error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
-      toast({
-        title: "Request failed",
-        description:
-          error.message ||
-          "Failed to send password reset email. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Change password mutation
-  const changePasswordMutation = useMutation({
-    mutationFn: async (data: typeof passwordForm) => {
-      const response = await apiRequest("PUT", "/api/user/password", {
-        currentPassword: data.currentPassword,
-        newPassword: data.newPassword,
-      });
-      return await response.json();
-    },
-    onSuccess: () => {
-      setPasswordForm({
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-      });
-      toast({
-        title: "Password changed",
-        description: "Your password has been changed successfully.",
-      });
-    },
-    onError: (error) => {
-      if (isUnauthorizedError(error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
-      toast({
-        title: "Password change failed",
-        description:
-          error.message || "Failed to change password. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Delete account mutation
-  const deleteAccountMutation = useMutation({
-    mutationFn: async (password: string) => {
-      const response = await apiRequest("DELETE", "/api/user/account", {
-        password,
-      });
-      return await response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "Account deleted",
-        description:
-          "Your account has been deleted successfully. Redirecting...",
-      });
-      // Clear any cached data including the cache system
-      localStorage.clear();
-      // Clear React Query cache as well
-      queryClient.clear();
-      // Redirect to home page after a brief delay
-      setTimeout(() => {
-        setLocation("/");
-      }, 2000);
-    },
-    onError: (error) => {
-      toast({
-        title: "Account deletion failed",
-        description:
-          error.message || "Failed to delete account. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
+  // -------- handlers --------
   const handleProfileSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    updateProfileMutation.mutate(profileForm);
+    saveAllMutation.mutate();
   };
 
-  const handlePasswordSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      toast({
-        title: "Password mismatch",
-        description: "New password and confirm password do not match.",
-        variant: "destructive",
-      });
-      return;
-    }
-    if (passwordForm.newPassword.length < 6) {
-      toast({
-        title: "Password too short",
-        description: "Password must be at least 6 characters long.",
-        variant: "destructive",
-      });
-      return;
-    }
-    changePasswordMutation.mutate(passwordForm);
+  const handleFile = (f: File | null) => {
+    setProfilePicFile(f);
+    setPreviewUrl(f ? URL.createObjectURL(f) : previewUrl);
   };
 
-  const handleForgotPassword = () => {
-    forgotPasswordMutation.mutate();
-  };
+  // const handlePasswordSubmit = (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+  //     toast({
+  //       title: "Password mismatch",
+  //       description: "New password and confirm password do not match.",
+  //       variant: "destructive",
+  //     });
+  //     return;
+  //   }
+  //   if (passwordForm.newPassword.length < 6) {
+  //     toast({
+  //       title: "Password too short",
+  //       description: "Password must be at least 6 characters long.",
+  //       variant: "destructive",
+  //     });
+  //     return;
+  //   }
+  //   changePasswordMutation.mutate(passwordForm);
+  // };
 
-  const handleDeleteAccount = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (deleteAccountForm.confirmText !== "DELETE") {
-      toast({
-        title: "Confirmation required",
-        description: "Please type 'DELETE' to confirm account deletion.",
-        variant: "destructive",
-      });
-      return;
-    }
-    deleteAccountMutation.mutate(deleteAccountForm.password);
-  };
+  // const forgotPasswordMutation = useMutation({
+  //   mutationFn: async () =>
+  //     apiRequest("POST", "/user/forgot-password", {
+  //       email: profileForm.email,
+  //     }),
+  //   onSuccess: () =>
+  //     toast({
+  //       title: "Password reset email sent",
+  //       description:
+  //         "Check your email for password reset instructions from support@cornerleague.com.",
+  //     }),
+  //   onError: (error) =>
+  //     toast({
+  //       title: "Request failed",
+  //       description: error?.message || "Please try again.",
+  //       variant: "destructive",
+  //     }),
+  // });
 
+  // const changePasswordMutation = useMutation({
+  //   mutationFn: async (data: typeof passwordForm) =>
+  //     apiRequest("PUT", "/user/password", {
+  //       currentPassword: data.currentPassword,
+  //       newPassword: data.newPassword,
+  //     }),
+  //   onSuccess: () => {
+  //     setPasswordForm({
+  //       currentPassword: "",
+  //       newPassword: "",
+  //       confirmPassword: "",
+  //     });
+  //     toast({ title: "Password changed" });
+  //   },
+  //   onError: (error) =>
+  //     toast({
+  //       title: "Password change failed",
+  //       description: error?.message || "Please try again.",
+  //       variant: "destructive",
+  //     }),
+  // });
+
+  // const deleteAccountMutation = useMutation({
+  //   mutationFn: async (password: string) =>
+  //     apiRequest("DELETE", "/user/account", { password }),
+  //   onSuccess: () => {
+  //     toast({
+  //       title: "Account deleted",
+  //       description: "Redirecting…",
+  //     });
+  //     localStorage.clear();
+  //     queryClient.clear();
+  //     setTimeout(() => setLocation("/"), 1200);
+  //   },
+  //   onError: (error) =>
+  //     toast({
+  //       title: "Account deletion failed",
+  //       description: error?.message || "Please try again.",
+  //       variant: "destructive",
+  //     }),
+  // });
+
+  // const handleForgotPassword = () => forgotPasswordMutation.mutate();
+
+  // const handleDeleteAccount = (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   if (deleteAccountForm.confirmText !== "DELETE") {
+  //     toast({
+  //       title: "Confirmation required",
+  //       description: "Please type 'DELETE' to confirm account deletion.",
+  //       variant: "destructive",
+  //     });
+  //     return;
+  //   }
+  //   deleteAccountMutation.mutate(deleteAccountForm.password);
+  // };
+
+  // -------- UI --------
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Header */}
       <div className="border-b border-gray-700 bg-gray-900">
         <div className="flex items-center justify-between p-4 max-w-4xl mx-auto">
-          <div className="flex items-center gap-4">
-            {/* <img
-              src={cornerLeagueLogo}
-              alt="Corner League"
-              className="h-8 w-auto"
-            /> */}
-            <h1 className="text-xl font-semibold">Settings</h1>
-          </div>
+          <h1 className="text-xl font-semibold">Settings</h1>
         </div>
       </div>
+
       <div className="max-w-4xl mx-auto p-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Sidebar Navigation */}
+          {/* sidebar */}
           <div className="md:col-span-1">
             <nav className="space-y-2">
               <button
@@ -251,24 +363,9 @@ export default function Settings() {
                     : "text-gray-300 hover:text-[#000000] hover:bg-gray-300"
                 }`}
               >
-                <div className="flex items-center gap-3">
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                    />
-                  </svg>
-                  Profile
-                </div>
+                Profile
               </button>
-              <button
+              {/* <button
                 onClick={() => setActiveSection("password")}
                 className={`w-full text-left px-4 py-3 rounded-md transition-colors ${
                   activeSection === "password"
@@ -276,22 +373,7 @@ export default function Settings() {
                     : "text-gray-300 hover:text-[#000000] hover:bg-gray-300"
                 }`}
               >
-                <div className="flex items-center gap-3">
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                    />
-                  </svg>
-                  Password
-                </div>
+                Password
               </button>
               <button
                 onClick={() => setActiveSection("delete")}
@@ -301,29 +383,13 @@ export default function Settings() {
                     : "text-gray-300 hover:text-white hover:bg-gray-800"
                 }`}
               >
-                <div className="flex items-center gap-3">
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                    />
-                  </svg>
-                  Delete Account
-                </div>
-              </button>
+                Delete Account
+              </button> */}
             </nav>
           </div>
 
-          {/* Content Area */}
+          {/* content */}
           <div className="md:col-span-3">
-            {/* Profile Settings */}
             {activeSection === "profile" && (
               <div className="rounded-lg border border-gray-700 p-6 bg-[#111827a1]">
                 <div className="mb-6">
@@ -331,136 +397,206 @@ export default function Settings() {
                     Profile Information
                   </h2>
                   <p className="text-gray-400">
-                    Update your account profile information and email address.
+                    Update your name, username, email, bio, profile picture, and
+                    profile tags.
                   </p>
                 </div>
 
-                <form onSubmit={handleProfileSubmit} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {loadingProfile ? (
+                  <div className="py-12 text-center text-white/60">
+                    Loading…
+                  </div>
+                ) : (
+                  <form onSubmit={handleProfileSubmit} className="space-y-6">
+                    {/* name */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                          First Name
+                        </label>
+                        <input
+                          value={profileForm.firstName}
+                          onChange={(e) =>
+                            setProfileForm((s) => ({
+                              ...s,
+                              firstName: e.target.value,
+                            }))
+                          }
+                          className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                          Last Name
+                        </label>
+                        <input
+                          value={profileForm.lastName}
+                          onChange={(e) =>
+                            setProfileForm((s) => ({
+                              ...s,
+                              lastName: e.target.value,
+                            }))
+                          }
+                          className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    {/* username */}
                     <div>
-                      <label
-                        htmlFor="firstName"
-                        className="block text-sm font-medium text-gray-300 mb-2"
-                      >
-                        First Name
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Username
                       </label>
                       <input
-                        type="text"
-                        id="firstName"
-                        value={profileForm.firstName}
+                        value={profileForm.username}
                         onChange={(e) =>
-                          setProfileForm({
-                            ...profileForm,
-                            firstName: e.target.value,
-                          })
+                          setProfileForm((s) => ({
+                            ...s,
+                            username: e.target.value,
+                          }))
                         }
                         className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         required
                       />
                     </div>
+
+                    {/* email */}
                     <div>
-                      <label
-                        htmlFor="lastName"
-                        className="block text-sm font-medium text-gray-300 mb-2"
-                      >
-                        Last Name
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Email Address
                       </label>
                       <input
-                        type="text"
-                        id="lastName"
-                        value={profileForm.lastName}
+                        type="email"
+                        value={profileForm.email}
                         onChange={(e) =>
-                          setProfileForm({
-                            ...profileForm,
-                            lastName: e.target.value,
-                          })
+                          setProfileForm((s) => ({
+                            ...s,
+                            email: e.target.value,
+                          }))
                         }
                         className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         required
                       />
                     </div>
-                  </div>
 
-                  <div>
-                    <label
-                      htmlFor="username"
-                      className="block text-sm font-medium text-gray-300 mb-2"
-                    >
-                      Username
-                    </label>
-                    <input
-                      type="text"
-                      id="username"
-                      value={profileForm.username}
-                      onChange={(e) =>
-                        setProfileForm({
-                          ...profileForm,
-                          username: e.target.value,
-                        })
-                      }
-                      className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      required
-                    />
-                  </div>
+                    {/* bio */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Bio
+                      </label>
+                      <textarea
+                        value={profileForm.bio}
+                        onChange={(e) =>
+                          setProfileForm((s) => ({ ...s, bio: e.target.value }))
+                        }
+                        rows={4}
+                        maxLength={240}
+                        className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Tell people a bit about yourself…"
+                      />
+                    </div>
 
-                  <div>
-                    <label
-                      htmlFor="email"
-                      className="block text-sm font-medium text-gray-300 mb-2"
-                    >
-                      Email Address
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      value={profileForm.email}
-                      onChange={(e) =>
-                        setProfileForm({
-                          ...profileForm,
-                          email: e.target.value,
-                        })
-                      }
-                      className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      required
-                    />
-                  </div>
+                    {/* tags */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Profile Tags
+                      </label>
+                      <TagsInput
+                        value={profileForm.tags}
+                        max={2} // limit to 2
+                        onMaxReached={() =>
+                          toast({
+                            title: "Tag limit reached",
+                            description: "You can add up to 2 profile tags.",
+                            variant: "destructive",
+                          })
+                        }
+                        onChange={(tags) =>
+                          setProfileForm((s) => ({ ...s, tags }))
+                        }
+                        placeholder="Type a tag and press Enter"
+                      />
+                      <p className="text-xs text-white/50 mt-1">Max 2 tags.</p>
+                    </div>
 
-                  <div className="flex justify-end">
-                    <button
-                      type="submit"
-                      disabled={updateProfileMutation.isPending}
-                      className="px-6 py-3 bg-[#f7f7f7] hover:bg-gray-300 text-[#000000] font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                    >
-                      {updateProfileMutation.isPending && (
-                        <svg
-                          className="animate-spin -ml-1 h-4 w-4 text-white"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          ></circle>
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          ></path>
-                        </svg>
-                      )}
-                      Update Profile
-                    </button>
-                  </div>
-                </form>
+                    {/* profile picture */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Profile Picture
+                      </label>
+                      <div className="flex items-center gap-4">
+                        <img
+                          src={
+                            previewUrl ||
+                            "https://placehold.co/96x96/111827/FFFFFF?text=Avatar"
+                          }
+                          className="h-16 w-16 rounded-full object-cover border border-white/10"
+                        />
+                        <label className="cursor-pointer inline-flex items-center gap-2 px-3 py-2 rounded-md border border-white/10 bg-white/5 hover:bg-white/10">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) =>
+                              handleFile(e.target.files?.[0] ?? null)
+                            }
+                          />
+                          Choose file…
+                        </label>
+                        {profilePicFile && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setProfilePicFile(null);
+                              setPreviewUrl(user?.profilePicture || previewUrl);
+                            }}
+                            className="text-sm text-white/80 hover:text-white underline"
+                          >
+                            Clear
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end">
+                      <button
+                        type="submit"
+                        disabled={saveAllMutation.isPending || !anythingChanged}
+                        className="px-6 py-3 bg-[#f7f7f7] hover:bg-gray-300 text-[#000000] font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      >
+                        {saveAllMutation.isPending && (
+                          <svg
+                            className="animate-spin -ml-1 h-4 w-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            />
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            />
+                          </svg>
+                        )}
+                        Update Profile
+                      </button>
+                    </div>
+                  </form>
+                )}
               </div>
             )}
 
-            {/* Password Settings */}
-            {activeSection === "password" && (
+            {/* Password */}
+            {/* {activeSection === "password" && (
               <div className="rounded-lg border border-gray-700 p-6 bg-[#111827a1]">
                 <div className="mb-6">
                   <h2 className="text-2xl font-semibold mb-2">
@@ -604,10 +740,9 @@ export default function Settings() {
                   </div>
                 </form>
               </div>
-            )}
+            )} */}
 
-            {/* Delete Account */}
-            {activeSection === "delete" && (
+            {/* {activeSection === "delete" && (
               <div className="rounded-lg border border-red-700 p-6 bg-[#111827a1]">
                 <div className="mb-6">
                   <h2 className="text-2xl font-semibold mb-2 text-red-400">
@@ -723,7 +858,7 @@ export default function Settings() {
                   </div>
                 </form>
               </div>
-            )}
+            )} */}
           </div>
         </div>
       </div>

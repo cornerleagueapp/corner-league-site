@@ -68,10 +68,10 @@ export function useAppSidebarSections(opts?: {
           { key: "discover", label: "Discover Clubs" },
         ],
       },
-      {
-        title: "Messages",
-        items: [{ key: "messages", label: "Direct Messages" }],
-      },
+      // {
+      //   title: "Messages",
+      //   items: [{ key: "messages", label: "Direct Messages" }],
+      // },
       {
         title: "Notifications",
         items: [{ key: "alerts", label: "My Alerts" }],
