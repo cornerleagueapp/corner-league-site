@@ -1,6 +1,10 @@
 // src/pages/scores.tsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import LiveChatRoom from "@/components/LiveChatRoom";
+import AccordionSection from "@/components/AccordionSection";
+import RacerSearchModal from "@/components/RacerSearchModal";
+import { Search as SearchIcon } from "lucide-react";
+import { useLocation } from "wouter";
 
 type TabKey = "AQUA" | "MLB" | "NBA" | "NFL" | "NHL" | "NCAAF";
 const TAB_ORDER: TabKey[] = ["AQUA", "MLB", "NBA", "NFL", "NHL", "NCAAF"];
@@ -110,8 +114,10 @@ function ResponsiveFrame({
 }
 
 export default function ScoresPage() {
-  const [active, setActive] = useState<TabKey>("MLB");
+  const [active, setActive] = useState<TabKey>("AQUA");
   const [showAquaChat, setShowAquaChat] = useState(false);
+  const [racerSearchOpen, setRacerSearchOpen] = useState(false);
+  const [, navigate] = useLocation();
 
   const MLB_PLAYOFFS_URL =
     "https://widgets.media.sportradar.com/uscommon/en_us/standalone/us.season.mlb.playoffs#border=true&seasonId=125735";
@@ -138,9 +144,41 @@ export default function ScoresPage() {
       case "AQUA":
         return (
           <div className="space-y-6">
-            <h2 className="text-xl font-semibold text-white/90">
-              IJSBA World Finals, Lake Havasu
-            </h2>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-semibold text-white/90">
+                  IJSBA World Finals, Lake Havasu
+                </h2>
+                <h3 className="text-sm font-semibold text-white/60">
+                  October 6th - 12th
+                </h3>
+              </div>
+
+              <button
+                onClick={() => setRacerSearchOpen(true)}
+                className="h-9 w-9 grid place-items-center rounded-full bg-white/10 border border-white/10 hover:bg-white/15"
+                aria-label="Search racers"
+                title="Search racers"
+              >
+                <SearchIcon size={18} />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <AccordionSection
+                labelShow="Show Race List"
+                labelHide="Hide Race List"
+              >
+                <div className="text-sm">Race List coming soon.</div>
+              </AccordionSection>
+
+              <AccordionSection
+                labelShow="Show Race Results"
+                labelHide="Hide Race Results"
+              >
+                <div className="text-sm">Race Results coming soon.</div>
+              </AccordionSection>
+            </div>
 
             <div>
               <button
@@ -273,6 +311,16 @@ export default function ScoresPage() {
         Note: These embedded widgets are provided by Sportradar and may take a
         moment to load. Heights are set generously for readability
       </p>
+
+      <RacerSearchModal
+        open={racerSearchOpen}
+        onClose={() => setRacerSearchOpen(false)}
+        onSelectRacer={(r) => {
+          setRacerSearchOpen(false);
+          // navigate to racer profile – adjust route to whatever you’ll use
+          navigate(`/aqua/racers/${r.id}`);
+        }}
+      />
     </div>
   );
 }
