@@ -261,17 +261,19 @@ export default function Home() {
             Lake Havasu. Follow live coverage, join event chatrooms, and explore
             racer profiles built just for AQUA sports.
           </p>
-          <div className="mt-5 flex flex-col sm:flex-row gap-3 justify-center">
-            <Link href="/scores">
-              <Button className="bg-white text-black hover:bg-white/90 rounded-full px-6">
-                See Event Hub
-              </Button>
-            </Link>
-            <Link href="/scores">
-              <Button className="bg-black text-white border border-white/20 hover:bg-black/90 rounded-full px-6">
-                Join the Chat
-              </Button>
-            </Link>
+          <div className="mt-5 w-full mx-auto max-w-md sm:max-w-xl lg:max-w-2xl">
+            <div className="flex flex-col min-[400px]:flex-row gap-3 justify-center">
+              <Link href="/scores" className="min-[400px]:flex-1">
+                <Button className="w-full bg-white text-black hover:bg-white/90 rounded-full px-6">
+                  See Event Hub
+                </Button>
+              </Link>
+              <Link href="/scores" className="min-[400px]:flex-1">
+                <Button className="w-full bg-black text-white border border-white/20 hover:bg-black/90 rounded-full px-6">
+                  Join the Chat
+                </Button>
+              </Link>
+            </div>
           </div>
         </Section>
 
