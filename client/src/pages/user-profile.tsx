@@ -66,6 +66,49 @@ function timeAgo(d: string | number | Date) {
   return `${Math.floor(diff / wk)}w`;
 }
 
+async function followUser(viewerId: string, targetId: string) {
+  return apiRequest(
+    "POST",
+    `/users/${encodeURIComponent(viewerId)}/follow-user`,
+    {
+      userToFollowId: String(targetId),
+    }
+  );
+}
+
+async function unfollowUser(viewerId: string, targetId: string) {
+  return apiRequest(
+    "DELETE",
+    `/users/${encodeURIComponent(viewerId)}/unfollow-user`,
+    { userToUnfollowId: String(targetId) }
+  );
+}
+
+// fire-and-forget create notification
+async function createFollowNotification({
+  recipientUserId,
+  senderUserId,
+  senderUsername,
+  senderAvatar,
+}: {
+  recipientUserId: string | number;
+  senderUserId: string | number;
+  senderUsername?: string | null;
+  senderAvatar?: string | null;
+}) {
+  try {
+    await apiRequest("POST", "/notifications", {
+      type: "follow",
+      userId: String(recipientUserId), // who receives the notification
+      senderId: String(senderUserId), // who performed the action
+      content: `${senderUsername ?? "Someone"} followed you.`,
+      profilePicture: senderAvatar ?? null,
+    });
+  } catch {
+    // non-blocking
+  }
+}
+
 // ---------- page ----------
 export default function UserProfilePage({ username }: { username: string }) {
   const { user: viewer } = useAuth();
@@ -84,6 +127,7 @@ export default function UserProfilePage({ username }: { username: string }) {
   const [followers, setFollowers] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [points, setPoints] = useState(0);
+  const [isFollowing, setIsFollowing] = useState(false);
   const [posts, setPosts] = useState<ProfilePost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -209,6 +253,18 @@ export default function UserProfilePage({ username }: { username: string }) {
           Array.isArray(favTeams?.data?.teams) ? favTeams.data.teams : []
         );
         setPosts(enriched);
+
+        try {
+          if (viewerId && String(u.id) !== String(viewerId)) {
+            const following = await apiGet<{
+              data: { followingList: Array<{ id: string | number }> };
+            }>(`/users/${viewerId}/get-following-list`);
+            const amIFollowing = (following?.data?.followingList ?? []).some(
+              (f) => String(f.id) === String(u.id)
+            );
+            if (!ignore) setIsFollowing(amIFollowing);
+          }
+        } catch {}
       } catch (e: any) {
         if (!ignore) setError(e?.message || "Failed to load profile");
       } finally {
@@ -426,10 +482,45 @@ export default function UserProfilePage({ username }: { username: string }) {
           <div className="flex gap-2 self-start sm:self-end">
             {!isOwn && (
               <Button
-                onClick={() => toast({ title: "Follow coming soon" })}
-                className="bg-white/10 border border-white/10 hover:bg-white/15"
+                onClick={async () => {
+                  if (!viewerId || !me?.id) return;
+
+                  const wasFollowing = isFollowing;
+                  setIsFollowing(!wasFollowing);
+                  setFollowers((c) => Math.max(0, c + (wasFollowing ? -1 : 1)));
+
+                  try {
+                    if (wasFollowing) {
+                      await unfollowUser(viewerId, String(me.id));
+                    } else {
+                      await followUser(viewerId, String(me.id));
+                      await createFollowNotification({
+                        recipientUserId: me.id,
+                        senderUserId: viewerId,
+                        senderUsername: (viewer as any)?.username,
+                        senderAvatar: (viewer as any)?.profilePicture,
+                      });
+                    }
+                  } catch (e: any) {
+                    setIsFollowing(wasFollowing);
+                    setFollowers((c) =>
+                      Math.max(0, c + (wasFollowing ? 1 : -1))
+                    );
+                    toast({
+                      title: wasFollowing ? "Unfollow failed" : "Follow failed",
+                      description: e?.message || "Please try again.",
+                      variant: "destructive",
+                    });
+                  }
+                }}
+                className={cn(
+                  "border hover:bg-white/15",
+                  isFollowing
+                    ? "bg-green-500/15 border-green-400/30"
+                    : "bg-white/10 border-white/10"
+                )}
               >
-                Follow
+                {isFollowing ? "Following" : "Follow"}
               </Button>
             )}
             <Button
