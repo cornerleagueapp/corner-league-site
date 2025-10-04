@@ -20,7 +20,7 @@ import NotFound from "@/pages/not-found";
 import ClubDetailsPage from "./pages/clubDetails";
 import { useGtagPageview } from "./useGtagPageview";
 import ErrorBoundary from "@/components/ErrorBoundary";
-
+import RacerProfilePage from "./pages/racer-profile";
 import AppShell from "./layout/AppShell";
 import ProfileRedirect from "@/pages/profile";
 import UserProfilePage from "./pages/user-profile";
@@ -66,6 +66,9 @@ function PrivateRouter() {
         <Switch>
           <Route path="/profile/:username">
             {(params) => <UserProfilePage username={params.username} />}
+          </Route>
+          <Route path="/racer/:name">
+            {(params) => <RacerProfilePage nameParam={params.name} />}
           </Route>
           <Route path="/profile" component={ProfileRedirect} />
           <Route path="/feed" component={FeedPage} />

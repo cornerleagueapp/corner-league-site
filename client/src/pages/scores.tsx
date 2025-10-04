@@ -317,8 +317,12 @@ export default function ScoresPage() {
         onClose={() => setRacerSearchOpen(false)}
         onSelectRacer={(r) => {
           setRacerSearchOpen(false);
-          // navigate to racer profile – adjust route to whatever you’ll use
-          navigate(`/aqua/racers/${r.id}`);
+          const slug = String(r.racerName || r.id)
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-+|-+$/g, "");
+          navigate(`/racer/${encodeURIComponent(slug || String(r.id))}`);
         }}
       />
     </div>
