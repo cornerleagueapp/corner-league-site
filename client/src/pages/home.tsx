@@ -173,7 +173,7 @@ export default function Home() {
                 size="sm"
                 className="rounded-full px-5 py-2 text-sm font-semibold text-black bg-white hover:bg-gray-100"
               >
-                Scores
+                My Scores
               </Button>
             </Link>
             <Button
