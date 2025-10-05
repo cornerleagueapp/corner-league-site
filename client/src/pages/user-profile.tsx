@@ -467,6 +467,8 @@ export default function UserProfilePage({ username }: { username: string }) {
               )}
             </div>
 
+            <BioBlock text={me?.bio} className="mt-3 w-full sm:hidden" />
+
             <div className="flex gap-3 mt-4 justify-center sm:justify-start">
               <button
                 onClick={() => {
@@ -485,7 +487,13 @@ export default function UserProfilePage({ username }: { username: string }) {
             </div>
           </div>
 
-          <div className="flex w-full gap-2 self-center sm:self-end sm:w-auto sm:justify-end">
+          <div
+            className={cn(
+              "flex w-full gap-2 self-center sm:self-end sm:w-auto",
+              isOwn ? "justify-center" : "justify-start",
+              "sm:justify-end"
+            )}
+          >
             {!isOwn && (
               <Button
                 onClick={async () => {
@@ -537,12 +545,17 @@ export default function UserProfilePage({ username }: { username: string }) {
                   toast({ title: "Copied to clipboard" });
                 } catch {}
               }}
-              className="h-11 w-[30%] sm:h-9 sm:w-auto bg-white text-black hover:bg-white/90"
+              className={cn(
+                "h-11 sm:h-9 sm:w-auto bg-white text-black hover:bg-white/90",
+                isOwn ? "mx-auto w-auto" : "w-[30%]"
+              )}
             >
               Share
             </Button>
           </div>
         </div>
+
+        <BioBlock text={me?.bio} className="mt-3 hidden sm:block" />
 
         {/* tabs */}
         <div className="mt-8 border-b border-white/10">
@@ -867,9 +880,18 @@ export default function UserProfilePage({ username }: { username: string }) {
                     </div>
                   ) : (
                     filteredFollowers.map((u) => (
-                      <div
+                      <button
                         key={String(u.id)}
-                        className="flex items-center gap-3 rounded-lg border border-white/10 p-3"
+                        type="button"
+                        onClick={() => {
+                          setFollowersOpen(false);
+                          navigate(`/profile/${u.username}`);
+                        }}
+                        className={cn(
+                          "w-full text-left flex items-center gap-3 rounded-lg border border-white/10 p-3",
+                          "hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-white/20 cursor-pointer"
+                        )}
+                        aria-label={`Open @${u.username}'s profile`}
                       >
                         <img
                           src={u.profilePicture || stockAvatar}
@@ -882,7 +904,7 @@ export default function UserProfilePage({ username }: { username: string }) {
                         <div className="text-sm">
                           <div className="font-medium">{u.username}</div>
                         </div>
-                      </div>
+                      </button>
                     ))
                   )}
                 </>
@@ -896,9 +918,18 @@ export default function UserProfilePage({ username }: { username: string }) {
                     </div>
                   ) : (
                     filteredFollowing.map((u) => (
-                      <div
+                      <button
                         key={String(u.id)}
-                        className="flex items-center gap-3 rounded-lg border border-white/10 p-3"
+                        type="button"
+                        onClick={() => {
+                          setFollowersOpen(false);
+                          navigate(`/profile/${u.username}`);
+                        }}
+                        className={cn(
+                          "w-full text-left flex items-center gap-3 rounded-lg border border-white/10 p-3",
+                          "hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-white/20 cursor-pointer"
+                        )}
+                        aria-label={`Open @${u.username}'s profile`}
                       >
                         <img
                           src={u.profilePicture || stockAvatar}
@@ -912,7 +943,7 @@ export default function UserProfilePage({ username }: { username: string }) {
                         <div className="text-sm">
                           <div className="font-medium">{u.username}</div>
                         </div>
-                      </div>
+                      </button>
                     ))
                   )}
                 </>
@@ -1204,5 +1235,25 @@ function Composer({
         </div>
       </div>
     </Card>
+  );
+}
+
+function BioBlock({
+  text,
+  className,
+}: {
+  text?: string | null;
+  className?: string;
+}) {
+  const content = (text ?? "").trim();
+  return (
+    <div
+      className={cn(
+        "rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-sm text-white/80",
+        className
+      )}
+    >
+      {content ? content : "No bio yet."}
+    </div>
   );
 }

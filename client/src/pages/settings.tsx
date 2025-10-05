@@ -24,6 +24,7 @@ export default function Settings() {
   const [, setLocation] = useLocation();
   const { user } = useAuth();
   const { toast } = useToast();
+  const originalEmailRef = useRef<string>("");
 
   // -------- form state --------
   const [loadingProfile, setLoadingProfile] = useState(true);
@@ -89,7 +90,7 @@ export default function Settings() {
   const anythingChanged =
     nameChanged ||
     usernameChanged ||
-    emailChanged ||
+    // emailChanged ||
     bioChanged ||
     tagsChanged ||
     pictureChanged;
@@ -113,6 +114,9 @@ export default function Settings() {
         if (!u) throw new Error("Profile not found");
 
         if (ignore) return;
+
+        originalEmailRef.current = u.email || "";
+
         const loaded = {
           firstName: u.firstName || "",
           lastName: u.lastName || "",
@@ -151,7 +155,7 @@ export default function Settings() {
 
   async function patchUsername() {
     return apiRequest("PATCH", "/users/update-username", {
-      email: profileForm.email,
+      email: originalEmailRef.current || profileForm.email, // stable identifier
       username: profileForm.username,
     });
   }
@@ -162,6 +166,14 @@ export default function Settings() {
       bio: profileForm.bio,
       tags: { profile: profileForm.tags },
     });
+  }
+
+  function hardLogout() {
+    try {
+      localStorage.clear();
+    } catch {}
+    queryClient.clear();
+    window.location.replace("/auth?reason=renamed");
   }
 
   async function postProfilePic() {
@@ -180,26 +192,32 @@ export default function Settings() {
   const saveAllMutation = useMutation({
     mutationFn: async () => {
       const tasks: Promise<any>[] = [];
-
       if (nameChanged) tasks.push(patchName());
-
-      if (usernameChanged || emailChanged) tasks.push(patchUsername());
-
+      if (usernameChanged) tasks.push(patchUsername()); // ⬅ removed emailChanged
       if (bioChanged || tagsChanged) tasks.push(putBioAndTags());
-
       if (pictureChanged) tasks.push(postProfilePic());
-
       if (tasks.length === 0) return;
-
       await Promise.all(tasks);
     },
     onSuccess: async () => {
+      // If username changed, force a quick re-login to refresh session/links
+      if (usernameChanged) {
+        toast({
+          title: "Username updated",
+          description: "Please sign in again to refresh your session.",
+        });
+        hardLogout();
+        return; // stop here
+      }
+
+      // Otherwise, do your normal success flow
       toast({
         title: "Profile saved",
         description: "Your profile has been updated.",
       });
       await queryClient.invalidateQueries({ queryKey: ["/auth/me"] });
       await queryClient.invalidateQueries();
+
       setProfilePicFile(null);
       setInitialProfile({
         firstName: profileForm.firstName,
@@ -345,8 +363,10 @@ export default function Settings() {
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="border-b border-gray-700 bg-gray-900">
-        <div className="flex items-center justify-between p-4 max-w-4xl mx-auto">
-          <h1 className="text-xl font-semibold">Settings</h1>
+        <div className="flex items-center justify-center md:justify-between p-4 max-w-4xl mx-auto">
+          <h1 className="text-xl font-semibold w-full text-center md:text-left">
+            Settings
+          </h1>
         </div>
       </div>
 
@@ -470,13 +490,15 @@ export default function Settings() {
                       <input
                         type="email"
                         value={profileForm.email}
+                        disabled
                         onChange={(e) =>
                           setProfileForm((s) => ({
                             ...s,
                             email: e.target.value,
                           }))
                         }
-                        className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        title="Email changes are disabled for now"
+                        className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-md text-white opacity-70 cursor-not-allowed"
                         required
                       />
                     </div>

@@ -19,9 +19,7 @@ export type SidebarSection = {
 };
 
 export function useAppSidebarSections(opts?: {
-  /** append more sections at the end */
   extra?: SidebarSection[];
-  /** custom logout; default redirects to /auth */
   onLogout?: () => void;
 }) {
   const [, navigate] = useLocation();
@@ -47,13 +45,13 @@ export function useAppSidebarSections(opts?: {
           },
         ],
       },
-      {
-        title: "Explore",
-        items: [
-          { key: "feed", label: "My Feed" },
-          { key: "explore", label: "Explore Feed" },
-        ],
-      },
+      // {
+      //   title: "Explore",
+      //   items: [
+      //     { key: "feed", label: "My Feed" },
+      //     { key: "explore", label: "Explore Feed" },
+      //   ],
+      // },
       {
         title: "Live Scores",
         items: [
