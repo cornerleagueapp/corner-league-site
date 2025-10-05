@@ -29,6 +29,7 @@ import ExploreFeedPage from "@/pages/explore";
 import ScoresPage from "@/pages/scores";
 import MessagesPage from "@/pages/messages";
 import NotificationsPage from "@/pages/notifications";
+import WelcomeSplash from "./pages/welcome-splash";
 
 function ProtectedRoute({
   component: Comp,
@@ -76,6 +77,7 @@ function PrivateRouter() {
           <Route path="/scores" component={ScoresPage} />
           <Route path="/messages" component={MessagesPage} />
           <Route path="/notifications" component={NotificationsPage} />
+          <Route path="/welcome" component={WelcomeSplash} />
 
           {/* existing club flows */}
           <Route path="/clubs" component={Clubs} />

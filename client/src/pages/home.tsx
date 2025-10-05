@@ -207,7 +207,7 @@ export default function Home() {
         {/* Auth actions (desktop) */}
         {isAuthenticated && (
           <div className="hidden md:flex absolute top-10 right-6 z-30 items-center gap-3">
-            <Link href="/scores">
+            <Link href="/welcome">
               <Button
                 size="sm"
                 className="rounded-full px-5 py-2 text-sm font-semibold text-black bg-white hover:bg-gray-100"
@@ -244,7 +244,7 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               {isAuthenticated ? (
                 <div className="flex md:hidden flex-col sm:flex-row gap-4 items-center">
-                  <Link href="/scores">
+                  <Link href="/welcome">
                     <Button
                       size="lg"
                       className="px-8 py-4 text-lg font-semibold text-black bg-white hover:bg-gray-100 rounded-full"
