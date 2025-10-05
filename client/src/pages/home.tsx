@@ -168,12 +168,12 @@ export default function Home() {
         {/* Auth actions (desktop) */}
         {isAuthenticated && (
           <div className="hidden md:flex absolute top-10 right-6 z-30 items-center gap-3">
-            <Link href="/clubs">
+            <Link href="/scores">
               <Button
                 size="sm"
                 className="rounded-full px-5 py-2 text-sm font-semibold text-black bg-white hover:bg-gray-100"
               >
-                My Clubs
+                Scores
               </Button>
             </Link>
             <Button

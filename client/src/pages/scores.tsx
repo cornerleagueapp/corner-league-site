@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import LiveChatRoom from "@/components/LiveChatRoom";
 import AccordionSection from "@/components/AccordionSection";
 import RacerSearchModal from "@/components/RacerSearchModal";
-import { Search as SearchIcon } from "lucide-react";
+import { Search as SearchIcon, X as XIcon } from "lucide-react";
 import { useLocation } from "wouter";
 
 import raceSchedule1 from "@/assets/race-schedule1.jpg";
@@ -122,6 +122,16 @@ export default function ScoresPage() {
   const [showAquaChat, setShowAquaChat] = useState(false);
   const [racerSearchOpen, setRacerSearchOpen] = useState(false);
   const [, navigate] = useLocation();
+  const [viewerSrc, setViewerSrc] = useState<string | null>(null);
+
+  // Close on ESC
+  useEffect(() => {
+    if (!viewerSrc) return;
+    const onKey = (e: KeyboardEvent) =>
+      e.key === "Escape" && setViewerSrc(null);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [viewerSrc]);
 
   const MLB_PLAYOFFS_URL =
     "https://widgets.media.sportradar.com/uscommon/en_us/standalone/us.season.mlb.playoffs#border=true&seasonId=125735";
@@ -170,27 +180,30 @@ export default function ScoresPage() {
 
             <div className="space-y-3">
               <AccordionSection
-                labelShow="Show Race List"
-                labelHide="Hide Race List"
+                labelShow="Show Race Schedule"
+                labelHide="Hide Race Schedule"
               >
                 <div className="space-y-4">
                   <img
                     src={raceSchedule1}
                     alt="IJSBA World Finals race schedule (part 1)"
                     loading="lazy"
-                    className="w-full h-auto rounded-xl border border-white/10 bg-white/5"
+                    onClick={() => setViewerSrc(raceSchedule1)}
+                    className="w-full h-auto rounded-xl border border-white/10 bg-white/5 cursor-zoom-in hover:opacity-90 transition"
                   />
                   <img
                     src={raceSchedule2}
                     alt="IJSBA World Finals race schedule (part 2)"
                     loading="lazy"
-                    className="w-full h-auto rounded-xl border border-white/10 bg-white/5"
+                    onClick={() => setViewerSrc(raceSchedule2)}
+                    className="w-full h-auto rounded-xl border border-white/10 bg-white/5 cursor-zoom-in hover:opacity-90 transition"
                   />
                   <img
                     src={raceSchedule3}
                     alt="IJSBA World Finals race schedule (part 3)"
                     loading="lazy"
-                    className="w-full h-auto rounded-xl border border-white/10 bg-white/5"
+                    onClick={() => setViewerSrc(raceSchedule3)}
+                    className="w-full h-auto rounded-xl border border-white/10 bg-white/5 cursor-zoom-in hover:opacity-90 transition"
                   />
                 </div>
               </AccordionSection>
@@ -331,6 +344,37 @@ export default function ScoresPage() {
 
       {/* Content */}
       {content}
+
+      {viewerSrc && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-[60] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setViewerSrc(null)}
+        >
+          <button
+            aria-label="Close"
+            className="absolute top-4 right-4 rounded-full p-2 bg-white/10 hover:bg-white/20 border border-white/20"
+            onClick={(e) => {
+              e.stopPropagation();
+              setViewerSrc(null);
+            }}
+          >
+            <XIcon className="h-5 w-5 text-white" />
+          </button>
+
+          <div
+            className="max-w-[95vw] max-h-[90vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={viewerSrc}
+              alt="Schedule (full view)"
+              className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+            />
+          </div>
+        </div>
+      )}
 
       <p className="mt-6 text-xs text-white/50">
         Note: These embedded widgets are provided by Sportradar and may take a
