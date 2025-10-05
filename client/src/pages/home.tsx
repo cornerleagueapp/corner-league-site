@@ -35,6 +35,13 @@ import image25 from "@assets/riveteammyles_Pink_Floyds_Dark_Side_of_the_Moon_alb
 import image26 from "@/assets/mx1.jpg";
 import image27 from "@/assets/mx2.jpeg";
 
+import partner1 from "@/assets/fubo.png";
+import partner2 from "@/assets/ibm.png";
+import partner3 from "@/assets/fanatics.png";
+import partner4 from "@/assets/google.png";
+import partner5 from "@/assets/peloton.png";
+import partner6 from "@/assets/ufc.png";
+
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
   const [location] = useLocation();
@@ -100,6 +107,38 @@ export default function Home() {
           .bg-column-0 { left: 0% !important; width: 33.33% !important; }
           .bg-column-1 { left: 33.33% !important; width: 33.33% !important; }
           .bg-column-2 { left: 66.66% !important; width: 33.33% !important; }
+        }
+      `}</style>
+
+      <style>{`
+        .logo-carousel {
+          --gap: 2rem;
+          --speed: 20s; /* faster than your 28s */
+          mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+        }
+        .logo-viewport { overflow: hidden; }
+        .logo-track {
+          display: flex;
+          align-items: center;
+          width: max-content;      
+          will-change: transform;
+          animation: marquee var(--speed) linear infinite;
+        }
+        .logo-group {
+          display: flex;
+          align-items: center;
+          gap: var(--gap);
+          flex: 0 0 auto;              
+        }
+        .logo-group--first { padding-right: var(--gap); }
+
+        @keyframes marquee {
+          from { transform: translateX(0); }
+          to   { transform: translateX(-50%); } 
+        }
+        .logo-carousel:hover .logo-track { animation-play-state: paused; }
+        @media (prefers-reduced-motion: reduce) {
+          .logo-track { animation: none; }
         }
       `}</style>
 
@@ -205,12 +244,12 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               {isAuthenticated ? (
                 <div className="flex md:hidden flex-col sm:flex-row gap-4 items-center">
-                  <Link href="/clubs">
+                  <Link href="/scores">
                     <Button
                       size="lg"
                       className="px-8 py-4 text-lg font-semibold text-black bg-white hover:bg-gray-100 rounded-full"
                     >
-                      My Clubs
+                      My Scores
                     </Button>
                   </Link>
                   <Button
@@ -246,9 +285,114 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ─────────────────────────────
-          NEW: INFO SECTIONS (scroll below hero)
-          ───────────────────────────── */}
+      {/* Partner logo slider (pure CSS marquee) */}
+      <section className="px-5 relative z-10">
+        <div className="mx-auto max-w-6xl">
+          <div className="logo-carousel rounded-xl bg-white/[0.03] border border-white/10 py-5">
+            <div className="logo-viewport">
+              <div className="logo-track">
+                {/* Group 1 */}
+                <div className="logo-group logo-group--first">
+                  <ul className="flex items-center gap-[var(--gap)]">
+                    {/* your 6 logos */}
+                    <li className="w-24 md:w-28 h-12 flex items-center justify-center">
+                      <img
+                        src={partner1}
+                        alt="Fubo TV"
+                        className="w-24 md:w-28 object-contain opacity-80 hover:opacity-100 transition-opacity"
+                      />
+                    </li>
+                    <li className="w-24 md:w-28 h-12 flex items-center justify-center">
+                      <img
+                        src={partner2}
+                        alt="IBM"
+                        className="w-24 md:w-28 object-contain opacity-80 hover:opacity-100 transition-opacity"
+                      />
+                    </li>
+                    <li className="w-24 md:w-28 h-12 flex items-center justify-center">
+                      <img
+                        src={partner4}
+                        alt="Google Cloud"
+                        className="w-24 md:w-28 object-contain opacity-80 hover:opacity-100 transition-opacity"
+                      />
+                    </li>
+                    <li className="w-24 md:w-28 h-12 flex items-center justify-center">
+                      <img
+                        src={partner3}
+                        alt="Fanatics"
+                        className="w-24 md:w-28 object-contain opacity-80 hover:opacity-100 transition-opacity"
+                      />
+                    </li>
+                    <li className="w-24 md:w-28 h-12 flex items-center justify-center">
+                      <img
+                        src={partner5}
+                        alt="Peloton"
+                        className="w-24 md:w-28 object-contain opacity-80 hover:opacity-100 transition-opacity"
+                      />
+                    </li>
+                    <li className="w-24 md:w-28 h-12 flex items-center justify-center">
+                      <img
+                        src={partner6}
+                        alt="UFC"
+                        className="w-24 md:w-28 object-contain opacity-80 hover:opacity-100 transition-opacity"
+                      />
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Group 2 (duplicate; aria-hidden so screen readers don't read twice) */}
+                <div className="logo-group" aria-hidden="true">
+                  <ul className="flex items-center gap-[var(--gap)]">
+                    <li className="w-24 md:w-28 h-12 flex items-center justify-center">
+                      <img
+                        src={partner1}
+                        alt=""
+                        className="w-24 md:w-28 object-contain opacity-80"
+                      />
+                    </li>
+                    <li className="w-24 md:w-28 h-12 flex items-center justify-center">
+                      <img
+                        src={partner2}
+                        alt=""
+                        className="w-24 md:w-28 object-contain opacity-80"
+                      />
+                    </li>
+                    <li className="w-24 md:w-28 h-12 flex items-center justify-center">
+                      <img
+                        src={partner4}
+                        alt=""
+                        className="w-24 md:w-28 object-contain opacity-80"
+                      />
+                    </li>
+                    <li className="w-24 md:w-28 h-12 flex items-center justify-center">
+                      <img
+                        src={partner3}
+                        alt=""
+                        className="w-24 md:w-28 object-contain opacity-80"
+                      />
+                    </li>
+                    <li className="w-24 md:w-28 h-12 flex items-center justify-center">
+                      <img
+                        src={partner5}
+                        alt=""
+                        className="w-24 md:w-28 object-contain opacity-80"
+                      />
+                    </li>
+                    <li className="w-24 md:w-28 h-12 flex items-center justify-center">
+                      <img
+                        src={partner6}
+                        alt=""
+                        className="w-24 md:w-28 object-contain opacity-80"
+                      />
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <main className="relative z-10">
         {/* IJSBA Partner highlight */}
         <Section className="bg-gradient-to-b from-white/5 via-white/[0.03] to-transparent">

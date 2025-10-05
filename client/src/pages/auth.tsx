@@ -374,7 +374,7 @@ export default function AuthPage() {
             {/* Auth Options */}
             <div className="flex justify-center items-center gap-8 mb-16">
               {/* Apple */}
-              <button
+              {/* <button
                 onClick={handleAppleLogin}
                 className="w-20 h-20 rounded-full border border-gray-600 hover:border-gray-400 transition-colors duration-300 flex items-center justify-center group"
               >
@@ -382,10 +382,10 @@ export default function AuthPage() {
                   size={28}
                   className="text-gray-400 group-hover:text-white transition-colors"
                 />
-              </button>
+              </button> */}
 
               {/* Google */}
-              <button
+              {/* <button
                 onClick={handleGoogleLogin}
                 className="w-20 h-20 rounded-full border border-gray-600 hover:border-gray-400 transition-colors duration-300 flex items-center justify-center group"
               >
@@ -393,7 +393,7 @@ export default function AuthPage() {
                   size={24}
                   className="text-gray-400 group-hover:text-white transition-colors"
                 />
-              </button>
+              </button> */}
 
               {/* Email */}
               <button

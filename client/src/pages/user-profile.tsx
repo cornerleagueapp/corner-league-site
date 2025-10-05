@@ -434,7 +434,7 @@ export default function UserProfilePage({ username }: { username: string }) {
       <div className="mx-auto max-w-5xl px-4 mt-8">
         {/* header */}
         <div className="flex flex-col sm:flex-row sm:items-end gap-4">
-          <div className="p-[2px] rounded-full bg-gradient-to-tr from-violet-500 via-fuchsia-500 to-amber-400 inline-block">
+          <div className="p-[2px] rounded-full bg-gradient-to-tr from-violet-500 via-fuchsia-500 to-amber-400 inline-block self-center sm:self-auto">
             <img
               src={me?.profilePicture || stockAvatar}
               onError={(e) => {
@@ -446,22 +446,28 @@ export default function UserProfilePage({ username }: { username: string }) {
           </div>
 
           <div className="flex-1">
-            <h1 className="text-2xl sm:text-3xl font-semibold leading-tight">
+            <h1 className="text-2xl sm:text-3xl font-semibold leading-tight text-center sm:text-left">
               {me ? `${me.firstName} ${me.lastName}` : " "}
             </h1>
-            <div className="mt-1 flex flex-wrap items-center gap-2">
+
+            <div className="mt-1 flex flex-col items-center sm:flex-row sm:items-center sm:gap-2">
               <p className="text-sm text-white/70">@{me?.username}</p>
-              {!!me?.tags?.profile?.length &&
-                me.tags!.profile!.map((t, i) => (
-                  <span
-                    key={i}
-                    className="px-2.5 py-0.5 rounded-full border border-white/10 text-[11px] text-white/90"
-                  >
-                    {t}
-                  </span>
-                ))}
+
+              {!!me?.tags?.profile?.length && (
+                <div className="mt-1 sm:mt-0 flex flex-wrap justify-center sm:justify-start gap-2">
+                  {me.tags!.profile!.map((t, i) => (
+                    <span
+                      key={i}
+                      className="px-2.5 py-0.5 rounded-full border border-white/10 text-[11px] text-white/90"
+                    >
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
-            <div className="flex gap-3 mt-4">
+
+            <div className="flex gap-3 mt-4 justify-center sm:justify-start">
               <button
                 onClick={() => {
                   if (!me?.id) return;
@@ -479,7 +485,7 @@ export default function UserProfilePage({ username }: { username: string }) {
             </div>
           </div>
 
-          <div className="flex gap-2 self-start sm:self-end">
+          <div className="flex w-full gap-2 self-center sm:self-end sm:w-auto sm:justify-end">
             {!isOwn && (
               <Button
                 onClick={async () => {
@@ -514,9 +520,9 @@ export default function UserProfilePage({ username }: { username: string }) {
                   }
                 }}
                 className={cn(
-                  "border hover:bg-white/15",
+                  "h-11 w-[70%] sm:h-9 sm:w-auto border hover:bg-white/15",
                   isFollowing
-                    ? "bg-green-500/15 border-green-400/30"
+                    ? "bg-purple-500/45 border-white-400/30"
                     : "bg-white/10 border-white/10"
                 )}
               >
@@ -531,7 +537,7 @@ export default function UserProfilePage({ username }: { username: string }) {
                   toast({ title: "Copied to clipboard" });
                 } catch {}
               }}
-              className="bg-white text-black hover:bg-white/90"
+              className="h-11 w-[30%] sm:h-9 sm:w-auto bg-white text-black hover:bg-white/90"
             >
               Share
             </Button>
@@ -540,21 +546,25 @@ export default function UserProfilePage({ username }: { username: string }) {
 
         {/* tabs */}
         <div className="mt-8 border-b border-white/10">
-          <div className="flex gap-8 text-sm">
+          {/* Mobile: centered 3-up; Desktop: left-aligned with gap */}
+          <div className="flex text-sm justify-center sm:justify-start sm:gap-8">
             <Tab
               label="Scores"
               active={activeTab === "scores"}
               onClick={() => setActiveTab("scores")}
+              className="w-1/3 text-center sm:w-auto sm:px-0"
             />
             <Tab
               label="Posts"
               active={activeTab === "posts"}
               onClick={() => setActiveTab("posts")}
+              className="w-1/3 text-center sm:w-auto sm:px-0"
             />
             <Tab
               label="Clubs"
               active={activeTab === "clubs"}
               onClick={() => setActiveTab("clubs")}
+              className="w-1/3 text-center sm:w-auto sm:px-0"
             />
           </div>
         </div>
@@ -971,17 +981,21 @@ function Tab({
   label,
   active,
   onClick,
+  className,
 }: {
   label: string;
   active?: boolean;
   onClick?: () => void;
+  className?: string;
 }) {
   return (
     <button
       onClick={onClick}
       className={cn(
         "relative py-3 text-white/70 hover:text-white",
-        active && "text-white font-medium"
+        "sm:px-4", // spacing on desktop
+        active && "text-white font-medium",
+        className // allow caller to set w-1/3 text-center on mobile
       )}
     >
       {label}
