@@ -6,6 +6,10 @@ import RacerSearchModal from "@/components/RacerSearchModal";
 import { Search as SearchIcon } from "lucide-react";
 import { useLocation } from "wouter";
 
+import raceSchedule1 from "@/assets/race-schedule1.jpg";
+import raceSchedule2 from "@/assets/race-schedule2.jpg";
+import raceSchedule3 from "@/assets/race-schedule3.jpg";
+
 type TabKey = "AQUA" | "MLB" | "NBA" | "NFL" | "NHL" | "NCAAF";
 const TAB_ORDER: TabKey[] = ["AQUA", "MLB", "NBA", "NFL", "NHL", "NCAAF"];
 
@@ -169,7 +173,26 @@ export default function ScoresPage() {
                 labelShow="Show Race List"
                 labelHide="Hide Race List"
               >
-                <div className="text-sm">Race List coming soon.</div>
+                <div className="space-y-4">
+                  <img
+                    src={raceSchedule1}
+                    alt="IJSBA World Finals race schedule (part 1)"
+                    loading="lazy"
+                    className="w-full h-auto rounded-xl border border-white/10 bg-white/5"
+                  />
+                  <img
+                    src={raceSchedule2}
+                    alt="IJSBA World Finals race schedule (part 2)"
+                    loading="lazy"
+                    className="w-full h-auto rounded-xl border border-white/10 bg-white/5"
+                  />
+                  <img
+                    src={raceSchedule3}
+                    alt="IJSBA World Finals race schedule (part 3)"
+                    loading="lazy"
+                    className="w-full h-auto rounded-xl border border-white/10 bg-white/5"
+                  />
+                </div>
               </AccordionSection>
 
               <AccordionSection
@@ -289,7 +312,9 @@ export default function ScoresPage() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      <h1 className="text-2xl font-bold text-white mb-4">Live Scores</h1>
+      <h1 className="text-2xl font-bold text-white mb-4 text-center sm:text-left">
+        Live Scores
+      </h1>
 
       {/* Tabs */}
       <div className="flex flex-wrap gap-2 mb-6">
