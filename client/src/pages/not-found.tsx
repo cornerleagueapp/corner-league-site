@@ -11,7 +11,7 @@ export default function NotFound() {
       <div className="pointer-events-none absolute -bottom-32 -right-32 h-[28rem] w-[28rem] rounded-full bg-purple-500/20 blur-3xl" />
 
       {/* Return Home (top-left) */}
-      <div className="absolute left-4 top-4 sm:left-6 sm:top-6 z-20">
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 sm:left-6 sm:translate-x-0 sm:top-6 z-20">
         <Link href="/">
           <a className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-2 text-sm font-medium hover:bg-white/10">
             <ArrowLeft className="h-4 w-4" />

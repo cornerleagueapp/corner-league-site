@@ -111,6 +111,12 @@ export default function RacerProfilePage({ nameParam }: { nameParam: string }) {
     );
   }
 
+  const stats = [
+    { label: "Career Wins", value: racer.careerWins ?? 0, trophy: true },
+    { label: "Season Wins", value: racer.seasonWins ?? 0 },
+    { label: "Season Podiums", value: racer.seasonPodiums ?? 0 },
+  ];
+
   const title = racer.racerName || "Racer";
   const chips = [
     racer.location && { label: racer.location },
@@ -136,7 +142,7 @@ export default function RacerProfilePage({ nameParam }: { nameParam: string }) {
       <div className="mx-auto max-w-5xl px-4 mt-8">
         {/* header */}
         <div className="flex flex-col sm:flex-row sm:items-end gap-4">
-          <div className="p-[2px] rounded-full bg-gradient-to-tr from-violet-500 via-fuchsia-500 to-amber-400 inline-block">
+          <div className="p-[2px] rounded-full bg-gradient-to-tr from-violet-500 via-fuchsia-500 to-amber-400 inline-block self-center sm:self-auto">
             <img
               src={racer.racerImage || stockAvatar}
               onError={(e) => {
@@ -148,11 +154,11 @@ export default function RacerProfilePage({ nameParam }: { nameParam: string }) {
           </div>
 
           <div className="flex-1">
-            <h1 className="text-2xl sm:text-3xl font-semibold leading-tight">
+            <h1 className="text-2xl sm:text-3xl font-semibold leading-tight text-center sm:text-left">
               {title}
             </h1>
 
-            <div className="mt-1 flex flex-wrap items-center gap-2">
+            <div className="mt-1 flex flex-wrap items-center justify-center sm:justify-start gap-2">
               {chips.length === 0 ? (
                 <p className="text-sm text-white/70">AQUA Racer</p>
               ) : (
@@ -167,21 +173,19 @@ export default function RacerProfilePage({ nameParam }: { nameParam: string }) {
               )}
             </div>
 
-            <div className="flex gap-3 mt-4">
-              <StatBox
-                label="Career Wins"
-                value={racer.careerWins ?? 0}
-                trophy
-              />
-              <StatBox label="Season Wins" value={racer.seasonWins ?? 0} />
-              <StatBox
-                label="Season Podiums"
-                value={racer.seasonPodiums ?? 0}
-              />
+            <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {stats.map((s) => (
+                <StatBox
+                  key={s.label}
+                  label={s.label}
+                  value={s.value}
+                  trophy={s.trophy}
+                />
+              ))}
             </div>
           </div>
 
-          <div className="flex gap-2 self-start sm:self-end">
+          <div className="flex w-full gap-2 self-center sm:self-end sm:w-auto justify-center sm:justify-end">
             <Button
               onClick={async () => {
                 const url = new URL(window.location.href);
@@ -190,7 +194,7 @@ export default function RacerProfilePage({ nameParam }: { nameParam: string }) {
                   toast({ title: "Copied to clipboard" });
                 } catch {}
               }}
-              className="bg-white text-black hover:bg-white/90"
+              className="h-11 sm:h-9 sm:w-auto bg-white text-black hover:bg-white/90"
             >
               Share
             </Button>
@@ -279,7 +283,7 @@ function StatBox({
   trophy?: boolean;
 }) {
   return (
-    <div className="min-w-[140px] rounded-lg bg-white/5 border border-white/10 px-4 py-3">
+    <div className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3">
       <div className="text-2xl font-semibold flex items-center gap-2">
         {value}
         {trophy && <span>🏆</span>}

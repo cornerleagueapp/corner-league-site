@@ -225,9 +225,12 @@ export default function NotificationsPage() {
     <div className="min-h-screen bg-black text-white">
       {/* header */}
       <div className="border-b border-gray-800 bg-gray-900/60 backdrop-blur-sm">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-baseline gap-3">
-            <h1 className="text-xl font-semibold">Notifications</h1>
+        <div className="max-w-4xl mx-auto px-4 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          {/* Title row */}
+          <div className="flex items-center justify-center md:justify-start gap-2">
+            <h1 className="text-2xl font-semibold text-center md:text-left">
+              Notifications
+            </h1>
             {unreadCount > 0 && (
               <span className="text-xs px-2 py-0.5 rounded-full bg-blue-600/20 text-blue-300 border border-blue-500/30">
                 {unreadCount} new
@@ -235,23 +238,38 @@ export default function NotificationsPage() {
             )}
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <input
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  // reset to first page on new search
-                  setPage(1);
-                }}
-                placeholder="Search notifications…"
-                className="w-56 md:w-64 px-3 py-2 rounded-md bg-gray-800 border border-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+          {/* Controls: search + button */}
+          <div
+            className="
+        w-full
+        grid grid-cols-[1fr_auto] gap-3
+        md:w-auto md:grid-cols-none md:flex md:items-center
+      "
+          >
+            <input
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              placeholder="Search notifications…"
+              className="
+          w-full md:w-64
+          px-3 py-2 rounded-md
+          bg-gray-800 border border-gray-700
+          text-sm focus:outline-none focus:ring-2 focus:ring-blue-500
+        "
+            />
+
             <button
               onClick={() => markAllMutation.mutate()}
               disabled={markAllMutation.isPending || unreadCount === 0}
-              className="px-3 py-2 rounded-md bg-white/10 hover:bg-white/15 border border-white/10 text-sm disabled:opacity-50"
+              className="
+          px-3 py-2 rounded-md
+          bg-white/10 hover:bg-white/15
+          border border-white/10 text-sm
+          disabled:opacity-50
+        "
             >
               {markAllMutation.isPending ? "Marking…" : "Mark all as read"}
             </button>

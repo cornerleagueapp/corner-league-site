@@ -132,6 +132,15 @@ export default function SidebarPanel({
   // track which sections are expanded (keyed by section.title)
   const [openMap, setOpenMap] = useState<Record<string, boolean>>({});
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev || "";
+    };
+  }, [isOpen]);
+
   // Open the section that contains the activeKey by default; others closed.
   useEffect(() => {
     const next: Record<string, boolean> = {};
@@ -149,19 +158,21 @@ export default function SidebarPanel({
       {/* Mobile overlay */}
       {isOpen && (
         <div
-          className="md:hidden fixed inset-0 bg-black/50 z-30"
+          className="md:hidden fixed inset-0 bg-black/70 z-30"
           onClick={onClose}
         />
       )}
 
       {/* Panel */}
       <div
-        className={`w-64 border-r border-gray-700 flex flex-col z-40 md:relative md:translate-x-0 fixed transition-transform duration-300 ease-in-out bg-[#000000] ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed inset-y-0 left-0 z-40 flex flex-col border-r border-gray-700
+              bg-[#000000] transition-transform duration-300 ease-in-out
+              w-full h-screen md:relative md:w-64 md:h-auto md:translate-x-0
+              ${isOpen ? "translate-x-0" : "-translate-x-full"}
+              overscroll-contain`}
       >
         {/* Header / Logo */}
-        <div className="p-4 border-b border-gray-700">
+        <div className="p-4 border-b border-gray-700 sticky top-0 bg-[#000000] z-10">
           <div className="flex items-center justify-center">
             {logoSrc ? (
               <img src={logoSrc} alt={logoAlt} className="h-8 w-auto" />
@@ -172,7 +183,7 @@ export default function SidebarPanel({
         </div>
 
         {/* Sections */}
-        <div className="flex-1 p-4">
+        <div className="flex-1 p-4 overflow-y-auto">
           {sections.map((section) => {
             const open = !!openMap[section.title];
             return (
