@@ -9,6 +9,7 @@ import { useLocation } from "wouter";
 import raceSchedule1 from "@/assets/race-schedule1.jpg";
 import raceSchedule2 from "@/assets/race-schedule2.jpg";
 import raceSchedule3 from "@/assets/race-schedule3.jpg";
+import raceCourse from "@/assets/race-course.jpg";
 
 type TabKey = "AQUA" | "MLB" | "NBA" | "NFL" | "NHL" | "NCAAF";
 const TAB_ORDER: TabKey[] = ["AQUA", "MLB", "NBA", "NFL", "NHL", "NCAAF"];
@@ -179,6 +180,21 @@ export default function ScoresPage() {
             </div>
 
             <div className="space-y-3">
+              <AccordionSection
+                labelShow="Show Race Course"
+                labelHide="Hide Race Course"
+              >
+                <div className="space-y-4">
+                  <img
+                    src={raceCourse}
+                    alt="IJSBA World Finals race course"
+                    loading="lazy"
+                    onClick={() => setViewerSrc(raceCourse)}
+                    className="w-full h-auto rounded-xl border border-white/10 bg-white/5 cursor-zoom-in hover:opacity-90 transition"
+                  />
+                </div>
+              </AccordionSection>
+
               <AccordionSection
                 labelShow="Show Race Schedule"
                 labelHide="Hide Race Schedule"
