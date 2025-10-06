@@ -230,10 +230,20 @@ export default function SidebarPanel({
               </div>
             );
           })}
+          <div className="mt-4 md:hidden">
+            <Link href={backHref}>
+              <button
+                onClick={onClose}
+                className="w-full px-3 py-2 text-gray-300 hover:text-white hover:bg-gray-800 rounded-md transition-colors text-left"
+              >
+                ← Back to Home
+              </button>
+            </Link>
+          </div>
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-gray-700">
+        <div className="p-4 border-t border-gray-700 hidden md:block">
           <Link href={backHref}>
             <button
               onClick={onClose}
