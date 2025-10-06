@@ -219,7 +219,7 @@ export default function ScoresPage() {
                 </div>
               </AccordionSection>
 
-              <AccordionSection
+              {/* <AccordionSection
                 labelShow="Show Race Week Schedule"
                 labelHide="Hide Race Week Schedule"
               >
@@ -246,7 +246,7 @@ export default function ScoresPage() {
                     className="w-full h-auto rounded-xl border border-white/10 bg-white/5 cursor-zoom-in hover:opacity-90 transition"
                   />
                 </div>
-              </AccordionSection>
+              </AccordionSection> */}
 
               <AccordionSection
                 labelShow="Show Race Results"
