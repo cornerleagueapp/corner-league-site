@@ -11,6 +11,7 @@ import raceSchedule2 from "@/assets/race-schedule2.jpg";
 import raceSchedule3 from "@/assets/race-schedule3.jpg";
 import raceCourse from "@/assets/race-course.jpg";
 
+import aquaBanner from "@/assets/aquabanner.png";
 import mondaySchedule from "@/assets/MondaySchedule.jpg";
 
 type TabKey = "AQUA" | "MLB" | "NBA" | "NFL" | "NHL" | "NCAAF";
@@ -120,6 +121,22 @@ function ResponsiveFrame({
   );
 }
 
+function FullBleedBanner({ src, alt }: { src: string; alt: string }) {
+  // Breaks out of the centered container to span full viewport width
+  return (
+    <div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen mt-2">
+      <div className="relative h-40 sm:h-56 md:h-72 lg:h-80">
+        <img
+          src={src}
+          alt={alt}
+          loading="lazy"
+          className="absolute inset-0 h-full w-full object-cover object-[center_60%]"
+        />
+      </div>
+    </div>
+  );
+}
+
 export default function ScoresPage() {
   const [active, setActive] = useState<TabKey>("AQUA");
   const [showAquaChat, setShowAquaChat] = useState(false);
@@ -180,6 +197,11 @@ export default function ScoresPage() {
                 <SearchIcon size={18} />
               </button>
             </div>
+
+            <FullBleedBanner
+              src={aquaBanner}
+              alt="IJSBA World Finals — Lake Havasu"
+            />
 
             <div className="space-y-3">
               <AccordionSection
