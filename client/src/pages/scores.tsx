@@ -11,6 +11,8 @@ import raceSchedule2 from "@/assets/race-schedule2.jpg";
 import raceSchedule3 from "@/assets/race-schedule3.jpg";
 import raceCourse from "@/assets/race-course.jpg";
 
+import mondaySchedule from "@/assets/MondaySchedule.jpg";
+
 type TabKey = "AQUA" | "MLB" | "NBA" | "NFL" | "NHL" | "NCAAF";
 const TAB_ORDER: TabKey[] = ["AQUA", "MLB", "NBA", "NFL", "NHL", "NCAAF"];
 
@@ -196,8 +198,8 @@ export default function ScoresPage() {
               </AccordionSection>
 
               <AccordionSection
-                labelShow="Show Race Schedule"
-                labelHide="Hide Race Schedule"
+                labelShow="Show Race Week Schedule"
+                labelHide="Hide Race Week Schedule"
               >
                 <div className="space-y-4">
                   <img
@@ -230,6 +232,157 @@ export default function ScoresPage() {
               >
                 <div className="text-sm">Race Results coming soon.</div>
               </AccordionSection>
+
+              <AccordionSection
+                labelShow="Show Monday's Schedule"
+                labelHide="Hide Monday's Schedule"
+              >
+                <div className="space-y-4">
+                  <div className="text-sm">
+                    Racing begins. Food truck service begins. Some vendors open
+                  </div>
+                  <div className="text-sm">1) 6:00 Pits Open</div>
+                  <div className="text-sm">
+                    2) 6:30 Riders Meeting For All Monday Classes
+                  </div>
+                  <div className="text-sm">3) 7:00 Practice Begins</div>
+                  <div className="text-sm">4) 8:00 Racing Begins</div>
+                  <img
+                    src={mondaySchedule}
+                    alt="IJSBA World Finals Monday's Schedule"
+                    loading="lazy"
+                    onClick={() => setViewerSrc(mondaySchedule)}
+                    className="w-full h-auto rounded-xl border border-white/10 bg-white/5 cursor-zoom-in hover:opacity-90 transition"
+                  />
+                </div>
+              </AccordionSection>
+
+              <AccordionSection
+                labelShow="Show Tuesday's Schedule"
+                labelHide="Hide Tuesday's Schedule"
+              >
+                <div className="space-y-4">
+                  <div className="text-sm">
+                    Amateur racing. All food truck service expected to be fully
+                    operational.
+                  </div>
+                  <div className="text-sm">More Info to Come...</div>
+
+                  {/* <img
+                    src={mondaySchedule}
+                    alt="IJSBA World Finals Monday's Schedule"
+                    loading="lazy"
+                    onClick={() => setViewerSrc(mondaySchedule)}
+                    className="w-full h-auto rounded-xl border border-white/10 bg-white/5 cursor-zoom-in hover:opacity-90 transition"
+                  /> */}
+                </div>
+              </AccordionSection>
+
+              <AccordionSection
+                labelShow="Show Wednesday's Schedule"
+                labelHide="Hide Wednesday's Schedule"
+              >
+                <div className="space-y-4">
+                  <div className="text-sm">Expert Racing</div>
+                  <div className="text-sm">More Info to Come...</div>
+
+                  {/* <img
+                    src={mondaySchedule}
+                    alt="IJSBA World Finals Monday's Schedule"
+                    loading="lazy"
+                    onClick={() => setViewerSrc(mondaySchedule)}
+                    className="w-full h-auto rounded-xl border border-white/10 bg-white/5 cursor-zoom-in hover:opacity-90 transition"
+                  /> */}
+                </div>
+              </AccordionSection>
+
+              <AccordionSection
+                labelShow="Show Thursday's Schedule"
+                labelHide="Hide Thursday's Schedule"
+              >
+                <div className="space-y-4">
+                  <div className="text-sm">
+                    Expert Racing continues. Most vendors have been placed and
+                    fully operational.
+                  </div>
+                  <div className="text-sm">More Info to Come...</div>
+
+                  {/* <img
+                    src={mondaySchedule}
+                    alt="IJSBA World Finals Monday's Schedule"
+                    loading="lazy"
+                    onClick={() => setViewerSrc(mondaySchedule)}
+                    className="w-full h-auto rounded-xl border border-white/10 bg-white/5 cursor-zoom-in hover:opacity-90 transition"
+                  /> */}
+                </div>
+              </AccordionSection>
+
+              <AccordionSection
+                labelShow="Show Friday's Schedule"
+                labelHide="Hide Friday's Schedule"
+              >
+                <div className="space-y-4">
+                  <div className="text-sm">
+                    Amateur Freestyle, Expert and Pro Am Racing, Awards for all
+                    completed classes. Check in for Poker Run- open to the
+                    public, no competition membership necessary.
+                  </div>
+                  <div className="text-sm">More Info to Come...</div>
+
+                  {/* <img
+                    src={mondaySchedule}
+                    alt="IJSBA World Finals Monday's Schedule"
+                    loading="lazy"
+                    onClick={() => setViewerSrc(mondaySchedule)}
+                    className="w-full h-auto rounded-xl border border-white/10 bg-white/5 cursor-zoom-in hover:opacity-90 transition"
+                  /> */}
+                </div>
+              </AccordionSection>
+
+              <AccordionSection
+                labelShow="Show Saturday's Schedule"
+                labelHide="Hide Saturday's Schedule"
+              >
+                <div className="space-y-4">
+                  <div className="text-sm">
+                    Pro Racing Begins. Pro Freestyle. Morning Endurance Race.
+                    Poker Run Check In and Poker Run.
+                  </div>
+                  <div className="text-sm">
+                    Anderson Powersports/Big O Tires Saturday night under the
+                    bridge freestyle show. Click here for event info.
+                  </div>
+                  <div className="text-sm">More Info to Come...</div>
+
+                  {/* <img
+                    src={mondaySchedule}
+                    alt="IJSBA World Finals Monday's Schedule"
+                    loading="lazy"
+                    onClick={() => setViewerSrc(mondaySchedule)}
+                    className="w-full h-auto rounded-xl border border-white/10 bg-white/5 cursor-zoom-in hover:opacity-90 transition"
+                  /> */}
+                </div>
+              </AccordionSection>
+
+              <AccordionSection
+                labelShow="Show Sunday's Schedule"
+                labelHide="Hide Sunday's Schedule"
+              >
+                <div className="space-y-4">
+                  <div className="text-sm">
+                    Pro Racing. Pro Freestyle. Morning Endurance Race. Awards.
+                  </div>
+                  <div className="text-sm">More Info to Come...</div>
+
+                  {/* <img
+                    src={mondaySchedule}
+                    alt="IJSBA World Finals Monday's Schedule"
+                    loading="lazy"
+                    onClick={() => setViewerSrc(mondaySchedule)}
+                    className="w-full h-auto rounded-xl border border-white/10 bg-white/5 cursor-zoom-in hover:opacity-90 transition"
+                  /> */}
+                </div>
+              </AccordionSection>
             </div>
 
             <div>
@@ -237,7 +390,7 @@ export default function ScoresPage() {
                 className="px-4 py-2 rounded-xl border border-white/20 text-white/90 hover:bg-white/10 transition"
                 onClick={() => setShowAquaChat((v) => !v)}
               >
-                {showAquaChat ? "Hide Chatroom" : "Join Chatroom"}
+                {showAquaChat ? "Hide Chatroom" : "Join Live Chatroom"}
               </button>
             </div>
 
