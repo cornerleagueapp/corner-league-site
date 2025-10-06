@@ -5,14 +5,13 @@ import AccordionSection from "@/components/AccordionSection";
 import RacerSearchModal from "@/components/RacerSearchModal";
 import { Search as SearchIcon, X as XIcon } from "lucide-react";
 import { useLocation } from "wouter";
-
-import raceSchedule1 from "@/assets/race-schedule1.jpg";
-import raceSchedule2 from "@/assets/race-schedule2.jpg";
-import raceSchedule3 from "@/assets/race-schedule3.jpg";
+import RaceResultsTable, { RaceResults } from "@/components/RaceResultsTable";
 import raceCourse from "@/assets/race-course.jpg";
 
 import aquaBanner from "@/assets/aquabanner.png";
 import mondaySchedule from "@/assets/MondaySchedule.jpg";
+
+import { aquaResults } from "@/data/aquaResults";
 
 type TabKey = "AQUA" | "MLB" | "NBA" | "NFL" | "NHL" | "NCAAF";
 const TAB_ORDER: TabKey[] = ["AQUA", "MLB", "NBA", "NFL", "NHL", "NCAAF"];
@@ -219,40 +218,18 @@ export default function ScoresPage() {
                 </div>
               </AccordionSection>
 
-              {/* <AccordionSection
-                labelShow="Show Race Week Schedule"
-                labelHide="Hide Race Week Schedule"
-              >
-                <div className="space-y-4">
-                  <img
-                    src={raceSchedule1}
-                    alt="IJSBA World Finals race schedule (part 1)"
-                    loading="lazy"
-                    onClick={() => setViewerSrc(raceSchedule1)}
-                    className="w-full h-auto rounded-xl border border-white/10 bg-white/5 cursor-zoom-in hover:opacity-90 transition"
-                  />
-                  <img
-                    src={raceSchedule2}
-                    alt="IJSBA World Finals race schedule (part 2)"
-                    loading="lazy"
-                    onClick={() => setViewerSrc(raceSchedule2)}
-                    className="w-full h-auto rounded-xl border border-white/10 bg-white/5 cursor-zoom-in hover:opacity-90 transition"
-                  />
-                  <img
-                    src={raceSchedule3}
-                    alt="IJSBA World Finals race schedule (part 3)"
-                    loading="lazy"
-                    onClick={() => setViewerSrc(raceSchedule3)}
-                    className="w-full h-auto rounded-xl border border-white/10 bg-white/5 cursor-zoom-in hover:opacity-90 transition"
-                  />
-                </div>
-              </AccordionSection> */}
-
               <AccordionSection
                 labelShow="Show Race Results"
                 labelHide="Hide Race Results"
               >
-                <div className="text-sm">Race Results coming soon.</div>
+                {aquaResults.map((race, i) => (
+                  <RaceResultsTable
+                    key={`${race.raceLabel ?? race.title}-${i}`}
+                    data={race}
+                    showFinalOnDesktop
+                    collapsible
+                  />
+                ))}
               </AccordionSection>
 
               <AccordionSection
@@ -515,7 +492,7 @@ export default function ScoresPage() {
   }, [active, showAquaChat]);
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 max-w-7xl mx-auto overflow-x-hidden">
       <h1 className="text-2xl font-bold text-white mb-4 text-center sm:text-left">
         Live Scores
       </h1>
