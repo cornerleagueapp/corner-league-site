@@ -239,7 +239,62 @@ export const aquaResults: RaceResults[] = [
     ],
   },
   {
-    raceLabel: "Race 4",
+    raceLabel: "Race 5",
+    title: "Master Ski GP",
+    motoLabels: ["Moto 1", "Moto 2", "Moto 3"],
+    rows: [
+      {
+        rank: 1,
+        bikeNumber: 10,
+        rider: "Jeremy Poper",
+        age: 47,
+        motos: [{ pos: 1 }, { pos: 1 }, { pos: 0 }],
+        finalPos: 0, // optional; omit to auto-compute
+      },
+      {
+        rank: 2,
+        bikeNumber: 51,
+        rider: "David Cabrera",
+        age: 58,
+        motos: [{ pos: 2 }, { pos: 2 }, { pos: 0 }],
+        finalPos: 0, // optional; omit to auto-compute
+      },
+      {
+        rank: 4,
+        bikeNumber: 26,
+        rider: "Eric Swick",
+        age: 53,
+        motos: [{ pos: 3 }, { pos: 6 }, { pos: 0 }],
+        finalPos: 0, // optional; omit to auto-compute
+      },
+      {
+        rank: 3,
+        bikeNumber: 67,
+        rider: "Rick Kantola",
+        age: 55,
+        motos: [{ pos: 4 }, { pos: 3 }, { pos: 0 }],
+        finalPos: 0, // optional; omit to auto-compute
+      },
+      {
+        rank: 5,
+        bikeNumber: 67,
+        rider: "Marshall Brown",
+        age: 55,
+        motos: [{ pos: 6 }, { pos: 4 }, { pos: 0 }],
+        finalPos: 0, // optional; omit to auto-compute
+      },
+      {
+        rank: 6,
+        bikeNumber: 67,
+        rider: "Kelly Wilcox",
+        age: 55,
+        motos: [{ pos: 5 }, { pos: 5 }, { pos: 0 }],
+        finalPos: 0, // optional; omit to auto-compute
+      },
+    ],
+  },
+  {
+    raceLabel: "Race 6",
     title: "Novice Runabout 1100 Stock",
     motoLabels: ["Moto 1", "Moto 2", "Moto 3"],
     rows: [
@@ -298,61 +353,6 @@ export const aquaResults: RaceResults[] = [
         age: 43,
         motos: [{ pos: 7 }, { pos: 7 }, { pos: 0 }],
         finalPos: 0,
-      },
-    ],
-  },
-  {
-    raceLabel: "Race 5",
-    title: "Master Ski GP",
-    motoLabels: ["Moto 1", "Moto 2", "Moto 3"],
-    rows: [
-      {
-        rank: 1,
-        bikeNumber: 10,
-        rider: "Jeremy Poper",
-        age: 47,
-        motos: [{ pos: 1 }, { pos: 1 }, { pos: 0 }],
-        finalPos: 0, // optional; omit to auto-compute
-      },
-      {
-        rank: 2,
-        bikeNumber: 51,
-        rider: "David Cabrera",
-        age: 58,
-        motos: [{ pos: 2 }, { pos: 2 }, { pos: 0 }],
-        finalPos: 0, // optional; omit to auto-compute
-      },
-      {
-        rank: 4,
-        bikeNumber: 26,
-        rider: "Eric Swick",
-        age: 53,
-        motos: [{ pos: 3 }, { pos: 6 }, { pos: 0 }],
-        finalPos: 0, // optional; omit to auto-compute
-      },
-      {
-        rank: 3,
-        bikeNumber: 67,
-        rider: "Rick Kantola",
-        age: 55,
-        motos: [{ pos: 4 }, { pos: 3 }, { pos: 0 }],
-        finalPos: 0, // optional; omit to auto-compute
-      },
-      {
-        rank: 5,
-        bikeNumber: 67,
-        rider: "Marshall Brown",
-        age: 55,
-        motos: [{ pos: 6 }, { pos: 4 }, { pos: 0 }],
-        finalPos: 0, // optional; omit to auto-compute
-      },
-      {
-        rank: 6,
-        bikeNumber: 67,
-        rider: "Kelly Wilcox",
-        age: 55,
-        motos: [{ pos: 5 }, { pos: 5 }, { pos: 0 }],
-        finalPos: 0, // optional; omit to auto-compute
       },
     ],
   },
