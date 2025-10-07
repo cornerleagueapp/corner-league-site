@@ -251,10 +251,46 @@ export default function ScoresPage() {
               </AccordionSection>
 
               <AccordionSection
-                labelShow="Show Monday's Schedule/Results"
-                labelHide="Hide Monday's Schedule/Results"
+                labelShow="Show Monday's Results"
+                labelHide="Hide Monday's Results"
               >
                 <div className="space-y-4">
+                  <div className="text-sm">Ai Analysis:</div>
+                  <div className="text-sm">
+                    - Start = destiny. Nearly every winner protected lane choice
+                    and nailed the first two buoys; consistency beat raw pace in
+                    3-moto scoring.
+                  </div>
+                  <div className="text-sm">
+                    - Clean sweeps/near-sweeps: Jeremy Poper (Master Ski GP)
+                    1-1-1—pure control. Decarli (Novice Ski Stock) and Baldwin
+                    (Novice Runabout Stock) won by stacking 1–2s, not hero laps.
+                  </div>
+                  <div className="text-sm">
+                    - Best adaptation: Kristine Mercado (Am Rec Lites) went 3 →
+                    1 → 1 after feeling it out—then backed it up with P2 in
+                    Novice 1100. Big multi-class day.
+                  </div>
+                  <div className="text-sm">
+                    - Bounce-back of the day: Angela Ventus had a messy Novice
+                    RA Stock opener (13th) but answered with a perfect 1-1 to
+                    win Novice 1100 Stock.
+                  </div>
+                  <div className="text-sm">
+                    - Women’s headline: Emy Garcia (Am Women’s Ski Lites)
+                    settled in with a P4, then controlled the class with
+                    back-to-back wins.
+                  </div>
+                  <div className="text-sm">
+                    - Youth wave: Teen winners (Baldwin, Garcia, Christie, Sato)
+                    showed maturity—late-moto composure in chop was the
+                    separator.
+                  </div>
+                  <div className="text-sm">
+                    - “What could’ve been” speed: Angelo Ventus (Novice RA
+                    Stock) flashed a Moto-2 win but paid for a bad Moto-1;
+                    fixing lap-one chaos puts him in the title fight.
+                  </div>
                   {aquaResults.map((race, i) => (
                     <RaceResultsTable
                       key={`${race.raceLabel ?? race.title}-${i}`}
