@@ -887,7 +887,7 @@ export const aquaResultsTwo: RaceResults[] = [
         rider: "Natalia Giuliano",
         age: 29,
         motos: [{ pos: 4 }, { pos: 5 }, { pos: null }],
-        finalPos: null,
+        finalPos: 0,
       },
       {
         rank: 3,
@@ -895,7 +895,7 @@ export const aquaResultsTwo: RaceResults[] = [
         rider: "Brad Nickerson",
         age: 45,
         motos: [{ pos: 5 }, { pos: 3 }, { pos: null }],
-        finalPos: null,
+        finalPos: 0,
       },
       {
         rank: 7,
@@ -903,7 +903,7 @@ export const aquaResultsTwo: RaceResults[] = [
         rider: "Daniel Ernst",
         age: 33,
         motos: [{ pos: 6 }, { pos: 7 }, { pos: null }],
-        finalPos: null,
+        finalPos: 0,
       },
       {
         rank: 5,
@@ -911,7 +911,7 @@ export const aquaResultsTwo: RaceResults[] = [
         rider: "Brent Hahn",
         age: 49,
         motos: [{ pos: 7 }, { pos: 4 }, { pos: null }],
-        finalPos: null,
+        finalPos: 0,
       },
       {
         rank: 8,
@@ -919,7 +919,7 @@ export const aquaResultsTwo: RaceResults[] = [
         rider: "David Garcia",
         age: 23,
         motos: [{ pos: 8 }, { pos: 6 }, { pos: null }],
-        finalPos: null,
+        finalPos: 0,
       },
       {
         rank: 10,
@@ -927,7 +927,7 @@ export const aquaResultsTwo: RaceResults[] = [
         rider: "Ryder Bliss",
         age: 19,
         motos: [{ pos: 9 }, { pos: 10 }, { pos: null }],
-        finalPos: null,
+        finalPos: 0,
       },
       {
         rank: 9,
@@ -935,7 +935,7 @@ export const aquaResultsTwo: RaceResults[] = [
         rider: "Glenn Bradshaw",
         age: 41,
         motos: [{ pos: 10 }, { pos: 8 }, { pos: null }],
-        finalPos: null,
+        finalPos: 0,
       },
       {
         rank: 12,
@@ -943,7 +943,7 @@ export const aquaResultsTwo: RaceResults[] = [
         rider: "Bradley Alamillo",
         age: 17,
         motos: [{ pos: 11 }, { pos: null }, { pos: null }],
-        finalPos: null,
+        finalPos: 0,
       }, // DNS in Moto 2
       {
         rank: 13,
@@ -951,7 +951,7 @@ export const aquaResultsTwo: RaceResults[] = [
         rider: "Ronnie Parker",
         age: 61,
         motos: [{ pos: null }, { pos: null }, { pos: null }],
-        finalPos: null,
+        finalPos: 0,
       }, // DNS / DNS
       {
         rank: 11,
@@ -959,7 +959,7 @@ export const aquaResultsTwo: RaceResults[] = [
         rider: "Karl Hausch",
         age: 55,
         motos: [{ pos: null }, { pos: 11 }, { pos: null }],
-        finalPos: null,
+        finalPos: 0,
       }, // DNS in Moto 1
     ],
   },
