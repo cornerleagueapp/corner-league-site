@@ -368,7 +368,7 @@ export const aquaResults: RaceResults[] = [
         rider: "David Cabrera",
         age: 58,
         motos: [{ pos: 2 }, { pos: 2 }, { pos: 2 }],
-        finalPos: 1, // optional; omit to auto-compute
+        finalPos: 2, // optional; omit to auto-compute
       },
       {
         rank: 5,
