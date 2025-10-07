@@ -233,8 +233,8 @@ export default function ScoresPage() {
               </AccordionSection>
 
               <AccordionSection
-                labelShow="Show Monday's Schedule"
-                labelHide="Hide Monday's Schedule"
+                labelShow="Show Monday's Schedule/Results"
+                labelHide="Hide Monday's Schedule/Results"
               >
                 <div className="space-y-4">
                   <div className="text-sm">
@@ -253,6 +253,14 @@ export default function ScoresPage() {
                     onClick={() => setViewerSrc(mondaySchedule)}
                     className="w-full h-auto rounded-xl border border-white/10 bg-white/5 cursor-zoom-in hover:opacity-90 transition"
                   />
+                  {aquaResults.map((race, i) => (
+                    <RaceResultsTable
+                      key={`${race.raceLabel ?? race.title}-${i}`}
+                      data={race}
+                      showFinalOnDesktop
+                      collapsible
+                    />
+                  ))}
                 </div>
               </AccordionSection>
 
