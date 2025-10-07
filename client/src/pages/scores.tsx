@@ -9,7 +9,7 @@ import RaceResultsTable, { RaceResults } from "@/components/RaceResultsTable";
 import raceCourse from "@/assets/race-course.jpg";
 
 import aquaBanner from "@/assets/aquabanner.png";
-import mondaySchedule from "@/assets/MondaySchedule.jpg";
+import todaysSchedule from "@/assets/todaysSchedule.jpg";
 
 import { aquaResults } from "@/data/aquaResults";
 
@@ -219,40 +219,10 @@ export default function ScoresPage() {
               </AccordionSection>
 
               <AccordionSection
-                labelShow="Show Race Results"
-                labelHide="Hide Race Results"
-              >
-                {aquaResults.map((race, i) => (
-                  <RaceResultsTable
-                    key={`${race.raceLabel ?? race.title}-${i}`}
-                    data={race}
-                    showFinalOnDesktop
-                    collapsible
-                  />
-                ))}
-              </AccordionSection>
-
-              <AccordionSection
                 labelShow="Show Monday's Schedule/Results"
                 labelHide="Hide Monday's Schedule/Results"
               >
                 <div className="space-y-4">
-                  <div className="text-sm">
-                    Racing begins. Food truck service begins. Some vendors open
-                  </div>
-                  <div className="text-sm">1) 6:00 Pits Open</div>
-                  <div className="text-sm">
-                    2) 6:30 Riders Meeting For All Monday Classes
-                  </div>
-                  <div className="text-sm">3) 7:00 Practice Begins</div>
-                  <div className="text-sm">4) 8:00 Racing Begins</div>
-                  <img
-                    src={mondaySchedule}
-                    alt="IJSBA World Finals Monday's Schedule"
-                    loading="lazy"
-                    onClick={() => setViewerSrc(mondaySchedule)}
-                    className="w-full h-auto rounded-xl border border-white/10 bg-white/5 cursor-zoom-in hover:opacity-90 transition"
-                  />
                   {aquaResults.map((race, i) => (
                     <RaceResultsTable
                       key={`${race.raceLabel ?? race.title}-${i}`}
@@ -270,18 +240,19 @@ export default function ScoresPage() {
               >
                 <div className="space-y-4">
                   <div className="text-sm">
-                    Amateur racing. All food truck service expected to be fully
-                    operational.
+                    1) 6:30 AM Riders Meeting at the Grandstands
                   </div>
-                  <div className="text-sm">More Info to Come...</div>
-
-                  {/* <img
-                    src={mondaySchedule}
+                  <div className="text-sm">
+                    2) 8:30 AM Registration and Check In at the Trailer in Upper
+                    Parking Lot
+                  </div>
+                  <img
+                    src={todaysSchedule}
                     alt="IJSBA World Finals Monday's Schedule"
                     loading="lazy"
-                    onClick={() => setViewerSrc(mondaySchedule)}
+                    onClick={() => setViewerSrc(todaysSchedule)}
                     className="w-full h-auto rounded-xl border border-white/10 bg-white/5 cursor-zoom-in hover:opacity-90 transition"
-                  /> */}
+                  />
                 </div>
               </AccordionSection>
 
