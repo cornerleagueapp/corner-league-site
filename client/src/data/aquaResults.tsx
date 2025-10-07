@@ -523,7 +523,7 @@ export const aquaResults: RaceResults[] = [
       {
         rank: 8,
         bikeNumber: 714,
-        rider: "Chris Lananan",
+        rider: "Chris Lanahan",
         age: 23,
         motos: [{ pos: 8 }, { pos: 7 }, { pos: 6 }],
         finalPos: 8,
