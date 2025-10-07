@@ -79,7 +79,6 @@ export default function NotificationsPage() {
       if (!userId) throw new Error("Missing user id");
       const params = new URLSearchParams();
       params.set("order", "DESC");
-      // TypeORM/DB column is camelCase:
       params.set("sortBy", "createdAt");
       params.set("page", String(page));
       params.set("limit", "10");

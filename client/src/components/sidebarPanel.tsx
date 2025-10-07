@@ -70,10 +70,10 @@ export function useAppSidebarSections(opts?: {
       //   title: "Messages",
       //   items: [{ key: "messages", label: "Direct Messages" }],
       // },
-      {
-        title: "Notifications",
-        items: [{ key: "alerts", label: "My Alerts" }],
-      },
+      // {
+      //   title: "Notifications",
+      //   items: [{ key: "alerts", label: "My Alerts" }],
+      // },
     ];
 
     return opts?.extra?.length ? [...base, ...opts.extra] : base;
