@@ -43,6 +43,28 @@ export default function AuthPage() {
     confirmPassword: "",
   });
 
+  const FIREBASE_API_KEY = import.meta.env.VITE_FIREBASE_API_KEY as string;
+
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [sendingReset, setSendingReset] = useState(false);
+
+  async function sendPasswordReset(email: string) {
+    const url = `https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${FIREBASE_API_KEY}`;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ requestType: "PASSWORD_RESET", email }),
+    });
+    if (!res.ok) {
+      const j = await res.json().catch(() => ({}));
+      const msg =
+        j?.error?.message?.replace(/_/g, " ").toLowerCase() ||
+        "Failed to send reset email";
+      throw new Error(msg);
+    }
+  }
+
   // Redirect if already authenticated
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -538,6 +560,77 @@ export default function AuthPage() {
                       "Sign In"
                     )}
                   </button>
+                  <form onSubmit={handleLogin} className="space-y-6">
+                    {/* identifier + password inputs (unchanged) */}
+
+                    {/* Forgot link */}
+                    <div className="flex items-center justify-between -mt-2">
+                      <button
+                        type="button"
+                        onClick={() => setShowForgot((v) => !v)}
+                        className="text-sm text-gray-400 hover:text-white underline"
+                      >
+                        {showForgot ? "Hide reset" : "Forgot password?"}
+                      </button>
+                    </div>
+
+                    {/* Inline reset panel */}
+                    {showForgot && (
+                      <div className="mt-2 rounded-lg border border-gray-800 bg-gray-900 p-3 space-y-3">
+                        <input
+                          type="email"
+                          value={forgotEmail}
+                          onChange={(e) => setForgotEmail(e.target.value)}
+                          placeholder="Enter your account email"
+                          className="w-full px-3 py-3 bg-gray-950 border border-gray-700 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            disabled={
+                              sendingReset || !emailRegex.test(forgotEmail)
+                            }
+                            onClick={async () => {
+                              try {
+                                setSendingReset(true);
+                                await sendPasswordReset(forgotEmail.trim());
+                                setShowForgot(false);
+                                setForgotEmail("");
+                                toast({
+                                  title: "Email sent",
+                                  description:
+                                    "Check your inbox for the password reset link (and spam folder just in case).",
+                                });
+                              } catch (e: any) {
+                                toast({
+                                  title: "Couldn’t send reset email",
+                                  description:
+                                    e?.message ?? "Please try again.",
+                                  variant: "destructive",
+                                });
+                              } finally {
+                                setSendingReset(false);
+                              }
+                            }}
+                            className="px-4 py-2 rounded-md bg-white text-black hover:bg-gray-200 disabled:bg-gray-600 disabled:text-white disabled:cursor-not-allowed"
+                          >
+                            {sendingReset ? "Sending…" : "Send reset link"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setShowForgot(false)}
+                            className="px-4 py-2 rounded-md bg-transparent border border-white/20 hover:bg-white/10"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          We’ll send a secure link from Firebase to reset your
+                          password.
+                        </p>
+                      </div>
+                    )}
+                  </form>
                 </form>
               ) : (
                 <form onSubmit={handleRegister} className="space-y-6">
