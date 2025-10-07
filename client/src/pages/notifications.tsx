@@ -14,15 +14,14 @@ type NotificationRow = {
     | "mention"
     | "tag"
     | "system"
-    | string; // allow forward-compat
+    | string;
   content: string;
-  userId: string; // recipient
+  userId: string;
   isRead: boolean;
   profilePicture?: string | null;
   createdAt?: string;
   created_at?: string;
   updatedAt?: string;
-  // optional relational ids
   notificationUserId?: string | null;
   notificationSenderId?: string | null;
   profilePostId?: string | null;
@@ -40,6 +39,9 @@ type NotificationsResponse = {
     hasNextPage: boolean;
   };
 };
+
+// Toggle to see API payloads in DevTools
+const DEBUG = true;
 
 function timeAgo(iso: string) {
   const d = new Date(iso);
@@ -64,7 +66,7 @@ export default function NotificationsPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const userId = user?.id as string | undefined; // notifications endpoints take userId
+  const userId = user?.id as string | undefined;
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
 
@@ -76,19 +78,30 @@ export default function NotificationsPage() {
     queryFn: async (): Promise<NotificationsResponse> => {
       if (!userId) throw new Error("Missing user id");
       const params = new URLSearchParams();
-      // params.set("order", "DESC");
-      // params.set("sortBy", "created_at");
+      params.set("order", "DESC");
+      // TypeORM/DB column is camelCase:
+      params.set("sortBy", "createdAt");
       params.set("page", String(page));
       params.set("limit", "10");
       if (search.trim()) params.set("search", search.trim());
 
       try {
-        return await apiRequest(
+        const res = await apiRequest(
           "GET",
           `/notifications/${encodeURIComponent(
             String(userId)
           )}?${params.toString()}`
         );
+        if (DEBUG) {
+          // eslint-disable-next-line no-console
+          console.debug("[Notifications] GET payload", {
+            params: Object.fromEntries(params.entries()),
+            count: res?.notifications?.length ?? 0,
+            meta: res?.meta,
+            sample: res?.notifications?.[0],
+          });
+        }
+        return res;
       } catch (e: any) {
         const msg =
           e?.message ||
@@ -118,7 +131,6 @@ export default function NotificationsPage() {
         page,
         search,
       ]);
-      // optimistic: flip everything on current pages in cache
       queryClient.setQueriesData(
         { queryKey: ["/notifications", userId] },
         (old: any) => {
@@ -150,6 +162,7 @@ export default function NotificationsPage() {
       });
     },
     onSuccess: () => {
+      if (DEBUG) console.debug("[Notifications] Mark all as read: success");
       toast({
         title: "All caught up",
         description: "All notifications marked as read.",
@@ -202,6 +215,7 @@ export default function NotificationsPage() {
       });
     },
     onSuccess: () => {
+      if (DEBUG) console.debug("[Notifications] Mark single as read: success");
       queryClient.invalidateQueries({ queryKey: ["/notifications", userId] });
     },
   });
@@ -274,6 +288,13 @@ export default function NotificationsPage() {
               {markAllMutation.isPending ? "Marking…" : "Mark all as read"}
             </button>
           </div>
+
+          {/* {DEBUG && (
+            <div className="mt-2 text-[11px] text-white/50">
+              debug: page={page} • loaded={notifications.length} • fetching=
+              {String(isFetching)}
+            </div>
+          )} */}
         </div>
       </div>
 
@@ -327,22 +348,17 @@ export default function NotificationsPage() {
                   {/* content */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <p className="text-sm leading-5">
-                        {/* We already get a cooked 'content' string from API */}
-                        {n.content}
-                      </p>
+                      <p className="text-sm leading-5">{n.content}</p>
                       <span className="ml-3 shrink-0 text-xs text-white/50">
                         {timeAgo(getCreatedAt(n))}
                       </span>
                     </div>
 
-                    {/* Activity line (type) */}
                     <div className="mt-1 text-xs text-white/40 capitalize">
                       {n.type.replace(/_/g, " ")}
                     </div>
                   </div>
 
-                  {/* actions */}
                   {!n.isRead && (
                     <button
                       onClick={() => markOneMutation.mutate(n)}

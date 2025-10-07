@@ -9,6 +9,7 @@ import ClubPostFeed from "@/components/club/ClubPostFeed";
 import ClubChannelFeed from "@/components/club/ClubChannelFeed";
 import { PageSEO } from "@/seo/usePageSEO";
 import gearIcon from "../assets/clubSettingsIcon.png";
+import ClubInfoModal from "@/components/ClubInfoModal";
 
 type ClubOwner = {
   id: string;
@@ -34,6 +35,7 @@ export default function ClubDetails() {
   const { user } = useAuth();
   const { toast } = useToast();
   const qc = useQueryClient();
+  const [infoOpen, setInfoOpen] = useState(false);
 
   const [activeTab, setActiveTab] = useState<string>("General");
 
@@ -193,19 +195,18 @@ export default function ClubDetails() {
           </h1>
 
           <div className="flex items-center gap-2">
-            <Link href={`/club-settings/${clubId}`}>
-              <button
-                aria-label="Club settings"
-                className="px-3 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-                title="Settings"
-              >
-                <img
-                  src={gearIcon}
-                  alt="Settings"
-                  className="h-5 w-5 object-contain"
-                />
-              </button>
-            </Link>
+            <button
+              onClick={() => setInfoOpen(true)}
+              aria-label="Club settings"
+              className="px-3 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+              title="Club info"
+            >
+              <img
+                src={gearIcon}
+                alt="Settings"
+                className="h-5 w-5 object-contain"
+              />
+            </button>
           </div>
         </div>
       </div>
@@ -335,6 +336,27 @@ export default function ClubDetails() {
           </main>
         </div>
       </div>
+
+      <ClubInfoModal
+        open={infoOpen}
+        onClose={() => setInfoOpen(false)}
+        club={{
+          id: clubId,
+          name: details?.clubName ?? "",
+          description: details?.clubDescription ?? "",
+          ownerName: details?.owner
+            ? `${details.owner.firstName ?? ""} ${
+                details.owner.lastName ?? ""
+              }`.trim()
+            : "",
+        }}
+        isOwner={isOwner}
+        onEdit={() => {
+          setInfoOpen(false);
+          // navigate to settings page
+          window.location.href = `/club-settings/${clubId}`;
+        }}
+      />
     </div>
   );
 }

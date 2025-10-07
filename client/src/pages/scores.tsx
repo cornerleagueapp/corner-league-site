@@ -190,14 +190,14 @@ export default function ScoresPage() {
                 </h3>
               </div>
 
-              <button
+              {/* <button
                 onClick={() => setRacerSearchOpen(true)}
                 className="h-9 w-9 grid place-items-center rounded-full bg-white/10 border border-white/10 hover:bg-white/15"
                 aria-label="Search racers"
                 title="Search racers"
               >
                 <SearchIcon size={18} />
-              </button>
+              </button> */}
             </div>
 
             <FullBleedBanner

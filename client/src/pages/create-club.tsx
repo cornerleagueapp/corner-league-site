@@ -19,21 +19,36 @@ function makeSlug(name: string) {
     .slice(0, 255);
 }
 
-// Upload the picture after club is created (backend expects "club-picture")
+// Helper: find the new club id by slug, retrying briefly
+async function findClubIdBySlug(slug: string): Promise<string | null> {
+  const attempts = 6;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      const qs = new URLSearchParams({
+        search: slug,
+        limit: "1",
+        sortBy: "createdAt",
+        order: "DESC",
+      }).toString();
+      const res: any = await apiRequest("GET", `/clubs?${qs}`);
+      const raw = res?.clubs?.[0]?.id;
+      const id = raw == null ? null : String(raw);
+      if (id) return id;
+    } catch {}
+    await new Promise((r) => setTimeout(r, i * 200));
+  }
+  return null;
+}
+
 async function uploadClubImage(clubId: string, file: File) {
   const fd = new FormData();
-  fd.append("club-picture", file, file.name); // ✅ exact field name
-
-  const res = await apiFetch(`/clubs/${clubId}/image`, {
-    method: "PATCH",
-    body: fd,
-  });
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Image upload failed: ${res.status} ${text || ""}`);
-  }
-  return res.json();
+  fd.append("club-picture", file, file.name);
+  // returns { message, clubPictureUrl }
+  return apiRequest<{ clubPictureUrl?: string }>(
+    "PATCH",
+    `/clubs/${clubId}/image`,
+    fd
+  );
 }
 
 // Resolve comma-separated usernames → array of backend user IDs (unchanged)
@@ -145,34 +160,47 @@ export default function CreateClub() {
       // Create the club
       const created: any = await apiRequest("POST", "/clubs", payload);
 
-      // Some backends return only { message }. Try to obtain the id.
-      let newId =
-        created?.data?.club?.id ?? created?.club?.id ?? created?.id ?? null;
+      let newId: string | null =
+        created?.data?.club?.id ??
+        created?.club?.id ??
+        created?.data?.id ??
+        created?.id ??
+        null;
+      newId = newId == null ? null : String(newId);
 
-      // Fallback: look up via /clubs?search=<slug>&limit=1
       if (!newId) {
-        try {
-          const lookup: any = await apiRequest(
-            "GET",
-            `/clubs?search=${encodeURIComponent(slug)}&limit=1`
-          );
-          newId = lookup?.clubs?.[0]?.id ?? null;
-        } catch {
-          /* ignore, still create ok */
-        }
+        newId = await findClubIdBySlug(slug);
       }
 
-      // Optional image upload
       if (newId && imageFile) {
-        await uploadClubImage(newId, imageFile).catch((e) => {
-          console.warn("[CreateClub] Image upload failed:", e);
-          toast({
-            title: "Club created (image upload failed)",
-            description:
-              "Your club was created, but we couldn’t upload the picture.",
-            variant: "destructive",
+        try {
+          const r = await uploadClubImage(newId, imageFile);
+          const newUrl = r?.clubPictureUrl;
+
+          queryClient.setQueryData(
+            ["club-details", newId, user?.id],
+            (old: any) =>
+              old ? { ...old, clubImage: newUrl ?? old.clubImage } : old
+          );
+
+          queryClient.setQueryData(["clubs-and-myclubs"], (old: any) => {
+            if (!old?.clubs) return old;
+            return {
+              ...old,
+              clubs: old.clubs.map((c: any) =>
+                c.id === newId ? { ...c, image: newUrl ?? c.image } : c
+              ),
+            };
           });
-        });
+
+          await Promise.allSettled([
+            queryClient.invalidateQueries({
+              queryKey: ["club-details", newId],
+            }),
+            queryClient.invalidateQueries({ queryKey: ["clubs-and-myclubs"] }),
+            queryClient.invalidateQueries({ queryKey: ["/api/clubs"] }),
+          ]);
+        } catch (e: any) {}
       }
 
       return { id: newId, name: payload.name };
@@ -395,7 +423,7 @@ export default function CreateClub() {
                 </div>
               </label>
 
-              <label className="flex items-center cursor-pointer">
+              {/* <label className="flex items-center cursor-pointer">
                 <input
                   type="radio"
                   name="privacy"
@@ -411,7 +439,7 @@ export default function CreateClub() {
                     Only people with an invite can join
                   </div>
                 </div>
-              </label>
+              </label> */}
             </div>
           </div>
 

@@ -8,7 +8,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import { setTokens, getAccessToken, getRefreshToken } from "@/lib/token";
 import Home from "@/pages/home";
-import Extension from "@/pages/extension";
 import Clubs from "@/pages/clubs";
 import CreateClub from "@/pages/create-club";
 import ClubSettings from "./pages/clubSettings";
@@ -83,6 +82,7 @@ function PrivateRouter() {
           <Route path="/clubs" component={Clubs} />
           <Route path="/create-club" component={CreateClub} />
           <Route path="/clubs/:id" component={ClubDetailsPage} />
+          <Route path="/club-settings/:id" component={ClubSettings} />
           <Route path="/settings" component={Settings} />
 
           {/* final fallback **inside** shell */}

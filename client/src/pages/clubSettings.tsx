@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/apiClient";
 import { PageSEO } from "@/seo/usePageSEO";
+import ClubEditForm from "@/components/ClubEditForm";
 
 type ClubOwner = { id: string };
 type ClubDetails = {
@@ -120,10 +121,13 @@ export default function ClubSettings() {
 
         {/* Future settings form area (intentionally empty for now) */}
         <div className="bg-gray-800 border border-gray-600 rounded-md p-6">
-          <p className="text-gray-400">
-            Settings coming soon. (We’ll add controls here—privacy, image,
-            co-owners, etc.)
-          </p>
+          {isOwner ? (
+            <ClubEditForm clubId={clubId} />
+          ) : (
+            <p className="text-gray-400">
+              Only the owner or a co-owner can edit this club.
+            </p>
+          )}
         </div>
       </div>
     </div>
