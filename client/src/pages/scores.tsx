@@ -8,7 +8,8 @@ import { useLocation } from "wouter";
 import RaceResultsTable, { RaceResults } from "@/components/RaceResultsTable";
 import raceCourse from "@/assets/race-course.jpg";
 
-import aquaBanner from "@/assets/aquabanner.png";
+// import aquaBanner from "@/assets/aquabanner.png";
+import aquaBanner from "@/assets/banner3.jpg";
 import todaysSchedule from "@/assets/todaysSchedule.jpg";
 import schedule1 from "@/assets/race-schedule1.jpg";
 import schedule2 from "@/assets/race-schedule2.jpg";
