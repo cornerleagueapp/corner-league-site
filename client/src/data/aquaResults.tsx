@@ -1108,23 +1108,23 @@ export const aquaResultsTwo: RaceResults[] = [
         rider: "Curtis Pitman",
         age: 35,
         motos: [{ pos: 1 }, { pos: null }, { pos: null }],
-        finalPos: 0,
+        finalPos: 1,
       },
       {
-        rank: 2,
+        rank: 3,
         bikeNumber: 658,
         rider: "Ian Roberts",
         age: 41,
         motos: [{ pos: 2 }, { pos: null }, { pos: null }],
-        finalPos: 0,
+        finalPos: 3,
       },
       {
-        rank: 3,
+        rank: 2,
         bikeNumber: 91,
         rider: "Jb Gasperone",
         age: 4,
         motos: [{ pos: 3 }, { pos: null }, { pos: null }],
-        finalPos: 0,
+        finalPos: 2,
       },
       {
         rank: 4,
@@ -1135,7 +1135,7 @@ export const aquaResultsTwo: RaceResults[] = [
         finalPos: 0,
       },
       {
-        rank: 5,
+        rank: 6,
         bikeNumber: 51,
         rider: "David Cabrera",
         age: 58,
@@ -1143,7 +1143,7 @@ export const aquaResultsTwo: RaceResults[] = [
         finalPos: 0,
       },
       {
-        rank: 6,
+        rank: 7,
         bikeNumber: 247,
         rider: "Joshua Hammond",
         age: 35,
@@ -1151,7 +1151,7 @@ export const aquaResultsTwo: RaceResults[] = [
         finalPos: 0,
       },
       {
-        rank: 7,
+        rank: 5,
         bikeNumber: "11NZ",
         rider: "Trent Brown",
         age: 35,
@@ -1200,7 +1200,7 @@ export const aquaResultsTwo: RaceResults[] = [
         finalPos: 0,
       }, // DSQ
       {
-        rank: 13,
+        rank: 10,
         bikeNumber: 184,
         rider: "Scott Champion",
         age: 36,
