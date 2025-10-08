@@ -307,16 +307,7 @@ export default function ScoresPage() {
                 labelHide="Hide Tuesday's Results"
               >
                 <div className="space-y-4">
-                  {/* <div className="text-sm">
-                    1) 6:30 AM Riders Meeting at the Grandstands
-                  </div> */}
-                  <img
-                    src={todaysSchedule}
-                    alt="IJSBA World Finals Monday's Schedule"
-                    loading="lazy"
-                    onClick={() => setViewerSrc(todaysSchedule)}
-                    className="w-full h-auto rounded-xl border border-white/10 bg-white/5 cursor-zoom-in hover:opacity-90 transition"
-                  />
+                  <div className="text-sm">Ai Analysis coming soon...</div>
 
                   {aquaResultsTwo.map((race, i) => (
                     <RaceResultsTable
@@ -338,10 +329,10 @@ export default function ScoresPage() {
                   <div className="text-sm">More Info to Come...</div>
 
                   {/* <img
-                    src={mondaySchedule}
+                    src={todaysSchedule}
                     alt="IJSBA World Finals Monday's Schedule"
                     loading="lazy"
-                    onClick={() => setViewerSrc(mondaySchedule)}
+                    onClick={() => setViewerSrc(todaysSchedule)}
                     className="w-full h-auto rounded-xl border border-white/10 bg-white/5 cursor-zoom-in hover:opacity-90 transition"
                   /> */}
                 </div>
