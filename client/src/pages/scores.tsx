@@ -384,7 +384,7 @@ export default function ScoresPage() {
                 labelHide="Hide Wednesday's Results"
               >
                 <div className="space-y-4">
-                  {/* <div className="text-sm">More Info to Come...</div> */}
+                  <div className="text-sm">Ai Analysis to Come...</div>
 
                   {aquaResultsThree.map((race, i) => (
                     <RaceResultsTable
