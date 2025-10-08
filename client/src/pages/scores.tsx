@@ -384,7 +384,52 @@ export default function ScoresPage() {
                 labelHide="Hide Wednesday's Results"
               >
                 <div className="space-y-4">
-                  <div className="text-sm">Ai Analysis to Come...</div>
+                  <div className="text-sm">Ai Analysis:</div>
+
+                  <div className="text-sm">
+                    - Dominant sweeps: Britton Reinhard (Am Ski Lites) and Sugar
+                    Sato (Jr 13–15) both went 1-1-1. Ty Smith shadowed with
+                    2-2-2.
+                  </div>
+                  <div className="text-sm">
+                    - Race of the day: Pro Am Ski Mod 1500—Ryder Wildeboer
+                    (1-2-1) edged Harley Ritchie (2-1-2) after three tight
+                    motos.
+                  </div>
+                  <div className="text-sm">
+                    - Clutch Moto 3s: Cash McClure won the Jr 10–12 decider to
+                    lock P2 overall; Patrick Parker and James Munroe Jr salvaged
+                    places with steadier last heats.
+                  </div>
+                  <div className="text-sm">
+                    - Execution over raw speed: Tory Snyder won Am RA 1100 with
+                    2-1-1 by staying tidy; rivals bled points on later motos.
+                  </div>
+                  <div className="text-sm">
+                    - DNS/DNF tax: Luka Martino (no starts) and Anton Ignacio
+                    (DNS) slid to the bottom; Jack Eidt’s DNS fixed him at P18
+                    despite pace.
+                  </div>
+                  <div className="text-sm">
+                    - Quiet climbers: Haigen Smith rose 16→9 overall in Am Ski
+                    Lites; Joaquin Taiano held P9 in Pro Am Mod by avoiding
+                    mistakes.
+                  </div>
+                  <div className="text-sm">
+                    - Runabout podium: Abdullah Alfadhel (1-1-2) controlled the
+                    overall; Seddini Khalil (3-2-1) P2; Massimo Casarini (2-4-3)
+                    P3.
+                  </div>
+                  <div className="text-sm">
+                    - Juniors: Travis Billings (1-1-2) looked title-ready;
+                    Payton Benson steady P4. In 13–15s, Sato/Smith left little
+                    air; Wyatt Kennedy P3.
+                  </div>
+                  <div className="text-sm">
+                    - Deepest field: Amateur Ski Lites—Britton perfect, mid-pack
+                    chaos shuffled results (Mark Queen Jr’s 15 in Moto 3 dropped
+                    him to P5).
+                  </div>
 
                   {aquaResultsThree.map((race, i) => (
                     <RaceResultsTable
