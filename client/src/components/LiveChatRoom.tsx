@@ -3,6 +3,8 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import io, { Socket } from "socket.io-client";
 import { useAuth } from "@/hooks/useAuth";
 
+import stockAvatar from "@/assets/stockprofilepicture.jpeg";
+
 type LiveChatRoomProps = {
   roomId: string;
   onClose?: () => void;
@@ -39,9 +41,8 @@ function getAuthToken(): string | null {
 function formatDayKey(iso?: string) {
   if (!iso) return "Unknown";
   const d = new Date(iso);
-  return d.toDateString(); // stable key per day
+  return d.toDateString();
 }
-
 function formatDayLabel(iso?: string) {
   if (!iso) return "";
   const d = new Date(iso);
@@ -51,7 +52,6 @@ function formatDayLabel(iso?: string) {
     day: "numeric",
   });
 }
-
 function formatTime(iso?: string) {
   if (!iso) return "";
   const d = new Date(iso);
@@ -60,10 +60,8 @@ function formatTime(iso?: string) {
     minute: "2-digit",
   });
 }
-
 function toProfilePath(username?: string) {
   if (!username) return "/profile/unknown";
-  // simple slug-safe path
   return `/profile/${encodeURIComponent(username)}`;
 }
 
@@ -78,6 +76,7 @@ function LiveChatRoom({ roomId, onClose }: LiveChatRoomProps) {
   const [connecting, setConnecting] = useState<boolean>(true);
   const socketRef = useRef<Socket | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
+  const didInitialScrollRef = useRef(false);
 
   const API_URL = useMemo(() => getApiUrlFromEnv(), []);
   const SOCKET_URL = useMemo(() => API_URL.replace(/\/api$/, ""), [API_URL]);
@@ -138,26 +137,40 @@ function LiveChatRoom({ roomId, onClose }: LiveChatRoomProps) {
     }
   }
 
-  useEffect(() => {
+  function scrollToBottom(force = false) {
     const el = listRef.current;
     if (!el) return;
+    if (force) {
+      el.scrollTop = el.scrollHeight;
+      return;
+    }
     const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
     if (nearBottom) el.scrollTop = el.scrollHeight;
+  }
+
+  useEffect(() => {
+    scrollToBottom(false);
   }, [messages.length]);
 
   useEffect(() => {
-    // If a socket already exists, don't init again
     if (socketRef.current) return;
-
     let active = true;
 
     const init = async () => {
       setConnecting(true);
       await ensureRoom();
+
       const initial = await fetchMessages();
       if (!active) return;
 
       setMessages(initial);
+
+      setTimeout(() => {
+        if (!didInitialScrollRef.current) {
+          didInitialScrollRef.current = true;
+          scrollToBottom(true);
+        }
+      }, 0);
 
       const s = io(SOCKET_URL, {
         path: "/socket.io",
@@ -171,7 +184,10 @@ function LiveChatRoom({ roomId, onClose }: LiveChatRoomProps) {
         s.emit("joinRoom", { matchId: roomId, username });
       });
 
-      s.on("joinRoomSuccess", () => setConnecting(false));
+      s.on("joinRoomSuccess", () => {
+        setConnecting(false);
+        setTimeout(() => scrollToBottom(true), 0);
+      });
 
       s.on("joinRoomError", (err: any) => {
         setConnecting(false);
@@ -221,6 +237,7 @@ function LiveChatRoom({ roomId, onClose }: LiveChatRoomProps) {
       message: currentMessage.trim(),
     });
     setCurrentMessage("");
+    requestAnimationFrame(() => scrollToBottom(true));
   }, [currentMessage, roomId, userId]);
 
   const unauthenticated = !isAuthenticated || !userId;
@@ -233,7 +250,6 @@ function LiveChatRoom({ roomId, onClose }: LiveChatRoomProps) {
       hasToken: !!authToken,
     });
     if (snapshot !== lastAuthLogRef.current) {
-      // eslint-disable-next-line no-console
       console.log("[LiveChat] auth", {
         isAuthenticated,
         hasToken: !!authToken,
@@ -251,7 +267,7 @@ function LiveChatRoom({ roomId, onClose }: LiveChatRoomProps) {
     }
     return Object.entries(groups).sort(
       ([a], [b]) => new Date(a).getTime() - new Date(b).getTime()
-    ); // ascending by day
+    );
   }, [messages]);
 
   return (
@@ -314,11 +330,14 @@ function LiveChatRoom({ roomId, onClose }: LiveChatRoomProps) {
                           <a href={profileHref} className="shrink-0">
                             <img
                               className="w-8 h-8 rounded-full object-cover hover:opacity-90 transition"
-                              src={
-                                m.profilePicture ||
-                                "https://static.cdn-asset-placeholder.com/avatar.png"
-                              }
+                              src={m.profilePicture || stockAvatar}
                               alt={m.username}
+                              onError={(e) => {
+                                const img = e.currentTarget;
+                                if (!img.src.includes("stockprofilepicture")) {
+                                  img.src = stockAvatar;
+                                }
+                              }}
                             />
                           </a>
 
