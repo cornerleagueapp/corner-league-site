@@ -1286,12 +1286,12 @@ export const aquaResultsTwo: RaceResults[] = [
     motoLabels: ["Moto 1", "Moto 2", "Moto 3"],
     rows: [
       {
-        rank: 1,
+        rank: 2,
         bikeNumber: 31,
         rider: "Kaylee Kennedy",
         age: 16,
         motos: [{ pos: 1 }, { pos: 3 }, { pos: 5 }],
-        finalPos: 1,
+        finalPos: 2,
       },
       {
         rank: 6,
