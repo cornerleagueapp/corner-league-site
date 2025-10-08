@@ -380,16 +380,15 @@ export default function ScoresPage() {
                 labelHide="Hide Wednesday's Schedule"
               >
                 <div className="space-y-4">
-                  <div className="text-sm">Expert Racing</div>
                   <div className="text-sm">More Info to Come...</div>
 
-                  {/* <img
+                  <img
                     src={todaysSchedule}
                     alt="IJSBA World Finals Monday's Schedule"
                     loading="lazy"
                     onClick={() => setViewerSrc(todaysSchedule)}
                     className="w-full h-auto rounded-xl border border-white/10 bg-white/5 cursor-zoom-in hover:opacity-90 transition"
-                  /> */}
+                  />
                 </div>
               </AccordionSection>
 
