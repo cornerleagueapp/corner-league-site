@@ -307,7 +307,61 @@ export default function ScoresPage() {
                 labelHide="Hide Tuesday's Results"
               >
                 <div className="space-y-4">
-                  <div className="text-sm">Ai Analysis coming soon...</div>
+                  <div className="text-sm">Ai Analysis</div>
+                  <div className="text-sm">
+                    - Overall winners kept it boring—in a good way. When gate
+                    drops were tidy, three-moto scoring rewarded calm repetition
+                    more than flashes.
+                  </div>
+                  <div className="text-sm">
+                    - Clean sweeps: Attapon Kunsa (Pro Am Vet RA Ltd) 1-1-1;
+                    Jeremy Poper (Master Ski Modified 1500) 1-1-1; Anton Ignacio
+                    (Runabout NA) 1-1-1. Textbook execution.
+                  </div>
+                  <div className="text-sm">
+                    - Triple lockstep: Master Ski Modified’s entire podium ran
+                    the table—Poper 1-1-1, Dufaud 2-2-2, Playan 3-3-3. Zero
+                    chaos up front; all the variance lived P4–P10.
+                  </div>
+                  <div className="text-sm">
+                    - Late closer of the day: Jack Cobb (Novice Ski Lites)
+                    turned an 8 in Moto-1 into the overall with back-to-back
+                    wins (8-1-1). That’s championship poise.
+                  </div>
+                  <div className="text-sm">
+                    - “Clutch Moto 3” finishes: • Franco Tobler (Am Ski Mod
+                    1500) sealed it with a 1 in the decider (1-2-1) over Lukas
+                    Cervera (2-1-2).
+                  </div>
+                  <div className="text-sm">
+                    - Alain Wyss (Am Vet Ski Stock) protected the points with
+                    1-1-2 while Jonathan Phan’s Moto-3 win salvaged P2 overall.
+                  </div>
+                  <div className="text-sm">
+                    - Consistency beats raw pace (again): Patrick Parker’s 2-2-1
+                    topped Matthew Johnson despite Johnson’s early 1-1—Moto-3
+                    discipline swung Sport Spec.
+                  </div>
+                  <div className="text-sm">
+                    - Multi-class notables: Philippe Dufaud podiums in two (P3
+                    in Am Vet Ski Stock; P2 in Master Ski Modified). Kristine
+                    Mercado juggled classes—solid P4 in Amateur RA 1100.
+                  </div>
+                  <div className="text-sm">
+                    - Best rebound program: Angelo Ventus (Am RA 1100) opened
+                    with a 2, then stacked 1-1 for the overall ahead of Ryan
+                    Smith (1-4-3).
+                  </div>
+                  <div className="text-sm">
+                    - Youth headline: Teen winners Parker (Sport Spec) and Sadie
+                    Mir (Am Women Ski Stock, 2-1-1) handled pressure in finals.
+                    Kaylee & Kendra Kennedy kept piling top-5s in Novice Lites.
+                  </div>
+                  <div className="text-sm">
+                    - Penalty/DNS gravity: The back half of Master Ski Modified
+                    and Sport Spec shuffled mostly from DNFs/DNS—front-runners
+                    who simply finished every lap banked free positions.
+                  </div>
 
                   {aquaResultsTwo.map((race, i) => (
                     <RaceResultsTable
