@@ -15,7 +15,11 @@ import schedule1 from "@/assets/race-schedule1.jpg";
 import schedule2 from "@/assets/race-schedule2.jpg";
 import schedule3 from "@/assets/race-schedule3.jpg";
 
-import { aquaResults, aquaResultsTwo } from "@/data/aquaResults";
+import {
+  aquaResults,
+  aquaResultsTwo,
+  aquaResultsThree,
+} from "@/data/aquaResults";
 
 type TabKey = "AQUA" | "MLB" | "NBA" | "NFL" | "NHL" | "NCAAF";
 const TAB_ORDER: TabKey[] = ["AQUA", "MLB", "NBA", "NFL", "NHL", "NCAAF"];
@@ -380,7 +384,7 @@ export default function ScoresPage() {
                 labelHide="Hide Wednesday's Schedule"
               >
                 <div className="space-y-4">
-                  <div className="text-sm">More Info to Come...</div>
+                  {/* <div className="text-sm">More Info to Come...</div> */}
 
                   <img
                     src={todaysSchedule}
@@ -389,6 +393,15 @@ export default function ScoresPage() {
                     onClick={() => setViewerSrc(todaysSchedule)}
                     className="w-full h-auto rounded-xl border border-white/10 bg-white/5 cursor-zoom-in hover:opacity-90 transition"
                   />
+
+                  {aquaResultsThree.map((race, i) => (
+                    <RaceResultsTable
+                      key={`${race.raceLabel ?? race.title}-${i}`}
+                      data={race}
+                      showFinalOnDesktop
+                      collapsible
+                    />
+                  ))}
                 </div>
               </AccordionSection>
 
