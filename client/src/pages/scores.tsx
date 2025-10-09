@@ -448,18 +448,44 @@ export default function ScoresPage() {
                 labelHide="Hide Thursday's Schedule"
               >
                 <div className="space-y-4">
-                  {/* <div className="text-sm">
-                    Expert Racing continues. Most vendors have been placed and
-                    fully operational.
-                  </div> */}
-
-                  <img
-                    src={todaysSchedule}
-                    alt="IJSBA World Finals Monday's Schedule"
-                    loading="lazy"
-                    onClick={() => setViewerSrc(todaysSchedule)}
-                    className="w-full h-auto rounded-xl border border-white/10 bg-white/5 cursor-zoom-in hover:opacity-90 transition"
-                  />
+                  <div className="text-sm">Ai Analysis:</div>
+                  <div className="text-sm">
+                    - Big winners: River Crawford dominated Amateur Ski Modified
+                    1100 with a clean 1-1-1. Anton Ignacio swept Pro Am Runabout
+                    1100 Stock (1-1-1). Michael Prodanovich controlled Vintage
+                    SC (1-1 for the overall).
+                  </div>
+                  <div className="text-sm">
+                    - Race of the day – Pro Am Runabout Super Stock (Race 4):
+                    Juan Lezcano sealed it with a clutch Moto-3 win (1-5-1).
+                    James Bamburg (4-1-3) took P2, James Munroe Jr (3-4-2) P3.
+                  </div>
+                  <div className="text-sm">
+                    - Master Ski Stock (Race 3): Philippe Dufaud was clinical
+                    (2-1-1) over Kevin Decarli (1-2-2). Bill Kuckert’s late slip
+                    made it P3.
+                  </div>
+                  <div className="text-sm">
+                    - Pro Am Ski Lites: Lukas Cervera won on consistency
+                    (1-2-2). Deven Farthing’s Moto-3 win locked P2; River
+                    Crawford settled P3 after a costly M3.
+                  </div>
+                  <div className="text-sm">
+                    - Quiet climbers: Erik Gruenwald (Am Ski Mod 1100) worked up
+                    to P4 with 7-5-3. Brice Chambers turned 7-4-4 into P5 in Pro
+                    Am Lites.
+                  </div>
+                  <div className="text-sm">
+                    - Attrition watch: Partial runs/DNS hurt results—Richard
+                    Longacre (Vintage SC) and a couple Super Stock names slid
+                    down despite speed.
+                  </div>
+                  <div className="text-sm">
+                    - Takeaway: The day favored riders who protected their
+                    average—starts, clean water, and no penalties. Crawford and
+                    Ignacio looked untouchable; Lezcano and Dufaud won their
+                    classes by nailing the money moto.
+                  </div>
 
                   {aquaResultsFour.map((race, i) => (
                     <RaceResultsTable
@@ -477,18 +503,13 @@ export default function ScoresPage() {
                 labelHide="Hide Friday's Schedule"
               >
                 <div className="space-y-4">
-                  <div className="text-sm">
-                    Amateur Freestyle, Expert and Pro Am Racing, Awards for all
-                    completed classes. Check in for Poker Run- open to the
-                    public, no competition membership necessary.
-                  </div>
                   <div className="text-sm">More Info to Come...</div>
 
                   {/* <img
-                    src={mondaySchedule}
+                    src={todaysSchedule}
                     alt="IJSBA World Finals Monday's Schedule"
                     loading="lazy"
-                    onClick={() => setViewerSrc(mondaySchedule)}
+                    onClick={() => setViewerSrc(todaysSchedule)}
                     className="w-full h-auto rounded-xl border border-white/10 bg-white/5 cursor-zoom-in hover:opacity-90 transition"
                   /> */}
                 </div>
