@@ -19,6 +19,7 @@ import {
   aquaResults,
   aquaResultsTwo,
   aquaResultsThree,
+  aquaResultsFour,
 } from "@/data/aquaResults";
 
 type TabKey = "AQUA" | "MLB" | "NBA" | "NFL" | "NHL" | "NCAAF";
@@ -459,6 +460,15 @@ export default function ScoresPage() {
                     onClick={() => setViewerSrc(todaysSchedule)}
                     className="w-full h-auto rounded-xl border border-white/10 bg-white/5 cursor-zoom-in hover:opacity-90 transition"
                   />
+
+                  {aquaResultsFour.map((race, i) => (
+                    <RaceResultsTable
+                      key={`${race.raceLabel ?? race.title}-${i}`}
+                      data={race}
+                      showFinalOnDesktop
+                      collapsible
+                    />
+                  ))}
                 </div>
               </AccordionSection>
 

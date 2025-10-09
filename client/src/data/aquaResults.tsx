@@ -2012,3 +2012,119 @@ export const aquaResultsThree: RaceResults[] = [
     ],
   },
 ];
+
+// RACE DAY 4 ---------------------
+// --------------------------------
+export const aquaResultsFour: RaceResults[] = [
+  {
+    raceLabel: "Race 1",
+    title: "Pro Am Ski Lites",
+    motoLabels: ["Moto 1", "Moto 2", "Moto 3"],
+    rows: [
+      {
+        rank: 1,
+        bikeNumber: 28,
+        rider: "Lukas Cervera",
+        age: 17,
+        motos: [{ pos: 1 }, { pos: null }, { pos: null }],
+        finalPos: 0,
+      },
+      {
+        rank: 2,
+        bikeNumber: 177,
+        rider: "River Crawford",
+        age: 16,
+        motos: [{ pos: 2 }, { pos: null }, { pos: null }],
+        finalPos: 0,
+      },
+      {
+        rank: 3,
+        bikeNumber: 217,
+        rider: "Deven Farthing",
+        age: 21,
+        motos: [{ pos: 3 }, { pos: null }, { pos: null }],
+        finalPos: 0,
+      },
+      {
+        rank: 4,
+        bikeNumber: 124,
+        rider: "Sophia Benson",
+        age: 16,
+        motos: [{ pos: 4 }, { pos: null }, { pos: null }],
+        finalPos: 0,
+      },
+      {
+        rank: 5,
+        bikeNumber: 555,
+        rider: "Maddix Haynes",
+        age: 16,
+        motos: [{ pos: 5 }, { pos: null }, { pos: null }],
+        finalPos: 0,
+      },
+      {
+        rank: 6,
+        bikeNumber: 23,
+        rider: "Curtis Pitman",
+        age: 35,
+        motos: [{ pos: 6 }, { pos: null }, { pos: null }],
+        finalPos: 0,
+      },
+      {
+        rank: 7,
+        bikeNumber: 424,
+        rider: "Brice Chambers",
+        age: 16,
+        motos: [{ pos: 7 }, { pos: null }, { pos: null }],
+        finalPos: 0,
+      },
+      {
+        rank: 8,
+        bikeNumber: 102,
+        rider: "Justin Treder",
+        age: 45,
+        motos: [{ pos: 8 }, { pos: null }, { pos: null }],
+        finalPos: 0,
+      },
+      {
+        rank: 9,
+        bikeNumber: 113,
+        rider: "Jack Eidt",
+        age: 20,
+        motos: [{ pos: 9 }, { pos: null }, { pos: null }],
+        finalPos: 0,
+      },
+      {
+        rank: 10,
+        bikeNumber: 11,
+        rider: "Ryan Poper",
+        age: 17,
+        motos: [{ pos: 10 }, { pos: null }, { pos: null }],
+        finalPos: 0,
+      },
+      {
+        rank: 11,
+        bikeNumber: 160,
+        rider: "Ollie Morris",
+        age: 20,
+        motos: [{ pos: 11 }, { pos: null }, { pos: null }],
+        finalPos: 0,
+      },
+      {
+        rank: 12,
+        bikeNumber: 34,
+        rider: "Joseph Filip",
+        age: 16,
+        motos: [{ pos: null }, { pos: null }, { pos: null }], // DNS
+        finalPos: 0,
+      },
+      {
+        rank: 13,
+        bikeNumber: 307,
+        rider: "Justin Kaplan",
+        age: 17,
+        motos: [{ pos: null }, { pos: null }, { pos: null }], // DNS
+        finalPos: 0,
+      },
+    ],
+  },
+];
