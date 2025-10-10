@@ -20,6 +20,7 @@ import {
   aquaResultsTwo,
   aquaResultsThree,
   aquaResultsFour,
+  aquaResultsFive,
 } from "@/data/aquaResults";
 
 type TabKey = "AQUA" | "MLB" | "NBA" | "NFL" | "NHL" | "NCAAF";
@@ -444,8 +445,8 @@ export default function ScoresPage() {
               </AccordionSection>
 
               <AccordionSection
-                labelShow="Show Thursday's Schedule"
-                labelHide="Hide Thursday's Schedule"
+                labelShow="Show Thursday's Results"
+                labelHide="Hide Thursday's Results"
               >
                 <div className="space-y-4">
                   <div className="text-sm">Ai Analysis:</div>
@@ -503,15 +504,24 @@ export default function ScoresPage() {
                 labelHide="Hide Friday's Schedule"
               >
                 <div className="space-y-4">
-                  <div className="text-sm">More Info to Come...</div>
+                  {/* <div className="text-sm">More Info to Come...</div> */}
 
-                  {/* <img
+                  <img
                     src={todaysSchedule}
                     alt="IJSBA World Finals Monday's Schedule"
                     loading="lazy"
                     onClick={() => setViewerSrc(todaysSchedule)}
                     className="w-full h-auto rounded-xl border border-white/10 bg-white/5 cursor-zoom-in hover:opacity-90 transition"
-                  /> */}
+                  />
+
+                  {aquaResultsFive.map((race, i) => (
+                    <RaceResultsTable
+                      key={`${race.raceLabel ?? race.title}-${i}`}
+                      data={race}
+                      showFinalOnDesktop
+                      collapsible
+                    />
+                  ))}
                 </div>
               </AccordionSection>
 
