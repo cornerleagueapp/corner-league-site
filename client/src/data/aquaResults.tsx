@@ -2921,3 +2921,21 @@ export const aquaResultsFive: RaceResults[] = [
     ],
   },
 ];
+
+export const aquaResultsSix: RaceResults[] = [
+  {
+    raceLabel: "Race 7",
+    title: "Amateur Women's Runabout 1100",
+    motoLabels: ["Moto 1", "Moto 2", "Moto 3"],
+    rows: [
+      {
+        rank: 1,
+        bikeNumber: 18,
+        rider: "Jesse Arcilla",
+        age: 17,
+        motos: [{ pos: 1 }, { pos: 1 }, { pos: 1 }],
+        finalPos: 1,
+      },
+    ],
+  },
+];

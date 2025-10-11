@@ -10,7 +10,7 @@ import raceCourse from "@/assets/race-course.jpg";
 
 // import aquaBanner from "@/assets/aquabanner.png";
 import aquaBanner from "@/assets/banner3.jpg";
-import todaysSchedule from "@/assets/todaysSchedule.jpg";
+import todaysSchedule from "@/assets/todaysSchedule.png";
 import schedule1 from "@/assets/race-schedule1.jpg";
 import schedule2 from "@/assets/race-schedule2.jpg";
 import schedule3 from "@/assets/race-schedule3.jpg";
@@ -21,6 +21,7 @@ import {
   aquaResultsThree,
   aquaResultsFour,
   aquaResultsFive,
+  aquaResultsSix,
 } from "@/data/aquaResults";
 
 type TabKey = "AQUA" | "MLB" | "NBA" | "NFL" | "NHL" | "NCAAF";
@@ -504,15 +505,54 @@ export default function ScoresPage() {
                 labelHide="Hide Friday's Schedule"
               >
                 <div className="space-y-4">
-                  {/* <div className="text-sm">More Info to Come...</div> */}
+                  <div className="text-sm">Ai Analysis:</div>
 
-                  <img
-                    src={todaysSchedule}
-                    alt="IJSBA World Finals Monday's Schedule"
-                    loading="lazy"
-                    onClick={() => setViewerSrc(todaysSchedule)}
-                    className="w-full h-auto rounded-xl border border-white/10 bg-white/5 cursor-zoom-in hover:opacity-90 transition"
-                  />
+                  <div className="text-sm">
+                    - Expert Ski GP (Race 1): Lukas Cervera closed like a
+                    pro—2-1-1 for the overall. Hugo Pastorello (1-4-3) and
+                    Franco Tobler (4-2-2) rounded out a tidy podium. Mid-pack
+                    drama decided places: Ian Roberts (10-7-DNS) still salvaged
+                    P9, while Ryland Webster’s DSQ in Moto-3 froze him at P10
+                    despite pace.
+                  </div>
+                  <div className="text-sm">
+                    - Pro Am Runabout 1100 Open (Race 2): Worakit Mongkolporn
+                    kept it clinical—1-1-2 for P1. Louie Buhisan’s late push
+                    (2-2-1) made it close but not enough. Kodai Taguchi
+                    consistent (3-4-3) for P3; Josh Teague and Nick McMillan
+                    locked 4–5 with steady finishes.
+                  </div>
+                  <div className="text-sm">
+                    - Pro Am Ski 4-Stroke Lites (Race 3): Sugar Sato swept the
+                    table (1-1-1). Kashe Crawford shadowed with a perfect 2-2-2.
+                    Sophia Benson (4-3-4) won the “best of the rest” fight as
+                    Brice Chambers climbed 7-4-3 to P4—classic consistency over
+                    flash.
+                  </div>
+                  <div className="text-sm">
+                    - Jr Ski 13–15 Modified 1100 (Race 4): Sebastian Wilcox won
+                    the war with a composed 2-1-3. Kashe Crawford again showed
+                    top-end speed (1-6-1) but the rough Moto-2 kept him P2
+                    overall. Baron Mernik (4-2-2) grabbed P3 by keeping the
+                    floor high.
+                  </div>
+                  <div className="text-sm">
+                    - Pro Sport GP (Race 5): Simon Belcher authored a textbook
+                    sweep (1-1-1). Brandon Warner’s 2-2-2 shows the same pace,
+                    just one step behind off the line. Massimo Casarini (3-3-4)
+                    edged Talan Farthing (4-4-3) for P3 on the strength of early
+                    motos. DNS in Moto-1 capped Ricky Trevizo and Suphathat
+                    Footrakul at 5–6.
+                  </div>
+                  <div className="text-sm">
+                    - Pro Am Ski Stock (Race 6): Alain Wyss looked like the
+                    adult in the room—1-2-2 gave him control of the class. Jake
+                    Wilson’s clutch Moto-3 win (3-4-1) underlined the raw speed,
+                    while Josh Simon (2-3-3) banked another podium with zero
+                    drama. The “mechanical tax” hit hard: Davi Prado’s
+                    9-1-DNF/DNS erased a podium bid; David Zipperian never got
+                    rolling (DNS/DNS).
+                  </div>
 
                   {aquaResultsFive.map((race, i) => (
                     <RaceResultsTable
@@ -530,23 +570,24 @@ export default function ScoresPage() {
                 labelHide="Hide Saturday's Schedule"
               >
                 <div className="space-y-4">
-                  <div className="text-sm">
-                    Pro Racing Begins. Pro Freestyle. Morning Endurance Race.
-                    Poker Run Check In and Poker Run.
-                  </div>
-                  <div className="text-sm">
-                    Anderson Powersports/Big O Tires Saturday night under the
-                    bridge freestyle show. Click here for event info.
-                  </div>
-                  <div className="text-sm">More Info to Come...</div>
+                  {/* <div className="text-sm">More Info to Come...</div> */}
 
-                  {/* <img
-                    src={mondaySchedule}
+                  <img
+                    src={todaysSchedule}
                     alt="IJSBA World Finals Monday's Schedule"
                     loading="lazy"
-                    onClick={() => setViewerSrc(mondaySchedule)}
+                    onClick={() => setViewerSrc(todaysSchedule)}
                     className="w-full h-auto rounded-xl border border-white/10 bg-white/5 cursor-zoom-in hover:opacity-90 transition"
-                  /> */}
+                  />
+
+                  {/* {aquaResultsSix.map((race, i) => (
+                    <RaceResultsTable
+                      key={`${race.raceLabel ?? race.title}-${i}`}
+                      data={race}
+                      showFinalOnDesktop
+                      collapsible
+                    />
+                  ))} */}
                 </div>
               </AccordionSection>
 
