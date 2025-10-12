@@ -587,15 +587,62 @@ export default function ScoresPage() {
                 labelHide="Hide Saturday's Schedule"
               >
                 <div className="space-y-4">
-                  {/* <div className="text-sm">More Info to Come...</div> */}
+                  <div className="text-sm">Ai Analysis:</div>
 
-                  <img
-                    src={todaysSchedule}
-                    alt="IJSBA World Finals Monday's Schedule"
-                    loading="lazy"
-                    onClick={() => setViewerSrc(todaysSchedule)}
-                    className="w-full h-auto rounded-xl border border-white/10 bg-white/5 cursor-zoom-in hover:opacity-90 transition"
-                  />
+                  <div className="text-sm">
+                    - Junior Ski 10–12 Stock (Race 1): Cash McClure closed like
+                    a champ—3-1-1 → P1 overall. Vittorio Casarini (1-2-2) had
+                    the early edge but couldn’t match McClure’s last two motos.
+                    Christian Bain steady for P3 (2-3-3). Clear pattern: the
+                    rider who improved across motos won the day; hole-shots
+                    decided clean water.
+                  </div>
+                  <div className="text-sm">
+                    - Pro Am Women Ski (Race 3): Emy Garcia was clinical: 1-1-2
+                    → P1. Britton Reinhard mirror-matched (2-2-1) for P2, with
+                    River Varner lock-step 3-3-3 for P3. The podium came down to
+                    mistake-free laps; the top three basically ran their own
+                    races.
+                  </div>
+                  <div className="text-sm">
+                    - Pro Am Runabout Stock (Race 4): Vanjae Ramgeet won it on
+                    consistency—7-3-1 → P1 overall after nailing the money moto.
+                    Brian Baldwin (2-7-3 → P2) and Brandon Warner (4-4-6 → P3)
+                    rounded the box. Big swings decided the rest: Seddini
+                    Khalil’s 1-6-DNS dropped him to P10; Nicolas Rius double-DNS
+                    after a P5 opener.
+                  </div>
+                  <div className="text-sm">
+                    - Junior Ski 13–15 Stock (Race 5): Ty Smith delivered a
+                    composed 2-1-1 → P1 overall. Gavin Hoggard led early but
+                    settled 1-3-3 → P2. Jack Cobb (4-2-2) took P3. The title
+                    fight rewarded second-half discipline.
+                  </div>
+                  <div className="text-sm">
+                    - Vintage Ski (Race 6): A textbook wire-to-wire: Andrew
+                    Cecere 1-1 → P1 overall, Nick Scholten 2-2 → P2, Dan
+                    Fitzgerald 3-3 → P3. Behind them, the story was
+                    attrition/traffic: mid-pack shuffles (e.g., Justin Treder
+                    14-5) showed how one clean start flips positions.
+                  </div>
+                  <div className="text-sm">
+                    - Pro Runabout GP (Race 7): Seddini Khalil took command with
+                    2-1-1 → P1 overall. Massimo Casarini was next best on
+                    average (1-2-2 → P2). Valentina Lezcano (4-3-3) and Juan
+                    Lezcano (3-4-4) filled P3/P4. Khalil’s pace + mistake-free
+                    execution made this feel inevitable by the final.
+                  </div>
+                  <div className="text-sm">
+                    - Pro Ski GP (Race 2) — Halfway update (2 motos today, 2
+                    tomorrow): It’s tight and volatile. Harley Ritchie rebounded
+                    from an average opener to win Moto-2 (8, 1). Revin Harris is
+                    the metronome (4, 4). Mao Sato started hot then slipped (2,
+                    8). Ryder Wildeboer showed the largest swing (1, 12).
+                    Sebastion Girello climbed (12, 3). With two motos left
+                    tomorrow, this one’s wide open—Ritchie carries the momentum,
+                    Harris carries the consistency, and Sato/Wildeboer have the
+                    outright speed if they tidy the starts.
+                  </div>
 
                   {aquaResultsSix.map((race, i) => (
                     <RaceResultsTable
@@ -619,10 +666,10 @@ export default function ScoresPage() {
                   <div className="text-sm">More Info to Come...</div>
 
                   {/* <img
-                    src={mondaySchedule}
+                    src={todaysSchedule}
                     alt="IJSBA World Finals Monday's Schedule"
                     loading="lazy"
-                    onClick={() => setViewerSrc(mondaySchedule)}
+                    onClick={() => setViewerSrc(todaysSchedule)}
                     className="w-full h-auto rounded-xl border border-white/10 bg-white/5 cursor-zoom-in hover:opacity-90 transition"
                   /> */}
                 </div>
