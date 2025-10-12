@@ -2789,7 +2789,7 @@ export const aquaResultsFive: RaceResults[] = [
         rider: "Alain Wyss",
         age: 37,
         motos: [{ pos: 1 }, { pos: 2 }, { pos: 2 }],
-        finalPos: 0,
+        finalPos: 1,
       },
       {
         rank: 2,
@@ -2797,7 +2797,7 @@ export const aquaResultsFive: RaceResults[] = [
         rider: "Jake Wilson",
         age: 17,
         motos: [{ pos: 3 }, { pos: 4 }, { pos: 1 }],
-        finalPos: 0,
+        finalPos: 2,
       },
       {
         rank: 3,
@@ -2805,7 +2805,7 @@ export const aquaResultsFive: RaceResults[] = [
         rider: "Josh Simon",
         age: 18,
         motos: [{ pos: 2 }, { pos: 3 }, { pos: 3 }],
-        finalPos: 0,
+        finalPos: 3,
       },
       {
         rank: 4,
@@ -2813,7 +2813,7 @@ export const aquaResultsFive: RaceResults[] = [
         rider: "Anthony Decarli",
         age: 24,
         motos: [{ pos: 4 }, { pos: 5 }, { pos: 4 }],
-        finalPos: 0,
+        finalPos: 4,
       },
       {
         rank: 5,
@@ -2821,7 +2821,7 @@ export const aquaResultsFive: RaceResults[] = [
         rider: "Drake Decker",
         age: 21,
         motos: [{ pos: 7 }, { pos: 7 }, { pos: 5 }],
-        finalPos: 0,
+        finalPos: 5,
       },
       {
         rank: 6,
@@ -2829,7 +2829,7 @@ export const aquaResultsFive: RaceResults[] = [
         rider: "Luke Mansfield",
         age: 16,
         motos: [{ pos: 6 }, { pos: 10 }, { pos: 6 }],
-        finalPos: 0,
+        finalPos: 6,
       },
       {
         rank: 7,
@@ -2837,7 +2837,7 @@ export const aquaResultsFive: RaceResults[] = [
         rider: "Nattanan Keenapan",
         age: 16,
         motos: [{ pos: 8 }, { pos: 6 }, { pos: 8 }],
-        finalPos: 0,
+        finalPos: 7,
       },
       {
         rank: 8,
@@ -2845,7 +2845,7 @@ export const aquaResultsFive: RaceResults[] = [
         rider: "Preston Lewis",
         age: 18,
         motos: [{ pos: 5 }, { pos: 12 }, { pos: 7 }],
-        finalPos: 0,
+        finalPos: 8,
       },
       {
         rank: 9,
@@ -2853,7 +2853,7 @@ export const aquaResultsFive: RaceResults[] = [
         rider: "Davi Prado",
         age: 25,
         motos: [{ pos: 9 }, { pos: 1 }, { pos: null }],
-        finalPos: 0,
+        finalPos: 9,
       },
       {
         rank: 10,
@@ -2861,7 +2861,7 @@ export const aquaResultsFive: RaceResults[] = [
         rider: "Kodai Taguchi",
         age: 17,
         motos: [{ pos: 10 }, { pos: 9 }, { pos: 9 }],
-        finalPos: 0,
+        finalPos: 10,
       },
       {
         rank: 11,
@@ -2869,7 +2869,7 @@ export const aquaResultsFive: RaceResults[] = [
         rider: "Heber Blackmore",
         age: 19,
         motos: [{ pos: 12 }, { pos: 8 }, { pos: 10 }],
-        finalPos: 0,
+        finalPos: 11,
       },
       {
         rank: 12,
@@ -2877,7 +2877,7 @@ export const aquaResultsFive: RaceResults[] = [
         rider: "Collin Kaplan",
         age: 19,
         motos: [{ pos: 11 }, { pos: 11 }, { pos: null }],
-        finalPos: 0,
+        finalPos: 12,
       },
       {
         rank: 13,
@@ -2885,7 +2885,7 @@ export const aquaResultsFive: RaceResults[] = [
         rider: "David Zipperian",
         age: 0,
         motos: [{ pos: null }, { pos: null }, { pos: null }],
-        finalPos: 0,
+        finalPos: 13,
       },
     ],
   },
