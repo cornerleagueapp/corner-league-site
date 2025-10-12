@@ -10,7 +10,7 @@ import raceCourse from "@/assets/race-course.jpg";
 
 // import aquaBanner from "@/assets/aquabanner.png";
 import aquaBanner from "@/assets/banner3.jpg";
-import todaysSchedule from "@/assets/todaysSchedule.png";
+import todaysSchedule from "@/assets/todaysSchedule.jpg";
 import schedule1 from "@/assets/race-schedule1.jpg";
 import schedule2 from "@/assets/race-schedule2.jpg";
 import schedule3 from "@/assets/race-schedule3.jpg";
@@ -660,18 +660,15 @@ export default function ScoresPage() {
                 labelHide="Hide Sunday's Schedule"
               >
                 <div className="space-y-4">
-                  <div className="text-sm">
-                    Pro Racing. Pro Freestyle. Morning Endurance Race. Awards.
-                  </div>
                   <div className="text-sm">More Info to Come...</div>
 
-                  {/* <img
+                  <img
                     src={todaysSchedule}
                     alt="IJSBA World Finals Monday's Schedule"
                     loading="lazy"
                     onClick={() => setViewerSrc(todaysSchedule)}
                     className="w-full h-auto rounded-xl border border-white/10 bg-white/5 cursor-zoom-in hover:opacity-90 transition"
-                  /> */}
+                  />
                 </div>
               </AccordionSection>
             </div>
