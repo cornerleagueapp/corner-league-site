@@ -216,19 +216,16 @@ export default function ScoresPage() {
             <div className="space-y-3">
               {/* Responsive 16:9 YouTube embed */}
               <div className="relative w-full overflow-hidden rounded-xl border border-white/10 bg-white/5">
-                <div className="relative pt-[56.25%]">
-                  {" "}
-                  {/* 16:9 = 9/16 = 56.25% */}
-                  <iframe
-                    src="https://www.youtube.com/embed/Z3rYV4wksZ8?autoplay=1&mute=1&playsinline=1&modestbranding=1&rel=0"
-                    title="YouTube live stream"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowFullScreen
-                    className="absolute inset-0 h-full w-full border-0"
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                  />
-                </div>
+                <div className="relative pt-[56.25%]">{/* 16:9 */}</div>
+                <iframe
+                  src="https://www.youtube.com/embed/FSBIv0dKTCA?si=6thOjZF5fIZw0qqo&autoplay=1&mute=1&playsinline=1&modestbranding=1&rel=0"
+                  title="YouTube video"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                  className="absolute inset-0 h-full w-full border-0"
+                  loading="lazy"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                />
               </div>
 
               <AccordionSection
