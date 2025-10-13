@@ -516,8 +516,8 @@ export default function ScoresPage() {
               </AccordionSection>
 
               <AccordionSection
-                labelShow="Show Friday's Schedule"
-                labelHide="Hide Friday's Schedule"
+                labelShow="Show Friday's Results"
+                labelHide="Hide Friday's Results"
               >
                 <div className="space-y-4">
                   <div className="text-sm">Ai Analysis:</div>
@@ -581,8 +581,8 @@ export default function ScoresPage() {
               </AccordionSection>
 
               <AccordionSection
-                labelShow="Show Saturday's Schedule"
-                labelHide="Hide Saturday's Schedule"
+                labelShow="Show Saturday's Results"
+                labelHide="Hide Saturday's Results"
               >
                 <div className="space-y-4">
                   <div className="text-sm">Ai Analysis:</div>
@@ -654,11 +654,263 @@ export default function ScoresPage() {
               </AccordionSection>
 
               <AccordionSection
-                labelShow="Show Sunday's Schedule"
-                labelHide="Hide Sunday's Schedule"
+                labelShow="Show Sunday's Results"
+                labelHide="Hide Sunday's Results"
               >
                 <div className="space-y-4">
-                  <div className="text-sm">Ai to Come...</div>
+                  {/* --- AI Analysis — Sunday Recap --- */}
+                  <div className="mt-3 space-y-6 rounded-xl border border-white/10 bg-white/5 p-4">
+                    <h4 className="text-base font-semibold text-white">
+                      AI Analysis — Sunday Recap
+                    </h4>
+
+                    {/* Big winners / class champions */}
+                    <section className="space-y-2">
+                      <h5 className="text-sm font-semibold text-white/90">
+                        Big winners / class champions
+                      </h5>
+                      <ul className="list-disc pl-5 text-sm text-white/80 space-y-1">
+                        <li>
+                          <span className="font-semibold">
+                            Junior Ski 10–12 Lites (Race 1):
+                          </span>{" "}
+                          <span className="font-semibold">Cash McClure</span>{" "}
+                          sealed it with a tidy{" "}
+                          <span className="font-medium">1-2-1 → P1</span>.{" "}
+                          <span className="font-semibold">Bentley Cox</span>{" "}
+                          (3-1-2) took <span className="font-medium">P2</span>;{" "}
+                          <span className="font-semibold">
+                            Lincoln Schuyler
+                          </span>{" "}
+                          (2-3-4) <span className="font-medium">P3</span>. Clean
+                          starts decided this one.
+                        </li>
+                        <li>
+                          <span className="font-semibold">
+                            Grand Master Ski Stock (Race 2):
+                          </span>{" "}
+                          <span className="font-semibold">Philippe Dufaud</span>{" "}
+                          was clinical{" "}
+                          <span className="font-medium">(2-1-1 → P1)</span>.{" "}
+                          <span className="font-semibold">Kevin Pope</span>{" "}
+                          (4-4-2) and{" "}
+                          <span className="font-semibold">
+                            Michael Williams
+                          </span>{" "}
+                          (3-3-4) rounded the podium.
+                        </li>
+                        <li>
+                          <span className="font-semibold">
+                            Junior Ski 13–15 Lites (Race 3):
+                          </span>{" "}
+                          <span className="font-semibold">Kashe Crawford</span>{" "}
+                          dominated with a perfect{" "}
+                          <span className="font-medium">1-1-1 sweep</span>.{" "}
+                          <span className="font-semibold">Sugar Sato</span>{" "}
+                          (2-3-3) <span className="font-medium">P2</span>;{" "}
+                          <span className="font-semibold">Ty Smith</span>{" "}
+                          (4-2-5) <span className="font-medium">P3</span>.
+                        </li>
+                        <li>
+                          <span className="font-semibold">
+                            Pro Am Women Ski Stock (Race 4):
+                          </span>{" "}
+                          <span className="font-semibold">Sadie Mir</span>{" "}
+                          controlled all day{" "}
+                          <span className="font-medium">(1-1-2 → P1)</span>.{" "}
+                          <span className="font-semibold">Anna Glennon</span>{" "}
+                          (5-3-1) surged late to{" "}
+                          <span className="font-medium">P2</span>;{" "}
+                          <span className="font-semibold">
+                            Lisa Caussin-Battaglia
+                          </span>{" "}
+                          (4-2-3) <span className="font-medium">P3</span>.
+                        </li>
+                        <li>
+                          <span className="font-semibold">
+                            Vintage X2 (Race 5):
+                          </span>{" "}
+                          <span className="font-semibold">Dylan Waters</span>{" "}
+                          perfect{" "}
+                          <span className="font-medium">(1-1 → P1)</span> over{" "}
+                          <span className="font-semibold">Trevor Waters</span>{" "}
+                          (2-3) and a charging{" "}
+                          <span className="font-semibold">Nick Scholand</span>{" "}
+                          (8-2).
+                        </li>
+                        <li>
+                          <span className="font-semibold">
+                            Pro Ski GP (Race 6):
+                          </span>{" "}
+                          <span className="font-semibold">Revin Harris</span>{" "}
+                          took the overall on consistency{" "}
+                          <span className="font-medium">(4-4-1-3 → P1)</span>.{" "}
+                          <span className="font-semibold">
+                            Sebastion Girello
+                          </span>{" "}
+                          (12-3-2-1) clawed to{" "}
+                          <span className="font-medium">P2</span>;{" "}
+                          <span className="font-semibold">Mao Sato</span>{" "}
+                          (2-8-4-2) <span className="font-medium">P3</span>.
+                        </li>
+                        <li>
+                          <span className="font-semibold">
+                            Pro Runabout GP (Race 7):
+                          </span>{" "}
+                          <span className="font-semibold">Seddini Khalil</span>{" "}
+                          owned the class{" "}
+                          <span className="font-medium">(2-1-1-1 → P1)</span>.{" "}
+                          <span className="font-semibold">
+                            Massimo Casarini
+                          </span>{" "}
+                          steady{" "}
+                          <span className="font-medium">(1-2-3-3) P2</span>;{" "}
+                          <span className="font-semibold">Juan Lezcano</span>{" "}
+                          <span className="font-medium">(3-4-2-2) P3</span>.
+                        </li>
+                      </ul>
+                    </section>
+
+                    {/* Races of the day */}
+                    <section className="space-y-2">
+                      <h5 className="text-sm font-semibold text-white/90">
+                        Races of the day
+                      </h5>
+                      <ul className="list-disc pl-5 text-sm text-white/80 space-y-1">
+                        <li>
+                          <span className="font-semibold">Pro Ski GP:</span>{" "}
+                          Best drama. Girello’s rebound from{" "}
+                          <span className="font-medium">P12 (M1)</span> to win{" "}
+                          <span className="font-medium">Moto-4</span> and finish{" "}
+                          <span className="font-medium">P2</span> was huge.
+                          Harris protected the average to close it.
+                        </li>
+                        <li>
+                          <span className="font-semibold">
+                            Junior Ski 13–15 Lites:
+                          </span>{" "}
+                          Crawford untouchable{" "}
+                          <span className="font-medium">1-1-1</span>, but{" "}
+                          <span className="font-semibold">Mark Queen Jr</span>{" "}
+                          turned <span className="font-medium">14-6-2</span>{" "}
+                          into a big top-five recovery.
+                        </li>
+                        <li>
+                          <span className="font-semibold">
+                            Pro Am Women Ski Stock:
+                          </span>{" "}
+                          Glennon’s{" "}
+                          <span className="font-medium">Moto-3 win</span>{" "}
+                          flipped the tie for second;{" "}
+                          <span className="font-semibold">Sabrina Cook’s</span>{" "}
+                          DNS in M2 pushed her to{" "}
+                          <span className="font-medium">P5</span>.
+                        </li>
+                      </ul>
+                    </section>
+
+                    {/* Quiet climbers & clutch rides */}
+                    <section className="space-y-2">
+                      <h5 className="text-sm font-semibold text-white/90">
+                        Quiet climbers & clutch rides
+                      </h5>
+                      <ul className="list-disc pl-5 text-sm text-white/80 space-y-1">
+                        <li>
+                          <span className="font-semibold">
+                            Luke Blanton (Vintage X2):
+                          </span>{" "}
+                          <span className="font-medium">11-4 → P8</span> with a
+                          massive Moto-2 climb.
+                        </li>
+                        <li>
+                          <span className="font-semibold">
+                            James Wilson (Pro Ski GP):
+                          </span>{" "}
+                          <span className="font-medium">9-6-3-4 → P5</span>—no
+                          big mistakes, steady top-five.
+                        </li>
+                        <li>
+                          <span className="font-semibold">
+                            Tanner Welter (Jr 10–12 Lites):
+                          </span>{" "}
+                          <span className="font-medium">10-7-7 → P9</span> after
+                          a tough opener.
+                        </li>
+                      </ul>
+                    </section>
+
+                    {/* Heartbreakers */}
+                    <section className="space-y-2">
+                      <h5 className="text-sm font-semibold text-white/90">
+                        Heartbreakers / what hurt
+                      </h5>
+                      <ul className="list-disc pl-5 text-sm text-white/80 space-y-1">
+                        <li>
+                          <span className="font-semibold">
+                            Sabrina Cook (Women Ski Stock):
+                          </span>{" "}
+                          DNS in M2 turned podium pace into{" "}
+                          <span className="font-medium">P5</span>.
+                        </li>
+                        <li>
+                          <span className="font-semibold">
+                            Valentina Lezcano (Runabout GP):
+                          </span>{" "}
+                          DNS M4 locked her at{" "}
+                          <span className="font-medium">P4</span>.
+                        </li>
+                        <li>
+                          <span className="font-semibold">
+                            Christopher Landis (Pro Ski GP):
+                          </span>{" "}
+                          10-10 then{" "}
+                          <span className="font-medium">13 / DNS</span> pushed
+                          him to <span className="font-medium">P13</span>.
+                        </li>
+                        <li>
+                          <span className="font-semibold">
+                            Austin Engen (Jr 10–12 Lites):
+                          </span>{" "}
+                          late non-finishes left him{" "}
+                          <span className="font-medium">P12</span>.
+                        </li>
+                      </ul>
+                    </section>
+
+                    {/* Takeaways */}
+                    <section className="space-y-2">
+                      <h5 className="text-sm font-semibold text-white/90">
+                        Takeaways
+                      </h5>
+                      <ul className="list-disc pl-5 text-sm text-white/80 space-y-1">
+                        <li>
+                          Today rewarded{" "}
+                          <span className="font-medium">
+                            starts + mistake-free averages
+                          </span>{" "}
+                          more than single-moto speed. Harris & Mir won by
+                          protecting the average.
+                        </li>
+                        <li>
+                          <span className="font-semibold">
+                            Youth standouts:
+                          </span>{" "}
+                          McClure & Crawford looked a class above—{" "}
+                          <span className="font-medium">
+                            racecraft + clean water
+                          </span>{" "}
+                          were the difference.
+                        </li>
+                        <li>
+                          <span className="font-semibold">Comeback theme:</span>{" "}
+                          Podiums built off{" "}
+                          <span className="font-medium">late motos</span>{" "}
+                          (Glennon M3, Girello M4, Scholand M2). If you were
+                          still fast at day’s end, you moved up.
+                        </li>
+                      </ul>
+                    </section>
+                  </div>
 
                   {aquaResultsSeven.map((race, i) => (
                     <RaceResultsTable
