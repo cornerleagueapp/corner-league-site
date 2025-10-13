@@ -658,15 +658,7 @@ export default function ScoresPage() {
                 labelHide="Hide Sunday's Schedule"
               >
                 <div className="space-y-4">
-                  <div className="text-sm">More Info to Come...</div>
-
-                  <img
-                    src={todaysSchedule}
-                    alt="IJSBA World Finals Monday's Schedule"
-                    loading="lazy"
-                    onClick={() => setViewerSrc(todaysSchedule)}
-                    className="w-full h-auto rounded-xl border border-white/10 bg-white/5 cursor-zoom-in hover:opacity-90 transition"
-                  />
+                  <div className="text-sm">Ai to Come...</div>
 
                   {aquaResultsSeven.map((race, i) => (
                     <RaceResultsTable
