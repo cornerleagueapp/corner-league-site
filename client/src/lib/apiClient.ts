@@ -1,4 +1,3 @@
-// src/lib/apiClient.ts
 import {
   getAccessToken,
   getRefreshToken,
@@ -9,7 +8,6 @@ import {
 const API_BASE =
   (import.meta.env.VITE_API_BASE as string | undefined)?.replace(/\/$/, "") ||
   "/api";
-
 const REFRESH_PATH =
   (import.meta.env.VITE_REFRESH_PATH as string | undefined) || "";
 
@@ -22,32 +20,43 @@ type FetchOpts = Omit<RequestInit, "body"> & {
   withCredentials?: boolean;
 };
 
+function stripLeadingApi(path: string) {
+  // tolerate callers passing "/api/..."
+  return path.replace(/^\/api(\/|$)/i, "/");
+}
+
 export async function apiFetch(path: string, opts: FetchOpts = {}) {
-  const url = path.startsWith("http") ? path : `${API_BASE}${path}`;
-  const headers: Record<string, string> = {};
+  const url = path.startsWith("http")
+    ? path
+    : `${API_BASE}${stripLeadingApi(path.startsWith("/") ? path : `/${path}`)}`;
 
-  // JSON header only for plain object bodies
-  const isJsonBody =
-    opts.body &&
-    !(opts.body instanceof FormData) &&
-    !(opts.body instanceof Blob) &&
-    typeof opts.body !== "string";
+  // Build headers without mutating caller's object
+  const hdrs = new Headers(opts.headers || {});
+  const body = opts.body;
 
-  if (isJsonBody) headers["Content-Type"] = "application/json";
-  headers["Accept"] = "application/json";
+  // Only set JSON header for plain objects (do NOT touch FormData/Blob/string)
+  const isPlainObj =
+    body &&
+    typeof body === "object" &&
+    !(body instanceof FormData) &&
+    !(body instanceof Blob);
+
+  if (isPlainObj && !hdrs.has("Content-Type"))
+    hdrs.set("Content-Type", "application/json");
+  if (!hdrs.has("Accept")) hdrs.set("Accept", "application/json");
 
   if (!opts.skipAuth) {
     const at = getAccessToken();
-    if (at) headers["Authorization"] = `Bearer ${at}`;
+    if (at && !hdrs.has("Authorization"))
+      hdrs.set("Authorization", `Bearer ${at}`);
   }
 
   const init: RequestInit = {
     method: opts.method ?? "GET",
-    // important: do not force cookies (this breaks CORS when server uses `*`)
     credentials: opts.withCredentials ? "include" : "same-origin",
     ...opts,
-    headers: { ...(opts.headers as any), ...headers },
-    body: isJsonBody ? JSON.stringify(opts.body) : opts.body,
+    headers: hdrs,
+    body: isPlainObj ? JSON.stringify(body) : body,
   };
 
   return fetch(url, init);
@@ -60,24 +69,25 @@ export class ApiError extends Error {
     super(message);
     this.status = status;
     this.body = body;
+    this.name = "ApiError";
   }
 }
 
 async function parseMaybeJson(res: Response) {
-  const text = await res.text();
+  const txt = await res.text();
   try {
-    return text ? JSON.parse(text) : null;
+    return txt ? JSON.parse(txt) : null;
   } catch {
-    return text;
+    return txt;
   }
 }
-
 function pickMsg(body: any, fallback: string) {
   return (
     body?.message || body?.error || body?.result?.response?.message || fallback
   );
 }
 
+// -------- refresh (single-flight) ----------
 let refreshUnsupported = !REFRESH_PATH;
 let refreshInFlight: Promise<boolean> | null = null;
 
@@ -93,7 +103,6 @@ async function tryRefresh(): Promise<boolean> {
           body: { refreshToken: rt },
           skipAuth: true,
         });
-
         if (res.status === 404 || res.status === 405) {
           refreshUnsupported = true;
           return false;
@@ -104,8 +113,8 @@ async function tryRefresh(): Promise<boolean> {
         const at = json?.accessToken ?? json?.data?.accessToken ?? null;
         const newRt = json?.refreshToken ?? json?.data?.refreshToken ?? rt;
         if (!at) return false;
-
         setTokens(at, newRt);
+        scheduleProactiveRefresh(at);
         return true;
       } catch {
         return false;
@@ -117,11 +126,12 @@ async function tryRefresh(): Promise<boolean> {
   return refreshInFlight;
 }
 
-type RequestBehavior = {
-  refreshOn401?: boolean;
-  logoutOn401?: boolean;
-};
+type RequestBehavior = { refreshOn401?: boolean; logoutOn401?: boolean };
 
+/**
+ * Keeps your original method-first signature:
+ *   apiRequest("POST", "/path", body, behavior?)
+ */
 export async function apiRequest<T = any>(
   method: string,
   path: string,
@@ -135,67 +145,67 @@ export async function apiRequest<T = any>(
 
   const doRequest = () => apiFetch(path, { method, body });
 
-  // first attempt
+  // 1st try
   let res = await doRequest();
 
-  // If 401 and we opted-in to refresh (typically only for /auth/me)
+  // 401 → optionally refresh then retry once
   if (res.status === 401 && refreshOn401) {
     const ok = await tryRefresh();
-    if (ok) {
-      res = await doRequest();
-    }
+    if (ok) res = await doRequest();
   }
 
   if (!res.ok) {
     const bodyJson = await parseMaybeJson(res);
     const msg = pickMsg(bodyJson, res.statusText || "Request failed");
 
-    // IMPORTANT:
-    // Only clear tokens for identity endpoints (or if you explicitly opt-in).
-    // This prevents logout when the backend uses 401 for “not a member”.
-    const m = String(msg || "");
-    const looksTokenError = /token|jwt|expired|signature|unauth/i.test(m);
-
+    // Only clear tokens for identity endpoints or obvious token problems.
+    const looksTokenError = /token|jwt|expired|signature|unauth/i.test(
+      String(msg || "")
+    );
     if (res.status === 401 && (logoutOn401 || looksTokenError)) {
       clearTokens();
-
-      // 🔔 this tab
       window.dispatchEvent(new Event("auth:logout"));
-      // 🔁 other tabs
       try {
         localStorage.setItem("auth:logout", String(Date.now()));
       } catch {}
     }
-
     throw new ApiError(res.status, msg, bodyJson);
   }
 
-  // 204 → no content
   if (res.status === 204) return undefined as T;
-
-  const json = (await parseMaybeJson(res)) as T;
-  return json;
+  const ct = res.headers.get("content-type") || "";
+  if (ct.includes("application/json")) return (await res.json()) as T;
+  return (await res.text()) as unknown as T;
 }
 
-/** Optional: decode JWT exp and schedule a refresh call a bit early (only useful if refresh exists). */
+// -------- proactive refresh (keeps session stable) ----------
 let refreshTimer: number | null = null;
 export function scheduleProactiveRefresh(accessToken: string) {
   if (refreshTimer) window.clearTimeout(refreshTimer);
-  if (refreshUnsupported) return; // nothing to schedule
+  if (refreshUnsupported) return;
   try {
     const [, payload] = accessToken.split(".");
-    const data = JSON.parse(atob(payload));
-    const expMs = (data.exp as number) * 1000;
-    const skew = 30_000; // refresh 30s early
-    const inMs = Math.max(5_000, expMs - Date.now() - skew);
+    const { exp } = JSON.parse(atob(payload)); // seconds since epoch
+    if (!exp) return;
+    const msToExp = exp * 1000 - Date.now();
+    const lead = Math.max(30_000, Math.min(90_000, msToExp * 0.1)); // ~10% early, clamp 30–90s
+    const due = Math.max(5_000, msToExp - lead);
     refreshTimer = window.setTimeout(() => {
       void tryRefresh();
-    }, inMs) as any;
+    }, due) as any;
   } catch {
-    // ignore if token isn't a JWT
+    /* token may not be JWT */
   }
 }
 export function cancelProactiveRefresh() {
   if (refreshTimer) window.clearTimeout(refreshTimer);
   refreshTimer = null;
 }
+
+// Refresh when tab becomes visible (prevents idle 401 surprises)
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
+    const at = getAccessToken();
+    if (at) scheduleProactiveRefresh(at);
+  }
+});

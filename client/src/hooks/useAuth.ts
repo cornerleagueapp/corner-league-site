@@ -1,6 +1,6 @@
 // client/src/hooks/useAuth.ts
 import { useQuery } from "@tanstack/react-query";
-import { apiFetch, scheduleProactiveRefresh } from "@/lib/apiClient";
+import { apiRequest, scheduleProactiveRefresh } from "@/lib/apiClient";
 import type { User } from "@/types/user";
 import {
   getAccessToken,
@@ -40,16 +40,20 @@ export function useAuth() {
     staleTime: 5 * 60 * 1000,
     queryFn: async () => {
       for (const path of ME_ATTEMPTS) {
-        const res = await apiFetch(path);
-        if (res.status === 401) return null; // not authenticated
-        if (res.ok) {
-          const u = (await res.json()) as User;
+        try {
+          const u = await apiRequest<User>("GET", path, undefined, {
+            refreshOn401: true,
+            logoutOn401: true,
+          });
           saveUser(u);
+          const at = getAccessToken();
+          if (at) scheduleProactiveRefresh(at);
           return u;
+        } catch (e: any) {
+          if (e?.status === 404) continue;
+          if (e?.status === 401) return null;
         }
-        if (res.status !== 404) break;
       }
-      // No “me” endpoint or non-401 failure → fall back to cached user
       return loadUser();
     },
   });

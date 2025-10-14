@@ -39,9 +39,14 @@ function ProtectedRoute({
   const [location, navigate] = useLocation();
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (isLoading) return;
+    if (!isAuthenticated) {
       const next = encodeURIComponent(location);
-      navigate(`/auth?next=${next}`, { replace: true });
+      const t = setTimeout(
+        () => navigate(`/auth?next=${next}`, { replace: true }),
+        150
+      );
+      return () => clearTimeout(t);
     }
   }, [isAuthenticated, isLoading, location, navigate]);
 
