@@ -7,9 +7,9 @@ import { logout } from "@/lib/logout";
 import { PageSEO } from "@/seo/usePageSEO";
 import { useLocation } from "wouter";
 
-import image1 from "@/assets/jetski1.jpg";
-import image2 from "@/assets/jetski2.jpg";
-import image3 from "@/assets/jetski3.jpg";
+// import image1 from "@/assets/jetski1.jpg";
+// import image2 from "@/assets/jetski2.jpg";
+// import image3 from "@/assets/jetski3.jpg";
 import image4 from "@assets/20250602_1433_Basketball Motion Scene_remix_01jws8ysn9fx1s6c0mgqw48t2g_1754356174336.png";
 import image5 from "@assets/20250603_0933_Vibrant Portrait Art_remix_01jwva54bwfxrsakzx26a3y7mb_1754356174336.png";
 import image6 from "@assets/20250603_1013_Floral Football Fusion_remix_01jwvcftvae0d90fjgdpsectw5_1754356174337.png";
@@ -28,12 +28,12 @@ import image18 from "@assets/riveteammyles_A_minimalistic_surreal_fashion_photog
 import image19 from "@assets/riveteammyles_A_minimalistic_surreal_fashion_photograph_of_an_b996191c-ab67-4569-b9a4-e371b03fbfb3_0_1754357010887.png";
 import image20 from "@assets/riveteammyles_A_photograph_of_an_Asian_female_model_a_NHL_Hoc_230d871d-9195-4ccf-9870-150c8d823af6_0_1754357010888.png";
 import image21 from "@assets/riveteammyles_A_photorealistic_portrait_of_a_woman_with_short_77f27986-809b-4c3d-9069-3cd77fafc08e_3_1754357010888.png";
-import image22 from "@/assets/jetski6.jpeg";
+// import image22 from "@/assets/jetski6.jpeg";
 import image23 from "@assets/riveteammyles_Oil_painting_of_a_portrait_of_an_alien_man_with_8b00f3ad-c3e8-497c-8dbc-1f3cfd20b859_3_1754357010889.png";
 import image24 from "@assets/riveteammyles_Photograph_of_a_white_humanoid_figure_in_a_full_8c88c8eb-769f-4c1e-9018-f7fe304c6374_0_1754357010890.png";
 import image25 from "@assets/riveteammyles_Pink_Floyds_Dark_Side_of_the_Moon_album_cover_f_b68ced20-cd85-47eb-9ebc-6469ed8c7b96_0_1754357010890.png";
-import image26 from "@/assets/mx1.jpg";
-import image27 from "@/assets/mx2.jpeg";
+// import image26 from "@/assets/mx1.jpg";
+// import image27 from "@/assets/mx2.jpeg";
 import image28 from "@/assets/image28.png";
 import image29 from "@/assets/image29.png";
 import image30 from "@/assets/image30.png";
@@ -58,9 +58,9 @@ export default function Home() {
   const [location] = useLocation();
 
   const sportsImages = [
-    image1,
-    image2,
-    image3,
+    // image1,
+    // image2,
+    // image3,
     image4,
     image5,
     image6,
@@ -70,7 +70,7 @@ export default function Home() {
     image10,
     image11,
     image12,
-    image13,
+    // image13,
     image14,
     image15,
     image16,
@@ -79,12 +79,12 @@ export default function Home() {
     image19,
     image20,
     image21,
-    image22,
+    // image22,
     image23,
     image24,
     image25,
-    image26,
-    image27,
+    // image26,
+    // image27,
     image28,
     image29,
     image30,
