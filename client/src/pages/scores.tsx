@@ -10,7 +10,6 @@ import raceCourse from "@/assets/race-course.jpg";
 
 // import aquaBanner from "@/assets/aquabanner.png";
 import aquaBanner from "@/assets/banner3.jpg";
-import todaysSchedule from "@/assets/todaysSchedule.jpg";
 import schedule1 from "@/assets/race-schedule1.jpg";
 import schedule2 from "@/assets/race-schedule2.jpg";
 import schedule3 from "@/assets/race-schedule3.jpg";
@@ -199,14 +198,14 @@ export default function ScoresPage() {
                 </h3>
               </div>
 
-              {/* <button
+              <button
                 onClick={() => setRacerSearchOpen(true)}
                 className="h-9 w-9 grid place-items-center rounded-full bg-white/10 border border-white/10 hover:bg-white/15"
                 aria-label="Search racers"
                 title="Search racers"
               >
                 <SearchIcon size={18} />
-              </button> */}
+              </button>
             </div>
 
             <FullBleedBanner
@@ -228,50 +227,6 @@ export default function ScoresPage() {
                   referrerPolicy="strict-origin-when-cross-origin"
                 />
               </div>
-
-              <AccordionSection
-                labelShow="Show Race Course"
-                labelHide="Hide Race Course"
-              >
-                <div className="space-y-4">
-                  <img
-                    src={raceCourse}
-                    alt="IJSBA World Finals race course"
-                    loading="lazy"
-                    onClick={() => setViewerSrc(raceCourse)}
-                    className="w-full h-auto rounded-xl border border-white/10 bg-white/5 cursor-zoom-in hover:opacity-90 transition"
-                  />
-                </div>
-              </AccordionSection>
-
-              <AccordionSection
-                labelShow="Show Race Week Schedule"
-                labelHide="Hide Schedule"
-              >
-                <div className="space-y-4">
-                  <img
-                    src={schedule1}
-                    alt="IJSBA World Finals race course"
-                    loading="lazy"
-                    onClick={() => setViewerSrc(schedule1)}
-                    className="w-full h-auto rounded-xl border border-white/10 bg-white/5 cursor-zoom-in hover:opacity-90 transition"
-                  />
-                  <img
-                    src={schedule2}
-                    alt="IJSBA World Finals race course"
-                    loading="lazy"
-                    onClick={() => setViewerSrc(schedule2)}
-                    className="w-full h-auto rounded-xl border border-white/10 bg-white/5 cursor-zoom-in hover:opacity-90 transition"
-                  />
-                  <img
-                    src={schedule3}
-                    alt="IJSBA World Finals race course"
-                    loading="lazy"
-                    onClick={() => setViewerSrc(schedule3)}
-                    className="w-full h-auto rounded-xl border border-white/10 bg-white/5 cursor-zoom-in hover:opacity-90 transition"
-                  />
-                </div>
-              </AccordionSection>
 
               <AccordionSection
                 labelShow="Show Monday's Results"
@@ -1099,7 +1054,7 @@ export default function ScoresPage() {
             .toLowerCase()
             .replace(/[^a-z0-9]+/g, "-")
             .replace(/^-+|-+$/g, "");
-          navigate(`/racer/${encodeURIComponent(slug || String(r.id))}`);
+          navigate(`/racer/${encodeURIComponent(slug)}`);
         }}
       />
     </div>

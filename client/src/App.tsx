@@ -29,6 +29,7 @@ import ScoresPage from "@/pages/scores";
 import MessagesPage from "@/pages/messages";
 import NotificationsPage from "@/pages/notifications";
 import WelcomeSplash from "./pages/welcome-splash";
+import AdminCreateRacerPage from "./pages/admin-create-racer";
 
 function ProtectedRoute({
   component: Comp,
@@ -72,8 +73,8 @@ function PrivateRouter() {
           <Route path="/profile/:username">
             {(params) => <UserProfilePage username={params.username} />}
           </Route>
-          <Route path="/racer/:name">
-            {(params) => <RacerProfilePage nameParam={params.name} />}
+          <Route path="/racer/:slug">
+            {(params) => <RacerProfilePage slugParam={params.slug} />}
           </Route>
           <Route path="/profile" component={ProfileRedirect} />
           <Route path="/feed" component={FeedPage} />
@@ -82,6 +83,7 @@ function PrivateRouter() {
           <Route path="/messages" component={MessagesPage} />
           <Route path="/notifications" component={NotificationsPage} />
           <Route path="/welcome" component={WelcomeSplash} />
+          <Route path="/_admin/create-racer" component={AdminCreateRacerPage} />
 
           {/* existing club flows */}
           <Route path="/clubs" component={Clubs} />

@@ -6,7 +6,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { apiFetch, apiRequest } from "@/lib/apiClient";
+import { apiRequest } from "@/lib/apiClient";
 import { cn } from "@/lib/utils";
 import stockAvatar from "@/assets/stockprofilepicture.jpeg";
 
@@ -18,10 +18,10 @@ type RacerLite = {
   boatManufacturers?: string | null;
 };
 
-const LIMIT_CANDIDATES = [50, 25, 10];
+const LIMIT = 25;
 const HARD_CAP = 5000;
 
-const DEBUG = true;
+const DEBUG = false;
 
 const SHOW_ALL_WHEN_EMPTY = true;
 const SHOW_ALL_LIMIT = 50;
@@ -116,12 +116,14 @@ function extractRacers(payload: any, usedLimit: number) {
   return { racers, hasMore: hasMoreExplicit ?? hasMoreInferred ?? false };
 }
 
-function buildUrls(pageIndex: number, limit: number) {
-  const page = pageIndex + 1;
-  return [
-    `/athletes?limit=${limit}&page=${page}`,
-    `/jet-ski-racer-details?limit=${limit}&page=${page}`,
-  ];
+function buildUrl(skip: number, limit: number, search?: string) {
+  const params = new URLSearchParams();
+  params.set("skip", String(skip));
+  params.set("limit", String(limit));
+  params.set("order", "DESC");
+  params.set("sortBy", "createdAt");
+  if (search && search.trim()) params.set("search", search.trim());
+  return `/jet-ski-racer-details?${params.toString()}`;
 }
 
 export default function RacerSearchModal({
@@ -156,85 +158,33 @@ export default function RacerSearchModal({
   }, [open]);
 
   const fetchPage = useCallback(
-    async (idx: number): Promise<{ racers: RacerLite[]; hasMore: boolean }> => {
+    async (
+      idx: number,
+      q?: string
+    ): Promise<{ racers: RacerLite[]; hasMore: boolean }> => {
       setError(null);
 
-      for (const limit of LIMIT_CANDIDATES) {
-        const [athletesUrl, legacyUrl] = buildUrls(idx, limit);
+      const skip = idx * LIMIT;
+      const url = buildUrl(skip, LIMIT, q);
 
-        try {
-          const res1 = await apiRequest<any>("GET", athletesUrl);
-          const { racers, hasMore } = extractRacers(res1, limit);
-          if (DEBUG) {
-            // eslint-disable-next-line no-console
-            console.log("[RacerSearch] GET", athletesUrl, {
-              raw: res1,
-              mappedCount: racers.length,
-              hasMore,
-            });
-            setDebugLast({ path: athletesUrl, count: racers.length });
-          }
-          if (racers.length || hasMore) {
-            return { racers, hasMore };
-          }
-        } catch (e: any) {
-          if (DEBUG) {
-            // eslint-disable-next-line no-console
-            console.warn("[RacerSearch] athletes fetch error", e);
-          }
-          if (e?.status === 401 || e?.status === 403) {
-            throw new Error("Please sign in to search racers.");
-          }
-        }
+      try {
+        const res = await apiRequest<any>("GET", url);
+        const { racers } = extractRacers(res, LIMIT);
 
-        try {
-          const res2 = await apiRequest<any>("GET", legacyUrl);
-          const { racers, hasMore } = extractRacers(res2, limit);
-          if (DEBUG) {
-            // eslint-disable-next-line no-console
-            console.log("[RacerSearch] GET", legacyUrl, {
-              raw: res2,
-              mappedCount: racers.length,
-              hasMore,
-            });
-            setDebugLast({ path: legacyUrl, count: racers.length });
-          }
-          if (racers.length || hasMore) {
-            return { racers, hasMore };
-          }
-        } catch (e) {
-          if (DEBUG) {
-            // eslint-disable-next-line no-console
-            console.warn("[RacerSearch] legacy fetch error", e);
-          }
+        const meta = res?.meta ?? {};
+        const hasMore =
+          typeof meta?.hasNextPage === "boolean"
+            ? meta.hasNextPage
+            : racers.length === LIMIT;
+
+        return { racers, hasMore };
+      } catch (e: any) {
+        if (DEBUG) console.warn("[RacerSearch] fetch error", e);
+        if (e?.status === 401 || e?.status === 403) {
+          throw new Error("Please sign in to search racers.");
         }
+        throw new Error("Failed to load racers");
       }
-
-      for (const path of ["/athletes", "/jet-ski-racer-details"]) {
-        try {
-          const fb = await apiRequest<any>("GET", path);
-          const { racers } = extractRacers(fb, 999999);
-          if (DEBUG) {
-            // eslint-disable-next-line no-console
-            console.log("[RacerSearch] FALLBACK GET", path, {
-              raw: fb,
-              mappedCount: racers.length,
-            });
-            setDebugLast({ path, count: racers.length });
-          }
-          return { racers, hasMore: false };
-        } catch (e: any) {
-          if (DEBUG) {
-            // eslint-disable-next-line no-console
-            console.warn("[RacerSearch] fallback fetch error", path, e);
-          }
-          if (e?.status === 401 || e?.status === 403) {
-            throw new Error("Please sign in to search racers.");
-          }
-        }
-      }
-
-      throw new Error("Failed to load racers");
     },
     []
   );
@@ -252,7 +202,7 @@ export default function RacerSearchModal({
 
     (async () => {
       try {
-        const { racers, hasMore: more } = await fetchPage(0);
+        const { racers, hasMore: more } = await fetchPage(pageIndex, q.trim());
         if (cancelled) return;
         const next = racers.slice(0, HARD_CAP);
         if (DEBUG) {
@@ -278,7 +228,7 @@ export default function RacerSearchModal({
     if (!hasMore || loadingMore || all.length >= HARD_CAP) return;
     setLoadingMore(true);
     try {
-      const { racers, hasMore: more } = await fetchPage(pageIndex);
+      const { racers, hasMore: more } = await fetchPage(pageIndex, q.trim());
       const merged = [...all, ...racers].slice(0, HARD_CAP);
       if (DEBUG) {
         // eslint-disable-next-line no-console
@@ -290,7 +240,7 @@ export default function RacerSearchModal({
     } finally {
       setLoadingMore(false);
     }
-  }, [all, fetchPage, hasMore, loadingMore, pageIndex]);
+  }, [all, fetchPage, hasMore, loadingMore, pageIndex, q]);
 
   useEffect(() => {
     if (!open) return;
@@ -354,17 +304,6 @@ export default function RacerSearchModal({
                 Close
               </button>
             </div>
-
-            {/* DEBUG: tiny status line to confirm counts */}
-            {DEBUG && (
-              <div className="mt-2 text-[11px] text-white/50">
-                Loaded: {all.length} total
-                {debugLast?.path ? ` • last: ${debugLast.path}` : ""}
-                {typeof debugLast?.count === "number"
-                  ? ` • lastCount: ${debugLast.count}`
-                  : ""}
-              </div>
-            )}
           </div>
 
           <div

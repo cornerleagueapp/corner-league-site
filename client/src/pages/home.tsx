@@ -34,6 +34,15 @@ import image24 from "@assets/riveteammyles_Photograph_of_a_white_humanoid_figure
 import image25 from "@assets/riveteammyles_Pink_Floyds_Dark_Side_of_the_Moon_album_cover_f_b68ced20-cd85-47eb-9ebc-6469ed8c7b96_0_1754357010890.png";
 import image26 from "@/assets/mx1.jpg";
 import image27 from "@/assets/mx2.jpeg";
+import image28 from "@/assets/image28.png";
+import image29 from "@/assets/image29.png";
+import image30 from "@/assets/image30.png";
+import image31 from "@/assets/image31.png";
+import image32 from "@/assets/image32.png";
+import image33 from "@/assets/image33.png";
+import image34 from "@/assets/image34.png";
+import image35 from "@/assets/image35.png";
+import image36 from "@/assets/image36.png";
 
 import partner1 from "@/assets/fubo.png";
 import partner2 from "@/assets/ibm.png";
@@ -41,6 +50,8 @@ import partner3 from "@/assets/fanatics.png";
 import partner4 from "@/assets/google.png";
 import partner5 from "@/assets/peloton.png";
 import partner6 from "@/assets/ufc.png";
+
+import partnerPromo from "../assets/jetSkiBanner.mp4";
 
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
@@ -74,6 +85,15 @@ export default function Home() {
     image25,
     image26,
     image27,
+    image28,
+    image29,
+    image30,
+    image31,
+    image32,
+    image33,
+    image34,
+    image35,
+    image36,
   ];
 
   const footerLinks = [
@@ -394,29 +414,47 @@ export default function Home() {
       </section>
 
       <main className="relative z-10">
-        {/* IJSBA Partner highlight */}
+        {/* IJSBA Partner highlight – two-column with video */}
         <Section className="bg-gradient-to-b from-white/5 via-white/[0.03] to-transparent">
-          <Badge>Official Partner</Badge>
-          <h2 className="mt-3 text-2xl md:text-3xl font-semibold text-center">
-            Proud Partner of the IJSBA World Finals
-          </h2>
-          <p className="mt-3 text-white/70 text-sm md:text-base leading-relaxed max-w-2xl mx-auto text-center">
-            Corner League is an official partner of the IJSBA World Finals in
-            Lake Havasu. Follow live coverage, join event chatrooms, and explore
-            racer profiles built just for AQUA sports.
-          </p>
-          <div className="mt-5 w-full mx-auto max-w-md sm:max-w-xl lg:max-w-2xl">
-            <div className="flex flex-col min-[400px]:flex-row gap-3 justify-center">
-              <Link href="/scores" className="min-[400px]:flex-1">
-                <Button className="w-full bg-white text-black hover:bg-white/90 rounded-full px-6">
-                  See Event Hub
-                </Button>
-              </Link>
-              <Link href="/scores" className="min-[400px]:flex-1">
-                <Button className="w-full bg-black text-white border border-white/20 hover:bg-black/90 rounded-full px-6">
-                  Join the Chat
-                </Button>
-              </Link>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+            <div className="order-1 lg:order-2 lg:col-span-6 xl:col-span-5">
+              <div className="relative aspect-[4/3] md:aspect-[16/10] rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
+                <video
+                  src={partnerPromo}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="absolute inset-0 h-full w-full object-cover"
+                  poster={image13}
+                />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+              </div>
+            </div>
+
+            <div className="order-2 lg:order-1 lg:col-span-6 xl:col-span-7 text-center lg:text-left">
+              <Badge>Official Partner</Badge>
+              <h2 className="mt-3 text-3xl md:text-4xl font-semibold">
+                Proud Partner of the IJSBA World Finals
+              </h2>
+              <p className="mt-3 text-white/70 text-base leading-relaxed max-w-2xl lg:max-w-none mx-auto lg:mx-0">
+                Corner League is an official partner of the IJSBA World Finals
+                in Lake Havasu. Follow live coverage, join event chatrooms, and
+                explore racer profiles built just for AQUA sports.
+              </p>
+
+              <div className="mt-5 flex flex-col sm:flex-row gap-3 sm:justify-start justify-center">
+                <Link href="/scores" className="sm:flex-1 sm:max-w-[240px]">
+                  <Button className="w-full bg-white text-black hover:bg-white/90 rounded-full px-6">
+                    See Event Hub
+                  </Button>
+                </Link>
+                <Link href="/scores" className="sm:flex-1 sm:max-w-[240px]">
+                  <Button className="w-full bg-black text-white border border-white/20 hover:bg-black/90 rounded-full px-6">
+                    Join the Chat
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
         </Section>
