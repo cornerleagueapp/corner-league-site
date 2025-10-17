@@ -250,11 +250,11 @@ export default function Home() {
         <div className="flex-1 flex items-center justify-center px-6 py-12">
           <div className="text-center max-w-4xl mx-auto">
             <h1 className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold leading-tight mb-6 tracking-tight">
-              Made for Sports Lovers
+              Make Sports More You
             </h1>
             <p className="text-lg md:text-xl lg:text-2xl text-gray-300 mb-12 max-w-2xl mx-auto leading-relaxed">
-              The AI Sports Media hub to stream, chat, learn in-depth sports
-              analysis, and engage with other sports fans around the world.
+              Next-Gen Sports Media delivering personalized, interactive, and
+              real-time insights powered by AI—so you get exactly what you need!
             </p>
             {isAuthenticated && (
               <p className="text-lg md:text-xl text-gray-300 mb-8 text-center">
