@@ -18,33 +18,92 @@ type RacerLite = {
   boatManufacturers?: string | null;
 };
 
-const LIMIT = 25;
 const HARD_CAP = 5000;
+const LIMIT = 50;
+const MIN_QUERY_LENGTH = 2;
+const TARGET_MATCHES = 10;
+const AUTOSCAN_MAX_PAGES = 10;
 
-const DEBUG = false;
-
-const SHOW_ALL_WHEN_EMPTY = true;
-const SHOW_ALL_LIMIT = 50;
-
-// --- helpers ---
 function toRacerLite(rec: any): RacerLite | null {
   if (!rec) return null;
 
+  function firstNonEmpty(
+    ...vals: Array<string | null | undefined>
+  ): string | null {
+    for (const v of vals) {
+      if (typeof v === "string" && v.trim().length > 0) return v;
+    }
+    return null;
+  }
+
   if (rec.athlete) {
     const a = rec.athlete;
+
+    const name =
+      firstNonEmpty(
+        a?.name,
+        rec?.name,
+        rec?.fullName,
+        rec?.displayName,
+        a?.firstName && a?.lastName ? `${a.firstName} ${a.lastName}` : null,
+        rec?.firstName && rec?.lastName
+          ? `${rec.firstName} ${rec.lastName}`
+          : null
+      ) ?? "";
+
+    const image = firstNonEmpty(
+      a?.image as any,
+      rec?.image as any,
+      rec?.avatar as any,
+      rec?.photo as any
+    );
+    const loc = firstNonEmpty(a?.origin, rec?.origin, rec?.city, rec?.country);
+
+    if (!name.trim()) return null;
+
     return {
       id: rec.id ?? a.id ?? rec.uuid,
-      racerName: a.name ?? "",
-      racerImage: a.image ?? null,
-      location: a.origin ?? null,
-      boatManufacturers: rec.boatManufacturers ?? null,
+      racerName: name,
+      racerImage: image ?? null,
+      location: loc ?? null,
+      boatManufacturers:
+        rec.boatManufacturers ??
+        rec.team?.name ??
+        rec.teamName ??
+        (Array.isArray(rec.teams)
+          ? rec.teams
+              .map((t: any) => t?.name)
+              .filter(Boolean)
+              .join(", ")
+          : null),
     };
   }
 
-  if (rec.name || rec.origin || rec.image || rec.team) {
+  if (
+    rec.name ||
+    rec.origin ||
+    rec.image ||
+    rec.team ||
+    rec.fullName ||
+    rec.displayName ||
+    (rec.firstName && rec.lastName)
+  ) {
+    const name =
+      typeof rec.name === "string" && rec.name.trim()
+        ? rec.name
+        : typeof rec.fullName === "string" && rec.fullName.trim()
+        ? rec.fullName
+        : typeof rec.displayName === "string" && rec.displayName.trim()
+        ? rec.displayName
+        : rec.firstName && rec.lastName
+        ? `${rec.firstName} ${rec.lastName}`
+        : "";
+
+    if (!name.trim()) return null;
+
     return {
       id: rec.id ?? rec.athleteId ?? rec.uuid,
-      racerName: rec.name ?? "",
+      racerName: name,
       racerImage: rec.image ?? null,
       location: rec.origin ?? null,
       boatManufacturers:
@@ -116,14 +175,33 @@ function extractRacers(payload: any, usedLimit: number) {
   return { racers, hasMore: hasMoreExplicit ?? hasMoreInferred ?? false };
 }
 
-function buildUrl(skip: number, limit: number, search?: string) {
-  const params = new URLSearchParams();
-  params.set("skip", String(skip));
-  params.set("limit", String(limit));
-  params.set("order", "DESC");
-  params.set("sortBy", "createdAt");
-  if (search && search.trim()) params.set("search", search.trim());
-  return `/jet-ski-racer-details?${params.toString()}`;
+function buildUrl(pageIndex: number, limit: number) {
+  const skip = pageIndex * limit;
+  const p = new URLSearchParams();
+  p.set("skip", String(skip));
+  p.set("limit", String(limit));
+  p.set("order", "DESC");
+  return `/jet-ski-racer-details?${p.toString()}`;
+}
+
+function matchesQuery(r: RacerLite, qNorm: string) {
+  return [r.racerName, r.location, r.boatManufacturers]
+    .filter(Boolean)
+    .some((t) => String(t).toLowerCase().includes(qNorm));
+}
+
+function dedupeByIdAndName(list: RacerLite[]): RacerLite[] {
+  const seen = new Set<string>();
+  const out: RacerLite[] = [];
+  for (const r of list) {
+    const k =
+      (r.id != null ? `id:${String(r.id)}` : "") +
+      `|name:${String(r.racerName).trim().toLowerCase()}`;
+    if (seen.has(k)) continue;
+    seen.add(k);
+    out.push(r);
+  }
+  return out;
 }
 
 export default function RacerSearchModal({
@@ -144,11 +222,6 @@ export default function RacerSearchModal({
   const [error, setError] = useState<string | null>(null);
   const scrollerRef = useRef<HTMLDivElement | null>(null);
 
-  const [debugLast, setDebugLast] = useState<{
-    path?: string;
-    count?: number;
-  } | null>(null);
-
   useEffect(() => {
     const prev = document.body.style.overflow;
     if (open) document.body.style.overflow = "hidden";
@@ -158,38 +231,21 @@ export default function RacerSearchModal({
   }, [open]);
 
   const fetchPage = useCallback(
-    async (
-      idx: number,
-      q?: string
-    ): Promise<{ racers: RacerLite[]; hasMore: boolean }> => {
+    async (idx: number): Promise<{ racers: RacerLite[]; hasMore: boolean }> => {
       setError(null);
-
-      const skip = idx * LIMIT;
-      const url = buildUrl(skip, LIMIT, q);
-
       try {
-        const res = await apiRequest<any>("GET", url);
-        const { racers } = extractRacers(res, LIMIT);
-
-        const meta = res?.meta ?? {};
-        const hasMore =
-          typeof meta?.hasNextPage === "boolean"
-            ? meta.hasNextPage
-            : racers.length === LIMIT;
-
+        const path = buildUrl(idx, LIMIT);
+        const res = await apiRequest<any>("GET", path);
+        const { racers, hasMore } = extractRacers(res, LIMIT);
         return { racers, hasMore };
       } catch (e: any) {
-        if (DEBUG) console.warn("[RacerSearch] fetch error", e);
-        if (e?.status === 401 || e?.status === 403) {
-          throw new Error("Please sign in to search racers.");
-        }
-        throw new Error("Failed to load racers");
+        setError(e?.message || "Failed to load racers");
+        return { racers: [], hasMore: false };
       }
     },
     []
   );
 
-  // initial load when opened
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
@@ -201,22 +257,13 @@ export default function RacerSearchModal({
     setLoading(true);
 
     (async () => {
-      try {
-        const { racers, hasMore: more } = await fetchPage(pageIndex, q.trim());
-        if (cancelled) return;
-        const next = racers.slice(0, HARD_CAP);
-        if (DEBUG) {
-          // eslint-disable-next-line no-console
-          console.log("[RacerSearch] initial load mappedCount", next.length);
-        }
-        setAll(next);
-        setHasMore(more && next.length < HARD_CAP);
-        setPageIndex(1);
-      } catch (e: any) {
-        if (!cancelled) setError(e?.message || "Failed to load racers");
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
+      const { racers, hasMore: more } = await fetchPage(0);
+      if (cancelled) return;
+      const next = dedupeByIdAndName(racers).slice(0, HARD_CAP);
+      setAll(next);
+      setHasMore(more && next.length < HARD_CAP);
+      setPageIndex(1);
+      setLoading(false);
     })();
 
     return () => {
@@ -228,19 +275,15 @@ export default function RacerSearchModal({
     if (!hasMore || loadingMore || all.length >= HARD_CAP) return;
     setLoadingMore(true);
     try {
-      const { racers, hasMore: more } = await fetchPage(pageIndex, q.trim());
-      const merged = [...all, ...racers].slice(0, HARD_CAP);
-      if (DEBUG) {
-        // eslint-disable-next-line no-console
-        console.log("[RacerSearch] loadMore mergedCount", merged.length);
-      }
+      const { racers, hasMore: more } = await fetchPage(pageIndex);
+      const merged = dedupeByIdAndName([...all, ...racers]).slice(0, HARD_CAP);
       setAll(merged);
       setHasMore(more && merged.length < HARD_CAP);
       setPageIndex(pageIndex + 1);
     } finally {
       setLoadingMore(false);
     }
-  }, [all, fetchPage, hasMore, loadingMore, pageIndex, q]);
+  }, [all, fetchPage, hasMore, loadingMore, pageIndex]);
 
   useEffect(() => {
     if (!open) return;
@@ -255,23 +298,41 @@ export default function RacerSearchModal({
     return () => el.removeEventListener("scroll", onScroll);
   }, [open, loadMore]);
 
-  // client-side filter after type
   const qNorm = q.trim().toLowerCase();
   const filtered = useMemo(() => {
-    if (!qNorm) {
-      if (SHOW_ALL_WHEN_EMPTY) return all.slice(0, SHOW_ALL_LIMIT);
-      return [] as RacerLite[];
-    }
-    return all.filter((r) =>
-      [r.racerName, r.location, r.boatManufacturers]
-        .filter(Boolean)
-        .some((t) => String(t).toLowerCase().includes(qNorm))
-    );
+    if (qNorm.length < MIN_QUERY_LENGTH) return [] as RacerLite[];
+    return all.filter((r) => matchesQuery(r, qNorm));
   }, [qNorm, all]);
 
-  if (!open) return null;
+  useEffect(() => {
+    if (!open) return;
+    const qNorm = q.trim().toLowerCase();
+    if (qNorm.length < MIN_QUERY_LENGTH) return;
+    if (!hasMore) return;
 
-  const qEmpty = qNorm.length === 0;
+    let cancelled = false;
+
+    (async () => {
+      let pagesScanned = 0;
+      while (
+        !cancelled &&
+        hasMore &&
+        filtered.length < TARGET_MATCHES &&
+        pagesScanned < AUTOSCAN_MAX_PAGES
+      ) {
+        if (loadingMore) break;
+        await loadMore();
+        pagesScanned += 1;
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, q, filtered.length, hasMore]);
+
+  if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-[80]">
@@ -308,25 +369,26 @@ export default function RacerSearchModal({
 
           <div
             ref={scrollerRef}
-            className="p-2 max-h[calc(100vh-60px)] md:max-h-[calc(100vh-60px)] overflow-y-auto"
+            className="p-2 max-h-[calc(100vh-60px)] md:max-h-[calc(100vh-60px)] overflow-y-auto"
           >
-            {error ? (
-              <div className="py-12 text-center text-red-400">{error}</div>
-            ) : loading ? (
-              <div className="py-12 text-center text-white/60">Loading…</div>
-            ) : qEmpty && !SHOW_ALL_WHEN_EMPTY && all.length === 0 ? (
+            {qNorm.length < MIN_QUERY_LENGTH ? (
               <div className="py-12 text-center text-white/60">
-                Start typing to search racers…
+                Start typing at least {MIN_QUERY_LENGTH} characters to search
+                racers…
               </div>
+            ) : error ? (
+              <div className="py-12 text-center text-red-400">{error}</div>
+            ) : loading && all.length === 0 ? (
+              <div className="py-12 text-center text-white/60">Loading…</div>
             ) : filtered.length === 0 ? (
               <div className="py-12 text-center text-white/60">
                 No racers found.
               </div>
             ) : (
               <>
-                {filtered.map((r) => (
+                {filtered.map((r, i) => (
                   <button
-                    key={String(r.id)}
+                    key={`${String(r.id)}-${i}`}
                     onClick={() => onSelectRacer(r)}
                     className="w-full flex items-center gap-3 p-3 rounded-lg border border-white/10 bg-white/5 hover:bg-white/7 text-left"
                   >
@@ -350,7 +412,7 @@ export default function RacerSearchModal({
                   </button>
                 ))}
 
-                {hasMore && (
+                {hasMore && all.length >= LIMIT && (
                   <div className="py-3 flex justify-center">
                     <button
                       onClick={loadMore}

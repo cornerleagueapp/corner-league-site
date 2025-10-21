@@ -199,9 +199,15 @@ export default function RacerProfilePage({
               height: rec.height ?? a.height ?? null,
               weight: a.weight ?? rec.weight ?? null,
             };
-
             if (mappedById.racerName && String(mappedById.racerName).trim()) {
-              if (!cancelled) setRacer(mappedById);
+              if (!cancelled) {
+                setRacer(mappedById);
+                const url = new URL(window.location.href);
+                if (!url.searchParams.get("id") && mappedById.id != null) {
+                  url.searchParams.set("id", String(mappedById.id));
+                  window.history.replaceState(null, "", url.toString());
+                }
+              }
               return;
             }
           } catch (_) {}
@@ -232,75 +238,63 @@ export default function RacerProfilePage({
           };
         }
 
-        async function pageOnce(skip: number, qParam: "search" | "name") {
+        async function pageOnce(skip: number) {
+          const LIMIT = 50;
           const p = new URLSearchParams();
           p.set("skip", String(skip));
           p.set("limit", String(LIMIT));
-          p.set(qParam, targetName);
           p.set("order", "DESC");
 
-          try {
-            const res = await apiRequest<any>(
-              "GET",
-              `/jet-ski-racer-details?${p}`
-            );
-            const buckets = [
-              res?.racers,
-              res?.data?.racers,
-              res?.items,
-              res?.data?.items,
-              Array.isArray(res) ? res : null,
-            ].filter(Boolean) as any[];
-            const raw = (buckets.find(Array.isArray) as any[]) ?? [];
-            return raw;
-          } catch (err: any) {
-            const p2 = new URLSearchParams();
-            p2.set("skip", String(skip));
-            p2.set("limit", String(LIMIT));
-            try {
-              const res2 = await apiRequest<any>(
-                "GET",
-                `/jet-ski-racer-details?${p2}`
-              );
-              const buckets2 = [
-                res2?.racers,
-                res2?.data?.racers,
-                res2?.items,
-                res2?.data?.items,
-                Array.isArray(res2) ? res2 : null,
-              ].filter(Boolean) as any[];
-              const raw2 = (buckets2.find(Array.isArray) as any[]) ?? [];
-              return raw2;
-            } catch {
-              throw err;
-            }
-          }
+          const res = await apiRequest<any>(
+            "GET",
+            `/jet-ski-racer-details?${p}`
+          );
+
+          const buckets = [
+            res?.racers,
+            res?.data?.racers,
+            res?.items,
+            res?.data?.items,
+            Array.isArray(res) ? res : null,
+          ].filter(Boolean) as any[];
+
+          return (buckets.find(Array.isArray) as any[]) ?? [];
         }
 
-        async function findBySlug(): Promise<any | null> {
-          for (const qp of ["search", "name"] as const) {
-            for (let page = 0; page < MAX_PAGES; page++) {
-              const skip = page * LIMIT;
-              const raw = await pageOnce(skip, qp);
-              const hit =
-                raw.find(
-                  (r: any) =>
-                    slugify(r?.athlete?.name || r?.name || "") === slug
-                ) ??
-                raw.find(
-                  (r: any) =>
-                    String(r?.athlete?.name || r?.name || "")
-                      .trim()
-                      .toLowerCase() === targetName
-                );
-              if (hit) return hit;
-              if (raw.length < LIMIT) break;
-            }
+        async function findBySlugSafe(slug: string) {
+          const LIMIT = 50;
+          const MAX_PAGES = 10;
+          const targetName = slug.replace(/-/g, " ").trim();
+          const lc = targetName.toLowerCase();
+
+          for (let page = 0; page < MAX_PAGES; page++) {
+            const raw = await pageOnce(page * LIMIT);
+
+            const hit =
+              raw.find(
+                (r: any) =>
+                  (r?.athlete?.name || r?.name || "")
+                    .toString()
+                    .trim()
+                    .toLowerCase()
+                    .replace(/[^a-z0-9]+/g, "-") === slug
+              ) ||
+              raw.find(
+                (r: any) =>
+                  (r?.athlete?.name || r?.name || "")
+                    .toString()
+                    .trim()
+                    .toLowerCase() === lc
+              );
+
+            if (hit) return hit;
+            if (raw.length < LIMIT) break;
           }
           return null;
         }
 
-        const match = await findBySlug();
+        const match = await findBySlugSafe(slug);
+
         if (!match) throw new Error("Racer not found");
 
         const m = mapLite(match);
@@ -321,7 +315,16 @@ export default function RacerProfilePage({
           weight: m.weight,
         };
 
-        if (!cancelled) setRacer(mapped);
+        if (!cancelled) {
+          setRacer(mapped);
+          try {
+            const url = new URL(window.location.href);
+            if (!url.searchParams.get("id") && mapped?.id != null) {
+              url.searchParams.set("id", String(mapped.id));
+              window.history.replaceState(null, "", url.toString());
+            }
+          } catch {}
+        }
       } catch (e: any) {
         const msg = String(
           e?.message ||
@@ -498,6 +501,10 @@ export default function RacerProfilePage({
             <Button
               onClick={async () => {
                 const url = new URL(window.location.href);
+                if (racer?.id != null && !url.searchParams.get("id")) {
+                  url.searchParams.set("id", String(racer.id));
+                  window.history.replaceState(null, "", url.toString());
+                }
                 try {
                   await navigator.clipboard.writeText(url.toString());
                   toast({ title: "Copied to clipboard" });
@@ -736,7 +743,8 @@ export default function RacerProfilePage({
         onSelectRacer={(r) => {
           setSearchOpen(false);
           const slug = slugify(String(r.racerName || r.id));
-          navigate(`/racer/${encodeURIComponent(slug)}`);
+          const id = encodeURIComponent(String(r.id));
+          navigate(`/racer/${encodeURIComponent(slug)}?id=${id}`);
         }}
       />
     </div>

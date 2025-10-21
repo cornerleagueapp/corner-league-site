@@ -59,6 +59,34 @@ function humanizeValidationError(err: any): string | undefined {
   return undefined;
 }
 
+async function waitForRacerReadable(
+  apiUrl: (p: string) => string,
+  id: string,
+  token: string,
+  maxAttempts = 8
+): Promise<boolean> {
+  let delay = 150;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const r = await fetch(
+        apiUrl(`/jet-ski-racer-details/${encodeURIComponent(id)}`),
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          cache: "no-store",
+        }
+      );
+      if (r.ok) {
+        const j = await r.json().catch(() => ({}));
+        const d = j?.racer ?? j?.data?.racer ?? j?.data ?? j?.item ?? j;
+        if (d?.id || d?._id || d?.uuid || d?.athlete) return true;
+      }
+    } catch {}
+    await new Promise((res) => setTimeout(res, delay));
+    delay = Math.min(delay * 1.7, 1200);
+  }
+  return false;
+}
+
 function slugify(s: string) {
   return s
     .trim()
@@ -164,14 +192,21 @@ function CreateRacerForm() {
     bio: "",
   });
 
+  const [suggestions, setSuggestions] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
+  const [exactExists, setExactExists] = useState(false);
+  const [showSuggest, setShowSuggest] = useState(false);
+
   const set =
     (k: keyof typeof vals) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
       setVals((p) => ({ ...p, [k]: e.target.value }));
 
-  const canSubmit = useMemo(() => vals.name.trim().length > 0, [vals.name]);
-
-  //   const API_BASE = (import.meta.env.VITE_API_BASE || "").replace(/\/$/, "");
+  const canSubmit = useMemo(
+    () => vals.name.trim().length > 0 && !exactExists,
+    [vals.name, exactExists]
+  );
 
   function apiUrl(path: string) {
     const base = (import.meta.env.VITE_API_BASE || "").replace(/\/$/, "");
@@ -180,6 +215,95 @@ function CreateRacerForm() {
     const prefix = baseHasApi || !needsApi ? "" : "/api";
     return `${base}${prefix}${path.startsWith("/") ? path : `/${path}`}`;
   }
+
+  useEffect(() => {
+    let cancel = false;
+    const q = vals.name.trim();
+    if (q.length < 2) {
+      setSuggestions([]);
+      setExactExists(false);
+      return;
+    }
+
+    const t = setTimeout(async () => {
+      try {
+        const at = getAccessToken();
+        if (!at || cancel) return;
+
+        const LIMIT = 50;
+        const MAX_PAGES = 4;
+
+        async function pageOnce(skip: number) {
+          const params = new URLSearchParams();
+          params.set("skip", String(skip));
+          params.set("limit", String(LIMIT));
+          params.set("order", "DESC");
+          const url = apiUrl(`/jet-ski-racer-details?${params.toString()}`);
+          const r = await fetch(url, {
+            headers: { Authorization: `Bearer ${at}` },
+          });
+          if (!r.ok) return [];
+          const j = await r.json();
+          const buckets = [
+            j?.racers,
+            j?.data?.racers,
+            j?.items,
+            j?.data?.items,
+            Array.isArray(j) ? j : null,
+          ].filter(Boolean) as any[];
+          return (buckets.find(Array.isArray) as any[]) ?? [];
+        }
+
+        const all: any[] = [];
+        for (let page = 0; page < MAX_PAGES; page++) {
+          const batch = await pageOnce(page * LIMIT);
+          all.push(...batch);
+          if (cancel || batch.length < LIMIT) break;
+        }
+
+        const allNames = all
+          .map((rec: any) => ({
+            id: String(rec?.id ?? rec?._id ?? rec?.uuid ?? ""),
+            name: String(rec?.athlete?.name ?? rec?.name ?? "").trim(),
+          }))
+          .filter((x: any) => x.name);
+
+        const seen = new Set<string>();
+        const deduped: Array<{ id: string; name: string }> = [];
+        for (const x of allNames) {
+          const key = x.name.toLowerCase();
+          if (!seen.has(key)) {
+            seen.add(key);
+            deduped.push(x);
+          }
+        }
+
+        const qlc = q.toLowerCase();
+
+        const filtered = deduped
+          .filter((x) => x.name.toLowerCase().includes(qlc))
+          .slice(0, 8);
+
+        const exact = deduped.some((x) => x.name.toLowerCase() === qlc);
+
+        if (!cancel) {
+          setSuggestions(filtered);
+          setExactExists(exact);
+          setShowSuggest(true);
+        }
+      } catch {
+        if (!cancel) {
+          setSuggestions([]);
+          setExactExists(false);
+        }
+      }
+    }, 250);
+
+    return () => {
+      cancel = true;
+      clearTimeout(t);
+    };
+  }, [vals.name]);
 
   type CreateBody = {
     name: string;
@@ -294,11 +418,20 @@ function CreateRacerForm() {
 
   async function handleSubmit() {
     if (!canSubmit || submitting) return;
+
+    if (exactExists) {
+      toast({
+        title: "Duplicate athlete",
+        description: `“${vals.name.trim()}” already exists. Select it from the dropdown or change the name.`,
+      });
+      setSubmitting(false);
+      return;
+    }
+
     setSubmitting(true);
     try {
-      // Basic validation
       const ageNum = Number(vals.age);
-      if (!Number.isFinite(ageNum)) {
+      if (Number.isNaN(ageNum)) {
         toast({
           title: "Please fix the form",
           description: "Age must be a number.",
@@ -306,8 +439,7 @@ function CreateRacerForm() {
         setSubmitting(false);
         return;
       }
-      const bioStr = vals.bio.trim();
-      if (!bioStr) {
+      if (!vals.bio.trim()) {
         toast({
           title: "Please fix the form",
           description: "Bio is required.",
@@ -315,8 +447,7 @@ function CreateRacerForm() {
         setSubmitting(false);
         return;
       }
-      const boatStr = vals.boatManufacturers.trim();
-      if (!boatStr) {
+      if (!vals.boatManufacturers.trim()) {
         toast({
           title: "Please fix the form",
           description: "Boat manufacturer is required.",
@@ -324,15 +455,10 @@ function CreateRacerForm() {
         setSubmitting(false);
         return;
       }
-      const toNum = (v: string) => {
-        const n = Number(v);
-        return Number.isFinite(n) ? n : undefined;
-      };
-      const heightInches = toNum(vals.heightInches);
-      if (
-        heightInches !== undefined &&
-        (heightInches < 36 || heightInches > 96)
-      ) {
+      const heightNum = vals.heightInches
+        ? Number(vals.heightInches)
+        : undefined;
+      if (heightNum !== undefined && (heightNum < 36 || heightNum > 96)) {
         toast({
           title: "Please fix the form",
           description: "Height must be between 36 and 96 inches (3′0″–8′0″).",
@@ -351,124 +477,88 @@ function CreateRacerForm() {
         return;
       }
 
-      // 1) Ensure there is an athlete row. Since your API surface for athletes is limited,
-      //    we use the existing GET /athletes?search= to find the row by name.
-      const athletesUrl = apiUrl(
-        `/athletes?${new URLSearchParams({
-          search: vals.name.trim(),
-          limit: "5",
-          order: "DESC",
-        }).toString()}`
-      );
-      const findRes = await fetch(athletesUrl, {
-        headers: { Authorization: `Bearer ${at}` },
-      });
+      const body = {
+        name: vals.name.trim(),
+        age: ageNum,
+        bio: vals.bio.trim(),
+        origin: vals.origin.trim(),
+        height: heightNum,
 
-      let athleteId: string | undefined;
-      if (findRes.ok) {
-        const aj = await findRes.json();
-        const list: any[] =
-          aj?.athletes ||
-          aj?.data?.athletes ||
-          aj?.items ||
-          (Array.isArray(aj) ? aj : []) ||
-          [];
-        const lower = vals.name.trim().toLowerCase();
-        const cand =
-          list.find(
-            (a) =>
-              String(a?.name || "")
-                .trim()
-                .toLowerCase() === lower
-          ) || list[0];
-        athleteId = cand?.id ?? cand?._id ?? cand?.uuid;
-      }
-
-      // If we STILL don’t have an athleteId here, it likely means the server will create one
-      // when we call the detail endpoint with athlete props — but your controller crashes after.
-      // To avoid the crash loop, we only send detail-table fields now. If athleteId is missing,
-      // we stop and ask the user to try again after the athlete exists.
-      if (!athleteId) {
-        toast({
-          title: "Athlete not found",
-          description:
-            "Create or sync the athlete first, then attach racer details.",
-        });
-        setSubmitting(false);
-        return;
-      }
-
-      // 2) Create jet_ski_racer_details with ONLY columns that exist + athleteId
-      const detailBody = {
+        boatManufacturers: vals.boatManufacturers.trim(),
         careerWins: 0,
         seasonWins: 0,
         seasonPodiums: 0,
-        careerWordFinalsWins: 0, // <-- correct spelling for your DB
-        boatManufacturers: boatStr,
-        athleteId, // <-- attaches to the athlete
+        careerWordFinalsWins: 0,
       };
 
-      const postUrl = apiUrl("/jet-ski-racer-details");
-      logBodyWithTypes("[AdminCreateRacer] POST details", detailBody);
+      logBodyWithTypes("[AdminCreateRacer] POST /jet-ski-racer-details", body);
 
-      const createRes = await fetch(postUrl, {
+      const postUrl = apiUrl("/jet-ski-racer-details");
+      const res = await fetch(postUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${at}`,
         },
-        body: JSON.stringify(detailBody),
+        body: JSON.stringify(body),
       });
 
-      const rawText = await createRes.text();
-
-      if (!createRes.ok) {
-        console.groupCollapsed(
-          "%c[AdminCreateRacer] details POST failed",
-          "color:#f7768e;font-weight:bold"
-        );
-        console.log("status:", createRes.status);
-        console.log("response (raw):", rawText);
-        console.groupEnd();
-
-        let msg = rawText;
+      const raw = await res.text();
+      if (!res.ok) {
+        let msg = raw;
         try {
-          const j = JSON.parse(rawText);
-          msg =
-            j?.result?.response?.message ||
-            j?.message ||
-            j?.error ||
-            rawText ||
-            "Error";
+          const j = JSON.parse(raw);
+          msg = j?.message || j?.error || raw;
         } catch {}
         toast({ title: "Create failed", description: String(msg) });
         setSubmitting(false);
         return;
       }
 
-      // 3) Navigate to the new profile (use the returned id if possible, otherwise athleteId)
       let created: any;
       try {
-        created = JSON.parse(rawText);
+        created = JSON.parse(raw);
       } catch {
-        created = rawText;
+        created = raw;
       }
-      const unpack =
-        created?.racer ??
-        created?.data?.racer ??
-        created?.data ??
-        created?.item ??
-        created;
+      const racer = created?.racer ?? created?.data?.racer ?? created;
       const detailId: string | undefined =
-        unpack?.id ?? unpack?._id ?? unpack?.uuid;
+        racer?.id ?? racer?._id ?? racer?.uuid ?? created?.data?.id;
+      const athleteId: string | undefined =
+        racer?.athlete?.id ?? racer?.athlete?._id ?? created?.data?.athleteId;
 
-      const idForNav = detailId || athleteId;
-      const slug = slugify(vals.name.trim());
+      if (!detailId && !athleteId) {
+        console.warn("[CreateRacer] Missing ids in POST response:", created);
+        toast({ title: "Create failed", description: "No ID returned." });
+        setSubmitting(false);
+        return;
+      }
+
       toast({ title: "Racer created" });
-      if (idForNav) {
+
+      const slug = slugify(vals.name.trim());
+
+      if (detailId) {
+        const ok = await waitForRacerReadable(apiUrl, detailId, at);
+        if (!ok) {
+          // still navigate, but warn the user and let the profile page try again
+          toast({
+            title: "Finishing up…",
+            description: "New racer may take a moment to appear.",
+          });
+        }
+      }
+
+      if (detailId) {
         navigate(
           `/racer/${encodeURIComponent(slug)}?id=${encodeURIComponent(
-            String(idForNav)
+            detailId
+          )}${athleteId ? `&athleteId=${encodeURIComponent(athleteId)}` : ""}`
+        );
+      } else if (athleteId) {
+        navigate(
+          `/racer/${encodeURIComponent(slug)}?athleteId=${encodeURIComponent(
+            athleteId
           )}`
         );
       } else {
@@ -499,7 +589,49 @@ function CreateRacerForm() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <Field label="Name *">
-            <input className="fld" value={vals.name} onChange={set("name")} />
+            <div className="relative">
+              <input
+                className="fld"
+                value={vals.name}
+                onChange={set("name")}
+                onFocus={() => setShowSuggest(true)}
+                onBlur={() => setTimeout(() => setShowSuggest(false), 120)}
+                placeholder="Type a name…"
+              />
+              {/* inline warning when exact duplicate */}
+              {exactExists && vals.name.trim() && (
+                <div className="mt-1 text-xs text-amber-300">
+                  An athlete named “{vals.name.trim()}” already exists. Please
+                  change the name or pick new athlete.
+                </div>
+              )}
+              {/* suggestions dropdown */}
+              {showSuggest && suggestions.length > 0 && (
+                <div className="absolute z-20 mt-1 w-full rounded-md border border-white/10 bg-[#0b0f18] shadow-lg">
+                  {suggestions
+                    .filter((s) =>
+                      s.name
+                        .toLowerCase()
+                        .includes(vals.name.trim().toLowerCase())
+                    )
+                    .map((s) => (
+                      <button
+                        key={s.id}
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => {
+                          setVals((p) => ({ ...p, name: s.name }));
+                          setExactExists(true);
+                          setShowSuggest(false);
+                        }}
+                        className="w-full text-left px-3 py-2 text-white/100 text-sm hover:bg-white/10"
+                      >
+                        {s.name}
+                      </button>
+                    ))}
+                </div>
+              )}
+            </div>
           </Field>
           <Field label="Age">
             <input
