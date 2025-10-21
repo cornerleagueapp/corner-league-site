@@ -27,14 +27,6 @@ type Racer = {
   weight?: number | null;
 };
 
-function slugify(s: string) {
-  return s
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
 function inchesToMeters(inches: number) {
   return inches * 0.0254;
 }
@@ -49,10 +41,11 @@ function metersToFeetInches(m?: number | null) {
 function logRequestError(ctx: string, err: any, endpoint?: string, body?: any) {
   try {
     console.groupCollapsed(`%c${ctx} failed`, "color:#f7768e;font-weight:bold");
+    console.log("endpoint:", endpoint);
+    console.log("sent body:", body);
     console.log("err.status:", err?.status);
     console.log("err.message:", err?.message);
     console.log("err.data (raw):", err?.data);
-    // If data is an object, pretty-print too
     if (err?.data && typeof err.data === "object") {
       console.log("err.data (json):", JSON.stringify(err.data, null, 2));
     }
@@ -60,16 +53,10 @@ function logRequestError(ctx: string, err: any, endpoint?: string, body?: any) {
   } catch {}
 }
 
-// Turn Nest/class-validator errors into a readable string for toasts
 function humanizeValidationError(err: any): string | undefined {
   const d = err?.data;
-
-  // If server returned a plain string body
   if (typeof d === "string" && d.trim()) return d;
-
-  // Swagger/Nest common shapes:
   if (d && Array.isArray(d.message)) {
-    // message array sometimes contains strings or ValidationError objects
     const lines: string[] = [];
     for (const m of d.message) {
       if (typeof m === "string") lines.push(m);
@@ -83,12 +70,16 @@ function humanizeValidationError(err: any): string | undefined {
     }
     if (lines.length) return lines.join(" • ");
   }
-
-  // Some APIs use { error: "...", message: "..." }
   if (d?.error && typeof d.error === "string") return d.error;
   if (d?.message && typeof d.message === "string") return d.message;
-
   return undefined;
+}
+
+function isProbablyId(s: string) {
+  if (!s) return false;
+  if (/^[0-9a-fA-F-]{32,}$/.test(s) && s.includes("-")) return true;
+  if (/^[0-9A-Za-z]{20,}$/.test(s)) return true;
+  return false;
 }
 
 async function uploadAthleteImage(athleteId: string, file: File) {
@@ -126,9 +117,9 @@ async function pollUploadProgress(
 }
 
 export default function RacerProfilePage({
-  slugParam,
+  idOrSlugParam,
 }: {
-  slugParam?: string;
+  idOrSlugParam?: string;
 }) {
   const { toast } = useToast();
   const [, navigate] = useLocation();
@@ -144,206 +135,145 @@ export default function RacerProfilePage({
   useEffect(() => {
     let cancelled = false;
 
-    const slugify = (s: string) =>
-      s
-        .trim()
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "");
+    async function fetchById(detailId: string) {
+      const res = await apiRequest<any>(
+        "GET",
+        `/jet-ski-racer-details/${encodeURIComponent(detailId)}`
+      );
+      const rec =
+        res?.racer ?? res?.data?.racer ?? res?.data ?? res?.item ?? res;
+      if (!rec) throw new Error("not_found");
+
+      const a = rec.athlete ?? {};
+      const mapped: Racer = {
+        id: rec?.id ?? a?.id,
+        athleteId: a.id,
+        racerName: a.name ?? rec.name ?? "",
+        racerAge: a.age ?? rec.age ?? undefined,
+        bio: a.bio ?? rec.bio ?? null,
+        racerImage: a.image ?? rec.image ?? null,
+        location: a.origin ?? rec.origin ?? null,
+        boatManufacturers: rec.boatManufacturers ?? rec.team?.name ?? null,
+        careerWins: rec.careerWins ?? 0,
+        seasonWins: rec.seasonWins ?? 0,
+        seasonPodiums: rec.seasonPodiums ?? 0,
+        careerWorldFinalsWins:
+          rec.careerWordFinalsWins ?? rec.careerWorldFinalsWins ?? 0,
+        height: rec.height ?? a.height ?? null,
+        weight: a.weight ?? rec.weight ?? null,
+      };
+      return mapped;
+    }
+
+    async function pageOnce(skip: number) {
+      const p = new URLSearchParams();
+      p.set("skip", String(skip));
+      p.set("limit", String(50));
+      p.set("order", "DESC");
+      const res = await apiRequest<any>("GET", `/jet-ski-racer-details?${p}`);
+      const buckets = [
+        res?.racers,
+        res?.data?.racers,
+        res?.items,
+        res?.data?.items,
+        Array.isArray(res) ? res : null,
+      ].filter(Boolean) as any[];
+      return (buckets.find(Array.isArray) as any[]) ?? [];
+    }
+
+    async function findBySlug(slug: string) {
+      const targetName = slug.replace(/-/g, " ").trim();
+      const lc = targetName.toLowerCase();
+      const MAX_PAGES = 10;
+      for (let page = 0; page < MAX_PAGES; page++) {
+        const raw = await pageOnce(page * 50);
+        const hit =
+          raw.find(
+            (r: any) =>
+              (r?.athlete?.name || r?.name || "")
+                .toString()
+                .trim()
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, "-") === slug
+          ) ||
+          raw.find(
+            (r: any) =>
+              (r?.athlete?.name || r?.name || "")
+                .toString()
+                .trim()
+                .toLowerCase() === lc
+          );
+        if (hit) return hit;
+        if (raw.length < 50) break;
+      }
+      return null;
+    }
+
+    function mapLiteToRacer(match: any): Racer {
+      const a = match?.athlete ?? {};
+      return {
+        id: match?.id ?? a?.id,
+        athleteId: a.id,
+        racerName: a?.name ?? match?.name ?? "",
+        racerAge: a?.age ?? match?.age ?? undefined,
+        bio: a?.bio ?? match?.bio ?? null,
+        racerImage: a?.image ?? match?.image ?? null,
+        location: a?.origin ?? match?.origin ?? null,
+        boatManufacturers:
+          match?.boatManufacturers ?? match?.team?.name ?? null,
+        careerWins: match?.careerWins ?? 0,
+        seasonWins: match?.seasonWins ?? 0,
+        seasonPodiums: match?.seasonPodiums ?? 0,
+        careerWorldFinalsWins:
+          match?.careerWordFinalsWins ?? match?.careerWF ?? 0,
+        height: match?.height ?? a?.height ?? null,
+        weight: a?.weight ?? match?.weight ?? null,
+      };
+    }
 
     (async () => {
       setLoading(true);
       setErr(null);
       try {
-        const slug = decodeURIComponent(slugParam || "").toLowerCase();
-        if (!slug) throw new Error("Racer not found");
+        const token = decodeURIComponent(idOrSlugParam || "").trim();
+        if (!token) throw new Error("Racer not found");
 
-        const idFromQS = (() => {
+        if (isProbablyId(token)) {
           try {
-            return new URL(window.location.href).searchParams.get("id");
-          } catch {
-            return null;
-          }
-        })();
-
-        if (idFromQS) {
-          try {
-            const resById = await apiRequest<any>(
-              "GET",
-              `/jet-ski-racer-details/${encodeURIComponent(idFromQS)}`
-            );
-            const rec =
-              resById?.racer ??
-              resById?.data?.racer ??
-              resById?.data ??
-              resById?.item ??
-              resById;
-            if (!rec) throw new Error("not_found");
-
-            const a = rec.athlete ?? {};
-            const mappedById: Racer = {
-              id: rec?.id ?? a?.id,
-              athleteId: a.id,
-              racerName: a.name ?? rec.name ?? "",
-              racerAge: a.age ?? rec.age ?? undefined,
-              bio: a.bio ?? rec.bio ?? null,
-              racerImage: a.image ?? rec.image ?? null,
-              location: a.origin ?? rec.origin ?? null,
-              boatManufacturers:
-                rec.boatManufacturers ?? rec.team?.name ?? null,
-              careerWins: rec.careerWins ?? 0,
-              seasonWins: rec.seasonWins ?? 0,
-              seasonPodiums: rec.seasonPodiums ?? 0,
-              careerWorldFinalsWins:
-                rec.careerWordFinalsWins ?? rec.careerWorldFinalsWins ?? 0,
-              height: rec.height ?? a.height ?? null,
-              weight: a.weight ?? rec.weight ?? null,
-            };
-            if (mappedById.racerName && String(mappedById.racerName).trim()) {
-              if (!cancelled) {
-                setRacer(mappedById);
-                const url = new URL(window.location.href);
-                if (!url.searchParams.get("id") && mappedById.id != null) {
-                  url.searchParams.set("id", String(mappedById.id));
-                  window.history.replaceState(null, "", url.toString());
-                }
-              }
+            const mapped = await fetchById(token);
+            if (!cancelled) {
+              setRacer(mapped);
+              setLoading(false);
               return;
             }
-          } catch (_) {}
+          } catch (e: any) {}
         }
 
-        const targetName = slug.replace(/-/g, " ").trim();
-        const LIMIT = 50;
-        const MAX_PAGES = 10; // scan up to 500 records if server search is weak
-
-        function mapLite(rec: any) {
-          const a = rec?.athlete ?? {};
-          return {
-            id: rec?.id ?? a?.id,
-            athleteId: a.id,
-            name: a?.name ?? rec?.name ?? "",
-            image: a?.image ?? rec?.image ?? null,
-            origin: a?.origin ?? rec?.origin ?? null,
-            age: a?.age ?? rec?.age ?? undefined,
-            careerWins: rec?.careerWins ?? 0,
-            seasonWins: rec?.seasonWins ?? 0,
-            seasonPodiums: rec?.seasonPodiums ?? 0,
-            careerWF:
-              rec?.careerWordFinalsWins ?? rec?.careerWorldFinalsWins ?? 0,
-            height: rec?.height ?? a?.height ?? null,
-            weight: a?.weight ?? rec?.weight ?? null,
-            boatManufacturers: rec?.boatManufacturers ?? null,
-            bio: a?.bio ?? rec?.bio ?? null,
-          };
-        }
-
-        async function pageOnce(skip: number) {
-          const LIMIT = 50;
-          const p = new URLSearchParams();
-          p.set("skip", String(skip));
-          p.set("limit", String(LIMIT));
-          p.set("order", "DESC");
-
-          const res = await apiRequest<any>(
-            "GET",
-            `/jet-ski-racer-details?${p}`
-          );
-
-          const buckets = [
-            res?.racers,
-            res?.data?.racers,
-            res?.items,
-            res?.data?.items,
-            Array.isArray(res) ? res : null,
-          ].filter(Boolean) as any[];
-
-          return (buckets.find(Array.isArray) as any[]) ?? [];
-        }
-
-        async function findBySlugSafe(slug: string) {
-          const LIMIT = 50;
-          const MAX_PAGES = 10;
-          const targetName = slug.replace(/-/g, " ").trim();
-          const lc = targetName.toLowerCase();
-
-          for (let page = 0; page < MAX_PAGES; page++) {
-            const raw = await pageOnce(page * LIMIT);
-
-            const hit =
-              raw.find(
-                (r: any) =>
-                  (r?.athlete?.name || r?.name || "")
-                    .toString()
-                    .trim()
-                    .toLowerCase()
-                    .replace(/[^a-z0-9]+/g, "-") === slug
-              ) ||
-              raw.find(
-                (r: any) =>
-                  (r?.athlete?.name || r?.name || "")
-                    .toString()
-                    .trim()
-                    .toLowerCase() === lc
-              );
-
-            if (hit) return hit;
-            if (raw.length < LIMIT) break;
-          }
-          return null;
-        }
-
-        const match = await findBySlugSafe(slug);
-
+        const asSlug = token
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "");
+        const match = await findBySlug(asSlug);
         if (!match) throw new Error("Racer not found");
 
-        const m = mapLite(match);
-        const mapped: Racer = {
-          id: m.id,
-          athleteId: m.athleteId,
-          racerName: m.name,
-          racerAge: m.age,
-          bio: m.bio,
-          racerImage: m.image,
-          location: m.origin,
-          boatManufacturers: m.boatManufacturers,
-          careerWins: m.careerWins,
-          seasonWins: m.seasonWins,
-          seasonPodiums: m.seasonPodiums,
-          careerWorldFinalsWins: m.careerWF,
-          height: m.height,
-          weight: m.weight,
-        };
-
-        if (!cancelled) {
-          setRacer(mapped);
-          try {
-            const url = new URL(window.location.href);
-            if (!url.searchParams.get("id") && mapped?.id != null) {
-              url.searchParams.set("id", String(mapped.id));
-              window.history.replaceState(null, "", url.toString());
-            }
-          } catch {}
-        }
+        const mapped = mapLiteToRacer(match);
+        if (!cancelled) setRacer(mapped);
       } catch (e: any) {
-        const msg = String(
+        const msg =
           e?.message ||
-            e?.data?.message ||
-            e?.data?.error ||
-            "Failed to load racer"
-        );
-        const noisy =
-          /Property\s+["']?\w+["']?\s+was\s+not\s+found/i.test(msg) ||
-          /Make sure your query is correct/i.test(msg);
-        if (!cancelled) setErr(noisy ? "Racer not found" : msg);
+          e?.data?.message ||
+          e?.data?.error ||
+          "Failed to load racer";
+        setErr(/not found/i.test(msg) ? "Racer not found" : String(msg));
       } finally {
         if (!cancelled) setLoading(false);
       }
     })();
+
     return () => {
       cancelled = true;
     };
-  }, [slugParam]);
+  }, [idOrSlugParam]);
 
   if (loading) {
     return (
@@ -399,33 +329,21 @@ export default function RacerProfilePage({
     }
   ) {
     const round2 = (n: number) => Math.round(n * 100) / 100;
-
     const body: Record<string, any> = {};
-
-    if (r.racerName && r.racerName.trim()) {
-      body.name = r.racerName.trim();
-    }
-
-    if (typeof edited.age === "number" && Number.isFinite(edited.age)) {
+    if (r.racerName && r.racerName.trim()) body.name = r.racerName.trim();
+    if (typeof edited.age === "number" && Number.isFinite(edited.age))
       body.age = edited.age;
-    }
-    if (edited.bio && edited.bio.trim()) {
-      body.bio = edited.bio.trim();
-    }
+    if (edited.bio && edited.bio.trim()) body.bio = edited.bio.trim();
     if (
       typeof edited.heightMeters === "number" &&
       Number.isFinite(edited.heightMeters) &&
       edited.heightMeters > 0
-    ) {
+    )
       body.height = round2(edited.heightMeters);
-    }
-    if (edited.origin && edited.origin.trim()) {
+    if (edited.origin && edited.origin.trim())
       body.origin = edited.origin.trim();
-    }
-    if (edited.boatManufacturers && edited.boatManufacturers.trim()) {
+    if (edited.boatManufacturers && edited.boatManufacturers.trim())
       body.boatManufacturers = edited.boatManufacturers.trim();
-    }
-
     return body;
   }
 
@@ -500,13 +418,8 @@ export default function RacerProfilePage({
 
             <Button
               onClick={async () => {
-                const url = new URL(window.location.href);
-                if (racer?.id != null && !url.searchParams.get("id")) {
-                  url.searchParams.set("id", String(racer.id));
-                  window.history.replaceState(null, "", url.toString());
-                }
                 try {
-                  await navigator.clipboard.writeText(url.toString());
+                  await navigator.clipboard.writeText(window.location.href);
                   toast({ title: "Copied to clipboard" });
                 } catch {}
               }}
@@ -517,9 +430,8 @@ export default function RacerProfilePage({
           </div>
         </div>
 
-        {/* tabs substitute */}
+        {/* layout content */}
         <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* left column: bio */}
           <div className="order-2 lg:order-1 lg:col-span-1 space-y-6">
             <Card className="bg-white/5 border-white/10 p-4">
               <div className="text-sm text-white/80 mb-2">About</div>
@@ -539,7 +451,6 @@ export default function RacerProfilePage({
             </Card>
           </div>
 
-          {/* main column */}
           <div className="order-1 lg:order-2 lg:col-span-2 space-y-3">
             <Card className="bg-white/5 border-white/10 p-4">
               <div className="text-white/80 text-sm">
@@ -550,7 +461,7 @@ export default function RacerProfilePage({
         </div>
       </div>
 
-      {/* lightbox (if you later add racer gallery) */}
+      {/* lightbox */}
       {lightboxUrl && (
         <div
           className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70"
@@ -599,7 +510,6 @@ export default function RacerProfilePage({
               boatManufacturers?: string;
             } = {};
 
-            // Age
             if (typeof ageNum === "number" && ageNum !== racer.racerAge) {
               if (ageNum < 9 || ageNum > 100) {
                 toast({
@@ -611,15 +521,11 @@ export default function RacerProfilePage({
               edited.age = ageNum;
             }
 
-            // Bio
-            {
-              const newBio = (vals.bio ?? "").trim();
-              if (newBio !== (racer.bio ?? "")) {
-                if (newBio) edited.bio = newBio;
-              }
+            const newBio = (vals.bio ?? "").trim();
+            if (newBio !== (racer.bio ?? "")) {
+              if (newBio) edited.bio = newBio;
             }
 
-            // Height (inches -> meters)
             if (typeof heightInchesNum === "number") {
               if (heightInchesNum < 36 || heightInchesNum > 96) {
                 toast({
@@ -636,31 +542,22 @@ export default function RacerProfilePage({
                 typeof racer.height === "number"
                   ? parseFloat(racer.height.toFixed(2))
                   : undefined;
-              if (newMeters !== currentMeters) {
-                edited.heightMeters = newMeters;
-              }
+              if (newMeters !== currentMeters) edited.heightMeters = newMeters;
             }
 
-            // Origin
-            {
-              const newOrigin = (vals.origin ?? "").trim();
-              if (newOrigin !== (racer.location ?? "")) {
-                if (newOrigin) edited.origin = newOrigin;
-              }
+            const newOrigin = (vals.origin ?? "").trim();
+            if (newOrigin !== (racer.location ?? "")) {
+              if (newOrigin) edited.origin = newOrigin;
             }
 
-            // Boat Manufacturer
-            {
-              const newBoat = (vals.boatManufacturers ?? "").trim();
-              if (newBoat !== (racer.boatManufacturers ?? "")) {
-                if (newBoat) edited.boatManufacturers = newBoat;
-              }
+            const newBoat = (vals.boatManufacturers ?? "").trim();
+            if (newBoat !== (racer.boatManufacturers ?? "")) {
+              if (newBoat) edited.boatManufacturers = newBoat;
             }
 
             const hasEdits = Object.keys(edited).length > 0;
             const hasImage = !!vals.imageFile && !!racer.athleteId;
 
-            // If literally nothing changed, just close.
             if (!hasEdits && !hasImage) {
               setEditOpen(false);
               return;
@@ -689,7 +586,6 @@ export default function RacerProfilePage({
 
               if (hasEdits) {
                 const body = buildUpdateBody(racer, edited);
-
                 const onlyName =
                   Object.keys(body).length === 1 && "name" in body;
                 if (!onlyName) {
@@ -742,9 +638,8 @@ export default function RacerProfilePage({
         onClose={() => setSearchOpen(false)}
         onSelectRacer={(r) => {
           setSearchOpen(false);
-          const slug = slugify(String(r.racerName || r.id));
-          const id = encodeURIComponent(String(r.id));
-          navigate(`/racer/${encodeURIComponent(slug)}?id=${id}`);
+          const idStr = encodeURIComponent(String(r.id));
+          navigate(`/racer/${idStr}`);
         }}
       />
     </div>
@@ -815,7 +710,7 @@ function EditRacerModal({
       setVals((p) => ({ ...p, [k]: e.target.value }));
 
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  useEffect(() => {
+  React.useEffect(() => {
     return () => {
       if (previewUrl) URL.revokeObjectURL(previewUrl);
     };
@@ -910,26 +805,12 @@ function EditRacerModal({
             />
           </Field>
 
-          {vals.imageFile && (
-            <div className="mt-2 space-y-2">
-              <div className="text-xs text-white/60">
-                Selected: {vals.imageFile.name}
-              </div>
-              {previewUrl && (
-                <img
-                  src={previewUrl}
-                  alt="Selected profile preview"
-                  className="h-28 w-28 rounded-full object-cover border border-white/10"
-                />
-              )}
-            </div>
-          )}
-
-          {/* Optional tiny preview */}
-          {vals.imageFile && (
-            <div className="mt-1 text-xs text-white/60">
-              Selected: {vals.imageFile.name}
-            </div>
+          {vals.imageFile && previewUrl && (
+            <img
+              src={previewUrl}
+              alt="Selected profile preview"
+              className="h-28 w-28 rounded-full object-cover border border-white/10"
+            />
           )}
         </div>
 

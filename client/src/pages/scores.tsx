@@ -1031,12 +1031,8 @@ export default function ScoresPage() {
         onClose={() => setRacerSearchOpen(false)}
         onSelectRacer={(r) => {
           setRacerSearchOpen(false);
-          const slug = String(r.racerName || r.id)
-            .trim()
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, "-")
-            .replace(/^-+|-+$/g, "");
-          navigate(`/racer/${encodeURIComponent(slug)}`);
+          const idStr = encodeURIComponent(String(r.id));
+          navigate(`/racer/${idStr}`);
         }}
       />
     </div>

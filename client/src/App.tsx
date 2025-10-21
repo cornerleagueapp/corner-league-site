@@ -73,8 +73,8 @@ function PrivateRouter() {
           <Route path="/profile/:username">
             {(params) => <UserProfilePage username={params.username} />}
           </Route>
-          <Route path="/racer/:slug">
-            {(params) => <RacerProfilePage slugParam={params.slug} />}
+          <Route path="/racer/:idOrSlug">
+            {(params) => <RacerProfilePage idOrSlugParam={params.idOrSlug} />}
           </Route>
           <Route path="/profile" component={ProfileRedirect} />
           <Route path="/feed" component={FeedPage} />

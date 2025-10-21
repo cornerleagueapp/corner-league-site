@@ -1,3 +1,4 @@
+// pages/admin-create-racer.tsx
 import React, { useEffect, useMemo, useState } from "react";
 import { PageSEO } from "@/seo/usePageSEO";
 import { Button } from "@/components/ui/button";
@@ -521,46 +522,166 @@ function CreateRacerForm() {
       } catch {
         created = raw;
       }
-      const racer = created?.racer ?? created?.data?.racer ?? created;
-      const detailId: string | undefined =
-        racer?.id ?? racer?._id ?? racer?.uuid ?? created?.data?.id;
-      const athleteId: string | undefined =
-        racer?.athlete?.id ?? racer?.athlete?._id ?? created?.data?.athleteId;
+
+      function extractIdFromLocationHeader(r: Response): string | undefined {
+        const loc = r.headers.get("Location") || r.headers.get("location");
+        if (!loc) return;
+        const m = String(loc).match(/\/jet-ski-racer-details\/([^/?#]+)/i);
+        return m?.[1];
+      }
+
+      const racer =
+        created?.racer ?? created?.data?.racer ?? created?.data ?? created;
+
+      let detailId: string | undefined =
+        racer?.id ??
+        racer?._id ??
+        racer?.uuid ??
+        created?.data?.id ??
+        created?.racerId ??
+        created?.data?.racerId ??
+        extractIdFromLocationHeader(res);
+
+      let athleteId: string | undefined =
+        racer?.athlete?.id ??
+        racer?.athlete?._id ??
+        created?.data?.athleteId ??
+        created?.athleteId;
+
+      const nameForLookup = vals.name.trim();
+
+      const scanForByName = async (
+        atLocal: string,
+        targetName: string,
+        maxPages = 12,
+        limit = 50
+      ): Promise<{ detailId?: string; athleteId?: string }> => {
+        const targetLc = targetName.toLowerCase();
+        const targetSlug = targetLc
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "");
+
+        async function pageOnce(skip: number) {
+          const params = new URLSearchParams();
+          params.set("skip", String(skip));
+          params.set("limit", String(limit));
+          params.set("order", "DESC");
+          const url = apiUrl(`/jet-ski-racer-details?${params.toString()}`);
+          try {
+            const r = await fetch(url, {
+              headers: { Authorization: `Bearer ${atLocal}` },
+            });
+            if (!r.ok) return [];
+            const j = await r.json();
+            const buckets = [
+              j?.racers,
+              j?.data?.racers,
+              j?.items,
+              j?.data?.items,
+              Array.isArray(j) ? j : null,
+            ].filter(Boolean) as any[];
+            return (buckets.find(Array.isArray) as any[]) ?? [];
+          } catch {
+            return [];
+          }
+        }
+
+        for (let page = 0; page < maxPages; page++) {
+          const raw = await pageOnce(page * limit);
+          if (!raw.length) break;
+
+          for (const rec of raw) {
+            const nm = (rec?.athlete?.name || rec?.name || "")
+              .toString()
+              .trim();
+            const lc = nm.toLowerCase();
+            const slug = lc.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+            if (lc === targetLc || slug === targetSlug) {
+              return {
+                detailId:
+                  String(rec?.id ?? rec?._id ?? rec?.uuid ?? "") || undefined,
+                athleteId:
+                  String(
+                    rec?.athlete?.id ?? rec?.athleteId ?? rec?.athlete_id ?? ""
+                  ) || undefined,
+              };
+            }
+          }
+
+          if (raw.length < limit) break;
+        }
+        return {};
+      };
 
       if (!detailId && !athleteId) {
-        console.warn("[CreateRacer] Missing ids in POST response:", created);
-        toast({ title: "Create failed", description: "No ID returned." });
+        const deadline = Date.now() + 20000;
+        let delay = 300;
+        while (Date.now() < deadline && !detailId && !athleteId) {
+          const found = await scanForByName(at, nameForLookup);
+          if (found.detailId || found.athleteId) {
+            detailId = found.detailId ?? detailId;
+            athleteId = found.athleteId ?? athleteId;
+            break;
+          }
+          await new Promise((r) => setTimeout(r, delay));
+          delay = Math.min(1200, Math.round(delay * 1.6));
+        }
+      }
+
+      if (!detailId && athleteId) {
+      } else if (!detailId && !athleteId) {
+        try {
+          const fb = await fallbackCreateDetailForAthlete(at, nameForLookup, {
+            name: vals.name.trim(),
+            age: ageNum,
+            bio: vals.bio.trim(),
+            origin: vals.origin.trim(),
+            height: heightNum,
+            boatManufacturers: vals.boatManufacturers.trim(),
+            careerWins: 0,
+            seasonWins: 0,
+            seasonPodiums: 0,
+            careerWordFinalsWins: 0,
+          });
+          if (fb.detailId || fb.athleteId) {
+            detailId = fb.detailId ?? detailId;
+            athleteId = fb.athleteId ?? athleteId;
+          }
+        } catch {}
+      }
+
+      const slug = slugify(vals.name.trim());
+
+      if (!detailId && !athleteId) {
+        console.warn("[CreateRacer] Missing IDs; falling back to slug nav.");
+        toast({
+          title: "Racer created",
+          description:
+            "The new profile is being indexed. We’ll open it by name for now.",
+        });
+        navigate(`/racer/${encodeURIComponent(slug)}`);
         setSubmitting(false);
         return;
       }
 
       toast({ title: "Racer created" });
 
-      const slug = slugify(vals.name.trim());
-
       if (detailId) {
-        const ok = await waitForRacerReadable(apiUrl, detailId, at);
-        if (!ok) {
-          // still navigate, but warn the user and let the profile page try again
-          toast({
-            title: "Finishing up…",
-            description: "New racer may take a moment to appear.",
-          });
-        }
+        void (async () => {
+          const ok = await waitForRacerReadable(apiUrl, detailId!, at);
+          if (!ok) {
+            toast({
+              title: "Finishing up…",
+              description: "New racer may take a moment to appear.",
+            });
+          }
+        })();
       }
 
       if (detailId) {
-        navigate(
-          `/racer/${encodeURIComponent(slug)}?id=${encodeURIComponent(
-            detailId
-          )}${athleteId ? `&athleteId=${encodeURIComponent(athleteId)}` : ""}`
-        );
+        navigate(`/racer/${encodeURIComponent(detailId)}`);
       } else if (athleteId) {
-        navigate(
-          `/racer/${encodeURIComponent(slug)}?athleteId=${encodeURIComponent(
-            athleteId
-          )}`
-        );
+        navigate(`/racer/${encodeURIComponent(athleteId)}?kind=athlete`);
       } else {
         navigate(`/racer/${encodeURIComponent(slug)}`);
       }
