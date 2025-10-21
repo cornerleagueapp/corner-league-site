@@ -667,15 +667,13 @@ function CreateRacerForm() {
       toast({ title: "Racer created" });
 
       if (detailId) {
-        void (async () => {
-          const ok = await waitForRacerReadable(apiUrl, detailId!, at);
-          if (!ok) {
-            toast({
-              title: "Finishing up…",
-              description: "New racer may take a moment to appear.",
-            });
-          }
-        })();
+        const ok = await waitForRacerReadable(apiUrl, detailId, at);
+        if (!ok) {
+          toast({
+            title: "Finishing up…",
+            description: "New racer may take a moment to appear.",
+          });
+        }
       }
 
       if (detailId) {
