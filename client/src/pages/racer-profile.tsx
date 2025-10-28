@@ -1,4 +1,3 @@
-// src/pages/racer-profile.tsx
 import React, { useEffect, useState } from "react";
 import { PageSEO } from "@/seo/usePageSEO";
 import { apiRequest } from "@/lib/apiClient";
@@ -10,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import RacerSearchModal from "@/components/RacerSearchModal";
 
+/* ---------------- Types ---------------- */
 type Racer = {
   id: string | number;
   athleteId?: string;
@@ -27,6 +27,7 @@ type Racer = {
   weight?: number | null;
 };
 
+/* ---------------- Utils ---------------- */
 function inchesToMeters(inches: number) {
   return inches * 0.0254;
 }
@@ -37,12 +38,11 @@ function metersToFeetInches(m?: number | null) {
   const inch = totalIn % 12;
   return `${ft}′${inch}″`;
 }
-
 function logRequestError(ctx: string, err: any, endpoint?: string, body?: any) {
   try {
     console.groupCollapsed(`%c${ctx} failed`, "color:#f7768e;font-weight:bold");
-    console.log("endpoint:", endpoint);
-    console.log("sent body:", body);
+    if (endpoint) console.log("endpoint:", endpoint);
+    if (body) console.log("request body (sent):", body);
     console.log("err.status:", err?.status);
     console.log("err.message:", err?.message);
     console.log("err.data (raw):", err?.data);
@@ -52,7 +52,6 @@ function logRequestError(ctx: string, err: any, endpoint?: string, body?: any) {
     console.groupEnd();
   } catch {}
 }
-
 function humanizeValidationError(err: any): string | undefined {
   const d = err?.data;
   if (typeof d === "string" && d.trim()) return d;
@@ -74,48 +73,63 @@ function humanizeValidationError(err: any): string | undefined {
   if (d?.message && typeof d.message === "string") return d.message;
   return undefined;
 }
-
 function isProbablyId(s: string) {
   if (!s) return false;
-  if (/^[0-9a-fA-F-]{32,}$/.test(s) && s.includes("-")) return true;
-  if (/^[0-9A-Za-z]{20,}$/.test(s)) return true;
+  if (/^[0-9a-fA-F-]{32,}$/.test(s) && s.includes("-")) return true; // uuid-ish
+  if (/^[0-9A-Za-z]{20,}$/.test(s)) return true; // ulid/mongoish ids
   return false;
 }
-
-async function uploadAthleteImage(athleteId: string, file: File) {
-  const form = new FormData();
-  form.append("media", file);
-
-  const res = await apiRequest<any>(
-    "POST",
-    `/athletes/upload-image/${encodeURIComponent(athleteId)}`,
-    form as any
-  );
-
-  const url = res?.mediaUrl ?? res?.data?.mediaUrl ?? res?.url ?? null;
-  if (!url) throw new Error("Upload succeeded but no mediaUrl returned");
-  return String(url);
+function slugify(s: string) {
+  return s
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
-async function pollUploadProgress(
-  fileName: string,
-  onTick: (pct: number) => void
-) {
-  const started = Date.now();
-  while (Date.now() - started < 60_000) {
-    try {
-      const data = await apiRequest<{ progress: number }>(
-        "GET",
-        `/athletes/upload-progress/${encodeURIComponent(fileName)}`
-      );
-      const pct = Math.max(0, Math.min(100, Number(data?.progress ?? 0)));
-      onTick(pct);
-      if (pct >= 100) break;
-    } catch {}
-    await new Promise((r) => setTimeout(r, 700));
-  }
+/* ---------------- API mappers ---------------- */
+function mapDetail(rec: any): Racer {
+  const a = rec?.athlete ?? {};
+  return {
+    id: rec?.id ?? a?.id,
+    athleteId: a.id,
+    racerName: a.name ?? rec.name ?? "",
+    racerAge: a.age ?? rec.age ?? undefined,
+    bio: a.bio ?? rec.bio ?? null,
+    racerImage: a.image ?? rec.image ?? null,
+    location: a.origin ?? rec.origin ?? null,
+    boatManufacturers: rec.boatManufacturers ?? rec.team?.name ?? null,
+    careerWins: rec.careerWins ?? 0,
+    seasonWins: rec.seasonWins ?? 0,
+    seasonPodiums: rec.seasonPodiums ?? 0,
+    careerWorldFinalsWins:
+      rec.careerWorldFinalsWins ??
+      rec.careerWordFinalsWins /* tolerate misspelling */ ??
+      0,
+    height: rec.height ?? a.height ?? null,
+    weight: a.weight ?? rec.weight ?? null,
+  };
+}
+function mapAthlete(a: any): Racer {
+  return {
+    id: a?.id ?? a?._id ?? a?.uuid ?? "",
+    athleteId: a?.id ?? a?._id ?? a?.uuid ?? "",
+    racerName: a?.name ?? a?.fullName ?? a?.displayName ?? "",
+    racerAge: a?.age ?? undefined,
+    bio: a?.bio ?? null,
+    racerImage: a?.image ?? a?.avatar ?? a?.photo ?? null,
+    location: a?.origin ?? a?.country ?? a?.city ?? null,
+    boatManufacturers: null,
+    careerWins: 0,
+    seasonWins: 0,
+    seasonPodiums: 0,
+    careerWorldFinalsWins: 0,
+    height: a?.height ?? null,
+    weight: a?.weight ?? null,
+  };
 }
 
+/* ---------------- Component ---------------- */
 export default function RacerProfilePage({
   idOrSlugParam,
 }: {
@@ -135,100 +149,132 @@ export default function RacerProfilePage({
   useEffect(() => {
     let cancelled = false;
 
-    async function fetchById(detailId: string) {
-      const res = await apiRequest<any>(
+    async function getJSON<T = any>(
+      method: "GET" | "PUT",
+      path: string,
+      body?: any
+    ): Promise<T> {
+      return apiRequest<T>(method, path, body);
+    }
+
+    // detail lookups
+    async function fetchDetailById(id: string) {
+      const res = await getJSON<any>(
         "GET",
-        `/jet-ski-racer-details/${encodeURIComponent(detailId)}`
+        `/jet-ski-racer-details/${encodeURIComponent(id)}`
       );
       const rec =
         res?.racer ?? res?.data?.racer ?? res?.data ?? res?.item ?? res;
       if (!rec) throw new Error("not_found");
-
-      const a = rec.athlete ?? {};
-      const mapped: Racer = {
-        id: rec?.id ?? a?.id,
-        athleteId: a.id,
-        racerName: a.name ?? rec.name ?? "",
-        racerAge: a.age ?? rec.age ?? undefined,
-        bio: a.bio ?? rec.bio ?? null,
-        racerImage: a.image ?? rec.image ?? null,
-        location: a.origin ?? rec.origin ?? null,
-        boatManufacturers: rec.boatManufacturers ?? rec.team?.name ?? null,
-        careerWins: rec.careerWins ?? 0,
-        seasonWins: rec.seasonWins ?? 0,
-        seasonPodiums: rec.seasonPodiums ?? 0,
-        careerWorldFinalsWins:
-          rec.careerWordFinalsWins ?? rec.careerWorldFinalsWins ?? 0,
-        height: rec.height ?? a.height ?? null,
-        weight: a.weight ?? rec.weight ?? null,
-      };
-      return mapped;
+      return mapDetail(rec);
     }
 
-    async function pageOnce(skip: number) {
-      const p = new URLSearchParams();
-      p.set("skip", String(skip));
-      p.set("limit", String(50));
-      p.set("order", "DESC");
-      const res = await apiRequest<any>("GET", `/jet-ski-racer-details?${p}`);
-      const buckets = [
-        res?.racers,
-        res?.data?.racers,
-        res?.items,
-        res?.data?.items,
-        Array.isArray(res) ? res : null,
-      ].filter(Boolean) as any[];
-      return (buckets.find(Array.isArray) as any[]) ?? [];
-    }
-
-    async function findBySlug(slug: string) {
-      const targetName = slug.replace(/-/g, " ").trim();
-      const lc = targetName.toLowerCase();
-      const MAX_PAGES = 10;
-      for (let page = 0; page < MAX_PAGES; page++) {
-        const raw = await pageOnce(page * 50);
-        const hit =
-          raw.find(
+    async function searchDetailsByName(name: string) {
+      // server-side name search (if backend supports ?search=)
+      try {
+        const q = new URLSearchParams();
+        q.set("search", name);
+        q.set("limit", "25");
+        q.set("order", "DESC");
+        const res = await getJSON<any>(
+          "GET",
+          `/jet-ski-racer-details?${q.toString()}`
+        );
+        const arr =
+          res?.racers ??
+          res?.data?.racers ??
+          res?.items ??
+          res?.data?.items ??
+          (Array.isArray(res) ? res : []);
+        const lc = name.toLowerCase();
+        const slug = slugify(name);
+        const best =
+          arr.find(
             (r: any) =>
-              (r?.athlete?.name || r?.name || "")
-                .toString()
-                .trim()
-                .toLowerCase()
-                .replace(/[^a-z0-9]+/g, "-") === slug
-          ) ||
-          raw.find(
-            (r: any) =>
-              (r?.athlete?.name || r?.name || "")
-                .toString()
+              String(r?.athlete?.name ?? r?.name ?? "")
                 .trim()
                 .toLowerCase() === lc
+          ) ||
+          arr.find(
+            (r: any) =>
+              slugify(String(r?.athlete?.name ?? r?.name ?? "")) === slug
+          ) ||
+          arr[0];
+        if (best) return mapDetail(best);
+      } catch {}
+      return null;
+    }
+
+    async function scanDetailsBySlug(slug: string) {
+      // brute-force crawl pages of jet-ski-racer-details
+      const LIMIT = 50;
+      const MAX_PAGES = 10;
+      for (let page = 0; page < MAX_PAGES; page++) {
+        const p = new URLSearchParams();
+        p.set("skip", String(page * LIMIT));
+        p.set("limit", String(LIMIT));
+        p.set("order", "DESC");
+        const res = await getJSON<any>("GET", `/jet-ski-racer-details?${p}`);
+        const arr =
+          res?.racers ??
+          res?.data?.racers ??
+          res?.items ??
+          res?.data?.items ??
+          (Array.isArray(res) ? res : []);
+        const hit =
+          arr.find(
+            (r: any) =>
+              slugify(String(r?.athlete?.name ?? r?.name ?? "")) === slug
+          ) ||
+          arr.find(
+            (r: any) =>
+              String(r?.athlete?.name ?? r?.name ?? "")
+                .trim()
+                .toLowerCase() === slug.replace(/-/g, " ")
           );
-        if (hit) return hit;
-        if (raw.length < 50) break;
+        if (hit) return mapDetail(hit);
+        if (arr.length < LIMIT) break;
       }
       return null;
     }
 
-    function mapLiteToRacer(match: any): Racer {
-      const a = match?.athlete ?? {};
-      return {
-        id: match?.id ?? a?.id,
-        athleteId: a.id,
-        racerName: a?.name ?? match?.name ?? "",
-        racerAge: a?.age ?? match?.age ?? undefined,
-        bio: a?.bio ?? match?.bio ?? null,
-        racerImage: a?.image ?? match?.image ?? null,
-        location: a?.origin ?? match?.origin ?? null,
-        boatManufacturers:
-          match?.boatManufacturers ?? match?.team?.name ?? null,
-        careerWins: match?.careerWins ?? 0,
-        seasonWins: match?.seasonWins ?? 0,
-        seasonPodiums: match?.seasonPodiums ?? 0,
-        careerWorldFinalsWins:
-          match?.careerWordFinalsWins ?? match?.careerWF ?? 0,
-        height: match?.height ?? a?.height ?? null,
-        weight: a?.weight ?? match?.weight ?? null,
-      };
+    async function fetchAthleteById(aid: string) {
+      const res = await getJSON<any>(
+        "GET",
+        `/athletes/${encodeURIComponent(aid)}`
+      );
+      const a =
+        res?.athlete ?? res?.data?.athlete ?? res?.data ?? res?.item ?? res;
+      if (!a) throw new Error("not_found");
+      return mapAthlete(a);
+    }
+
+    async function searchAthletesByName(name: string) {
+      // this path might 404 in your current backend, but we keep it for future
+      try {
+        const q = new URLSearchParams();
+        q.set("search", name);
+        q.set("limit", "10");
+        q.set("order", "DESC");
+        const res = await getJSON<any>("GET", `/athletes?${q.toString()}`);
+        const arr =
+          res?.athletes ??
+          res?.data?.athletes ??
+          res?.items ??
+          (Array.isArray(res) ? res : []);
+        if (!Array.isArray(arr) || !arr.length) return null;
+        const lc = name.toLowerCase();
+        const best =
+          arr.find(
+            (a: any) =>
+              String(a?.name ?? "")
+                .trim()
+                .toLowerCase() === lc
+          ) ?? arr[0];
+        return mapAthlete(best);
+      } catch {
+        return null;
+      }
     }
 
     (async () => {
@@ -238,26 +284,51 @@ export default function RacerProfilePage({
         const token = decodeURIComponent(idOrSlugParam || "").trim();
         if (!token) throw new Error("Racer not found");
 
-        if (isProbablyId(token)) {
+        // read url flags
+        const url = new URL(window.location.href);
+        const kind = url.searchParams.get("kind"); // e.g., "athlete"
+
+        if (kind === "athlete" && isProbablyId(token)) {
           try {
-            const mapped = await fetchById(token);
+            const athlete = await fetchAthleteById(token);
             if (!cancelled) {
-              setRacer(mapped);
-              setLoading(false);
+              setRacer(athlete);
               return;
             }
-          } catch (e: any) {}
+          } catch (e) {
+            // fall through
+          }
         }
 
-        const asSlug = token
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/^-+|-+$/g, "");
-        const match = await findBySlug(asSlug);
-        if (!match) throw new Error("Racer not found");
+        // 2) looks like a detail id
+        if (isProbablyId(token)) {
+          try {
+            const detail = await fetchDetailById(token);
+            if (!cancelled) {
+              setRacer(detail);
+              return;
+            }
+          } catch (e) {
+            // fall through
+          }
+        }
 
-        const mapped = mapLiteToRacer(match);
-        if (!cancelled) setRacer(mapped);
+        const nameSlug = slugify(token);
+        let bySearch = await searchDetailsByName(token);
+        if (!bySearch) bySearch = await scanDetailsBySlug(nameSlug);
+
+        if (bySearch) {
+          if (!cancelled) setRacer(bySearch);
+          return;
+        }
+
+        const athleteFallback = await searchAthletesByName(token);
+        if (athleteFallback) {
+          if (!cancelled) setRacer(athleteFallback);
+          return;
+        }
+
+        throw new Error("Racer not found");
       } catch (e: any) {
         const msg =
           e?.message ||
@@ -275,6 +346,7 @@ export default function RacerProfilePage({
     };
   }, [idOrSlugParam]);
 
+  /* ---------------- UI ---------------- */
   if (loading) {
     return (
       <div className="min-h-screen bg-[#090D16] text-white grid place-items-center">
@@ -430,7 +502,7 @@ export default function RacerProfilePage({
           </div>
         </div>
 
-        {/* layout content */}
+        {/* content */}
         <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="order-2 lg:order-1 lg:col-span-1 space-y-6">
             <Card className="bg-white/5 border-white/10 p-4">
@@ -646,36 +718,37 @@ export default function RacerProfilePage({
   );
 }
 
-function StatBox({
-  label,
-  value,
-  trophy,
-}: {
-  label: string;
-  value: number;
-  trophy?: boolean;
-}) {
-  return (
-    <div className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3">
-      <div className="text-2xl font-semibold flex items-center gap-2">
-        {value}
-        {trophy && <span>🏆</span>}
-      </div>
-      <div className="text-sm text-white/70">{label}</div>
-    </div>
+/* --------- helpers used by modal --------- */
+async function uploadAthleteImage(athleteId: string, file: File) {
+  const form = new FormData();
+  form.append("media", file);
+  const res = await apiRequest<any>(
+    "POST",
+    `/athletes/upload-image/${encodeURIComponent(athleteId)}`,
+    form as any
   );
+  const url = res?.mediaUrl ?? res?.data?.mediaUrl ?? res?.url ?? null;
+  if (!url) throw new Error("Upload succeeded but no mediaUrl returned");
+  return String(url);
 }
-
-function MiniStat({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="rounded-lg bg-white/5 border border-white/10 px-3 py-2">
-      <div className="text-lg font-semibold">{value}</div>
-      <div className="text-xs text-white/60">{label}</div>
-    </div>
-  );
+async function pollUploadProgress(
+  fileName: string,
+  onTick: (pct: number) => void
+) {
+  const started = Date.now();
+  while (Date.now() - started < 60_000) {
+    try {
+      const data = await apiRequest<{ progress: number }>(
+        "GET",
+        `/athletes/upload-progress/${encodeURIComponent(fileName)}`
+      );
+      const pct = Math.max(0, Math.min(100, Number(data?.progress ?? 0)));
+      onTick(pct);
+      if (pct >= 100) break;
+    } catch {}
+    await new Promise((r) => setTimeout(r, 700));
+  }
 }
-
-/* ---------- Edit modal + helpers (inline) ---------- */
 type EditValues = {
   age?: number | string;
   bio?: string;
@@ -684,13 +757,11 @@ type EditValues = {
   boatManufacturers?: string;
   imageFile?: File | null;
 };
-
 function toNumOrUndefined(v: any): number | undefined {
   if (v === null || v === undefined || v === "") return undefined;
   const n = Number(v);
   return Number.isFinite(n) ? n : undefined;
 }
-
 function EditRacerModal({
   initial,
   onClose,
@@ -859,5 +930,33 @@ function Field({
       <div className="text-xs text-white/60 mb-1">{label}</div>
       {children}
     </label>
+  );
+}
+
+function StatBox({
+  label,
+  value,
+  trophy,
+}: {
+  label: string;
+  value: number;
+  trophy?: boolean;
+}) {
+  return (
+    <div className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3">
+      <div className="text-2xl font-semibold flex items-center gap-2">
+        {value}
+        {trophy && <span>🏆</span>}
+      </div>
+      <div className="text-sm text-white/70">{label}</div>
+    </div>
+  );
+}
+function MiniStat({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-lg bg-white/5 border border-white/10 px-3 py-2">
+      <div className="text-lg font-semibold">{value}</div>
+      <div className="text-xs text-white/60">{label}</div>
+    </div>
   );
 }

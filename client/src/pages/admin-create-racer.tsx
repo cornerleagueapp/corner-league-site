@@ -11,33 +11,22 @@ import { apiFetch } from "@/lib/apiClient";
 const ADMIN_PIN = "1234";
 const AUTH_KEY = "__admin_authed_v1";
 
-function logBodyWithTypes(label: string, body: Record<string, any>) {
-  try {
-    console.groupCollapsed(`%c${label}`, "color:#7aa2f7;font-weight:bold");
-    console.log("body:", body);
-    const types: Record<string, string> = {};
-    for (const [k, v] of Object.entries(body || {})) {
-      types[k] = Array.isArray(v) ? "array" : typeof v;
-    }
-    console.log("body types:", types);
-    console.log("body (json):", JSON.stringify(body, null, 2));
-    console.groupEnd();
-  } catch {}
-}
+/* ---------------- utils ---------------- */
+
 function logRequestError(ctx: string, err: any, endpoint?: string, body?: any) {
   try {
-    console.groupCollapsed(`%c${ctx} failed`, "color:#f7768e;font-weight:bold");
-    if (endpoint) console.log("endpoint:", endpoint);
-    if (body) console.log("request body (sent):", body);
-    console.log("err.status:", err?.status);
-    console.log("err.message:", err?.message);
-    console.log("err.data (raw):", err?.data);
+    console.error(`[${ctx}] failed`);
+    if (endpoint) console.error("endpoint:", endpoint);
+    if (body) console.error("request body (sent):", body);
+    console.error("err.status:", err?.status);
+    console.error("err.message:", err?.message);
+    console.error("err.data (raw):", err?.data);
     if (err?.data && typeof err.data === "object") {
-      console.log("err.data (json):", JSON.stringify(err.data, null, 2));
+      console.error("err.data (json):", JSON.stringify(err.data, null, 2));
     }
-    console.groupEnd();
   } catch {}
 }
+
 function humanizeValidationError(err: any): string | undefined {
   const d = err?.data;
   if (typeof d === "string" && d.trim()) return d;
@@ -60,46 +49,61 @@ function humanizeValidationError(err: any): string | undefined {
   return undefined;
 }
 
-async function waitForRacerReadable(
-  apiUrl: (p: string) => string,
-  id: string,
-  token: string,
-  maxAttempts = 8
-): Promise<boolean> {
-  let delay = 150;
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    try {
-      const r = await fetch(
-        apiUrl(`/jet-ski-racer-details/${encodeURIComponent(id)}`),
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          cache: "no-store",
-        }
-      );
-      if (r.ok) {
-        const j = await r.json().catch(() => ({}));
-        const d = j?.racer ?? j?.data?.racer ?? j?.data ?? j?.item ?? j;
-        if (d?.id || d?._id || d?.uuid || d?.athlete) return true;
-      }
-    } catch {}
-    await new Promise((res) => setTimeout(res, delay));
-    delay = Math.min(delay * 1.7, 1200);
+/* ---- auth helpers ---- */
+
+function parseJwtExp(t: string | null) {
+  if (!t) return 0;
+  const [, payload] = t.split(".");
+  try {
+    const { exp } = JSON.parse(atob(payload));
+    return (exp ?? 0) * 1000;
+  } catch {
+    return 0;
   }
-  return false;
 }
 
-function slugify(s: string) {
-  return s
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+async function getValidAccessToken(): Promise<string | null> {
+  let at = getAccessToken();
+  const expMs = parseJwtExp(at);
+
+  if (!at || Date.now() >= expMs - 5000) {
+    const rt = getRefreshToken();
+    if (!rt) return null;
+
+    const resp = await apiFetch("/auth/refresh", {
+      method: "POST",
+      body: { refreshToken: rt },
+      skipAuth: true,
+    });
+    if (!resp.ok) return null;
+
+    const json = await resp.json();
+    const newAT = json?.accessToken ?? json?.data?.accessToken;
+    const newRT = json?.refreshToken ?? json?.data?.refreshToken;
+    if (!newAT) return null;
+
+    setTokens(newAT, newRT);
+    at = newAT;
+  }
+  return at;
 }
-function inchesToMeters(inches: number) {
-  return inches * 0.0254;
-}
+
+/* ---------------- types ---------------- */
+type CreateBody = {
+  name: string;
+  age: number;
+  bio: string;
+  boatManufacturers: string;
+  origin?: string;
+  height?: number;
+  careerWins: number;
+  seasonWins: number;
+  careerWordFinalsWins: number;
+  seasonPodiums: number;
+};
 
 /* ---------------- PIN gate ---------------- */
+
 function PinGate({ onUnlock }: { onUnlock: (ok: boolean) => void }) {
   const [pin, setPin] = useState("");
   return (
@@ -140,44 +144,7 @@ function PinGate({ onUnlock }: { onUnlock: (ok: boolean) => void }) {
   );
 }
 
-function parseJwtExp(t: string | null) {
-  if (!t) return 0;
-  const [, payload] = t.split(".");
-  try {
-    const { exp } = JSON.parse(atob(payload));
-    return (exp ?? 0) * 1000;
-  } catch {
-    return 0;
-  }
-}
-
-async function getValidAccessToken(): Promise<string | null> {
-  let at = getAccessToken();
-  const expMs = parseJwtExp(at);
-
-  // if missing or expiring in < 5s, try refresh
-  if (!at || Date.now() >= expMs - 5000) {
-    const rt = getRefreshToken();
-    if (!rt) return null;
-
-    // call refresh without Authorization header
-    const resp = await apiFetch("/auth/refresh", {
-      method: "POST",
-      body: { refreshToken: rt },
-      skipAuth: true,
-    });
-    if (!resp.ok) return null;
-
-    const json = await resp.json();
-    const newAT = json?.accessToken ?? json?.data?.accessToken;
-    const newRT = json?.refreshToken ?? json?.data?.refreshToken;
-    if (!newAT) return null;
-
-    setTokens(newAT, newRT);
-    at = newAT;
-  }
-  return at;
-}
+/* ---------------- CreateRacerForm ---------------- */
 
 function CreateRacerForm() {
   const { toast } = useToast();
@@ -209,17 +176,10 @@ function CreateRacerForm() {
     [vals.name, exactExists]
   );
 
-  function apiUrl(path: string) {
-    const base = (import.meta.env.VITE_API_BASE || "").replace(/\/$/, "");
-    const baseHasApi = /\/api$/.test(base);
-    const needsApi = !/^\/?api\//i.test(path);
-    const prefix = baseHasApi || !needsApi ? "" : "/api";
-    return `${base}${prefix}${path.startsWith("/") ? path : `/${path}`}`;
-  }
-
   useEffect(() => {
     let cancel = false;
     const q = vals.name.trim();
+
     if (q.length < 2) {
       setSuggestions([]);
       setExactExists(false);
@@ -228,23 +188,37 @@ function CreateRacerForm() {
 
     const t = setTimeout(async () => {
       try {
-        const at = getAccessToken();
-        if (!at || cancel) return;
+        if (cancel) return;
 
-        const LIMIT = 50;
-        const MAX_PAGES = 4;
+        const LIMIT = 50; // backend validation cap
+        const MAX_PAGES = 20; // safety: don't hammer forever
+        const MAX_TOTAL = 1000; // safety: we don't need EVERYONE in memory
 
-        async function pageOnce(skip: number) {
+        // fetch ONE page from backend using real pagination
+        async function fetchPage(pageNum: number) {
           const params = new URLSearchParams();
-          params.set("skip", String(skip));
+          params.set("page", String(pageNum));
           params.set("limit", String(LIMIT));
           params.set("order", "DESC");
-          const url = apiUrl(`/jet-ski-racer-details?${params.toString()}`);
-          const r = await fetch(url, {
-            headers: { Authorization: `Bearer ${at}` },
-          });
-          if (!r.ok) return [];
-          const j = await r.json();
+          params.set("sortBy", "createdAt");
+
+          const resp = await apiFetch(
+            `/jet-ski-racer-details?${params.toString()}`
+          );
+
+          if (!resp.ok) {
+            console.warn(
+              "[CreateRacer] suggestion page fetch failed",
+              resp.status,
+              "page=" + pageNum,
+              "limit=" + LIMIT
+            );
+            return { normalized: [], hasNextPage: false };
+          }
+
+          const j = await resp.json();
+
+          // pull the raw racers array out of whatever shape we got
           const buckets = [
             j?.racers,
             j?.data?.racers,
@@ -252,26 +226,60 @@ function CreateRacerForm() {
             j?.data?.items,
             Array.isArray(j) ? j : null,
           ].filter(Boolean) as any[];
-          return (buckets.find(Array.isArray) as any[]) ?? [];
+
+          const rawList = (buckets.find(Array.isArray) as any[]) ?? [];
+
+          // normalize -> { id, name }
+          const normalized = rawList.map((rec: any) => ({
+            id: String(
+              rec?.id ??
+                rec?._id ??
+                rec?.uuid ??
+                rec?.racerId ??
+                rec?.athlete?.id ??
+                ""
+            ),
+            name: String(
+              rec?.athlete?.name ?? rec?.name ?? rec?.racerName ?? ""
+            ).trim(),
+          }));
+
+          const meta = j?.meta ??
+            j?.data?.meta ?? {
+              hasNextPage: rawList.length === LIMIT,
+            };
+
+          const hasNextPage =
+            typeof meta?.hasNextPage === "boolean"
+              ? meta.hasNextPage
+              : rawList.length === LIMIT;
+
+          return { normalized, hasNextPage };
         }
 
-        const all: any[] = [];
-        for (let page = 0; page < MAX_PAGES; page++) {
-          const batch = await pageOnce(page * LIMIT);
-          all.push(...batch);
-          if (cancel || batch.length < LIMIT) break;
+        const collected: Array<{ id: string; name: string }> = [];
+        let pageNum = 1;
+        let more = true;
+
+        while (more && pageNum <= MAX_PAGES && collected.length < MAX_TOTAL) {
+          const { normalized, hasNextPage } = await fetchPage(pageNum);
+          if (cancel) return;
+
+          for (const r of normalized) {
+            if (r && r.name) {
+              collected.push(r);
+              if (collected.length >= MAX_TOTAL) break;
+            }
+          }
+
+          more = hasNextPage;
+          pageNum += 1;
         }
 
-        const allNames = all
-          .map((rec: any) => ({
-            id: String(rec?.id ?? rec?._id ?? rec?.uuid ?? ""),
-            name: String(rec?.athlete?.name ?? rec?.name ?? "").trim(),
-          }))
-          .filter((x: any) => x.name);
-
+        // dedupe by lowercase name
         const seen = new Set<string>();
         const deduped: Array<{ id: string; name: string }> = [];
-        for (const x of allNames) {
+        for (const x of collected) {
           const key = x.name.toLowerCase();
           if (!seen.has(key)) {
             seen.add(key);
@@ -281,10 +289,12 @@ function CreateRacerForm() {
 
         const qlc = q.toLowerCase();
 
+        // partial match list for dropdown
         const filtered = deduped
           .filter((x) => x.name.toLowerCase().includes(qlc))
           .slice(0, 8);
 
+        // true if there's an exact (case-insensitive) name match
         const exact = deduped.some((x) => x.name.toLowerCase() === qlc);
 
         if (!cancel) {
@@ -292,7 +302,8 @@ function CreateRacerForm() {
           setExactExists(exact);
           setShowSuggest(true);
         }
-      } catch {
+      } catch (err) {
+        console.error("[CreateRacer] suggestion load error", err);
         if (!cancel) {
           setSuggestions([]);
           setExactExists(false);
@@ -305,117 +316,6 @@ function CreateRacerForm() {
       clearTimeout(t);
     };
   }, [vals.name]);
-
-  type CreateBody = {
-    name: string;
-    age: number;
-    bio: string;
-    boatManufacturers: string;
-    origin?: string;
-    height?: number;
-    careerWins: number;
-    seasonWins: number;
-    careerWordFinalsWins: number;
-    seasonPodiums: number;
-  };
-
-  async function fetchDetailAndAthlete(
-    at: string,
-    detailId?: string
-  ): Promise<{ detailId?: string; athleteId?: string; name?: string }> {
-    if (!detailId) return {};
-    const getUrl = apiUrl(
-      `/jet-ski-racer-details/${encodeURIComponent(detailId)}`
-    );
-    const r = await fetch(getUrl, {
-      headers: { Authorization: `Bearer ${at}` },
-    });
-    if (!r.ok) return {};
-    const j = await r.json();
-    const d = j?.racer ?? j?.data?.racer ?? j?.data ?? j?.item ?? j;
-    return {
-      detailId: d?.id ?? d?._id ?? d?.uuid,
-      athleteId: d?.athlete?.id ?? d?.athleteId ?? d?.athlete_id,
-      name: d?.athlete?.name ?? d?.name,
-    };
-  }
-
-  async function fallbackCreateDetailForAthlete(
-    at: string,
-    name: string,
-    body: CreateBody
-  ): Promise<{ detailId?: string; athleteId?: string }> {
-    const qs = new URLSearchParams();
-    qs.set("limit", "5");
-    qs.set("order", "DESC");
-    qs.set("search", name.trim());
-    const athletesUrl = apiUrl(`/athletes?${qs.toString()}`);
-    const ar = await fetch(athletesUrl, {
-      headers: { Authorization: `Bearer ${at}` },
-    });
-    if (!ar.ok) return {};
-
-    const aj = await ar.json();
-    const list: any[] =
-      aj?.athletes ||
-      aj?.data?.athletes ||
-      aj?.items ||
-      (Array.isArray(aj) ? aj : []) ||
-      [];
-
-    const lower = name.trim().toLowerCase();
-    const cand =
-      list.find(
-        (a) =>
-          String(a?.name || "")
-            .trim()
-            .toLowerCase() === lower
-      ) || list[0];
-
-    const athleteId: string | undefined = cand?.id ?? cand?._id ?? cand?.uuid;
-    if (!athleteId) return {};
-
-    const postUrl = apiUrl("/jet-ski-racer-details");
-    const createDetailBody = { ...body, athleteId };
-    logBodyWithTypes(
-      "[AdminCreateRacer:FALLBACK] POST detail body",
-      createDetailBody
-    );
-
-    const dr = await fetch(postUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${at}`,
-      },
-      body: JSON.stringify(createDetailBody),
-    });
-    const raw = await dr.text();
-    if (!dr.ok) {
-      console.warn(
-        "[AdminCreateRacer:FALLBACK] detail POST failed",
-        dr.status,
-        raw
-      );
-      return { athleteId };
-    }
-
-    let d: any;
-    try {
-      d = JSON.parse(raw);
-    } catch {
-      d = raw;
-    }
-    const detailId =
-      d?.racer?.id ??
-      d?.data?.racer?.id ??
-      d?.data?.id ??
-      d?.item?.id ??
-      d?.id ??
-      d?._id;
-
-    return { detailId, athleteId };
-  }
 
   async function handleSubmit() {
     if (!canSubmit || submitting) return;
@@ -431,6 +331,7 @@ function CreateRacerForm() {
 
     setSubmitting(true);
     try {
+      // basic validation
       const ageNum = Number(vals.age);
       if (Number.isNaN(ageNum)) {
         toast({
@@ -440,6 +341,7 @@ function CreateRacerForm() {
         setSubmitting(false);
         return;
       }
+
       if (!vals.bio.trim()) {
         toast({
           title: "Please fix the form",
@@ -448,6 +350,7 @@ function CreateRacerForm() {
         setSubmitting(false);
         return;
       }
+
       if (!vals.boatManufacturers.trim()) {
         toast({
           title: "Please fix the form",
@@ -456,6 +359,7 @@ function CreateRacerForm() {
         setSubmitting(false);
         return;
       }
+
       const heightNum = vals.heightInches
         ? Number(vals.heightInches)
         : undefined;
@@ -468,6 +372,7 @@ function CreateRacerForm() {
         return;
       }
 
+      // keep access token fresh
       const at = await getValidAccessToken();
       if (!at) {
         toast({
@@ -478,13 +383,12 @@ function CreateRacerForm() {
         return;
       }
 
-      const body = {
+      const body: CreateBody = {
         name: vals.name.trim(),
         age: ageNum,
         bio: vals.bio.trim(),
         origin: vals.origin.trim(),
         height: heightNum,
-
         boatManufacturers: vals.boatManufacturers.trim(),
         careerWins: 0,
         seasonWins: 0,
@@ -492,203 +396,76 @@ function CreateRacerForm() {
         careerWordFinalsWins: 0,
       };
 
-      logBodyWithTypes("[AdminCreateRacer] POST /jet-ski-racer-details", body);
-
-      const postUrl = apiUrl("/jet-ski-racer-details");
-      const res = await fetch(postUrl, {
+      const res = await apiFetch("/jet-ski-racer-details", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${at}`,
-        },
-        body: JSON.stringify(body),
+        body,
       });
 
-      const raw = await res.text();
+      const rawText = await res.text();
+
       if (!res.ok) {
-        let msg = raw;
+        let msg = rawText;
         try {
-          const j = JSON.parse(raw);
-          msg = j?.message || j?.error || raw;
-        } catch {}
+          const j = JSON.parse(rawText);
+          msg = j?.message || j?.error || rawText;
+        } catch (err) {
+          console.warn("[CreateRacer] could not parse error JSON", err);
+        }
+
         toast({ title: "Create failed", description: String(msg) });
         setSubmitting(false);
         return;
       }
 
-      let created: any;
+      let parsed: any = {};
       try {
-        created = JSON.parse(raw);
-      } catch {
-        created = raw;
+        parsed = JSON.parse(rawText);
+      } catch (err) {
+        console.warn("[CreateRacer] response was not valid JSON", err);
+        parsed = {};
       }
 
-      function extractIdFromLocationHeader(r: Response): string | undefined {
-        const loc = r.headers.get("Location") || r.headers.get("location");
-        if (!loc) return;
-        const m = String(loc).match(/\/jet-ski-racer-details\/([^/?#]+)/i);
-        return m?.[1];
-      }
+      const racerObj =
+        parsed?.data?.data?.racer ??
+        parsed?.data?.racer ??
+        parsed?.racer ??
+        null;
 
-      const racer =
-        created?.racer ?? created?.data?.racer ?? created?.data ?? created;
+      const detailId = racerObj?.id;
+      const athleteId = racerObj?.athlete?.id;
 
-      let detailId: string | undefined =
-        racer?.id ??
-        racer?._id ??
-        racer?.uuid ??
-        created?.data?.id ??
-        created?.racerId ??
-        created?.data?.racerId ??
-        extractIdFromLocationHeader(res);
-
-      let athleteId: string | undefined =
-        racer?.athlete?.id ??
-        racer?.athlete?._id ??
-        created?.data?.athleteId ??
-        created?.athleteId;
-
-      const nameForLookup = vals.name.trim();
-
-      const scanForByName = async (
-        atLocal: string,
-        targetName: string,
-        maxPages = 12,
-        limit = 50
-      ): Promise<{ detailId?: string; athleteId?: string }> => {
-        const targetLc = targetName.toLowerCase();
-        const targetSlug = targetLc
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/^-+|-+$/g, "");
-
-        async function pageOnce(skip: number) {
-          const params = new URLSearchParams();
-          params.set("skip", String(skip));
-          params.set("limit", String(limit));
-          params.set("order", "DESC");
-          const url = apiUrl(`/jet-ski-racer-details?${params.toString()}`);
-          try {
-            const r = await fetch(url, {
-              headers: { Authorization: `Bearer ${atLocal}` },
-            });
-            if (!r.ok) return [];
-            const j = await r.json();
-            const buckets = [
-              j?.racers,
-              j?.data?.racers,
-              j?.items,
-              j?.data?.items,
-              Array.isArray(j) ? j : null,
-            ].filter(Boolean) as any[];
-            return (buckets.find(Array.isArray) as any[]) ?? [];
-          } catch {
-            return [];
-          }
-        }
-
-        for (let page = 0; page < maxPages; page++) {
-          const raw = await pageOnce(page * limit);
-          if (!raw.length) break;
-
-          for (const rec of raw) {
-            const nm = (rec?.athlete?.name || rec?.name || "")
-              .toString()
-              .trim();
-            const lc = nm.toLowerCase();
-            const slug = lc.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-            if (lc === targetLc || slug === targetSlug) {
-              return {
-                detailId:
-                  String(rec?.id ?? rec?._id ?? rec?.uuid ?? "") || undefined,
-                athleteId:
-                  String(
-                    rec?.athlete?.id ?? rec?.athleteId ?? rec?.athlete_id ?? ""
-                  ) || undefined,
-              };
-            }
-          }
-
-          if (raw.length < limit) break;
-        }
-        return {};
-      };
-
-      if (!detailId && !athleteId) {
-        const deadline = Date.now() + 20000;
-        let delay = 300;
-        while (Date.now() < deadline && !detailId && !athleteId) {
-          const found = await scanForByName(at, nameForLookup);
-          if (found.detailId || found.athleteId) {
-            detailId = found.detailId ?? detailId;
-            athleteId = found.athleteId ?? athleteId;
-            break;
-          }
-          await new Promise((r) => setTimeout(r, delay));
-          delay = Math.min(1200, Math.round(delay * 1.6));
-        }
-      }
-
-      if (!detailId && athleteId) {
-      } else if (!detailId && !athleteId) {
-        try {
-          const fb = await fallbackCreateDetailForAthlete(at, nameForLookup, {
-            name: vals.name.trim(),
-            age: ageNum,
-            bio: vals.bio.trim(),
-            origin: vals.origin.trim(),
-            height: heightNum,
-            boatManufacturers: vals.boatManufacturers.trim(),
-            careerWins: 0,
-            seasonWins: 0,
-            seasonPodiums: 0,
-            careerWordFinalsWins: 0,
-          });
-          if (fb.detailId || fb.athleteId) {
-            detailId = fb.detailId ?? detailId;
-            athleteId = fb.athleteId ?? athleteId;
-          }
-        } catch {}
-      }
-
-      const slug = slugify(vals.name.trim());
-
-      if (!detailId && !athleteId) {
-        console.warn("[CreateRacer] Missing IDs; falling back to slug nav.");
-        toast({
-          title: "Racer created",
-          description:
-            "The new profile is being indexed. We’ll open it by name for now.",
-        });
-        navigate(`/racer/${encodeURIComponent(slug)}`);
+      if (detailId) {
+        toast({ title: "Racer created" });
+        navigate(`/racer/${encodeURIComponent(String(detailId))}`);
         setSubmitting(false);
         return;
       }
 
-      toast({ title: "Racer created" });
-
-      if (detailId) {
-        const ok = await waitForRacerReadable(apiUrl, detailId, at);
-        if (!ok) {
-          toast({
-            title: "Finishing up…",
-            description: "New racer may take a moment to appear.",
-          });
-        }
+      if (athleteId) {
+        toast({ title: "Racer created" });
+        navigate(
+          `/racer/${encodeURIComponent(String(athleteId))}?kind=athlete`
+        );
+        setSubmitting(false);
+        return;
       }
 
-      if (detailId) {
-        navigate(`/racer/${encodeURIComponent(detailId)}`);
-      } else if (athleteId) {
-        navigate(`/racer/${encodeURIComponent(athleteId)}?kind=athlete`);
-      } else {
-        navigate(`/racer/${encodeURIComponent(slug)}`);
-      }
+      // fallback
+      toast({
+        title: "Racer created",
+        description:
+          "We saved the racer but couldn't open their profile yet. Try searching for them.",
+      });
+      setSubmitting(false);
     } catch (e: any) {
+      console.error("[CreateRacer] catch block error:", e);
+
       logRequestError(
-        "[AdminCreateRacer] details POST",
+        "AdminCreateRacer POST /jet-ski-racer-details",
         e,
         "/jet-ski-racer-details"
       );
+
       const nice =
         humanizeValidationError(e) ||
         e?.data?.message ||
@@ -717,14 +494,14 @@ function CreateRacerForm() {
                 onBlur={() => setTimeout(() => setShowSuggest(false), 120)}
                 placeholder="Type a name…"
               />
-              {/* inline warning when exact duplicate */}
+
               {exactExists && vals.name.trim() && (
                 <div className="mt-1 text-xs text-amber-300">
                   An athlete named “{vals.name.trim()}” already exists. Please
-                  change the name or pick new athlete.
+                  change the name or pick the existing athlete.
                 </div>
               )}
-              {/* suggestions dropdown */}
+
               {showSuggest && suggestions.length > 0 && (
                 <div className="absolute z-20 mt-1 w-full rounded-md border border-white/10 bg-[#0b0f18] shadow-lg">
                   {suggestions
@@ -743,7 +520,7 @@ function CreateRacerForm() {
                           setExactExists(true);
                           setShowSuggest(false);
                         }}
-                        className="w-full text-left px-3 py-2 text-white/100 text-sm hover:bg-white/10"
+                        className="w-full text-left px-3 py-2 text-white text-sm hover:bg-white/10"
                       >
                         {s.name}
                       </button>
@@ -752,6 +529,7 @@ function CreateRacerForm() {
               )}
             </div>
           </Field>
+
           <Field label="Age">
             <input
               className="fld"
@@ -774,6 +552,7 @@ function CreateRacerForm() {
               onChange={set("heightInches")}
             />
           </Field>
+
           <Field label="Origin">
             <input
               className="fld"
@@ -846,9 +625,11 @@ function Field({
 
 export default function AdminCreateRacerPage() {
   const [authed, setAuthed] = useState(false);
+
   useEffect(() => {
     if (localStorage.getItem(AUTH_KEY) === "1") setAuthed(true);
   }, []);
+
   const handleUnlock = (ok: boolean) => {
     if (ok) {
       localStorage.setItem(AUTH_KEY, "1");
@@ -857,6 +638,7 @@ export default function AdminCreateRacerPage() {
       alert("Wrong PIN");
     }
   };
+
   return (
     <div className="min-h-screen bg-[#090D16] text-white py-8 px-4">
       <PageSEO title="Admin • Create Racer" />

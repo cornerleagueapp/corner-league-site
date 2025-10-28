@@ -51,15 +51,16 @@ function toRacerLite(rec: any): RacerLite | null {
           : null
       ) ?? "";
 
+    if (!name.trim()) return null;
+
     const image = firstNonEmpty(
       a?.image as any,
       rec?.image as any,
       rec?.avatar as any,
       rec?.photo as any
     );
-    const loc = firstNonEmpty(a?.origin, rec?.origin, rec?.city, rec?.country);
 
-    if (!name.trim()) return null;
+    const loc = firstNonEmpty(a?.origin, rec?.origin, rec?.city, rec?.country);
 
     return {
       id: rec.id ?? a.id ?? rec.uuid,
@@ -79,6 +80,7 @@ function toRacerLite(rec: any): RacerLite | null {
     };
   }
 
+  // fallback flat-ish
   if (
     rec.name ||
     rec.origin ||
@@ -118,6 +120,7 @@ function toRacerLite(rec: any): RacerLite | null {
     };
   }
 
+  // already-compact form
   if (
     rec.racerName ||
     rec.racerImage ||
@@ -147,6 +150,7 @@ function toRacerLite(rec: any): RacerLite | null {
       boatManufacturers: rec.manufacturer ?? rec.brand ?? null,
     };
   }
+
   return null;
 }
 
@@ -171,16 +175,20 @@ function extractRacers(payload: any, usedLimit: number) {
       ? true
       : undefined;
 
-  const hasMoreInferred = racers.length > 0 && racers.length === usedLimit;
-  return { racers, hasMore: hasMoreExplicit ?? hasMoreInferred ?? false };
+  const hasMoreFallback = racers.length === usedLimit;
+  const hasMore = hasMoreExplicit ?? hasMoreFallback;
+
+  return { racers, hasMore };
 }
 
 function buildUrl(pageIndex: number, limit: number) {
-  const skip = pageIndex * limit;
+  const page = pageIndex + 1;
   const p = new URLSearchParams();
-  p.set("skip", String(skip));
+  p.set("page", String(page));
   p.set("limit", String(limit));
   p.set("order", "DESC");
+  p.set("sortBy", "createdAt");
+
   return `/jet-ski-racer-details?${p.toString()}`;
 }
 
@@ -246,6 +254,7 @@ export default function RacerSearchModal({
     []
   );
 
+  // initial load (or when modal re-opens)
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
@@ -271,6 +280,7 @@ export default function RacerSearchModal({
     };
   }, [open, fetchPage]);
 
+  // infinite scroll loader
   const loadMore = useCallback(async () => {
     if (!hasMore || loadingMore || all.length >= HARD_CAP) return;
     setLoadingMore(true);
@@ -285,6 +295,7 @@ export default function RacerSearchModal({
     }
   }, [all, fetchPage, hasMore, loadingMore, pageIndex]);
 
+  // scroll listener
   useEffect(() => {
     if (!open) return;
     const el = scrollerRef.current;
@@ -298,15 +309,16 @@ export default function RacerSearchModal({
     return () => el.removeEventListener("scroll", onScroll);
   }, [open, loadMore]);
 
+  // client-side filter based on q
   const qNorm = q.trim().toLowerCase();
   const filtered = useMemo(() => {
     if (qNorm.length < MIN_QUERY_LENGTH) return [] as RacerLite[];
     return all.filter((r) => matchesQuery(r, qNorm));
   }, [qNorm, all]);
 
+  // auto-scan more pages while user is searching to try and surface deeper matches
   useEffect(() => {
     if (!open) return;
-    const qNorm = q.trim().toLowerCase();
     if (qNorm.length < MIN_QUERY_LENGTH) return;
     if (!hasMore) return;
 
@@ -329,8 +341,7 @@ export default function RacerSearchModal({
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, q, filtered.length, hasMore]);
+  }, [open, qNorm, filtered.length, hasMore, loadMore, loadingMore]);
 
   if (!open) return null;
 
@@ -412,15 +423,9 @@ export default function RacerSearchModal({
                   </button>
                 ))}
 
-                {hasMore && all.length >= LIMIT && (
-                  <div className="py-3 flex justify-center">
-                    <button
-                      onClick={loadMore}
-                      disabled={loadingMore}
-                      className="px-4 py-2 rounded-md border border-white/10 text-white/90 bg-white/5 hover:bg-white/7 disabled:opacity-60"
-                    >
-                      {loadingMore ? "Loading…" : "Load more"}
-                    </button>
+                {loadingMore && (
+                  <div className="py-4 text-center text-xs text-white/50">
+                    Loading more…
                   </div>
                 )}
               </>
