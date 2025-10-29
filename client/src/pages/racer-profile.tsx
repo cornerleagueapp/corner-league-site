@@ -862,7 +862,7 @@ function EditRacerModal({
             />
           </Field>
 
-          <Field label="Profile Photo">
+          <Field label="Racer Photo (Please use clear headshot)">
             <input
               type="file"
               accept="image/*"
