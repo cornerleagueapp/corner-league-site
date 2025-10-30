@@ -865,9 +865,16 @@ function EditRacerModal({
           <Field label="Racer Photo (Please use clear headshot)">
             <input
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp"
               onChange={(e) => {
                 const file = e.currentTarget.files?.[0] || null;
+                if (file && !/^image\/(jpeg|png|webp)$/.test(file.type)) {
+                  // block RAW / DNG / HEIC
+                  alert(
+                    "Please upload a JPG, PNG, or WEBP image (no RAW / DNG)."
+                  );
+                  return;
+                }
                 setVals((p) => ({ ...p, imageFile: file }));
                 if (previewUrl) URL.revokeObjectURL(previewUrl);
                 setPreviewUrl(file ? URL.createObjectURL(file) : null);
