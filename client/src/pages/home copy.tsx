@@ -1,3 +1,4 @@
+// pages/home.tsx
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
@@ -6,6 +7,9 @@ import { logout } from "@/lib/logout";
 import { PageSEO } from "@/seo/usePageSEO";
 import { useLocation } from "wouter";
 
+// import image1 from "@/assets/jetski1.jpg";
+// import image2 from "@/assets/jetski2.jpg";
+// import image3 from "@/assets/jetski3.jpg";
 import image4 from "@assets/20250602_1433_Basketball Motion Scene_remix_01jws8ysn9fx1s6c0mgqw48t2g_1754356174336.png";
 import image5 from "@assets/20250603_0933_Vibrant Portrait Art_remix_01jwva54bwfxrsakzx26a3y7mb_1754356174336.png";
 import image6 from "@assets/20250603_1013_Floral Football Fusion_remix_01jwvcftvae0d90fjgdpsectw5_1754356174337.png";
@@ -24,9 +28,12 @@ import image18 from "@assets/riveteammyles_A_minimalistic_surreal_fashion_photog
 import image19 from "@assets/riveteammyles_A_minimalistic_surreal_fashion_photograph_of_an_b996191c-ab67-4569-b9a4-e371b03fbfb3_0_1754357010887.png";
 import image20 from "@assets/riveteammyles_A_photograph_of_an_Asian_female_model_a_NHL_Hoc_230d871d-9195-4ccf-9870-150c8d823af6_0_1754357010888.png";
 import image21 from "@assets/riveteammyles_A_photorealistic_portrait_of_a_woman_with_short_77f27986-809b-4c3d-9069-3cd77fafc08e_3_1754357010888.png";
+// import image22 from "@/assets/jetski6.jpeg";
 import image23 from "@assets/riveteammyles_Oil_painting_of_a_portrait_of_an_alien_man_with_8b00f3ad-c3e8-497c-8dbc-1f3cfd20b859_3_1754357010889.png";
 import image24 from "@assets/riveteammyles_Photograph_of_a_white_humanoid_figure_in_a_full_8c88c8eb-769f-4c1e-9018-f7fe304c6374_0_1754357010890.png";
 import image25 from "@assets/riveteammyles_Pink_Floyds_Dark_Side_of_the_Moon_album_cover_f_b68ced20-cd85-47eb-9ebc-6469ed8c7b96_0_1754357010890.png";
+// import image26 from "@/assets/mx1.jpg";
+// import image27 from "@/assets/mx2.jpeg";
 import image28 from "@/assets/image28.png";
 import image29 from "@/assets/image29.png";
 import image30 from "@/assets/image30.png";
@@ -43,51 +50,60 @@ import partner3 from "@/assets/fanatics.png";
 import partner4 from "@/assets/google.png";
 import partner5 from "@/assets/peloton.png";
 import partner6 from "@/assets/ufc.png";
+
 import partnerPromo from "../assets/jetSkiBanner.mp4";
 
-const sportsImages = [
-  image4,
-  image5,
-  image6,
-  image7,
-  image8,
-  image9,
-  image10,
-  image11,
-  image12,
-  image14,
-  image15,
-  image16,
-  image17,
-  image18,
-  image19,
-  image20,
-  image21,
-  image23,
-  image24,
-  image25,
-  image28,
-  image29,
-  image30,
-  image31,
-  image32,
-  image33,
-  image34,
-  image35,
-  image36,
-];
-
-const footerLinks = [
-  "Why Corner League",
-  "Clubs",
-  "Insights",
-  "Olympic AI",
-  "Contact Us",
-  "Terms/Privacy",
-];
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
   const [location] = useLocation();
+
+  const sportsImages = [
+    // image1,
+    // image2,
+    // image3,
+    image4,
+    image5,
+    image6,
+    image7,
+    image8,
+    image9,
+    image10,
+    image11,
+    image12,
+    // image13,
+    image14,
+    image15,
+    image16,
+    image17,
+    image18,
+    image19,
+    image20,
+    image21,
+    // image22,
+    image23,
+    image24,
+    image25,
+    // image26,
+    // image27,
+    image28,
+    image29,
+    image30,
+    image31,
+    image32,
+    image33,
+    image34,
+    image35,
+    image36,
+  ];
+
+  const footerLinks = [
+    "Why Corner League",
+    "Clubs",
+    "Insights",
+    "Olympic AI",
+    "Contact Us",
+    "Terms/Privacy",
+  ];
 
   const handleLogin = () => {
     window.location.href = `/auth?next=${encodeURIComponent(location)}`;
@@ -147,66 +163,54 @@ export default function Home() {
       `}</style>
 
       {/* Background collage */}
-      <div className="background-scrolling">
+      <div className="background-scrolling absolute inset-0 z-0 overflow-hidden px-2">
         {Array.from({ length: 5 }).map((_, colIndex) => {
+          const isHiddenOnMobile = colIndex >= 3;
           const columnImages = sportsImages.filter(
             (_, i) => i % 5 === colIndex
           );
-
-          const duplicatedImages = [
-            ...columnImages,
-            ...columnImages,
-            ...columnImages,
-            ...columnImages,
+          const limitedImages = isHiddenOnMobile
+            ? columnImages
+            : columnImages.slice(0, 8);
+          const infiniteImages = [
+            ...limitedImages,
+            ...limitedImages,
+            ...limitedImages,
           ];
-
-          const isEvenColumn = colIndex % 2 === 0;
-          const animationDuration = 80 + colIndex * 10;
-          const animationDelay = colIndex * -8;
-
           return (
             <div
               key={colIndex}
-              className="background-column"
+              className={`absolute top-0 flex flex-col gap-4 ${
+                isHiddenOnMobile ? "hidden md:flex" : ""
+              } bg-column-${colIndex}`}
               style={{
-                animation: `${
-                  isEvenColumn ? "scrollUpEven" : "scrollUpOdd"
-                } ${animationDuration}s linear infinite`,
-                animationDelay: `${animationDelay}s`,
+                left: `${colIndex * 20}%`,
+                width: "20%",
+                animation: `scrollUp${colIndex % 4} ${
+                  120 + colIndex * 15
+                }s linear infinite`,
+                animationDelay: `${colIndex * -15}s`,
               }}
             >
-              {duplicatedImages.map((src, imgIndex) => {
-                const baseHeight = 200;
-                const heightVariation = (imgIndex % 3) * 40;
-                const imageHeight = baseHeight + heightVariation;
-
-                return (
-                  <div
-                    key={`col-${colIndex}-${imgIndex}`}
-                    className="relative bg-gray-900/20 backdrop-blur-sm rounded-lg overflow-hidden shadow-xl"
-                    style={{
-                      height: `${imageHeight}px`,
-                      minHeight: "200px",
-                    }}
-                  >
-                    <img
-                      src={src}
-                      alt={`Sports artwork ${
-                        (imgIndex % columnImages.length) + 1
-                      }`}
-                      className="w-full h-full object-cover"
-                      loading="eager"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent pointer-events-none" />
-                  </div>
-                );
-              })}
+              {infiniteImages.map((src, imgIndex) => (
+                <div
+                  key={`col-${colIndex}-${imgIndex}`}
+                  className="w-full bg-gray-800 rounded-lg overflow-hidden shadow-lg opacity-95 hover:opacity-100 transition-opacity duration-300"
+                  style={{
+                    height: `${180 + (imgIndex % 4) * 60}px`,
+                    minHeight: "180px",
+                  }}
+                >
+                  <img
+                    src={src}
+                    alt={`Sports artwork ${imgIndex + 1}`}
+                    className="w-full h-full object-cover object-center"
+                  />
+                </div>
+              ))}
             </div>
           );
         })}
-
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/50 pointer-events-none z-10" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-black/20 pointer-events-none z-10" />
       </div>
 
       {/* HERO */}
