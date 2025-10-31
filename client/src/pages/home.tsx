@@ -7,16 +7,16 @@ import { PageSEO } from "@/seo/usePageSEO";
 import { useLocation } from "wouter";
 
 import image4 from "@assets/20250602_1433_Basketball Motion Scene_remix_01jws8ysn9fx1s6c0mgqw48t2g_1754356174336.png";
-import image5 from "@assets/20250603_0933_Vibrant Portrait Art_remix_01jwva54bwfxrsakzx26a3y7mb_1754356174336.png";
+// import image5 from "@assets/20250603_0933_Vibrant Portrait Art_remix_01jwva54bwfxrsakzx26a3y7mb_1754356174336.png";
 import image6 from "@assets/20250603_1013_Floral Football Fusion_remix_01jwvcftvae0d90fjgdpsectw5_1754356174337.png";
 import image7 from "@assets/20250603_1115_Cloud-Headed Baseball Players_remix_01jwvg1dcke14aa440wrbdq0ta_1754356174337.png";
 import image8 from "@assets/20250603_1453_Knicks Jersey Style_remix_01jwvwgmraf65b5vd127wer3sq_1754356174338.png";
 import image9 from "@assets/20250603_1551_Dodgers Ring in Ice_remix_01jwvzvdawfkt8dvx2xgn2mcm7_1754356174338.png";
 import image10 from "@assets/20250604_0923_Penguin Hockey Player_remix_01jwxw19hzecka3510adds358m_1754356174339.png";
-import image11 from "@assets/20250604_1204_Sports Professionals Crossing_remix_01jwy56gv4fd59rxawx2yepden_1754356174339.png";
-import image12 from "@assets/20250604_1214_Iconic Street Crossing Athletes_remix_01jwy5s0jtfeyrwsjdk1m0eabq_1754356174340.png";
+// import image11 from "@assets/20250604_1204_Sports Professionals Crossing_remix_01jwy56gv4fd59rxawx2yepden_1754356174339.png";
+// import image12 from "@assets/20250604_1214_Iconic Street Crossing Athletes_remix_01jwy5s0jtfeyrwsjdk1m0eabq_1754356174340.png";
 import image13 from "@/assets/jetski4.jpeg";
-import image14 from "@assets/20250629_1952_Golf Reflection Scene_remix_01jyzbyafvfr492ch7je94md7k_1754357010886.png";
+// import image14 from "@assets/20250629_1952_Golf Reflection Scene_remix_01jyzbyafvfr492ch7je94md7k_1754357010886.png";
 import image15 from "@assets/riveteammyles_A_Cristiano_Ronaldo_statue_wearing_his_jersey_i_fee2179e-7b83-45e7-965b-a4078e9c632b_1_1754357010886.png";
 import image16 from "@assets/riveteammyles_A_hockey_player_with_retro-futuristic_NHL_hocke_d89a2adb-e717-4334-b7c8-29d96c171e1d_2_1754357010886.png";
 import image17 from "@assets/riveteammyles_A_minimalistic_formula_1_racer_with_official_f1_9d20295a-d7ae-4472-98bd-709bf74b1987_2_1754357010887.png";
@@ -47,15 +47,15 @@ import partnerPromo from "../assets/jetSkiBanner.mp4";
 
 const sportsImages = [
   image4,
-  image5,
+  // image5,
   image6,
   image7,
   image8,
   image9,
   image10,
-  image11,
-  image12,
-  image14,
+  // image11,
+  // image12,
+  // image14,
   image15,
   image16,
   image17,
@@ -176,7 +176,7 @@ export default function Home() {
               }}
             >
               {duplicatedImages.map((src, imgIndex) => {
-                const baseHeight = 200;
+                const baseHeight = 600;
                 const heightVariation = (imgIndex % 3) * 40;
                 const imageHeight = baseHeight + heightVariation;
 
@@ -185,7 +185,7 @@ export default function Home() {
                     key={`col-${colIndex}-${imgIndex}`}
                     className="relative bg-gray-900/20 backdrop-blur-sm rounded-lg overflow-hidden shadow-xl"
                     style={{
-                      height: `${imageHeight}px`,
+                      maxHeight: `${imageHeight}px`,
                       minHeight: "200px",
                     }}
                   >
