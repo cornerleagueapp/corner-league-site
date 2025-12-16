@@ -1,8 +1,10 @@
 // src/pages/scores.tsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
+import { useLocation } from "wouter";
 
 import AquaScoresSection from "@/components/AquaScoresSection";
+import RacerSearchModal from "@/components/RacerSearchModal";
 
 type TabKey = "AQUA" | "MLB" | "NBA" | "NFL" | "NHL" | "NCAAF";
 const TAB_ORDER: TabKey[] = ["AQUA", "MLB", "NBA", "NFL", "NHL", "NCAAF"];
@@ -146,15 +148,171 @@ function TabDropdown({
   );
 }
 
+type AquaView = "hub" | "results";
+
+interface AquaHubSectionProps {
+  onOpenResults: () => void;
+  onOpenRacerSearch: () => void;
+}
+
+function AquaHubSection({
+  onOpenResults,
+  onOpenRacerSearch,
+}: AquaHubSectionProps) {
+  return (
+    <div className="space-y-6">
+      {/* AQUA header */}
+      <div className="space-y-1">
+        <p className="text-xs uppercase tracking-[0.18em] text-cyan-300/80">
+          Jet Ski
+        </p>
+        <h2 className="text-2xl font-semibold text-white">AQUA Sports Hub</h2>
+        <p className="text-sm text-white/70">
+          Dive into race organizations, full results, racer profiles, points
+          battles, and news from the week.
+        </p>
+      </div>
+
+      {/* Tile grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Race Organizations */}
+        <button
+          type="button"
+          className="group flex flex-col justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-4 sm:px-5 sm:py-5 text-left hover:border-cyan-300/70 hover:bg-white/10 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
+        >
+          <div className="space-y-2">
+            <h3 className="text-base sm:text-lg font-semibold text-white flex items-center gap-2">
+              Race Organizations
+              <span className="rounded-full border border-white/15 px-2 py-[2px] text-[10px] uppercase tracking-[0.16em] text-white/65">
+                Soon
+              </span>
+            </h3>
+            <p className="text-xs sm:text-sm text-white/70">
+              Explore IJSBA, regional tours, and how events feed into World
+              Finals. (Coming soon)
+            </p>
+          </div>
+        </button>
+
+        {/* Results */}
+        <button
+          type="button"
+          onClick={onOpenResults}
+          className="group flex flex-col justify-between rounded-2xl border border-cyan-400/70 bg-cyan-500/10 px-4 py-4 sm:px-5 sm:py-5 text-left hover:bg-cyan-500/20 hover:border-cyan-300 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
+        >
+          <div className="space-y-2">
+            <h3 className="text-base sm:text-lg font-semibold text-white">
+              Results
+            </h3>
+            <p className="text-xs sm:text-sm text-white/80">
+              Full day-by-day motos, AI breakdowns, and podium stories for every
+              class.
+            </p>
+          </div>
+          <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200">
+            Open Results
+            <span className="text-lg leading-none">↗</span>
+          </span>
+        </button>
+
+        {/* Search Racers */}
+        <button
+          type="button"
+          onClick={onOpenRacerSearch}
+          className="group flex flex-col justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-4 sm:px-5 sm:py-5 text-left hover:border-cyan-300/70 hover:bg-white/10 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
+        >
+          <div className="space-y-2">
+            <h3 className="text-base sm:text-lg font-semibold text-white">
+              Search Racers
+            </h3>
+            <p className="text-xs sm:text-sm text-white/75">
+              Look up individual racers, jump to their profile, and compare
+              results across classes.
+            </p>
+          </div>
+          <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200">
+            Open Search
+            <span className="text-lg leading-none">⌕</span>
+          </span>
+        </button>
+
+        {/* Upcoming Races */}
+        <button
+          type="button"
+          className="group flex flex-col justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-4 sm:px-5 sm:py-5 text-left hover:border-cyan-300/70 hover:bg-white/10 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
+        >
+          <div className="space-y-2">
+            <h3 className="text-base sm:text-lg font-semibold text-white flex items-center gap-2">
+              Upcoming Races
+              {/* <span className="rounded-full border border-white/15 px-2 py-[2px] text-[10px] uppercase tracking-[0.16em] text-white/65">
+                Roadmap
+              </span> */}
+              <span className="rounded-full border border-white/15 px-2 py-[2px] text-[10px] uppercase tracking-[0.16em] text-white/65">
+                Soon
+              </span>
+            </h3>
+            <p className="text-xs sm:text-sm text-white/70">
+              See the next tour stops, qualifying rounds, and key dates on the
+              calendar. (Coming soon)
+            </p>
+          </div>
+        </button>
+
+        {/* Points Leaders */}
+        {/* <button
+          type="button"
+          className="group flex flex-col justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-4 sm:px-5 sm:py-5 text-left hover:border-cyan-300/70 hover:bg-white/10 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
+        >
+          <div className="space-y-2">
+            <h3 className="text-base sm:text-lg font-semibold text-white">
+              Points Leaders
+            </h3>
+            <p className="text-xs sm:text-sm text-white/70">
+              Track who’s leading each class over the whole week and who’s still
+              in the hunt. (Coming soon)
+            </p>
+          </div>
+        </button> */}
+
+        {/* All News */}
+        {/* <button
+          type="button"
+          className="group flex flex-col justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-4 sm:px-5 sm:py-5 text-left hover:border-cyan-300/70 hover:bg-white/10 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
+        >
+          <div className="space-y-2">
+            <h3 className="text-base sm:text-lg font-semibold text-white">
+              All News
+            </h3>
+            <p className="text-xs sm:text-sm text-white/70">
+              Race recaps, storylines, and behind-the-scenes coverage from the
+              pits. (Coming soon)
+            </p>
+          </div>
+        </button> */}
+      </div>
+    </div>
+  );
+}
+
 export default function ScoresPage() {
   const [active, setActive] = useState<TabKey>("AQUA");
+  const [aquaView, setAquaView] = useState<AquaView>("hub");
+  const [racerSearchOpen, setRacerSearchOpen] = useState(false);
+  const [, navigate] = useLocation();
+
+  // Reset AQUA subview when leaving AQUA tab
+  useEffect(() => {
+    if (active !== "AQUA" && aquaView !== "hub") {
+      setAquaView("hub");
+    }
+  }, [active, aquaView]);
 
   const MLB_PLAYOFFS_URL =
     "https://widgets.media.sportradar.com/uscommon/en_us/standalone/us.season.mlb.playoffs#border=true&seasonId=125735";
   const MLB_SCORES_URL =
     "https://widgets.media.sportradar.com/uscommon/en_us/standalone/us.season.scores#uniqueTournamentId=109&preMatchLinks=default&liveMatchLinks=default&postMatchLinks=default&numFutureDays=0&border=true&seasonId=125735";
   const NFL_SCORES_URL =
-    "https://widgets.media.sportradar.com/uscommon/en_us/standalone/us.season.nfl.scores#disablePitchSwitch=true&enableTeamSelect=true&enablePlayerSelect=true&border=true&preMatchLinks=default&liveMatchLinks=default&postMatchLinks=default&seasonId=2025";
+    "https://widgets.media.sportradar.com/uscommon/en_us/standalone/us.season.nfl.scores#disablePitchSwitch=true&enableTeamSelect=true&border=true&preMatchLinks=default&liveMatchLinks=default&postMatchLinks=default&seasonId=2025";
   const NBA_SCORES_URL =
     "https://widgets.media.sportradar.com/uscommon/en_us/standalone/us.season.scores#uniqueTournamentId=132&preMatchLinks=default&liveMatchLinks=default&postMatchLinks=default&numFutureDays=0&border=true&seasonId=131631";
   const NHL_SCORES_URL =
@@ -170,9 +328,26 @@ export default function ScoresPage() {
   const NCAAF_SCORES_STRATEGY: ResizeStrategy = "auto";
 
   const content = useMemo(() => {
+    if (active === "AQUA") {
+      if (aquaView === "hub") {
+        return (
+          <AquaHubSection
+            onOpenResults={() => setAquaView("results")}
+            onOpenRacerSearch={() => setRacerSearchOpen(true)}
+          />
+        );
+      }
+      // aquaView === "results"
+      return (
+        <AquaScoresSection
+          onOpenRacerSearch={() => setRacerSearchOpen(true)}
+          onBackToHub={() => setAquaView("hub")}
+        />
+      );
+    }
+
+    // Other sports tabs
     switch (active) {
-      case "AQUA":
-        return <AquaScoresSection />;
       case "MLB":
         return (
           <div className="space-y-6">
@@ -264,6 +439,7 @@ export default function ScoresPage() {
     }
   }, [
     active,
+    aquaView,
     MLB_PLAYOFFS_URL,
     MLB_SCORES_URL,
     NFL_SCORES_URL,
@@ -294,6 +470,16 @@ export default function ScoresPage() {
         Note: These embedded widgets are provided by Sportradar and may take a
         moment to load. Heights are set generously for readability.
       </p>
+
+      <RacerSearchModal
+        open={racerSearchOpen}
+        onClose={() => setRacerSearchOpen(false)}
+        onSelectRacer={(r) => {
+          setRacerSearchOpen(false);
+          const idStr = encodeURIComponent(String(r.id));
+          navigate(`/racer/${idStr}`);
+        }}
+      />
     </div>
   );
 }
