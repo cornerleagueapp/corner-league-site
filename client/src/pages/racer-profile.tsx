@@ -8,6 +8,7 @@ import { X as XIcon, Search as SearchIcon, PencilLine } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import RacerSearchModal from "@/components/RacerSearchModal";
+import { generateRacerAnalysis } from "@/lib/geminiRacerAnalysis";
 
 /* ---------------- Types ---------------- */
 type Racer = {
@@ -145,6 +146,10 @@ export default function RacerProfilePage({
   const [searchOpen, setSearchOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [uploadPct, setUploadPct] = useState<number | null>(null);
+
+  const [analysis, setAnalysis] = useState<string | null>(null);
+  const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [analysisErr, setAnalysisErr] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -346,6 +351,32 @@ export default function RacerProfilePage({
     };
   }, [idOrSlugParam]);
 
+  useEffect(() => {
+    if (!racer) return;
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        setAnalysisLoading(true);
+        setAnalysisErr(null);
+        const text = await generateRacerAnalysis(racer);
+        if (!cancelled) setAnalysis(text);
+      } catch (e: any) {
+        console.error("[RacerProfile] AI analysis error", e);
+        if (!cancelled) {
+          setAnalysisErr("Could not generate AI analysis for this racer.");
+        }
+      } finally {
+        if (!cancelled) setAnalysisLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [racer?.id]); // re-run when profile changes
+
   /* ---------------- UI ---------------- */
   if (loading) {
     return (
@@ -520,6 +551,25 @@ export default function RacerProfilePage({
                   value={racer.careerWorldFinalsWins ?? 0}
                 />
               </div>
+            </Card>
+
+            <Card className="bg-white/5 border-white/10 p-4">
+              <div className="text-sm text-white/80 mb-2">
+                AI Racer Analysis:
+              </div>
+              {analysisLoading ? (
+                <p className="text-white/60 text-sm">Analyzing this racer…</p>
+              ) : analysisErr ? (
+                <p className="text-red-300 text-sm">{analysisErr}</p>
+              ) : analysis ? (
+                <p className="text-white/80 text-sm whitespace-pre-wrap">
+                  {analysis}
+                </p>
+              ) : (
+                <p className="text-white/60 text-sm">
+                  Analysis will appear here once available.
+                </p>
+              )}
             </Card>
           </div>
 

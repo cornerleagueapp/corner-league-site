@@ -1,3 +1,4 @@
+// components/AccordionSection.tsx
 import React, { useEffect, useRef, useState } from "react";
 
 type Props = {

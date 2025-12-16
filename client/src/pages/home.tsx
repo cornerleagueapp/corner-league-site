@@ -6,17 +6,15 @@ import { logout } from "@/lib/logout";
 import { PageSEO } from "@/seo/usePageSEO";
 import { useLocation } from "wouter";
 
+import LeagueMediaFeatures from "@/components/LeagueMediaFeatures";
+
 import image4 from "@assets/20250602_1433_Basketball Motion Scene_remix_01jws8ysn9fx1s6c0mgqw48t2g_1754356174336.png";
-// import image5 from "@assets/20250603_0933_Vibrant Portrait Art_remix_01jwva54bwfxrsakzx26a3y7mb_1754356174336.png";
 import image6 from "@assets/20250603_1013_Floral Football Fusion_remix_01jwvcftvae0d90fjgdpsectw5_1754356174337.png";
 import image7 from "@assets/20250603_1115_Cloud-Headed Baseball Players_remix_01jwvg1dcke14aa440wrbdq0ta_1754356174337.png";
 import image8 from "@assets/20250603_1453_Knicks Jersey Style_remix_01jwvwgmraf65b5vd127wer3sq_1754356174338.png";
 import image9 from "@assets/20250603_1551_Dodgers Ring in Ice_remix_01jwvzvdawfkt8dvx2xgn2mcm7_1754356174338.png";
 import image10 from "@assets/20250604_0923_Penguin Hockey Player_remix_01jwxw19hzecka3510adds358m_1754356174339.png";
-// import image11 from "@assets/20250604_1204_Sports Professionals Crossing_remix_01jwy56gv4fd59rxawx2yepden_1754356174339.png";
-// import image12 from "@assets/20250604_1214_Iconic Street Crossing Athletes_remix_01jwy5s0jtfeyrwsjdk1m0eabq_1754356174340.png";
 import image13 from "@/assets/jetski4.jpeg";
-// import image14 from "@assets/20250629_1952_Golf Reflection Scene_remix_01jyzbyafvfr492ch7je94md7k_1754357010886.png";
 import image15 from "@assets/riveteammyles_A_Cristiano_Ronaldo_statue_wearing_his_jersey_i_fee2179e-7b83-45e7-965b-a4078e9c632b_1_1754357010886.png";
 import image16 from "@assets/riveteammyles_A_hockey_player_with_retro-futuristic_NHL_hocke_d89a2adb-e717-4334-b7c8-29d96c171e1d_2_1754357010886.png";
 import image17 from "@assets/riveteammyles_A_minimalistic_formula_1_racer_with_official_f1_9d20295a-d7ae-4472-98bd-709bf74b1987_2_1754357010887.png";
@@ -47,15 +45,11 @@ import partnerPromo from "../assets/jetSkiBanner.mp4";
 
 const sportsImages = [
   image4,
-  // image5,
   image6,
   image7,
   image8,
   image9,
   image10,
-  // image11,
-  // image12,
-  // image14,
   image15,
   image16,
   image17,
@@ -246,15 +240,20 @@ export default function Home() {
         <div className="flex-1 flex items-center justify-center px-6 py-12">
           <div className="text-center max-w-4xl mx-auto">
             <h1 className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold leading-tight mb-6 tracking-tight">
-              Make Sports More You
+              Where Every Player Feels Pro
             </h1>
             <p className="text-lg md:text-xl lg:text-2xl text-gray-300 mb-12 max-w-2xl mx-auto leading-relaxed">
-              Next-Gen Sports Media delivering personalized, interactive, and
-              real-time insights powered by AI—so you get exactly what you need!
+              Corner League is the next-gen sports media platform that turns
+              every rec and youth league into its own ESPN.
+            </p>
+            <p className="text-lg md:text-xl lg:text-2xl text-gray-300 mb-12 max-w-2xl mx-auto leading-relaxed">
+              Using AI to provide players their pro-style stats, game recaps,
+              highlights, and leaderboards that make every game feel
+              unforgettable and legendary!
             </p>
             {isAuthenticated && (
               <p className="text-lg md:text-xl text-gray-300 mb-8 text-center">
-                Welcome back, {user?.firstName ?? user?.email}!
+                Welcome, {user?.firstName ?? user?.email}!
               </p>
             )}
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -455,43 +454,7 @@ export default function Home() {
           </div>
         </Section>
 
-        {/* What is Corner League */}
-        <Section>
-          <h2 className="text-2xl md:text-3xl font-semibold text-center">
-            A Social Platform for Sports Fans
-          </h2>
-          <p className="mt-3 text-white/70 text-sm md:text-base leading-relaxed max-w-2xl mx-auto text-center">
-            Discover clubs for your favorite teams, follow live scores, post
-            highlights, react, and connect with fans everywhere. Corner League
-            blends social conversations with real-time sports data.
-          </p>
-
-          <ul className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-3xl mx-auto">
-            <FeatureItem title="Clubs & Communities">
-              Create or join team hubs and fan groups.
-            </FeatureItem>
-            <FeatureItem title="Live Scores & Threads">
-              Follow games and chat in the moment.
-            </FeatureItem>
-            <FeatureItem title="Profiles & Reactions">
-              Share posts, react, and build your fan identity.
-            </FeatureItem>
-            <FeatureItem title="AI Insights (coming soon)">
-              Deep dives, summaries, and smart recaps.
-            </FeatureItem>
-          </ul>
-
-          <div className="mt-6 flex justify-center">
-            <Link href="/explore">
-              <Button
-                variant="outline"
-                className="rounded-full px-6 text-black border-white/30 hover:bg-white/10 hover:text-white"
-              >
-                Explore the feed
-              </Button>
-            </Link>
-          </div>
-        </Section>
+        <LeagueMediaFeatures />
 
         {/* Partner / Sponsor banner */}
         <section className="px-5">

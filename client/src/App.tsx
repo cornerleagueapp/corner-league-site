@@ -31,6 +31,12 @@ import NotificationsPage from "@/pages/notifications";
 import WelcomeSplash from "./pages/welcome-splash";
 import AdminCreateRacerPage from "./pages/admin-create-racer";
 
+import UpdateEventPage from "./pages/updateEventPage";
+import CreateEventPage from "./pages/createEventPage";
+import EventListPage from "./pages/eventListPage";
+import RaceClassEditor from "./pages/raceClassEditor";
+import ClassMatchManagePage from "./pages/classMatchManagePage";
+
 function ProtectedRoute({
   component: Comp,
 }: {
@@ -84,6 +90,18 @@ function PrivateRouter() {
           <Route path="/notifications" component={NotificationsPage} />
           <Route path="/welcome" component={WelcomeSplash} />
           <Route path="/_admin/create-racer" component={AdminCreateRacerPage} />
+
+          <Route path="/events/create" component={CreateEventPage} />
+          <Route path="/organization/event-list" component={EventListPage} />
+          <Route path="/organization/events/:id" component={UpdateEventPage} />
+          <Route
+            path="/organization/events/:id/classes"
+            component={RaceClassEditor}
+          />
+          <Route
+            path="/organization/events/:eventId/classes/:divisionId/manage"
+            component={ClassMatchManagePage}
+          />
 
           {/* existing club flows */}
           <Route path="/clubs" component={Clubs} />
