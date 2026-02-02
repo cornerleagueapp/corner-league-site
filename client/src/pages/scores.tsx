@@ -159,6 +159,12 @@ function AquaHubSection({
   onOpenResults,
   onOpenRacerSearch,
 }: AquaHubSectionProps) {
+  const [, navigate] = useLocation();
+
+  function goToOrganizations() {
+    navigate("/aqua-organizations");
+  }
+
   return (
     <div className="space-y-6">
       {/* AQUA header */}
@@ -178,18 +184,19 @@ function AquaHubSection({
         {/* Race Organizations */}
         <button
           type="button"
+          onClick={goToOrganizations}
           className="group flex flex-col justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-4 sm:px-5 sm:py-5 text-left hover:border-cyan-300/70 hover:bg-white/10 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
         >
           <div className="space-y-2">
             <h3 className="text-base sm:text-lg font-semibold text-white flex items-center gap-2">
               Race Organizations
               <span className="rounded-full border border-white/15 px-2 py-[2px] text-[10px] uppercase tracking-[0.16em] text-white/65">
-                Soon
+                New
               </span>
             </h3>
             <p className="text-xs sm:text-sm text-white/70">
               Explore IJSBA, regional tours, and how events feed into World
-              Finals. (Coming soon)
+              Finals.
             </p>
           </div>
         </button>

@@ -30,6 +30,9 @@ import MessagesPage from "@/pages/messages";
 import NotificationsPage from "@/pages/notifications";
 import WelcomeSplash from "./pages/welcome-splash";
 import AdminCreateRacerPage from "./pages/admin-create-racer";
+import AquaOrganizationsPage from "./pages/organizations/aqua-organizations";
+import AdminCreateOrganizationPage from "./pages/organizations/admin-create-organization";
+import AquaOrganizationDetailsPage from "./pages/organizations/aqua-organization-details";
 
 import UpdateEventPage from "./pages/updateEventPage";
 import CreateEventPage from "./pages/createEventPage";
@@ -90,8 +93,17 @@ function PrivateRouter() {
           <Route path="/notifications" component={NotificationsPage} />
           <Route path="/welcome" component={WelcomeSplash} />
           <Route path="/_admin/create-racer" component={AdminCreateRacerPage} />
+          <Route
+            path="/_admin/create-organization"
+            component={AdminCreateOrganizationPage}
+          />
 
           <Route path="/events/create" component={CreateEventPage} />
+          <Route path="/aqua-organizations" component={AquaOrganizationsPage} />
+          <Route
+            path="/aqua-organizations/:id"
+            component={AquaOrganizationDetailsPage}
+          />
           <Route path="/organization/event-list" component={EventListPage} />
           <Route path="/organization/events/:id" component={UpdateEventPage} />
           <Route

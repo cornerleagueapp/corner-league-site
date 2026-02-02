@@ -75,7 +75,7 @@ const footerLinks = [
   "Why Corner League",
   "Clubs",
   "Insights",
-  "Olympic AI",
+  // "Olympic AI",
   "Contact Us",
   "Terms/Privacy",
 ];
@@ -513,19 +513,19 @@ export default function Home() {
                       </Link>
                     );
                   }
-                  if (link === "Olympic AI") {
-                    return (
-                      <a
-                        key={index}
-                        href="https://www.olympicai.io/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm font-medium text-gray-400 hover:text-white tracking-wider uppercase"
-                      >
-                        {link}
-                      </a>
-                    );
-                  }
+                  // if (link === "Olympic AI") {
+                  //   return (
+                  //     <a
+                  //       key={index}
+                  //       href="https://www.olympicai.io/"
+                  //       target="_blank"
+                  //       rel="noopener noreferrer"
+                  //       className="text-sm font-medium text-gray-400 hover:text-white tracking-wider uppercase"
+                  //     >
+                  //       {link}
+                  //     </a>
+                  //   );
+                  // }
                   if (link === "Insights") {
                     return (
                       <a
