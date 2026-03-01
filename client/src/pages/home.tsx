@@ -144,7 +144,7 @@ export default function Home() {
       <div className="background-scrolling">
         {Array.from({ length: 5 }).map((_, colIndex) => {
           const columnImages = sportsImages.filter(
-            (_, i) => i % 5 === colIndex
+            (_, i) => i % 5 === colIndex,
           );
 
           const duplicatedImages = [
@@ -240,7 +240,10 @@ export default function Home() {
         <div className="flex-1 flex items-center justify-center px-6 py-12">
           <div className="text-center max-w-4xl mx-auto">
             <h1 className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold leading-tight mb-6 tracking-tight">
-              Where Every Player Feels Pro
+              Where Every Player Feels{" "}
+              <span className="italic text-fuchsia-400 drop-shadow-[0_0_10px_rgba(217,70,239,0.9)]">
+                PRO
+              </span>
             </h1>
             <p className="text-lg md:text-xl lg:text-2xl text-gray-300 mb-12 max-w-2xl mx-auto leading-relaxed">
               Corner League is the next-gen sports media platform that turns
