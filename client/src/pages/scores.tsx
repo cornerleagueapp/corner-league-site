@@ -163,6 +163,7 @@ function trophyFor(place?: number) {
       return { show: false, colorClass: "", label: "" };
   }
 }
+
 function FeaturedRaceSection() {
   return (
     <div className="space-y-6">
