@@ -2,9 +2,12 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { useLocation } from "wouter";
+import { Trophy } from "lucide-react";
 
 import AquaScoresSection from "@/components/AquaScoresSection";
 import RacerSearchModal from "@/components/RacerSearchModal";
+import AccordionSection from "@/components/AccordionSection";
+import { markHahn300 } from "@/data/markHanRace";
 
 type TabKey = "AQUA" | "MLB" | "NBA" | "NFL" | "NHL" | "NCAAF";
 const TAB_ORDER: TabKey[] = ["AQUA", "MLB", "NBA", "NFL", "NHL", "NCAAF"];
@@ -144,6 +147,123 @@ function TabDropdown({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function trophyFor(place?: number) {
+  switch (place) {
+    case 1:
+      return { show: true, colorClass: "text-amber-400", label: "1st place" };
+    case 2:
+      return { show: true, colorClass: "text-gray-300", label: "2nd place" };
+    case 3:
+      return { show: true, colorClass: "text-[#cd7f32]", label: "3rd place" };
+    default:
+      return { show: false, colorClass: "", label: "" };
+  }
+}
+function FeaturedRaceSection() {
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="space-y-1">
+        <p className="text-xs uppercase tracking-[0.18em] text-cyan-300/80">
+          Featured Race
+        </p>
+        <h2 className="text-2xl font-semibold text-white">
+          {markHahn300.title}
+        </h2>
+        <p className="text-sm text-white/70">{markHahn300.date}</p>
+      </div>
+
+      <div className="space-y-3">
+        <AccordionSection
+          labelShow="Show Final Results - Overall"
+          labelHide="Hide Final Results - Overall"
+        >
+          <div className="space-y-4">
+            <div className="text-sm text-white/70">{markHahn300.subtitle}</div>
+
+            {/* Results table */}
+            <div className="rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm">
+                  <thead className="bg-black/30">
+                    <tr className="text-white/80">
+                      <th className="px-4 py-3 text-left font-semibold">
+                        Place
+                      </th>
+                      <th className="px-4 py-3 text-left font-semibold">
+                        Number/MFG
+                      </th>
+                      <th className="px-4 py-3 text-left font-semibold">
+                        Team Name
+                      </th>
+                      <th className="px-4 py-3 text-right font-semibold">
+                        Laps
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/10">
+                    {markHahn300.results.map((r) => (
+                      <tr
+                        key={`${r.place}-${r.boatNumber}-${r.mfg}`}
+                        className="text-white/80"
+                      >
+                        <td className="px-4 py-3 tabular-nums">
+                          <span className="inline-flex items-center gap-2">
+                            {r.place}
+                            {(() => {
+                              const trophy = trophyFor(r.place);
+                              return trophy.show ? (
+                                <Trophy
+                                  aria-label={trophy.label}
+                                  className={`h-4 w-4 ${trophy.colorClass}`}
+                                />
+                              ) : null;
+                            })()}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 tabular-nums">
+                          {r.boatNumber} - {r.mfg}
+                        </td>
+                        <td className="px-4 py-3">{r.teamName}</td>
+                        <td className="px-4 py-3 text-right tabular-nums">
+                          {r.lapsCompleted}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Penalties legend */}
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+              <div className="text-sm font-semibold text-white mb-2">
+                Penalties
+              </div>
+              <ul className="list-disc pl-5 space-y-1 text-sm text-white/75">
+                {markHahn300.penalties.map((p) => (
+                  <li key={p}>{p}</li>
+                ))}
+              </ul>
+            </div>
+            {/* Achievments */}
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+              <div className="text-sm font-semibold text-white mb-2">
+                Achievements
+              </div>
+              <ul className="list-disc pl-5 space-y-1 text-sm text-white/75">
+                {markHahn300.achievement.map((p) => (
+                  <li key={p}>{p}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </AccordionSection>
+      </div>
     </div>
   );
 }
@@ -296,6 +416,10 @@ function AquaHubSection({
             </p>
           </div>
         </button> */}
+      </div>
+
+      <div className="pt-2">
+        <FeaturedRaceSection />
       </div>
     </div>
   );

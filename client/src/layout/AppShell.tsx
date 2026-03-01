@@ -5,6 +5,9 @@ import cornerLeagueLogo from "@assets/CL_Logo.png";
 import { logout } from "@/lib/logout";
 import { useAuth } from "@/hooks/useAuth";
 
+import { queryClient } from "@/lib/queryClient";
+import { clearTokens } from "@/lib/token";
+
 // map sidebar item -> route
 const keyToPath: Record<string, string> = {
   // Profile section
@@ -68,9 +71,24 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       navigate(`/auth?next=${next}`, { replace: true });
     };
 
-    const onLogout = () => goAuth();
+    const hardLogout = () => {
+      // 1) Clear tokens + stored user
+      clearTokens();
+
+      // 2) Clear "me" cache so UI stops thinking you're logged in
+      queryClient.setQueryData(["/auth/me"], null);
+
+      // Optional: cancel in-flight queries to prevent weird loading states
+      queryClient.cancelQueries();
+
+      // 3) Redirect to auth immediately
+      goAuth();
+    };
+
+    const onLogout = () => hardLogout();
+
     const onStorage = (e: StorageEvent) => {
-      if (e.key === "auth:logout") goAuth();
+      if (e.key === "auth:logout") hardLogout();
     };
 
     window.addEventListener("auth:logout", onLogout);
@@ -152,7 +170,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               window.dispatchEvent(
                 new CustomEvent<"my" | "discover">("clubs:setTab", {
                   detail: key,
-                })
+                }),
               );
               return;
             }

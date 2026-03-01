@@ -20,6 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import { getTeamLogo } from "@/constants/teamLogos";
 import UserSearchModal from "@/components/userSearchModal";
 import stockAvatar from "../assets/stockprofilepicture.jpeg";
+import clPattern from "../assets/cl_logo_pattern.png";
 
 // ---------- types ----------
 type FavoriteTeam = { id: string; name: string; sr_id?: string };
@@ -72,7 +73,7 @@ async function followUser(viewerId: string, targetId: string) {
     `/users/${encodeURIComponent(viewerId)}/follow-user`,
     {
       userToFollowId: String(targetId),
-    }
+    },
   );
 }
 
@@ -80,7 +81,7 @@ async function unfollowUser(viewerId: string, targetId: string) {
   return apiRequest(
     "DELETE",
     `/users/${encodeURIComponent(viewerId)}/unfollow-user`,
-    { userToUnfollowId: String(targetId) }
+    { userToUnfollowId: String(targetId) },
   );
 }
 
@@ -135,7 +136,7 @@ export default function UserProfilePage({ username }: { username: string }) {
 
   const [followersOpen, setFollowersOpen] = useState(false);
   const [followersTab, setFollowersTab] = useState<"followers" | "following">(
-    "followers"
+    "followers",
   );
   const [followSearch, setFollowSearch] = useState("");
 
@@ -157,7 +158,7 @@ export default function UserProfilePage({ username }: { username: string }) {
 
   // tabs
   const [activeTab, setActiveTab] = useState<"scores" | "posts" | "clubs">(
-    "scores"
+    "scores",
   );
 
   if (!username) return <div style={{ padding: 24 }}>no username param</div>;
@@ -172,25 +173,25 @@ export default function UserProfilePage({ username }: { username: string }) {
         setError(null);
 
         const uRes = await apiGet<{ data: ProfileUser }>(
-          `/users/get-user-by-username/${encodeURIComponent(username)}`
+          `/users/get-user-by-username/${encodeURIComponent(username)}`,
         );
         const u = uRes?.data;
         if (!u) throw new Error("User not found");
 
         const [counts, favTeams] = await Promise.all([
           apiGet<{ data: { followersCount: number; followingCount: number } }>(
-            `/users/${u.id}/get-followers-count`
+            `/users/${u.id}/get-followers-count`,
           ),
           apiGet<{ data: { teams: FavoriteTeam[] } }>(
-            `/users/${u.id}/get-favorite-teams`
+            `/users/${u.id}/get-favorite-teams`,
           ),
         ]);
 
         const all = await apiGet<{ data: { profilePosts: any[] } }>(
-          `/social/profile-posts`
+          `/social/profile-posts`,
         );
         const onlyMine = (all?.data?.profilePosts || []).filter(
-          (p) => String(p?.user?.id) === String(u.id)
+          (p) => String(p?.user?.id) === String(u.id),
         );
         const normalized = onlyMine
           .map((p: any) => ({
@@ -198,14 +199,14 @@ export default function UserProfilePage({ username }: { username: string }) {
             mediaUrls: Array.isArray(p.mediaUrls)
               ? p.mediaUrls
               : Array.isArray(p.media_urls)
-              ? p.media_urls
-              : (() => {
-                  try {
-                    return JSON.parse(p.mediaUrls ?? "[]");
-                  } catch {
-                    return [];
-                  }
-                })(),
+                ? p.media_urls
+                : (() => {
+                    try {
+                      return JSON.parse(p.mediaUrls ?? "[]");
+                    } catch {
+                      return [];
+                    }
+                  })(),
           }))
           .sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
 
@@ -215,13 +216,13 @@ export default function UserProfilePage({ username }: { username: string }) {
               const [userReaction, reactionCount, commentCount] =
                 await Promise.all([
                   apiGet<{ reaction: string | null }>(
-                    `/social/post-reactions/${p.id}/${viewerId}`
+                    `/social/post-reactions/${p.id}/${viewerId}`,
                   ),
                   apiGet<{ count: number }>(
-                    `/social/post-reactions/count/${p.id}`
+                    `/social/post-reactions/count/${p.id}`,
                   ),
                   apiGet<{ count: number }>(
-                    `/social/profile-posts/${p.id}/comments-count`
+                    `/social/profile-posts/${p.id}/comments-count`,
                   ),
                 ]);
               return {
@@ -241,7 +242,7 @@ export default function UserProfilePage({ username }: { username: string }) {
                 commentCount: 0,
               } as ProfilePost;
             }
-          })
+          }),
         );
 
         if (ignore) return;
@@ -250,7 +251,7 @@ export default function UserProfilePage({ username }: { username: string }) {
         setFollowingCount(counts?.data?.followingCount ?? 0);
         setPoints(counts?.data?.followingCount ?? 0);
         setTeams(
-          Array.isArray(favTeams?.data?.teams) ? favTeams.data.teams : []
+          Array.isArray(favTeams?.data?.teams) ? favTeams.data.teams : [],
         );
         setPosts(enriched);
 
@@ -260,7 +261,7 @@ export default function UserProfilePage({ username }: { username: string }) {
               data: { followingList: Array<{ id: string | number }> };
             }>(`/users/${viewerId}/get-following-list`);
             const amIFollowing = (following?.data?.followingList ?? []).some(
-              (f) => String(f.id) === String(u.id)
+              (f) => String(f.id) === String(u.id),
             );
             if (!ignore) setIsFollowing(amIFollowing);
           }
@@ -306,7 +307,7 @@ export default function UserProfilePage({ username }: { username: string }) {
   }
   function setPostOptimistic(
     postId: string,
-    updater: (p: ProfilePost) => ProfilePost
+    updater: (p: ProfilePost) => ProfilePost,
   ) {
     setPosts((prev) => prev.map((p) => (p.id === postId ? updater(p) : p)));
   }
@@ -314,11 +315,11 @@ export default function UserProfilePage({ username }: { username: string }) {
     try {
       const [userReaction, reactionCount, commentCount] = await Promise.all([
         apiGet<{ reaction: string | null }>(
-          `/social/post-reactions/${postId}/${viewerId}`
+          `/social/post-reactions/${postId}/${viewerId}`,
         ),
         apiGet<{ count: number }>(`/social/post-reactions/count/${postId}`),
         apiGet<{ count: number }>(
-          `/social/profile-posts/${postId}/comments-count`
+          `/social/profile-posts/${postId}/comments-count`,
         ),
       ]);
       setPostOptimistic(postId, (p) => ({
@@ -337,7 +338,7 @@ export default function UserProfilePage({ username }: { username: string }) {
     setLoadingFollows(true);
     try {
       const res = await apiGet<{ data: { followersList: any[] } }>(
-        `/users/${userId}/get-followers-list`
+        `/users/${userId}/get-followers-list`,
       );
       setFollowersList(res?.data?.followersList ?? []);
     } finally {
@@ -349,7 +350,7 @@ export default function UserProfilePage({ username }: { username: string }) {
     setLoadingFollows(true);
     try {
       const res = await apiGet<{ data: { followingList: any[] } }>(
-        `/users/${userId}/get-following-list`
+        `/users/${userId}/get-following-list`,
       );
       setFollowingList(res?.data?.followingList ?? []);
     } finally {
@@ -363,14 +364,14 @@ export default function UserProfilePage({ username }: { username: string }) {
       !norm ||
       String(u.username || "")
         .toLowerCase()
-        .includes(norm)
+        .includes(norm),
   );
   const filteredFollowing = followingList.filter(
     (u) =>
       !norm ||
       String(u.username || "")
         .toLowerCase()
-        .includes(norm)
+        .includes(norm),
   );
 
   useEffect(() => {
@@ -413,12 +414,20 @@ export default function UserProfilePage({ username }: { username: string }) {
 
   // ----- UI -----
   return (
-    <div className="min-h-screen bg-[#090D16] text-white">
+    <div className="min-h-screen bg-[#090D16] text-white ">
+      {/* <div className="relative min-h-screen bg-[#090D16] text-white overflow-hidden"> */}
       <PageSEO
-        title={`${
-          me ? `${me.firstName} ${me.lastName}` : "Profile"
-        } • Corner League`}
+        title={`${me ? `${me.firstName} ${me.lastName}` : "Profile"} • Corner League`}
       />
+
+      {/* <div
+        className="pointer-events-none absolute inset-0 opacity-[0.01]"
+        style={{
+          backgroundImage: `url(${clPattern})`,
+          backgroundRepeat: "repeat",
+          backgroundPosition: "center",
+        }}
+      /> */}
 
       {/* top-right search */}
       <div className="mx-auto max-w-5xl px-4 pt-4 flex justify-end">
@@ -491,7 +500,7 @@ export default function UserProfilePage({ username }: { username: string }) {
             className={cn(
               "flex w-full gap-2 self-center sm:self-end sm:w-auto",
               isOwn ? "justify-center" : "justify-start",
-              "sm:justify-end"
+              "sm:justify-end",
             )}
           >
             {!isOwn && (
@@ -518,7 +527,7 @@ export default function UserProfilePage({ username }: { username: string }) {
                   } catch (e: any) {
                     setIsFollowing(wasFollowing);
                     setFollowers((c) =>
-                      Math.max(0, c + (wasFollowing ? 1 : -1))
+                      Math.max(0, c + (wasFollowing ? 1 : -1)),
                     );
                     toast({
                       title: wasFollowing ? "Unfollow failed" : "Follow failed",
@@ -531,7 +540,7 @@ export default function UserProfilePage({ username }: { username: string }) {
                   "h-11 w-[70%] sm:h-9 sm:w-auto border hover:bg-white/15",
                   isFollowing
                     ? "bg-purple-500/45 border-white-400/30"
-                    : "bg-white/10 border-white/10"
+                    : "bg-white/10 border-white/10",
                 )}
               >
                 {isFollowing ? "Following" : "Follow"}
@@ -547,7 +556,7 @@ export default function UserProfilePage({ username }: { username: string }) {
               }}
               className={cn(
                 "h-11 sm:h-9 sm:w-auto bg-white text-black hover:bg-white/90",
-                isOwn ? "mx-auto w-auto" : "w-[30%]"
+                isOwn ? "mx-auto w-auto" : "w-[30%]",
               )}
             >
               Share
@@ -663,7 +672,7 @@ export default function UserProfilePage({ username }: { username: string }) {
                           data: { profilePosts: any[] };
                         }>(`/social/profile-posts`);
                         const mine = (all?.data?.profilePosts || []).filter(
-                          (p) => String(p?.user?.id) === String(me?.id)
+                          (p) => String(p?.user?.id) === String(me?.id),
                         );
                         const normalized = mine
                           .map((p: any) => ({
@@ -671,18 +680,18 @@ export default function UserProfilePage({ username }: { username: string }) {
                             mediaUrls: Array.isArray(p.mediaUrls)
                               ? p.mediaUrls
                               : Array.isArray(p.media_urls)
-                              ? p.media_urls
-                              : (() => {
-                                  try {
-                                    return JSON.parse(p.mediaUrls ?? "[]");
-                                  } catch {
-                                    return [];
-                                  }
-                                })(),
+                                ? p.media_urls
+                                : (() => {
+                                    try {
+                                      return JSON.parse(p.mediaUrls ?? "[]");
+                                    } catch {
+                                      return [];
+                                    }
+                                  })(),
                           }))
                           .sort(
                             (a, b) =>
-                              +new Date(b.createdAt) - +new Date(a.createdAt)
+                              +new Date(b.createdAt) - +new Date(a.createdAt),
                           );
                         setPosts(normalized);
                       } catch {}
@@ -751,7 +760,7 @@ export default function UserProfilePage({ username }: { username: string }) {
                                 reaction: had ? null : "like",
                                 reactionCount: Math.max(
                                   0,
-                                  (pp.reactionCount ?? 0) + (had ? -1 : 1)
+                                  (pp.reactionCount ?? 0) + (had ? -1 : 1),
                                 ),
                               }));
                               try {
@@ -790,7 +799,7 @@ export default function UserProfilePage({ username }: { username: string }) {
                               url.searchParams.set("post", p.id);
                               try {
                                 await navigator.clipboard.writeText(
-                                  url.toString()
+                                  url.toString(),
                                 );
                                 toast({ title: "Copied to clipboard" });
                               } catch {}
@@ -826,7 +835,7 @@ export default function UserProfilePage({ username }: { username: string }) {
                     "px-3 py-2 rounded-md text-sm",
                     followersTab === "followers"
                       ? "bg-white/10 text-white"
-                      : "text-white/70 hover:text-white"
+                      : "text-white/70 hover:text-white",
                   )}
                   onClick={() => {
                     setFollowersTab("followers");
@@ -840,7 +849,7 @@ export default function UserProfilePage({ username }: { username: string }) {
                     "px-3 py-2 rounded-md text-sm",
                     followersTab === "following"
                       ? "bg-white/10 text-white"
-                      : "text-white/70 hover:text-white"
+                      : "text-white/70 hover:text-white",
                   )}
                   onClick={() => {
                     setFollowersTab("following");
@@ -889,7 +898,7 @@ export default function UserProfilePage({ username }: { username: string }) {
                         }}
                         className={cn(
                           "w-full text-left flex items-center gap-3 rounded-lg border border-white/10 p-3",
-                          "hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-white/20 cursor-pointer"
+                          "hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-white/20 cursor-pointer",
                         )}
                         aria-label={`Open @${u.username}'s profile`}
                       >
@@ -927,7 +936,7 @@ export default function UserProfilePage({ username }: { username: string }) {
                         }}
                         className={cn(
                           "w-full text-left flex items-center gap-3 rounded-lg border border-white/10 p-3",
-                          "hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-white/20 cursor-pointer"
+                          "hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-white/20 cursor-pointer",
                         )}
                         aria-label={`Open @${u.username}'s profile`}
                       >
@@ -1026,7 +1035,7 @@ function Tab({
         "relative py-3 text-white/70 hover:text-white",
         "sm:px-4", // spacing on desktop
         active && "text-white font-medium",
-        className // allow caller to set w-1/3 text-center on mobile
+        className, // allow caller to set w-1/3 text-center on mobile
       )}
     >
       {label}
@@ -1250,7 +1259,7 @@ function BioBlock({
     <div
       className={cn(
         "rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-sm text-white/80",
-        className
+        className,
       )}
     >
       {content ? content : "No bio yet."}

@@ -18,6 +18,7 @@ type FetchOpts = Omit<RequestInit, "body"> & {
   body?: any;
   skipAuth?: boolean;
   withCredentials?: boolean;
+  noRefresh?: boolean;
 };
 
 function stripLeadingApi(path: string) {
@@ -26,40 +27,75 @@ function stripLeadingApi(path: string) {
 }
 
 export async function apiFetch(path: string, opts: FetchOpts = {}) {
-  const url = path.startsWith("http")
-    ? path
-    : `${API_BASE}${stripLeadingApi(path.startsWith("/") ? path : `/${path}`)}`;
-
-  // Build headers without mutating caller's object
-  const hdrs = new Headers(opts.headers || {});
-  const body = opts.body;
-
-  // Only set JSON header for plain objects (do NOT touch FormData/Blob/string)
-  const isPlainObj =
-    body &&
-    typeof body === "object" &&
-    !(body instanceof FormData) &&
-    !(body instanceof Blob);
-
-  if (isPlainObj && !hdrs.has("Content-Type"))
-    hdrs.set("Content-Type", "application/json");
-  if (!hdrs.has("Accept")) hdrs.set("Accept", "application/json");
-
-  if (!opts.skipAuth) {
-    const at = getAccessToken();
-    if (at && !hdrs.has("Authorization"))
-      hdrs.set("Authorization", `Bearer ${at}`);
-  }
-
-  const init: RequestInit = {
-    method: opts.method ?? "GET",
-    credentials: opts.withCredentials ? "include" : "same-origin",
-    ...opts,
-    headers: hdrs,
-    body: isPlainObj ? JSON.stringify(body) : body,
+  const makeUrl = () => {
+    return path.startsWith("http")
+      ? path
+      : `${API_BASE}${stripLeadingApi(path.startsWith("/") ? path : `/${path}`)}`;
   };
 
-  return fetch(url, init);
+  const doFetch = async () => {
+    const url = makeUrl();
+
+    // Build headers without mutating caller's object
+    const hdrs = new Headers(opts.headers || {});
+    const body = opts.body;
+
+    const isPlainObj =
+      body &&
+      typeof body === "object" &&
+      !(body instanceof FormData) &&
+      !(body instanceof Blob);
+
+    if (isPlainObj && !hdrs.has("Content-Type"))
+      hdrs.set("Content-Type", "application/json");
+    if (!hdrs.has("Accept")) hdrs.set("Accept", "application/json");
+
+    if (!opts.skipAuth) {
+      const at = getAccessToken();
+      if (at && !hdrs.has("Authorization"))
+        hdrs.set("Authorization", `Bearer ${at}`);
+    }
+
+    const init: RequestInit = {
+      method: opts.method ?? "GET",
+      credentials: opts.withCredentials ? "include" : "same-origin",
+      ...opts,
+      headers: hdrs,
+      body: isPlainObj ? JSON.stringify(body) : body,
+    };
+
+    return fetch(url, init);
+  };
+
+  // First attempt
+  let res = await doFetch();
+
+  // If access token is expired, try refresh ONCE and retry the original request
+  const isRefreshCall =
+    typeof REFRESH_PATH === "string" &&
+    REFRESH_PATH &&
+    (path === REFRESH_PATH || path.endsWith(REFRESH_PATH));
+
+  if (
+    res.status === 401 &&
+    !opts.skipAuth &&
+    !opts.noRefresh &&
+    !isRefreshCall
+  ) {
+    const ok = await tryRefresh();
+    if (ok) {
+      res = await doFetch();
+    } else {
+      // Refresh failed → hard logout (clear tokens + notify app)
+      clearTokens();
+      window.dispatchEvent(new Event("auth:logout"));
+      try {
+        localStorage.setItem("auth:logout", String(Date.now()));
+      } catch {}
+    }
+  }
+
+  return res;
 }
 
 export class ApiError extends Error {
@@ -136,7 +172,7 @@ export async function apiRequest<T = any>(
   method: string,
   path: string,
   body?: any,
-  behavior: RequestBehavior = {}
+  behavior: RequestBehavior = {},
 ): Promise<T> {
   const pathLower = (path || "").toLowerCase();
   const refreshOn401 =
@@ -159,10 +195,7 @@ export async function apiRequest<T = any>(
     const msg = pickMsg(bodyJson, res.statusText || "Request failed");
 
     // Only clear tokens for identity endpoints or obvious token problems.
-    const looksTokenError = /token|jwt|expired|signature|unauth/i.test(
-      String(msg || "")
-    );
-    if (res.status === 401 && (logoutOn401 || looksTokenError)) {
+    if (res.status === 401 && logoutOn401) {
       clearTokens();
       window.dispatchEvent(new Event("auth:logout"));
       try {

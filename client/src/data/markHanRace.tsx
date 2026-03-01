@@ -1,0 +1,225 @@
+// src/data/markHanRace.ts
+
+export type FeaturedRaceRow = {
+  place: number;
+  boatNumber: string;
+  mfg: string; // e.g. KAW, SEA, YAM
+  teamName: string;
+  lapsCompleted: number | "DNS";
+};
+
+export const markHahn300 = {
+  title: "22nd Annual - Mark Hahn 300",
+  date: "February 28, 2026",
+  subtitle: "Final Results • Type: Runabout Overall",
+  results: [
+    {
+      place: 1,
+      boatNumber: "021",
+      mfg: "KAW",
+      teamName: "Brandon Warner",
+      lapsCompleted: 30,
+    },
+    {
+      place: 2,
+      boatNumber: "004",
+      mfg: "SEA",
+      teamName: "Bryce Ford & Jon Ford",
+      lapsCompleted: 30,
+    },
+    {
+      place: 3,
+      boatNumber: "600",
+      mfg: "KAW",
+      teamName: "Emi Kanamori & Jonathan Phan",
+      lapsCompleted: 27,
+    },
+    {
+      place: 4,
+      boatNumber: "525",
+      mfg: "YAM",
+      teamName: "Mark Conroy & Jeff Bacigalupo",
+      lapsCompleted: 26,
+    },
+    {
+      place: 5,
+      boatNumber: "023",
+      mfg: "YAM",
+      teamName: "Dilzon Melo Filho & Gabriel Gomes",
+      lapsCompleted: 26,
+    },
+    {
+      place: 6,
+      boatNumber: "099",
+      mfg: "KAW",
+      teamName: "Juan Francisco San Martin",
+      lapsCompleted: 26,
+    },
+    {
+      place: 7,
+      boatNumber: "155",
+      mfg: "KAW",
+      teamName: "Bobby Kerns & Coy Curtis",
+      lapsCompleted: 26,
+    },
+    {
+      place: 8,
+      boatNumber: "999",
+      mfg: "SEA",
+      teamName: "Omar Leon & Joaquin Leon",
+      lapsCompleted: 26,
+    },
+    {
+      place: 9,
+      boatNumber: "420",
+      mfg: "YAM",
+      teamName: "Sideburns Mike Neumann & Osmany Alvarez",
+      lapsCompleted: 25,
+    },
+    {
+      place: 10,
+      boatNumber: "069",
+      mfg: "SEA",
+      teamName: "Louis Nguyen & Santiago Juan",
+      lapsCompleted: 24,
+    },
+    {
+      place: 11,
+      boatNumber: "300",
+      mfg: "KAW",
+      teamName: "Jonathan Levy & Cyprien Maccara",
+      lapsCompleted: 23,
+    },
+    {
+      place: 12,
+      boatNumber: "135",
+      mfg: "YAM",
+      teamName: "Robert Ruiz & Joshua Bennett",
+      lapsCompleted: 23,
+    },
+    {
+      place: 13,
+      boatNumber: "113",
+      mfg: "KAW",
+      teamName: "Mike Selner & James Bamburg",
+      lapsCompleted: 22,
+    },
+    {
+      place: 14,
+      boatNumber: "052",
+      mfg: "KAW",
+      teamName: "Lee Lacy & Randy Lavato",
+      lapsCompleted: 20,
+    },
+    {
+      place: 15,
+      boatNumber: "316",
+      mfg: "YAM",
+      teamName: "Cesar Olivares & John Kennedy",
+      lapsCompleted: 20,
+    },
+    {
+      place: 16,
+      boatNumber: "00",
+      mfg: "YAM",
+      teamName: "Tammie Malkow-Dunham",
+      lapsCompleted: 19,
+    },
+    {
+      place: 17,
+      boatNumber: "001",
+      mfg: "YAM",
+      teamName: "Arnold Martinez & Josh Simon & Jett Wildeboer",
+      lapsCompleted: 18,
+    },
+    {
+      place: 18,
+      boatNumber: "037",
+      mfg: "YAM",
+      teamName: "Tony Beck",
+      lapsCompleted: 18,
+    },
+    {
+      place: 19,
+      boatNumber: "720",
+      mfg: "YAM",
+      teamName: "Cassius Sanders & Jacob Leu",
+      lapsCompleted: 18,
+    },
+    {
+      place: 20,
+      boatNumber: "427",
+      mfg: "YAM",
+      teamName: "Krista Reiling & Danielle Seidler",
+      lapsCompleted: 16,
+    },
+    {
+      place: 21,
+      boatNumber: "016",
+      mfg: "YAM",
+      teamName: "Adrian Alcazar",
+      lapsCompleted: 15,
+    },
+    {
+      place: 22,
+      boatNumber: "711",
+      mfg: "SEA",
+      teamName: "Fadi Sacre & Troy Morgan",
+      lapsCompleted: 11,
+    },
+    {
+      place: 23,
+      boatNumber: "555",
+      mfg: "SEA",
+      teamName: "Christopher Stark & Mike Perry",
+      lapsCompleted: 10,
+    },
+    {
+      place: 24,
+      boatNumber: "110X",
+      mfg: "KAW",
+      teamName: "Mark Gomez & Ryder Bliss",
+      lapsCompleted: 10,
+    },
+    {
+      place: 25,
+      boatNumber: "754",
+      mfg: "SEA",
+      teamName: "Carl Mead & Jeff Orr",
+      lapsCompleted: 8,
+    },
+    {
+      place: 26,
+      boatNumber: "041",
+      mfg: "KAW",
+      teamName: "Jamie Eade & Tyler Kennedy",
+      lapsCompleted: 4,
+    },
+    {
+      place: 27,
+      boatNumber: "005",
+      mfg: "SEA",
+      teamName: "Jon Ford & Bryce Ford",
+      lapsCompleted: "DNS",
+    },
+  ] as FeaturedRaceRow[],
+
+  penalties: [
+    "#427 - Missed Turn #1 - 1 Lap Penalty",
+    "#300 - Missed Orange bouy in chicane - 1 Lap Penalty",
+    "#16 - Missed Turn 3 & 4 - 2 Lap Penalty",
+    "#555 - Missed Turn #1 - 1 Lap Penalty",
+    "#52 - Circled back in Chicane - 1 Lap Penalty (#1)",
+    "#52 - Circled back in Chicane - 1 Lap Penalty (#2)",
+    "#711 - Missed Turn #3 - 1 Lap Penalty",
+    "#711 - Backwards on course - 1 Lap Penalty",
+    "#711 - Missed Turn #1 - 1 Lap Penalty",
+  ],
+
+  achievement: [
+    "Brandon Warner takes the win in the 22nd Annual Mark Hahn 300, showcasing his dominance in the Runabout Overall category with a flawless performance, completing all 30 laps and securing his position as a top contender in the jet ski racing world.",
+    "Bryce Ford & Jon Ford put on a strong performance, finishing in second place with 30 laps completed, demonstrating their skill and teamwork in a highly competitive field.",
+    "Emi Kanamori & Jonathan Phan secure a well-deserved third place, completing 27 laps and proving their prowess in the sport, marking a significant achievement in their racing careers.",
+    "Brandon Warner also recorded the fastest Mark Hahn finish in its history.",
+  ],
+};

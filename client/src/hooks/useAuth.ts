@@ -27,15 +27,16 @@ export function useAuth() {
 
   if (hasCreds && !bootRefreshScheduled) {
     const at = getAccessToken();
-    if (at) scheduleProactiveRefresh(at); // refresh ~1 min before exp
+    const rt = getRefreshToken();
+    if (at && rt) scheduleProactiveRefresh(at);
     bootRefreshScheduled = true;
   }
 
   const { data, isLoading } = useQuery<User | null>({
     queryKey: ["/auth/me"],
     enabled: hasCreds,
-    initialData: cachedUser ?? null,
-    placeholderData: (prev) => prev ?? cachedUser,
+    initialData: hasCreds ? (cachedUser ?? null) : null,
+    placeholderData: (prev) => (hasCreds ? (prev ?? cachedUser) : null),
     retry: false,
     staleTime: 5 * 60 * 1000,
     queryFn: async () => {
