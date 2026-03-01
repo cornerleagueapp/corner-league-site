@@ -192,16 +192,16 @@ function FeaturedRaceSection() {
                 <table className="min-w-full text-sm">
                   <thead className="bg-black/30">
                     <tr className="text-white/80">
-                      <th className="px-4 py-3 text-left font-semibold">
+                      <th className="px-2 py-3 text-left font-semibold">
                         Place
                       </th>
-                      <th className="px-4 py-3 text-left font-semibold">
+                      <th className="px-2 py-3 text-left font-semibold">
                         Number/MFG
                       </th>
-                      <th className="px-4 py-3 text-left font-semibold">
+                      <th className="px-2 py-3 text-left font-semibold">
                         Team Name
                       </th>
-                      <th className="px-4 py-3 text-right font-semibold">
+                      <th className="px-2 py-3 text-right font-semibold">
                         Laps
                       </th>
                     </tr>
