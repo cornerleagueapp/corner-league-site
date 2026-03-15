@@ -386,6 +386,27 @@ function AquaHubSection({
           </div>
         </button>
 
+        {/* Fantasy League */}
+        <button
+          type="button"
+          // onClick={onOpenResults}
+          className="group flex flex-col justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-4 sm:px-5 sm:py-5 text-left hover:border-cyan-300/70 hover:bg-white/10 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
+        >
+          <div className="space-y-2">
+            <h3 className="text-base sm:text-lg font-semibold text-white">
+              Play Fantasy
+            </h3>
+            <p className="text-xs sm:text-sm text-white/75">
+              Join a fantasy league with you friends for the racing season.
+            </p>
+          </div>
+          <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200">
+            Coming Soon
+            {/* Open Fantasy Leagues */}
+            <span className="text-lg leading-none">↗</span>
+          </span>
+        </button>
+
         {/* Points Leaders */}
         {/* <button
           type="button"

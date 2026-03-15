@@ -33,6 +33,7 @@ import AdminCreateRacerPage from "./pages/admin-create-racer";
 import AquaOrganizationsPage from "./pages/organizations/aqua-organizations";
 import AdminCreateOrganizationPage from "./pages/organizations/admin-create-organization";
 import AquaOrganizationDetailsPage from "./pages/organizations/aqua-organization-details";
+import AdminAthleteClaimsPage from "./pages/admin-athlete-claims";
 
 import UpdateEventPage from "./pages/updateEventPage";
 import CreateEventPage from "./pages/createEventPage";
@@ -54,7 +55,7 @@ function ProtectedRoute({
       const next = encodeURIComponent(location);
       const t = setTimeout(
         () => navigate(`/auth?next=${next}`, { replace: true }),
-        150
+        150,
       );
       return () => clearTimeout(t);
     }
@@ -96,6 +97,10 @@ function PrivateRouter() {
           <Route
             path="/_admin/create-organization"
             component={AdminCreateOrganizationPage}
+          />
+          <Route
+            path="/admin/athlete-claims"
+            component={AdminAthleteClaimsPage}
           />
 
           <Route path="/events/create" component={CreateEventPage} />

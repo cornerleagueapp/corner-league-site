@@ -114,6 +114,9 @@ async function createFollowNotification({
 export default function UserProfilePage({ username }: { username: string }) {
   const { user: viewer } = useAuth();
   const viewerId = viewer?.id ? String(viewer.id) : null;
+  const viewerRole = String((viewer as any)?.role ?? "").toUpperCase();
+  const isSuperAdmin = viewerRole === "SUPER_ADMIN";
+
   const isOwn = useMemo(() => {
     const v = (viewer as any)?.username;
     return !!(v && username && v.toLowerCase() === username.toLowerCase());
@@ -429,8 +432,17 @@ export default function UserProfilePage({ username }: { username: string }) {
         }}
       /> */}
 
-      {/* top-right search */}
-      <div className="mx-auto max-w-5xl px-4 pt-4 flex justify-end">
+      {/* top-right actions */}
+      <div className="mx-auto max-w-5xl px-4 pt-4 flex justify-end gap-2">
+        {isSuperAdmin && (
+          <Button
+            onClick={() => navigate("/admin/athlete-claims")}
+            className="h-9 bg-violet-500 text-white hover:bg-violet-600 px-4"
+          >
+            Admin Panel
+          </Button>
+        )}
+
         <button
           onClick={() => setSearchOpen(true)}
           className="h-9 w-9 grid place-items-center rounded-full bg-white/10 border border-white/10 hover:bg-white/15"

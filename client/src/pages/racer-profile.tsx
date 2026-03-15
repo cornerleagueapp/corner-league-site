@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import stockAvatar from "@/assets/stockprofilepicture.jpeg";
 import { X as XIcon, Search as SearchIcon, PencilLine } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
 import RacerSearchModal from "@/components/RacerSearchModal";
 import { generateRacerAnalysis } from "@/lib/geminiRacerAnalysis";
@@ -26,6 +27,10 @@ type Racer = {
   careerWorldFinalsWins?: number;
   height?: number | null;
   weight?: number | null;
+
+  claimedByUserId?: string | null;
+  claimedByUsername?: string | null;
+  isClaimed?: boolean;
 };
 
 /* ---------------- Utils ---------------- */
@@ -46,15 +51,15 @@ function logRequestError(ctx: string, err: any, endpoint?: string, body?: any) {
     if (body) console.log("request body (sent):", body);
     console.log("err.status:", err?.status);
     console.log("err.message:", err?.message);
-    console.log("err.data (raw):", err?.data);
-    if (err?.data && typeof err.data === "object") {
-      console.log("err.data (json):", JSON.stringify(err.data, null, 2));
+    console.log("err.body (raw):", err?.body);
+    if (err?.body && typeof err.body === "object") {
+      console.log("err.body (json):", JSON.stringify(err.body, null, 2));
     }
     console.groupEnd();
   } catch {}
 }
 function humanizeValidationError(err: any): string | undefined {
-  const d = err?.data;
+  const d = err?.body ?? err?.data;
   if (typeof d === "string" && d.trim()) return d;
   if (d && Array.isArray(d.message)) {
     const lines: string[] = [];
@@ -91,6 +96,8 @@ function slugify(s: string) {
 /* ---------------- API mappers ---------------- */
 function mapDetail(rec: any): Racer {
   const a = rec?.athlete ?? {};
+  const claimedByUser = a?.claimedByUser ?? rec?.claimedByUser ?? null;
+
   return {
     id: rec?.id ?? a?.id,
     athleteId: a.id,
@@ -104,13 +111,15 @@ function mapDetail(rec: any): Racer {
     seasonWins: rec.seasonWins ?? 0,
     seasonPodiums: rec.seasonPodiums ?? 0,
     careerWorldFinalsWins:
-      rec.careerWorldFinalsWins ??
-      rec.careerWordFinalsWins /* tolerate misspelling */ ??
-      0,
+      rec.careerWorldFinalsWins ?? rec.careerWordFinalsWins ?? 0,
     height: rec.height ?? a.height ?? null,
     weight: a.weight ?? rec.weight ?? null,
+    claimedByUserId: claimedByUser?.id ?? null,
+    claimedByUsername: claimedByUser?.username ?? null,
+    isClaimed: !!claimedByUser?.id,
   };
 }
+
 function mapAthlete(a: any): Racer {
   return {
     id: a?.id ?? a?._id ?? a?.uuid ?? "",
@@ -127,6 +136,9 @@ function mapAthlete(a: any): Racer {
     careerWorldFinalsWins: 0,
     height: a?.height ?? null,
     weight: a?.weight ?? null,
+    claimedByUserId: a?.claimedByUser?.id ?? null,
+    claimedByUsername: a?.claimedByUser?.username ?? null,
+    isClaimed: !!a?.claimedByUser?.id,
   };
 }
 
@@ -138,6 +150,9 @@ export default function RacerProfilePage({
 }) {
   const { toast } = useToast();
   const [, navigate] = useLocation();
+  const { user, isLoading: authLoading } = useAuth();
+
+  const currentUserId = user?.id ? String(user.id) : null;
 
   const [racer, setRacer] = useState<Racer | null>(null);
   const [loading, setLoading] = useState(true);
@@ -145,7 +160,15 @@ export default function RacerProfilePage({
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [claimOpen, setClaimOpen] = useState(false);
+  const [claimLoading, setClaimLoading] = useState(false);
   const [uploadPct, setUploadPct] = useState<number | null>(null);
+
+  const [claimStatus, setClaimStatus] = useState<{
+    hasClaim: boolean;
+    status?: "pending" | "approved" | "rejected";
+    claimId?: string;
+  } | null>(null);
 
   const [analysis, setAnalysis] = useState<string | null>(null);
   const [analysisLoading, setAnalysisLoading] = useState(false);
@@ -157,7 +180,7 @@ export default function RacerProfilePage({
     async function getJSON<T = any>(
       method: "GET" | "PUT",
       path: string,
-      body?: any
+      body?: any,
     ): Promise<T> {
       return apiRequest<T>(method, path, body);
     }
@@ -166,7 +189,7 @@ export default function RacerProfilePage({
     async function fetchDetailById(id: string) {
       const res = await getJSON<any>(
         "GET",
-        `/jet-ski-racer-details/${encodeURIComponent(id)}`
+        `/jet-ski-racer-details/${encodeURIComponent(id)}`,
       );
       const rec =
         res?.racer ?? res?.data?.racer ?? res?.data ?? res?.item ?? res;
@@ -183,7 +206,7 @@ export default function RacerProfilePage({
         q.set("order", "DESC");
         const res = await getJSON<any>(
           "GET",
-          `/jet-ski-racer-details?${q.toString()}`
+          `/jet-ski-racer-details?${q.toString()}`,
         );
         const arr =
           res?.racers ??
@@ -198,11 +221,11 @@ export default function RacerProfilePage({
             (r: any) =>
               String(r?.athlete?.name ?? r?.name ?? "")
                 .trim()
-                .toLowerCase() === lc
+                .toLowerCase() === lc,
           ) ||
           arr.find(
             (r: any) =>
-              slugify(String(r?.athlete?.name ?? r?.name ?? "")) === slug
+              slugify(String(r?.athlete?.name ?? r?.name ?? "")) === slug,
           ) ||
           arr[0];
         if (best) return mapDetail(best);
@@ -229,13 +252,13 @@ export default function RacerProfilePage({
         const hit =
           arr.find(
             (r: any) =>
-              slugify(String(r?.athlete?.name ?? r?.name ?? "")) === slug
+              slugify(String(r?.athlete?.name ?? r?.name ?? "")) === slug,
           ) ||
           arr.find(
             (r: any) =>
               String(r?.athlete?.name ?? r?.name ?? "")
                 .trim()
-                .toLowerCase() === slug.replace(/-/g, " ")
+                .toLowerCase() === slug.replace(/-/g, " "),
           );
         if (hit) return mapDetail(hit);
         if (arr.length < LIMIT) break;
@@ -246,7 +269,7 @@ export default function RacerProfilePage({
     async function fetchAthleteById(aid: string) {
       const res = await getJSON<any>(
         "GET",
-        `/athletes/${encodeURIComponent(aid)}`
+        `/athletes/${encodeURIComponent(aid)}`,
       );
       const a =
         res?.athlete ?? res?.data?.athlete ?? res?.data ?? res?.item ?? res;
@@ -274,7 +297,7 @@ export default function RacerProfilePage({
             (a: any) =>
               String(a?.name ?? "")
                 .trim()
-                .toLowerCase() === lc
+                .toLowerCase() === lc,
           ) ?? arr[0];
         return mapAthlete(best);
       } catch {
@@ -352,6 +375,42 @@ export default function RacerProfilePage({
   }, [idOrSlugParam]);
 
   useEffect(() => {
+    if (!currentUserId || !racer?.athleteId) {
+      setClaimStatus(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const res = await apiRequest<any>(
+          "GET",
+          `/athlete-claims/status?userId=${encodeURIComponent(
+            currentUserId,
+          )}&athleteId=${encodeURIComponent(String(racer.athleteId))}`,
+        );
+
+        if (!cancelled) {
+          setClaimStatus({
+            hasClaim: !!res?.hasClaim,
+            status: res?.status,
+            claimId: res?.claimId,
+          });
+        }
+      } catch {
+        if (!cancelled) {
+          setClaimStatus({ hasClaim: false });
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentUserId, racer?.athleteId]);
+
+  useEffect(() => {
     if (!racer) return;
 
     let cancelled = false;
@@ -378,7 +437,7 @@ export default function RacerProfilePage({
   }, [racer?.id]); // re-run when profile changes
 
   /* ---------------- UI ---------------- */
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div className="min-h-screen bg-[#090D16] text-white grid place-items-center">
         <PageSEO title="Racer • Corner League" />
@@ -421,32 +480,72 @@ export default function RacerProfilePage({
     racer.boatManufacturers && { label: racer.boatManufacturers },
   ].filter(Boolean) as { label: string }[];
 
+  const isOwner =
+    !!currentUserId &&
+    !!racer?.claimedByUserId &&
+    String(racer.claimedByUserId) === String(currentUserId);
+
+  const hasPendingClaim =
+    claimStatus?.hasClaim && claimStatus?.status === "pending";
+
+  const hasApprovedClaim =
+    claimStatus?.hasClaim && claimStatus?.status === "approved";
+
+  const hasRejectedClaim =
+    claimStatus?.hasClaim && claimStatus?.status === "rejected";
+
+  const isClaimedByAnotherUser =
+    !!racer?.isClaimed && !!currentUserId && !isOwner;
+
+  const canClaim =
+    !!currentUserId &&
+    !!racer?.athleteId &&
+    !racer?.isClaimed &&
+    (!claimStatus?.hasClaim || hasRejectedClaim);
+
+  const canEdit = isOwner || hasApprovedClaim;
+
   function buildUpdateBody(
     r: Racer,
+    userId: string,
     edited: {
       age?: number;
       bio?: string;
       heightMeters?: number;
       origin?: string;
       boatManufacturers?: string;
-    }
+    },
   ) {
     const round2 = (n: number) => Math.round(n * 100) / 100;
-    const body: Record<string, any> = {};
-    if (r.racerName && r.racerName.trim()) body.name = r.racerName.trim();
-    if (typeof edited.age === "number" && Number.isFinite(edited.age))
+
+    const body: Record<string, any> = {
+      userId,
+    };
+
+    if (r.racerName && r.racerName.trim()) {
+      body.name = r.racerName.trim();
+    }
+
+    if (typeof edited.age === "number" && Number.isFinite(edited.age)) {
       body.age = edited.age;
-    if (edited.bio && edited.bio.trim()) body.bio = edited.bio.trim();
+    }
+
+    if (edited.bio && edited.bio.trim()) {
+      body.bio = edited.bio.trim();
+    }
+
     if (
       typeof edited.heightMeters === "number" &&
       Number.isFinite(edited.heightMeters) &&
       edited.heightMeters > 0
-    )
+    ) {
       body.height = round2(edited.heightMeters);
-    if (edited.origin && edited.origin.trim())
+    }
+
+    if (edited.origin && edited.origin.trim()) {
       body.origin = edited.origin.trim();
-    if (edited.boatManufacturers && edited.boatManufacturers.trim())
-      body.boatManufacturers = edited.boatManufacturers.trim();
+    }
+
     return body;
   }
 
@@ -484,6 +583,63 @@ export default function RacerProfilePage({
               {title}
             </h1>
 
+            {racer?.isClaimed && (
+              <div className="mt-2 flex justify-center sm:justify-start">
+                {racer.claimedByUsername ? (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      navigate(`/profile/${racer.claimedByUsername}`)
+                    }
+                    title={`Verified and claimed by @${racer.claimedByUsername}`}
+                    className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-200 border border-emerald-400/20 text-xs hover:bg-emerald-500/20 transition"
+                  >
+                    <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-gradient-to-r from-violet-500 via-fuchsia-500 to-amber-400 text-[10px] text-white font-bold">
+                      ✓
+                    </span>
+                    Verified Athlete
+                  </button>
+                ) : (
+                  <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-200 border border-emerald-400/20 text-xs">
+                    <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-gradient-to-r from-violet-500 via-fuchsia-500 to-amber-400 text-[10px] text-white font-bold">
+                      ✓
+                    </span>
+                    Verified Athlete
+                  </span>
+                )}
+              </div>
+            )}
+
+            {racer?.isClaimed && racer?.claimedByUsername && (
+              <div className="mt-1 flex justify-center sm:justify-start">
+                <button
+                  type="button"
+                  onClick={() =>
+                    navigate(`/profile/${racer.claimedByUsername}`)
+                  }
+                  className="text-[11px] text-white/50 hover:text-white/80 underline underline-offset-2"
+                >
+                  Claimed by @{racer.claimedByUsername}
+                </button>
+              </div>
+            )}
+
+            {hasPendingClaim && (
+              <div className="mt-2 flex justify-center sm:justify-start">
+                <span className="px-2.5 py-1 rounded-full bg-yellow-500/15 text-yellow-200 border border-yellow-400/20 text-xs">
+                  Claim Pending
+                </span>
+              </div>
+            )}
+
+            {hasRejectedClaim && (
+              <div className="mt-2 flex justify-center sm:justify-start">
+                <span className="px-2.5 py-1 rounded-full bg-red-500/15 text-red-200 border border-red-400/20 text-xs">
+                  Previous Claim Rejected
+                </span>
+              </div>
+            )}
+
             <div className="mt-1 flex flex-wrap items-center justify-center sm:justify-start gap-2">
               {chips.length === 0 ? (
                 <p className="text-sm text-white/70">AQUA Racer</p>
@@ -512,12 +668,28 @@ export default function RacerProfilePage({
           </div>
 
           <div className="flex w-full gap-2 self-center sm:self-end sm:w-auto justify-center sm:justify-end">
-            <Button
-              onClick={() => setEditOpen(true)}
-              className="h-11 sm:h-9 sm:w-auto bg-white/10 text-white border border-white/20 hover:bg-white/15"
-            >
-              <PencilLine className="mr-2 h-4 w-4" /> Edit
-            </Button>
+            {canEdit ? (
+              <Button
+                onClick={() => setEditOpen(true)}
+                className="h-11 sm:h-9 sm:w-auto bg-white/10 text-white border border-white/20 hover:bg-white/15"
+              >
+                <PencilLine className="mr-2 h-4 w-4" /> Edit
+              </Button>
+            ) : hasPendingClaim ? (
+              <Button
+                disabled
+                className="h-11 sm:h-9 sm:w-auto bg-yellow-500/20 text-yellow-200 border border-yellow-400/20"
+              >
+                Claim Pending
+              </Button>
+            ) : canClaim ? (
+              <Button
+                onClick={() => setClaimOpen(true)}
+                className="h-11 sm:h-9 sm:w-auto bg-violet-500 text-white hover:bg-violet-600"
+              >
+                {hasRejectedClaim ? "Submit New Claim" : "Claim Profile"}
+              </Button>
+            ) : null}
 
             <Button
               onClick={async () => {
@@ -621,6 +793,15 @@ export default function RacerProfilePage({
           onSave={async (vals) => {
             if (!racer?.id) return;
 
+            if (!canEdit) {
+              toast({
+                title: "Not allowed",
+                description:
+                  "Only the verified athlete owner can edit this profile.",
+              });
+              return;
+            }
+
             const ageNum = toNumOrUndefined(vals.age);
             const heightInchesNum = toNumOrUndefined(vals.heightInches);
 
@@ -658,7 +839,7 @@ export default function RacerProfilePage({
                 return;
               }
               const newMeters = parseFloat(
-                inchesToMeters(heightInchesNum).toFixed(2)
+                inchesToMeters(heightInchesNum).toFixed(2),
               );
               const currentMeters =
                 typeof racer.height === "number"
@@ -685,33 +866,47 @@ export default function RacerProfilePage({
               return;
             }
 
-            const endpoint = `/jet-ski-racer-details/${encodeURIComponent(
-              String(racer.id)
-            )}`;
+            const endpoint = `/athletes/${encodeURIComponent(
+              String(racer.athleteId),
+            )}/profile`;
 
             try {
+              if (!currentUserId) {
+                toast({
+                  title: "Not allowed",
+                  description: "You must be signed in to edit this profile.",
+                });
+                return;
+              }
+
               if (hasImage) {
                 setUploadPct(0);
                 void pollUploadProgress(vals.imageFile!.name, (p) =>
-                  setUploadPct(p)
+                  setUploadPct(p),
                 );
+
                 const mediaUrl = await uploadAthleteImage(
                   racer.athleteId!,
-                  vals.imageFile!
+                  currentUserId,
+                  vals.imageFile!,
                 );
+
                 setRacer((prev) =>
-                  prev ? { ...prev, racerImage: mediaUrl } : prev
+                  prev ? { ...prev, racerImage: mediaUrl } : prev,
                 );
                 setUploadPct(100);
                 toast({ title: "Photo uploaded" });
               }
 
               if (hasEdits) {
-                const body = buildUpdateBody(racer, edited);
-                const onlyName =
-                  Object.keys(body).length === 1 && "name" in body;
-                if (!onlyName) {
-                  await apiRequest("PUT", endpoint, body);
+                const body = buildUpdateBody(racer, currentUserId, edited);
+                const onlyUserAndName =
+                  Object.keys(body).length === 2 &&
+                  "userId" in body &&
+                  "name" in body;
+
+                if (!onlyUserAndName) {
+                  await apiRequest("PATCH", endpoint, body);
                 }
 
                 setRacer((prev) =>
@@ -731,7 +926,7 @@ export default function RacerProfilePage({
                             ? edited.heightMeters
                             : prev.height,
                       }
-                    : prev
+                    : prev,
                 );
               }
 
@@ -754,6 +949,61 @@ export default function RacerProfilePage({
         />
       )}
 
+      {claimOpen && racer?.athleteId && currentUserId && (
+        <ClaimAthleteModal
+          racerName={racer.racerName}
+          onClose={() => setClaimOpen(false)}
+          onSubmit={async ({ additionalInfo, idCardImage }) => {
+            try {
+              setClaimLoading(true);
+
+              const form = new FormData();
+              form.append("userId", String(currentUserId));
+              form.append("athleteId", String(racer.athleteId));
+              if (additionalInfo?.trim()) {
+                form.append("additionalInfo", additionalInfo.trim());
+              }
+              form.append("idCardImage", idCardImage);
+
+              const res = await apiRequest<any>(
+                "POST",
+                "/athlete-claims",
+                form as any,
+              );
+
+              setClaimStatus({
+                hasClaim: true,
+                status: "pending",
+                claimId: res?.claimId,
+              });
+
+              setClaimOpen(false);
+              toast({
+                title: "Claim submitted",
+                description:
+                  "Your athlete claim has been sent for admin review.",
+              });
+            } catch (err: any) {
+              logRequestError("[AthleteClaim] submit", err, "/athlete-claims");
+              const nice =
+                humanizeValidationError(err) ||
+                err?.data?.message ||
+                err?.data?.error ||
+                err?.message ||
+                "Could not submit claim";
+
+              toast({
+                title: "Claim failed",
+                description: String(nice),
+              });
+            } finally {
+              setClaimLoading(false);
+            }
+          }}
+          loading={claimLoading}
+        />
+      )}
+
       {/* racer search modal */}
       <RacerSearchModal
         open={searchOpen}
@@ -769,28 +1019,35 @@ export default function RacerProfilePage({
 }
 
 /* --------- helpers used by modal --------- */
-async function uploadAthleteImage(athleteId: string, file: File) {
+async function uploadAthleteImage(
+  athleteId: string,
+  userId: string,
+  file: File,
+) {
   const form = new FormData();
+  form.append("userId", userId);
   form.append("media", file);
+
   const res = await apiRequest<any>(
-    "POST",
-    `/athletes/upload-image/${encodeURIComponent(athleteId)}`,
-    form as any
+    "PATCH",
+    `/athletes/${encodeURIComponent(athleteId)}/profile-image`,
+    form as any,
   );
+
   const url = res?.mediaUrl ?? res?.data?.mediaUrl ?? res?.url ?? null;
   if (!url) throw new Error("Upload succeeded but no mediaUrl returned");
   return String(url);
 }
 async function pollUploadProgress(
   fileName: string,
-  onTick: (pct: number) => void
+  onTick: (pct: number) => void,
 ) {
   const started = Date.now();
   while (Date.now() - started < 60_000) {
     try {
       const data = await apiRequest<{ progress: number }>(
         "GET",
-        `/athletes/upload-progress/${encodeURIComponent(fileName)}`
+        `/athletes/upload-progress/${encodeURIComponent(fileName)}`,
       );
       const pct = Math.max(0, Math.min(100, Number(data?.progress ?? 0)));
       onTick(pct);
@@ -921,7 +1178,7 @@ function EditRacerModal({
                 if (file && !/^image\/(jpeg|png|webp)$/.test(file.type)) {
                   // block RAW / DNG / HEIC
                   alert(
-                    "Please upload a JPG, PNG, or WEBP image (no RAW / DNG)."
+                    "Please upload a JPG, PNG, or WEBP image (no RAW / DNG).",
                   );
                   return;
                 }
@@ -968,6 +1225,116 @@ function EditRacerModal({
                 ? `Uploading… ${uploadPct}%`
                 : "Saving…"
               : "Save changes"}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ClaimAthleteModal({
+  racerName,
+  onClose,
+  onSubmit,
+  loading,
+}: {
+  racerName: string;
+  onClose: () => void;
+  onSubmit: (v: {
+    additionalInfo?: string;
+    idCardImage: File;
+  }) => Promise<void> | void;
+  loading?: boolean;
+}) {
+  const [additionalInfo, setAdditionalInfo] = useState("");
+  const [idCardImage, setIdCardImage] = useState<File | null>(null);
+
+  return (
+    <div
+      className="fixed inset-0 z-[80] bg-black/70 flex items-center justify-center"
+      onClick={onClose}
+    >
+      <div
+        className="w-full h-full md:h-auto md:max-w-xl md:rounded-xl bg-[#0b0f18] border border-white/10 p-4 overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-lg font-semibold text-white">
+            Claim Athlete Profile
+          </h2>
+          <button
+            aria-label="Close"
+            className="h-9 w-9 grid place-items-center rounded-full bg-white/10 border border-white/10 hover:bg-white/15"
+            onClick={onClose}
+            disabled={loading}
+          >
+            <XIcon size={16} />
+          </button>
+        </div>
+
+        <p className="text-sm text-white/70 mb-4">
+          Submit a claim for{" "}
+          <span className="text-white font-medium">{racerName}</span>. Upload a
+          clear ID image so an admin can verify ownership.
+        </p>
+
+        <div className="space-y-3">
+          <Field label="Additional Info (optional)">
+            <textarea
+              value={additionalInfo}
+              onChange={(e) => setAdditionalInfo(e.target.value)}
+              rows={4}
+              className="w-full rounded-md bg-white/5 border border-white/10 px-3 py-2 text-sm text-white outline-none placeholder:text-white/40"
+              placeholder="Add any details that help verify this athlete profile..."
+            />
+          </Field>
+
+          <Field label="ID Card Image">
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={(e) => {
+                const file = e.currentTarget.files?.[0] || null;
+                if (!file) {
+                  setIdCardImage(null);
+                  return;
+                }
+                if (!/^image\/(jpeg|png|webp)$/.test(file.type)) {
+                  alert("Please upload a JPG, PNG, or WEBP image.");
+                  return;
+                }
+                setIdCardImage(file);
+              }}
+              className="w-full h-10 rounded-md bg-white/5 border border-white/10 px-3 py-1 text-sm text-white outline-none"
+            />
+          </Field>
+
+          {!idCardImage && (
+            <p className="text-xs text-red-300">
+              An ID card image is required to submit a claim.
+            </p>
+          )}
+        </div>
+
+        <div className="mt-4 flex justify-end gap-2">
+          <Button
+            variant="ghost"
+            onClick={onClose}
+            className="border border-white/10 bg-transparent text-white hover:bg-white/10"
+            disabled={loading}
+          >
+            Cancel
+          </Button>
+
+          <Button
+            onClick={async () => {
+              if (!idCardImage) return;
+              await onSubmit({ additionalInfo, idCardImage });
+            }}
+            className="bg-white text-black hover:bg-white/90"
+            disabled={loading || !idCardImage}
+          >
+            {loading ? "Submitting..." : "Submit Claim"}
           </Button>
         </div>
       </div>
