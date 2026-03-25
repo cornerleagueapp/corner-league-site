@@ -34,6 +34,7 @@ import AquaOrganizationsPage from "./pages/organizations/aqua-organizations";
 import AdminCreateOrganizationPage from "./pages/organizations/admin-create-organization";
 import AquaOrganizationDetailsPage from "./pages/organizations/aqua-organization-details";
 import AdminAthleteClaimsPage from "./pages/admin-athlete-claims";
+import OrgEventDetailsPage from "./pages/organizations/org-event-details";
 
 import UpdateEventPage from "./pages/updateEventPage";
 import CreateEventPage from "./pages/createEventPage";
@@ -65,6 +66,39 @@ function ProtectedRoute({
   return isAuthenticated ? <Comp /> : null;
 }
 
+function SuperAdminRoute({
+  component: Comp,
+}: {
+  component: React.ComponentType;
+}) {
+  const { isAuthenticated, isLoading, user } = useAuth();
+  const [location, navigate] = useLocation();
+
+  const isSuperAdmin =
+    String((user as any)?.role ?? "").toUpperCase() === "SUPER_ADMIN";
+
+  useEffect(() => {
+    if (isLoading) return;
+
+    if (!isAuthenticated) {
+      const next = encodeURIComponent(location);
+      const t = setTimeout(
+        () => navigate(`/auth?next=${next}`, { replace: true }),
+        150,
+      );
+      return () => clearTimeout(t);
+    }
+
+    if (isAuthenticated && !isSuperAdmin) {
+      const t = setTimeout(() => navigate("/profile", { replace: true }), 150);
+      return () => clearTimeout(t);
+    }
+  }, [isAuthenticated, isLoading, isSuperAdmin, location, navigate]);
+
+  if (isLoading) return null;
+  return isAuthenticated && isSuperAdmin ? <Comp /> : null;
+}
+
 function BootSanitizeTokens() {
   useEffect(() => {
     const at = getAccessToken();
@@ -93,32 +127,46 @@ function PrivateRouter() {
           <Route path="/messages" component={MessagesPage} />
           <Route path="/notifications" component={NotificationsPage} />
           <Route path="/welcome" component={WelcomeSplash} />
-          <Route path="/_admin/create-racer" component={AdminCreateRacerPage} />
-          <Route
-            path="/_admin/create-organization"
-            component={AdminCreateOrganizationPage}
-          />
-          <Route
-            path="/admin/athlete-claims"
-            component={AdminAthleteClaimsPage}
-          />
-
-          <Route path="/events/create" component={CreateEventPage} />
           <Route path="/aqua-organizations" component={AquaOrganizationsPage} />
           <Route
             path="/aqua-organizations/:id"
             component={AquaOrganizationDetailsPage}
           />
-          <Route path="/organization/event-list" component={EventListPage} />
-          <Route path="/organization/events/:id" component={UpdateEventPage} />
-          <Route
-            path="/organization/events/:id/classes"
-            component={RaceClassEditor}
-          />
-          <Route
-            path="/organization/events/:eventId/classes/:divisionId/manage"
-            component={ClassMatchManagePage}
-          />
+          <Route path="/aqua-organizations/event-details/:id">
+            {(params) => <OrgEventDetailsPage params={{ id: params.id }} />}
+          </Route>
+
+          <Route path="/admin/create-racer">
+            {() => <SuperAdminRoute component={AdminCreateRacerPage} />}
+          </Route>
+
+          <Route path="/admin/create-organization">
+            {() => <SuperAdminRoute component={AdminCreateOrganizationPage} />}
+          </Route>
+
+          <Route path="/admin/athlete-claims">
+            {() => <SuperAdminRoute component={AdminAthleteClaimsPage} />}
+          </Route>
+
+          <Route path="/organization/event-list">
+            {() => <SuperAdminRoute component={EventListPage} />}
+          </Route>
+
+          <Route path="/events/create">
+            {() => <SuperAdminRoute component={CreateEventPage} />}
+          </Route>
+
+          <Route path="/organization/events/:id">
+            {() => <SuperAdminRoute component={UpdateEventPage} />}
+          </Route>
+
+          <Route path="/organization/events/:id/classes">
+            {() => <SuperAdminRoute component={RaceClassEditor} />}
+          </Route>
+
+          <Route path="/organization/events/:eventId/classes/:divisionId/manage">
+            {() => <SuperAdminRoute component={ClassMatchManagePage} />}
+          </Route>
 
           {/* existing club flows */}
           <Route path="/clubs" component={Clubs} />

@@ -60,6 +60,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [location, navigate] = useLocation();
   const { user } = useAuth();
+  const isSuperAdmin =
+    String((user as any)?.role ?? "").toUpperCase() === "SUPER_ADMIN";
 
   const [clubsSubKey, setClubsSubKey] = useState<"" | "my" | "discover">("");
 
@@ -122,6 +124,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   const sections = useAppSidebarSections({
     onLogout: () => setShowLogoutConfirm(true),
+    isSuperAdmin,
   });
 
   return (

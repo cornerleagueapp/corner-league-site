@@ -6,14 +6,12 @@ import { logout } from "@/lib/logout";
 export type SidebarItem = {
   key: string;
   label: string;
-  /** If false, clicking won't change the active tab highlight */
   selectable?: boolean;
-  /** Optional click handler (e.g., navigate, logout). Runs before onChange */
   onSelect?: () => void;
+  matchPaths?: string[];
 };
 
 export type SidebarSection = {
-  /** Small header above the items (e.g., "PROFILE") */
   title: string;
   items: SidebarItem[];
 };
@@ -21,11 +19,54 @@ export type SidebarSection = {
 export function useAppSidebarSections(opts?: {
   extra?: SidebarSection[];
   onLogout?: () => void;
+  isSuperAdmin?: boolean;
 }) {
   const [, navigate] = useLocation();
 
   return useMemo<SidebarSection[]>(() => {
     const base: SidebarSection[] = [
+      ...(opts?.isSuperAdmin
+        ? [
+            {
+              title: "Admin",
+              items: [
+                {
+                  key: "admin-create-racer",
+                  label: "Create Racer",
+                  selectable: false,
+                  matchPaths: ["/admin/create-racer"],
+                  onSelect: () => navigate("/admin/create-racer"),
+                },
+                {
+                  key: "admin-athlete-claims",
+                  label: "Athlete Claims",
+                  selectable: false,
+                  matchPaths: ["/admin/athlete-claims"],
+                  onSelect: () => navigate("/admin/athlete-claims"),
+                },
+                {
+                  key: "admin-create-organization",
+                  label: "Create Organization",
+                  selectable: false,
+                  matchPaths: ["/admin/create-organization"],
+                  onSelect: () => navigate("/admin/create-organization"),
+                },
+                {
+                  key: "admin-event-list",
+                  label: "Event List",
+                  selectable: false,
+                  matchPaths: [
+                    "/organization/event-list",
+                    "/events/create",
+                    "/organization/events/*",
+                  ],
+                  onSelect: () => navigate("/organization/event-list"),
+                },
+              ],
+            },
+          ]
+        : []),
+
       {
         title: "Profile",
         items: [
@@ -54,10 +95,7 @@ export function useAppSidebarSections(opts?: {
       // },
       {
         title: "Live Scores",
-        items: [
-          // { key: "teams", label: "My Teams" },
-          { key: "scores", label: "All Scores" },
-        ],
+        items: [{ key: "scores", label: "All Scores" }],
       },
       {
         title: "Clubs",
@@ -77,7 +115,7 @@ export function useAppSidebarSections(opts?: {
     ];
 
     return opts?.extra?.length ? [...base, ...opts.extra] : base;
-  }, [navigate, opts?.extra, opts?.onLogout]);
+  }, [navigate, opts?.extra, opts?.onLogout, opts?.isSuperAdmin]);
 }
 
 type Props = {
@@ -109,7 +147,6 @@ function Chevron({ open }: { open: boolean }) {
       className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`}
       aria-hidden="true"
     >
-      {/* Down chevron; rotate 180° when open */}
       <path
         fillRule="evenodd"
         d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 10.94l3.71-3.71a.75.75 0 1 1 1.06 1.06l-4.24 4.24a.75.75 0 0 1-1.06 0L5.21 8.29a.75.75 0 0 1 .02-1.08z"
@@ -129,8 +166,8 @@ export default function SidebarPanel({
   backHref = "/",
   logoAlt = "Corner League",
 }: Props) {
-  // track which sections are expanded (keyed by section.title)
   const [openMap, setOpenMap] = useState<Record<string, boolean>>({});
+  const [location] = useLocation();
 
   useEffect(() => {
     if (!isOpen) return;
@@ -141,17 +178,29 @@ export default function SidebarPanel({
     };
   }, [isOpen]);
 
-  // Open the section that contains the activeKey by default; others closed.
   useEffect(() => {
     const next: Record<string, boolean> = {};
     for (const s of sections) {
-      next[s.title] = s.items.some((it) => it.key === activeKey);
+      next[s.title] = s.items.some(
+        (it) => it.key === activeKey || isRouteMatch(it),
+      );
     }
     setOpenMap(next);
-  }, [sections, activeKey]);
+  }, [sections, activeKey, location]);
 
   const toggleSection = (title: string) =>
     setOpenMap((m) => ({ ...m, [title]: !m[title] }));
+
+  function isRouteMatch(item: SidebarItem) {
+    if (!item.matchPaths?.length) return false;
+    return item.matchPaths.some((path) => {
+      if (path.endsWith("*")) {
+        const prefix = path.slice(0, -1);
+        return location.startsWith(prefix);
+      }
+      return location === path;
+    });
+  }
 
   return (
     <>
@@ -206,7 +255,8 @@ export default function SidebarPanel({
                   <div className="mt-2 space-y-1 pl-1">
                     {section.items.map((item) => {
                       const isActive =
-                        item.selectable !== false && activeKey === item.key;
+                        isRouteMatch(item) ||
+                        (item.selectable !== false && activeKey === item.key);
                       return (
                         <button
                           key={item.key}
