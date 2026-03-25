@@ -1,8 +1,9 @@
 // src/pages/scores.tsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, X } from "lucide-react";
 import { useLocation } from "wouter";
 import { Trophy } from "lucide-react";
+import { apiRequest } from "@/lib/apiClient";
 
 import AquaScoresSection from "@/components/AquaScoresSection";
 import RacerSearchModal from "@/components/RacerSearchModal";
@@ -22,6 +23,56 @@ const TAB_LABELS: Record<TabKey, string> = {
 };
 
 type ResizeStrategy = "auto" | "scroll";
+
+type AquaOrgEvent = {
+  id: string;
+  name: string;
+  description?: string | null;
+  location?: string | null;
+  startDate: string;
+  endDate?: string | null;
+  organizer?: {
+    id: string;
+    name?: string | null;
+    abbreviation?: string | null;
+  } | null;
+};
+
+function formatEventDateRange(start: string, end?: string | null) {
+  const s = new Date(start);
+  const e = end ? new Date(end) : null;
+
+  const sameDay =
+    e &&
+    s.getFullYear() === e.getFullYear() &&
+    s.getMonth() === e.getMonth() &&
+    s.getDate() === e.getDate();
+
+  const startFmt = s.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+
+  if (!e) return startFmt;
+  if (sameDay) return startFmt;
+
+  const endFmt = e.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+
+  return `${startFmt} – ${endFmt}`;
+}
+
+function sortEventsAsc(a: AquaOrgEvent, b: AquaOrgEvent) {
+  return +new Date(a.startDate) - +new Date(b.startDate);
+}
+
+function sortEventsDesc(a: AquaOrgEvent, b: AquaOrgEvent) {
+  return +new Date(b.startDate) - +new Date(a.startDate);
+}
 
 function ResponsiveFrame({
   src,
@@ -269,16 +320,307 @@ function FeaturedRaceSection() {
   );
 }
 
+function AllAquaEventsModal({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) {
+  const [, navigate] = useLocation();
+  const [loading, setLoading] = useState(false);
+  const [events, setEvents] = useState<AquaOrgEvent[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+
+    let ignore = false;
+
+    async function loadAllEvents() {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const orgRes = await apiRequest<any>(
+          "GET",
+          "/organizations?page=1&limit=50",
+        );
+        const orgs =
+          orgRes?.organizations ??
+          orgRes?.data?.organizations ??
+          orgRes?.data ??
+          [];
+
+        const orgList = Array.isArray(orgs) ? orgs : [];
+
+        const settled = await Promise.allSettled(
+          orgList.map(async (org: any) => {
+            const orgId = String(org.id);
+            const res = await apiRequest<any>(
+              "GET",
+              `/sport-event/organization/${encodeURIComponent(orgId)}?page=1&limit=50&order=ASC`,
+            );
+
+            const items =
+              res?.sportEvents ?? res?.data?.sportEvents ?? res?.data ?? [];
+
+            return Array.isArray(items)
+              ? items.map((event: any) => ({
+                  id: String(event.id),
+                  name: String(event.name ?? "Unnamed Event"),
+                  description: event.description ?? null,
+                  location: event.location ?? null,
+                  startDate: String(event.startDate),
+                  endDate: event.endDate ?? null,
+                  organizer: {
+                    id: orgId,
+                    name: org.name ?? null,
+                    abbreviation: org.abbreviation ?? null,
+                  },
+                }))
+              : [];
+          }),
+        );
+
+        const merged = settled.flatMap((result) =>
+          result.status === "fulfilled" ? result.value : [],
+        );
+
+        const dedupedMap = new Map<string, AquaOrgEvent>();
+        for (const event of merged) {
+          dedupedMap.set(event.id, event);
+        }
+
+        if (!ignore) {
+          setEvents(Array.from(dedupedMap.values()));
+        }
+      } catch (e: any) {
+        if (!ignore) {
+          setError(e?.message || "Failed to load AQUA events.");
+        }
+      } finally {
+        if (!ignore) setLoading(false);
+      }
+    }
+
+    loadAllEvents();
+
+    return () => {
+      ignore = true;
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev || "";
+    };
+  }, [open]);
+
+  if (!open) return null;
+
+  const now = new Date();
+
+  const upcoming = events
+    .filter((event) => new Date(event.endDate ?? event.startDate) >= now)
+    .sort(sortEventsAsc);
+
+  const past = events
+    .filter((event) => new Date(event.endDate ?? event.startDate) < now)
+    .sort(sortEventsDesc);
+
+  function openEvent(eventId: string) {
+    onClose();
+    navigate(`/aqua-organizations/event-details/${eventId}`);
+  }
+
+  return (
+    <div className="fixed inset-0 z-[80] flex items-center justify-center">
+      <div
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+        onClick={onClose}
+      />
+
+      <div className="relative z-10 w-[95vw] max-w-4xl rounded-2xl border border-white/10 bg-[#090D16] shadow-2xl">
+        <div className="flex items-center justify-between border-b border-white/10 px-4 py-4 sm:px-6">
+          <div>
+            <p className="text-xs uppercase tracking-[0.18em] text-cyan-300/80">
+              Jet Ski
+            </p>
+            <h2 className="text-xl sm:text-2xl font-semibold text-white">
+              All AQUA Events
+            </h2>
+            <p className="text-sm text-white/60">
+              Browse every organization’s race schedule.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white hover:bg-white/10"
+            aria-label="Close events modal"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="max-h-[75vh] overflow-y-auto px-4 py-4 sm:px-6 sm:py-6">
+          {loading ? (
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-white/70">
+              Loading events…
+            </div>
+          ) : error ? (
+            <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-6 text-white">
+              <div className="font-semibold mb-1">Failed to load events</div>
+              <div className="text-sm text-white/80">{error}</div>
+            </div>
+          ) : (
+            <div className="space-y-8">
+              <section className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-white">Upcoming</h3>
+                  <span className="text-xs uppercase tracking-[0.16em] text-white/45">
+                    {upcoming.length} events
+                  </span>
+                </div>
+
+                {upcoming.length === 0 ? (
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/60">
+                    No upcoming events found.
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {upcoming.map((event) => (
+                      <button
+                        key={event.id}
+                        type="button"
+                        onClick={() => openEvent(event.id)}
+                        className="w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-left hover:border-cyan-300/50 hover:bg-white/10 transition"
+                      >
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <h4 className="text-base sm:text-lg font-semibold text-white break-words">
+                                {event.name}
+                              </h4>
+                              {event.organizer?.abbreviation ? (
+                                <span className="rounded-full border border-white/15 px-2 py-[2px] text-[10px] uppercase tracking-[0.16em] text-white/65">
+                                  {event.organizer.abbreviation}
+                                </span>
+                              ) : null}
+                            </div>
+
+                            <p className="mt-1 text-sm text-white/70">
+                              {event.organizer?.name || "Unknown Organization"}
+                            </p>
+
+                            <div className="mt-2 flex flex-col gap-1 text-sm text-white/55 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4">
+                              <span>
+                                {formatEventDateRange(
+                                  event.startDate,
+                                  event.endDate,
+                                )}
+                              </span>
+                              {event.location ? (
+                                <span>{event.location}</span>
+                              ) : null}
+                            </div>
+                          </div>
+
+                          <span className="shrink-0 text-xs font-semibold uppercase tracking-[0.16em] text-cyan-200">
+                            View Event ↗
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </section>
+
+              <section className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-white">Past</h3>
+                  <span className="text-xs uppercase tracking-[0.16em] text-white/45">
+                    {past.length} events
+                  </span>
+                </div>
+
+                {past.length === 0 ? (
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/60">
+                    No past events found.
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {past.map((event) => (
+                      <button
+                        key={event.id}
+                        type="button"
+                        onClick={() => openEvent(event.id)}
+                        className="w-full rounded-2xl border border-white/10 bg-black/20 p-4 text-left hover:border-cyan-300/40 hover:bg-white/10 transition"
+                      >
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <h4 className="text-base sm:text-lg font-semibold text-white break-words">
+                                {event.name}
+                              </h4>
+                              {event.organizer?.abbreviation ? (
+                                <span className="rounded-full border border-white/15 px-2 py-[2px] text-[10px] uppercase tracking-[0.16em] text-white/65">
+                                  {event.organizer.abbreviation}
+                                </span>
+                              ) : null}
+                            </div>
+
+                            <p className="mt-1 text-sm text-white/70">
+                              {event.organizer?.name || "Unknown Organization"}
+                            </p>
+
+                            <div className="mt-2 flex flex-col gap-1 text-sm text-white/55 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4">
+                              <span>
+                                {formatEventDateRange(
+                                  event.startDate,
+                                  event.endDate,
+                                )}
+                              </span>
+                              {event.location ? (
+                                <span>{event.location}</span>
+                              ) : null}
+                            </div>
+                          </div>
+
+                          <span className="shrink-0 text-xs font-semibold uppercase tracking-[0.16em] text-cyan-200">
+                            View Event ↗
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </section>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 type AquaView = "hub" | "results";
 
 interface AquaHubSectionProps {
   onOpenResults: () => void;
   onOpenRacerSearch: () => void;
+  onOpenUpcomingEvents: () => void;
 }
 
 function AquaHubSection({
   onOpenResults,
   onOpenRacerSearch,
+  onOpenUpcomingEvents,
 }: AquaHubSectionProps) {
   const [, navigate] = useLocation();
 
@@ -367,23 +709,26 @@ function AquaHubSection({
         {/* Upcoming Races */}
         <button
           type="button"
+          onClick={onOpenUpcomingEvents}
           className="group flex flex-col justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-4 sm:px-5 sm:py-5 text-left hover:border-cyan-300/70 hover:bg-white/10 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
         >
           <div className="space-y-2">
             <h3 className="text-base sm:text-lg font-semibold text-white flex items-center gap-2">
               Upcoming Races
-              {/* <span className="rounded-full border border-white/15 px-2 py-[2px] text-[10px] uppercase tracking-[0.16em] text-white/65">
-                Roadmap
-              </span> */}
               <span className="rounded-full border border-white/15 px-2 py-[2px] text-[10px] uppercase tracking-[0.16em] text-white/65">
-                Soon
+                2026
               </span>
             </h3>
             <p className="text-xs sm:text-sm text-white/70">
-              See the next tour stops, qualifying rounds, and key dates on the
-              calendar. (Coming soon)
+              See all AQUA events across organizations, split into upcoming and
+              past.
             </p>
           </div>
+
+          <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200">
+            Open Schedule
+            <span className="text-lg leading-none">↗</span>
+          </span>
         </button>
 
         {/* Fantasy League */}
@@ -451,6 +796,7 @@ export default function ScoresPage() {
   const [active, setActive] = useState<TabKey>("AQUA");
   const [aquaView, setAquaView] = useState<AquaView>("hub");
   const [racerSearchOpen, setRacerSearchOpen] = useState(false);
+  const [allEventsOpen, setAllEventsOpen] = useState(false);
   const [, navigate] = useLocation();
 
   // Reset AQUA subview when leaving AQUA tab
@@ -487,6 +833,7 @@ export default function ScoresPage() {
           <AquaHubSection
             onOpenResults={() => setAquaView("results")}
             onOpenRacerSearch={() => setRacerSearchOpen(true)}
+            onOpenUpcomingEvents={() => setAllEventsOpen(true)}
           />
         );
       }
@@ -632,6 +979,11 @@ export default function ScoresPage() {
           const idStr = encodeURIComponent(String(r.id));
           navigate(`/racer/${idStr}`);
         }}
+      />
+
+      <AllAquaEventsModal
+        open={allEventsOpen}
+        onClose={() => setAllEventsOpen(false)}
       />
     </div>
   );
