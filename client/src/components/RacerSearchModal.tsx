@@ -1,4 +1,3 @@
-// /components/RacerSearchModal.tsx
 import React, {
   useCallback,
   useEffect,
@@ -9,6 +8,7 @@ import React, {
 import { apiRequest } from "@/lib/apiClient";
 import { cn } from "@/lib/utils";
 import stockAvatar from "@/assets/stockprofilepicture.jpeg";
+import { Search, X, ChevronRight } from "lucide-react";
 
 type RacerLite = {
   id: string | number;
@@ -48,7 +48,7 @@ function toRacerLite(rec: any): RacerLite | null {
         a?.firstName && a?.lastName ? `${a.firstName} ${a.lastName}` : null,
         rec?.firstName && rec?.lastName
           ? `${rec.firstName} ${rec.lastName}`
-          : null
+          : null,
       ) ?? "";
 
     if (!name.trim()) return null;
@@ -57,7 +57,7 @@ function toRacerLite(rec: any): RacerLite | null {
       a?.image as any,
       rec?.image as any,
       rec?.avatar as any,
-      rec?.photo as any
+      rec?.photo as any,
     );
 
     const loc = firstNonEmpty(a?.origin, rec?.origin, rec?.city, rec?.country);
@@ -80,7 +80,6 @@ function toRacerLite(rec: any): RacerLite | null {
     };
   }
 
-  // fallback flat-ish
   if (
     rec.name ||
     rec.origin ||
@@ -94,12 +93,12 @@ function toRacerLite(rec: any): RacerLite | null {
       typeof rec.name === "string" && rec.name.trim()
         ? rec.name
         : typeof rec.fullName === "string" && rec.fullName.trim()
-        ? rec.fullName
-        : typeof rec.displayName === "string" && rec.displayName.trim()
-        ? rec.displayName
-        : rec.firstName && rec.lastName
-        ? `${rec.firstName} ${rec.lastName}`
-        : "";
+          ? rec.fullName
+          : typeof rec.displayName === "string" && rec.displayName.trim()
+            ? rec.displayName
+            : rec.firstName && rec.lastName
+              ? `${rec.firstName} ${rec.lastName}`
+              : "";
 
     if (!name.trim()) return null;
 
@@ -120,7 +119,6 @@ function toRacerLite(rec: any): RacerLite | null {
     };
   }
 
-  // already-compact form
   if (
     rec.racerName ||
     rec.racerImage ||
@@ -172,8 +170,8 @@ function extractRacers(payload: any, usedLimit: number) {
     typeof meta?.hasNextPage === "boolean"
       ? meta.hasNextPage
       : typeof meta?.nextPage === "number"
-      ? true
-      : undefined;
+        ? true
+        : undefined;
 
   const hasMoreFallback = racers.length === usedLimit;
   const hasMore = hasMoreExplicit ?? hasMoreFallback;
@@ -251,10 +249,9 @@ export default function RacerSearchModal({
         return { racers: [], hasMore: false };
       }
     },
-    []
+    [],
   );
 
-  // initial load (or when modal re-opens)
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
@@ -280,7 +277,6 @@ export default function RacerSearchModal({
     };
   }, [open, fetchPage]);
 
-  // infinite scroll loader
   const loadMore = useCallback(async () => {
     if (!hasMore || loadingMore || all.length >= HARD_CAP) return;
     setLoadingMore(true);
@@ -295,7 +291,6 @@ export default function RacerSearchModal({
     }
   }, [all, fetchPage, hasMore, loadingMore, pageIndex]);
 
-  // scroll listener
   useEffect(() => {
     if (!open) return;
     const el = scrollerRef.current;
@@ -309,14 +304,13 @@ export default function RacerSearchModal({
     return () => el.removeEventListener("scroll", onScroll);
   }, [open, loadMore]);
 
-  // client-side filter based on q
   const qNorm = q.trim().toLowerCase();
+
   const filtered = useMemo(() => {
     if (qNorm.length < MIN_QUERY_LENGTH) return [] as RacerLite[];
     return all.filter((r) => matchesQuery(r, qNorm));
   }, [qNorm, all]);
 
-  // auto-scan more pages while user is searching to try and surface deeper matches
   useEffect(() => {
     if (!open) return;
     if (qNorm.length < MIN_QUERY_LENGTH) return;
@@ -346,85 +340,146 @@ export default function RacerSearchModal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[80]">
+    <div className="fixed inset-0 z-[80] overflow-hidden overscroll-none">
       <button
         aria-label="Close"
-        className="absolute inset-0 bg-black/60"
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
         onClick={onClose}
       />
 
-      <div className="relative z-10 mx-auto md:mt-20 md:max-w-xl">
+      <div className="relative z-10 flex h-full items-start justify-center p-3 pt-4 sm:p-4 md:mx-auto md:mt-16 md:h-auto md:max-w-2xl md:px-4">
         <div
           className={cn(
-            "bg-[#0b0f18] border border-white/10 rounded-none md:rounded-xl w-full",
-            "fixed inset-0 md:static md:h-auto"
+            "box-border flex h-[calc(100vh-16px)] w-[calc(100vw-24px)] min-w-0 max-w-full flex-col overflow-hidden border border-white/10 bg-[#07131f] text-white shadow-2xl",
+            "rounded-[24px] md:h-auto md:max-h-[82vh] md:w-full md:rounded-[28px]",
+            "bg-[linear-gradient(180deg,rgba(8,24,39,0.98)_0%,rgba(5,17,29,0.98)_100%)]",
           )}
         >
-          <div className="p-4 border-b border-white/10 sticky top-0 bg-[#0b0f18]">
-            <div className="flex items-center gap-2">
+          <div className="sticky top-0 z-10 border-b border-white/10 bg-[linear-gradient(180deg,rgba(8,24,39,0.98)_0%,rgba(6,19,31,0.98)_100%)] px-3 py-4 sm:px-4 md:px-5">
+            <div className="mb-3 flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/15 bg-cyan-400/8 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-300">
+                  <span className="h-1.5 w-1.5 rounded-full bg-cyan-300" />
+                  Aqua Search
+                </div>
+                <h2 className="mt-3 text-lg font-semibold text-white sm:text-xl">
+                  Find a Racer
+                </h2>
+                <p className="mt-1 text-sm text-white/55">
+                  Search by racer name, location, or manufacturer.
+                </p>
+              </div>
+
+              <button
+                onClick={onClose}
+                className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/80 transition hover:bg-white/10 hover:text-white"
+                aria-label="Close search"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="relative min-w-0">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35" />
               <input
                 autoFocus
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
-                placeholder="Search racers…"
-                className="flex-1 h-10 rounded-lg bg-white/5 border border-white/10 px-3 text-sm outline-none placeholder:text-white/40 focus:bg-white/7 text-white"
+                placeholder="Search racers..."
+                className="h-12 w-full min-w-0 rounded-2xl border border-white/10 bg-white/[0.05] pl-10 pr-4 text-sm text-white outline-none placeholder:text-white/35 transition focus:border-cyan-300/30 focus:bg-white/[0.07]"
               />
-              <button
-                onClick={onClose}
-                className="h-9 px-3 rounded-md border border-white/10 text-white/80 hover:text-white"
-              >
-                Close
-              </button>
             </div>
           </div>
 
           <div
             ref={scrollerRef}
-            className="p-2 max-h-[calc(100vh-60px)] md:max-h-[calc(100vh-60px)] overflow-y-auto"
+            className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden px-2.5 py-3 sm:px-3 md:px-4 md:py-4"
           >
             {qNorm.length < MIN_QUERY_LENGTH ? (
-              <div className="py-12 text-center text-white/60">
-                Start typing at least {MIN_QUERY_LENGTH} characters to search
-                racers…
+              <div className="flex min-h-[40vh] flex-col items-center justify-center rounded-[24px] border border-dashed border-white/10 bg-white/[0.03] px-5 text-center">
+                <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-cyan-400/15 bg-cyan-400/8 text-cyan-300">
+                  <Search className="h-5 w-5" />
+                </div>
+                <div className="text-base font-semibold text-white">
+                  Start searching
+                </div>
+                <div className="mt-2 max-w-md text-sm leading-7 text-white/55">
+                  Type at least {MIN_QUERY_LENGTH} characters to search racers
+                  by name, hometown, or manufacturer.
+                </div>
               </div>
             ) : error ? (
-              <div className="py-12 text-center text-red-400">{error}</div>
+              <div className="flex min-h-[40vh] items-center justify-center rounded-[24px] border border-red-500/25 bg-red-500/10 px-6 text-center text-red-300">
+                {error}
+              </div>
             ) : loading && all.length === 0 ? (
-              <div className="py-12 text-center text-white/60">Loading…</div>
+              <div className="space-y-3">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="flex min-w-0 items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3"
+                  >
+                    <div className="h-11 w-11 shrink-0 animate-pulse rounded-full bg-white/10" />
+                    <div className="min-w-0 flex-1">
+                      <div className="h-4 w-40 animate-pulse rounded bg-white/10" />
+                      <div className="mt-2 h-3 w-40 max-w-full animate-pulse rounded bg-white/5 sm:w-56" />
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : filtered.length === 0 ? (
-              <div className="py-12 text-center text-white/60">
-                No racers found.
+              <div className="flex min-h-[40vh] flex-col items-center justify-center rounded-[24px] border border-white/10 bg-white/[0.03] px-6 text-center">
+                <div className="text-base font-semibold text-white">
+                  No racers found
+                </div>
+                <div className="mt-2 max-w-md text-sm leading-7 text-white/55">
+                  Try a different name, manufacturer, or location.
+                </div>
               </div>
             ) : (
               <>
-                {filtered.map((r, i) => (
-                  <button
-                    key={`${String(r.id)}-${i}`}
-                    onClick={() => onSelectRacer(r)}
-                    className="w-full flex items-center gap-3 p-3 rounded-lg border border-white/10 bg-white/5 hover:bg-white/7 text-left"
-                  >
-                    <img
-                      src={r.racerImage || stockAvatar}
-                      onError={(e) => {
-                        const img = e.currentTarget as HTMLImageElement;
-                        if (img.src !== stockAvatar) img.src = stockAvatar;
-                      }}
-                      className="h-9 w-9 rounded-full object-cover"
-                    />
-                    <div className="min-w-0">
-                      <div className="text-sm font-medium text-white truncate">
-                        {r.racerName}
+                <div className="mb-3 px-1 text-xs uppercase tracking-[0.16em] text-white/45">
+                  {filtered.length} match{filtered.length === 1 ? "" : "es"}
+                </div>
+
+                <div className="space-y-3">
+                  {filtered.map((r, i) => (
+                    <button
+                      key={`${String(r.id)}-${i}`}
+                      onClick={() => onSelectRacer(r)}
+                      className="group flex w-full min-w-0 items-center gap-3 rounded-[22px] border border-white/10 bg-white/[0.04] p-3 text-left transition hover:border-cyan-300/25 hover:bg-white/[0.06]"
+                    >
+                      <img
+                        src={r.racerImage || stockAvatar}
+                        onError={(e) => {
+                          const img = e.currentTarget as HTMLImageElement;
+                          if (img.src !== stockAvatar) img.src = stockAvatar;
+                        }}
+                        className="h-12 w-12 shrink-0 rounded-full border border-white/10 object-cover"
+                      />
+
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-sm font-semibold text-white sm:text-base">
+                          {r.racerName}
+                        </div>
+
+                        <div className="mt-1 truncate text-xs text-white/60 sm:text-sm">
+                          {(r.location || "").toString()}
+                          {r.boatManufacturers
+                            ? ` • ${r.boatManufacturers}`
+                            : ""}
+                        </div>
                       </div>
-                      <div className="text-xs text-white/70 truncate">
-                        {(r.location || "").toString()}
-                        {r.boatManufacturers ? ` • ${r.boatManufacturers}` : ""}
+
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-cyan-300 transition group-hover:border-cyan-300/25 group-hover:bg-cyan-400/8">
+                        <ChevronRight className="h-4 w-4" />
                       </div>
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  ))}
+                </div>
 
                 {loadingMore && (
-                  <div className="py-4 text-center text-xs text-white/50">
+                  <div className="py-5 text-center text-xs uppercase tracking-[0.14em] text-white/45">
                     Loading more…
                   </div>
                 )}

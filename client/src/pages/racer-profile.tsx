@@ -4,14 +4,23 @@ import { apiRequest } from "@/lib/apiClient";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import stockAvatar from "@/assets/stockprofilepicture.jpeg";
-import { X as XIcon, Search as SearchIcon, PencilLine } from "lucide-react";
+import {
+  X as XIcon,
+  Search as SearchIcon,
+  PencilLine,
+  Trophy,
+  MapPin,
+  Waves,
+  Sparkles,
+  Share2,
+  ShieldCheck,
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
 import RacerSearchModal from "@/components/RacerSearchModal";
 import { generateRacerAnalysis } from "@/lib/geminiRacerAnalysis";
 
-/* ---------------- Types ---------------- */
 type Racer = {
   id: string | number;
   athleteId?: string;
@@ -27,13 +36,11 @@ type Racer = {
   careerWorldFinalsWins?: number;
   height?: number | null;
   weight?: number | null;
-
   claimedByUserId?: string | null;
   claimedByUsername?: string | null;
   isClaimed?: boolean;
 };
 
-/* ---------------- Utils ---------------- */
 function inchesToMeters(inches: number) {
   return inches * 0.0254;
 }
@@ -81,8 +88,8 @@ function humanizeValidationError(err: any): string | undefined {
 }
 function isProbablyId(s: string) {
   if (!s) return false;
-  if (/^[0-9a-fA-F-]{32,}$/.test(s) && s.includes("-")) return true; // uuid-ish
-  if (/^[0-9A-Za-z]{20,}$/.test(s)) return true; // ulid/mongoish ids
+  if (/^[0-9a-fA-F-]{32,}$/.test(s) && s.includes("-")) return true;
+  if (/^[0-9A-Za-z]{20,}$/.test(s)) return true;
   return false;
 }
 function slugify(s: string) {
@@ -93,7 +100,6 @@ function slugify(s: string) {
     .replace(/^-+|-+$/g, "");
 }
 
-/* ---------------- API mappers ---------------- */
 function mapDetail(rec: any): Racer {
   const a = rec?.athlete ?? {};
   const claimedByUser = a?.claimedByUser ?? rec?.claimedByUser ?? null;
@@ -142,7 +148,382 @@ function mapAthlete(a: any): Racer {
   };
 }
 
-/* ---------------- Component ---------------- */
+function StatBox({
+  label,
+  value,
+  trophy,
+}: {
+  label: string;
+  value: number;
+  trophy?: boolean;
+}) {
+  return (
+    <div className="rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-4">
+      <div className="flex items-center gap-2 text-2xl font-semibold text-white">
+        {value}
+        {trophy ? <Trophy className="h-5 w-5 text-amber-400" /> : null}
+      </div>
+      <div className="mt-1 text-xs uppercase tracking-[0.16em] text-white/50">
+        {label}
+      </div>
+    </div>
+  );
+}
+
+function MiniStat({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-[20px] border border-white/10 bg-white/[0.03] px-4 py-3">
+      <div className="text-lg font-semibold text-white">{value}</div>
+      <div className="mt-1 text-xs uppercase tracking-[0.16em] text-white/50">
+        {label}
+      </div>
+    </div>
+  );
+}
+
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <label className="block">
+      <div className="mb-1 text-xs text-white/60">{label}</div>
+      {children}
+    </label>
+  );
+}
+
+type EditValues = {
+  age?: number | string;
+  bio?: string;
+  heightInches?: number | string;
+  origin?: string;
+  boatManufacturers?: string;
+  imageFile?: File | null;
+};
+
+function toNumOrUndefined(v: any): number | undefined {
+  if (v === null || v === undefined || v === "") return undefined;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : undefined;
+}
+
+async function uploadAthleteImage(
+  athleteId: string,
+  userId: string,
+  file: File,
+) {
+  const form = new FormData();
+  form.append("userId", userId);
+  form.append("media", file);
+
+  const res = await apiRequest<any>(
+    "PATCH",
+    `/athletes/${encodeURIComponent(athleteId)}/profile-image`,
+    form as any,
+  );
+
+  const url = res?.mediaUrl ?? res?.data?.mediaUrl ?? res?.url ?? null;
+  if (!url) throw new Error("Upload succeeded but no mediaUrl returned");
+  return String(url);
+}
+
+async function pollUploadProgress(
+  fileName: string,
+  onTick: (pct: number) => void,
+) {
+  const started = Date.now();
+  while (Date.now() - started < 60_000) {
+    try {
+      const data = await apiRequest<{ progress: number }>(
+        "GET",
+        `/athletes/upload-progress/${encodeURIComponent(fileName)}`,
+      );
+      const pct = Math.max(0, Math.min(100, Number(data?.progress ?? 0)));
+      onTick(pct);
+      if (pct >= 100) break;
+    } catch {}
+    await new Promise((r) => setTimeout(r, 700));
+  }
+}
+
+function EditRacerModal({
+  initial,
+  onClose,
+  onSave,
+  uploadPct,
+}: {
+  initial: EditValues;
+  onClose: () => void;
+  onSave: (v: EditValues) => Promise<void> | void;
+  uploadPct?: number | null;
+}) {
+  const [vals, setVals] = useState<EditValues>(initial);
+  const [saving, setSaving] = useState(false);
+  const set =
+    (k: keyof EditValues) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+      setVals((p) => ({ ...p, [k]: e.target.value }));
+
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
+  return (
+    <div
+      className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70"
+      onClick={onClose}
+    >
+      <div
+        className="h-full w-full overflow-y-auto border border-white/10 bg-[#0b0f18] p-4 md:h-auto md:max-w-xl md:rounded-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mb-2 flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-white">Edit Profile</h2>
+          <button
+            aria-label="Close"
+            className="grid h-9 w-9 place-items-center rounded-full border border-white/10 bg-white/10 hover:bg-white/15"
+            onClick={onClose}
+            disabled={saving}
+          >
+            <XIcon size={16} />
+          </button>
+        </div>
+
+        <div className="space-y-3">
+          <Field label="Age">
+            <input
+              inputMode="numeric"
+              value={vals.age ?? ""}
+              onChange={set("age")}
+              className="h-10 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm text-white outline-none placeholder:text-white/40"
+              placeholder="e.g., 25"
+            />
+          </Field>
+
+          <Field label="Bio">
+            <textarea
+              value={vals.bio ?? ""}
+              onChange={set("bio")}
+              rows={4}
+              className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none placeholder:text-white/40"
+              placeholder="Tell people about you…"
+            />
+          </Field>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <Field label="Height (inches)">
+              <input
+                type="number"
+                inputMode="numeric"
+                min={36}
+                max={96}
+                step={1}
+                value={vals.heightInches ?? ""}
+                onChange={set("heightInches")}
+                className="h-10 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm text-white outline-none placeholder:text-white/40"
+                placeholder="e.g., 70"
+              />
+            </Field>
+
+            <Field label="Origin">
+              <input
+                value={vals.origin ?? ""}
+                onChange={set("origin")}
+                className="h-10 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm text-white outline-none placeholder:text-white/40"
+                placeholder="e.g., USA"
+              />
+            </Field>
+          </div>
+
+          <Field label="Boat Manufacturer">
+            <input
+              value={vals.boatManufacturers ?? ""}
+              onChange={set("boatManufacturers")}
+              className="h-10 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm text-white outline-none placeholder:text-white/40"
+              placeholder="e.g., Yamaha"
+            />
+          </Field>
+
+          <Field label="Racer Photo (Please use clear headshot)">
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={(e) => {
+                const file = e.currentTarget.files?.[0] || null;
+                if (file && !/^image\/(jpeg|png|webp)$/.test(file.type)) {
+                  alert(
+                    "Please upload a JPG, PNG, or WEBP image (no RAW / DNG).",
+                  );
+                  return;
+                }
+                setVals((p) => ({ ...p, imageFile: file }));
+                if (previewUrl) URL.revokeObjectURL(previewUrl);
+                setPreviewUrl(file ? URL.createObjectURL(file) : null);
+              }}
+              className="h-10 w-full rounded-md border border-white/10 bg-white/5 px-3 py-1 text-sm text-white outline-none"
+            />
+          </Field>
+
+          {vals.imageFile && previewUrl && (
+            <img
+              src={previewUrl}
+              alt="Selected profile preview"
+              className="h-28 w-28 rounded-full border border-white/10 object-cover"
+            />
+          )}
+        </div>
+
+        <div className="mt-4 flex justify-end gap-2">
+          <Button
+            variant="ghost"
+            onClick={onClose}
+            className="border border-white/10 bg-transparent text-white hover:bg-white/10"
+            disabled={saving}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={async () => {
+              try {
+                setSaving(true);
+                await onSave(vals);
+              } finally {
+                setSaving(false);
+              }
+            }}
+            className="bg-white text-black hover:bg-white/90"
+            disabled={saving}
+          >
+            {saving
+              ? uploadPct != null
+                ? `Uploading… ${uploadPct}%`
+                : "Saving…"
+              : "Save changes"}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ClaimAthleteModal({
+  racerName,
+  onClose,
+  onSubmit,
+  loading,
+}: {
+  racerName: string;
+  onClose: () => void;
+  onSubmit: (v: {
+    additionalInfo?: string;
+    idCardImage: File;
+  }) => Promise<void> | void;
+  loading?: boolean;
+}) {
+  const [additionalInfo, setAdditionalInfo] = useState("");
+  const [idCardImage, setIdCardImage] = useState<File | null>(null);
+
+  return (
+    <div
+      className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70"
+      onClick={onClose}
+    >
+      <div
+        className="h-full w-full overflow-y-auto border border-white/10 bg-[#0b0f18] p-4 md:h-auto md:max-w-xl md:rounded-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mb-2 flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-white">
+            Claim Athlete Profile
+          </h2>
+          <button
+            aria-label="Close"
+            className="grid h-9 w-9 place-items-center rounded-full border border-white/10 bg-white/10 hover:bg-white/15"
+            onClick={onClose}
+            disabled={loading}
+          >
+            <XIcon size={16} />
+          </button>
+        </div>
+
+        <p className="mb-4 text-sm text-white/70">
+          Submit a claim for{" "}
+          <span className="font-medium text-white">{racerName}</span>. Upload a
+          clear ID image so an admin can verify ownership.
+        </p>
+
+        <div className="space-y-3">
+          <Field label="Additional Info (optional)">
+            <textarea
+              value={additionalInfo}
+              onChange={(e) => setAdditionalInfo(e.target.value)}
+              rows={4}
+              className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none placeholder:text-white/40"
+              placeholder="Add any details that help verify this athlete profile..."
+            />
+          </Field>
+
+          <Field label="ID Card Image">
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={(e) => {
+                const file = e.currentTarget.files?.[0] || null;
+                if (!file) {
+                  setIdCardImage(null);
+                  return;
+                }
+                if (!/^image\/(jpeg|png|webp)$/.test(file.type)) {
+                  alert("Please upload a JPG, PNG, or WEBP image.");
+                  return;
+                }
+                setIdCardImage(file);
+              }}
+              className="h-10 w-full rounded-md border border-white/10 bg-white/5 px-3 py-1 text-sm text-white outline-none"
+            />
+          </Field>
+
+          {!idCardImage && (
+            <p className="text-xs text-red-300">
+              An ID card image is required to submit a claim.
+            </p>
+          )}
+        </div>
+
+        <div className="mt-4 flex justify-end gap-2">
+          <Button
+            variant="ghost"
+            onClick={onClose}
+            className="border border-white/10 bg-transparent text-white hover:bg-white/10"
+            disabled={loading}
+          >
+            Cancel
+          </Button>
+
+          <Button
+            onClick={async () => {
+              if (!idCardImage) return;
+              await onSubmit({ additionalInfo, idCardImage });
+            }}
+            className="bg-white text-black hover:bg-white/90"
+            disabled={loading || !idCardImage}
+          >
+            {loading ? "Submitting..." : "Submit Claim"}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function RacerProfilePage({
   idOrSlugParam,
 }: {
@@ -185,7 +566,6 @@ export default function RacerProfilePage({
       return apiRequest<T>(method, path, body);
     }
 
-    // detail lookups
     async function fetchDetailById(id: string) {
       const res = await getJSON<any>(
         "GET",
@@ -198,7 +578,6 @@ export default function RacerProfilePage({
     }
 
     async function searchDetailsByName(name: string) {
-      // server-side name search (if backend supports ?search=)
       try {
         const q = new URLSearchParams();
         q.set("search", name);
@@ -234,7 +613,6 @@ export default function RacerProfilePage({
     }
 
     async function scanDetailsBySlug(slug: string) {
-      // brute-force crawl pages of jet-ski-racer-details
       const LIMIT = 50;
       const MAX_PAGES = 10;
       for (let page = 0; page < MAX_PAGES; page++) {
@@ -278,7 +656,6 @@ export default function RacerProfilePage({
     }
 
     async function searchAthletesByName(name: string) {
-      // this path might 404 in your current backend, but we keep it for future
       try {
         const q = new URLSearchParams();
         q.set("search", name);
@@ -312,9 +689,8 @@ export default function RacerProfilePage({
         const token = decodeURIComponent(idOrSlugParam || "").trim();
         if (!token) throw new Error("Racer not found");
 
-        // read url flags
         const url = new URL(window.location.href);
-        const kind = url.searchParams.get("kind"); // e.g., "athlete"
+        const kind = url.searchParams.get("kind");
 
         if (kind === "athlete" && isProbablyId(token)) {
           try {
@@ -323,12 +699,9 @@ export default function RacerProfilePage({
               setRacer(athlete);
               return;
             }
-          } catch (e) {
-            // fall through
-          }
+          } catch {}
         }
 
-        // 2) looks like a detail id
         if (isProbablyId(token)) {
           try {
             const detail = await fetchDetailById(token);
@@ -336,9 +709,7 @@ export default function RacerProfilePage({
               setRacer(detail);
               return;
             }
-          } catch (e) {
-            // fall through
-          }
+          } catch {}
         }
 
         const nameSlug = slugify(token);
@@ -434,23 +805,22 @@ export default function RacerProfilePage({
     return () => {
       cancelled = true;
     };
-  }, [racer?.id]); // re-run when profile changes
+  }, [racer?.id]);
 
-  /* ---------------- UI ---------------- */
   if (loading || authLoading) {
     return (
-      <div className="min-h-screen bg-[#090D16] text-white grid place-items-center">
+      <div className="grid min-h-screen place-items-center bg-[#03101b] text-white">
         <PageSEO title="Racer • Corner League" />
-        <div className="animate-pulse text-white/70">Loading racer…</div>
+        <div className="text-white/70">Loading racer…</div>
       </div>
     );
   }
 
   if (err || !racer) {
     return (
-      <div className="min-h-screen bg-[#090D16] text-white grid place-items-center">
+      <div className="grid min-h-screen place-items-center bg-[#03101b] text-white">
         <PageSEO title="Racer • Corner League" />
-        <div className="text-center space-y-3">
+        <div className="space-y-3 text-center">
           <div className="text-xl font-semibold">Couldn’t load this racer</div>
           <div className="text-white/70">{err || "Not found"}</div>
           <Button
@@ -474,11 +844,17 @@ export default function RacerProfilePage({
   const heightChip = metersToFeetInches(racer.height);
 
   const chips = [
-    racer.location && { label: racer.location },
+    racer.location && {
+      label: racer.location,
+      icon: <MapPin className="h-3.5 w-3.5" />,
+    },
     typeof racer.racerAge === "number" && { label: `${racer.racerAge} yrs` },
     heightChip && { label: heightChip },
-    racer.boatManufacturers && { label: racer.boatManufacturers },
-  ].filter(Boolean) as { label: string }[];
+    racer.boatManufacturers && {
+      label: racer.boatManufacturers,
+      icon: <Waves className="h-3.5 w-3.5" />,
+    },
+  ].filter(Boolean) as { label: string; icon?: React.ReactNode }[];
 
   const isOwner =
     !!currentUserId &&
@@ -493,9 +869,6 @@ export default function RacerProfilePage({
 
   const hasRejectedClaim =
     claimStatus?.hasClaim && claimStatus?.status === "rejected";
-
-  const isClaimedByAnotherUser =
-    !!racer?.isClaimed && !!currentUserId && !isOwner;
 
   const canClaim =
     !!currentUserId &&
@@ -550,112 +923,170 @@ export default function RacerProfilePage({
   }
 
   return (
-    <div className="min-h-screen bg-[#090D16] text-white">
+    <div className="relative min-h-screen overflow-x-hidden bg-[#03101b] text-white">
       <PageSEO title={`${title} • Corner League`} />
 
-      {/* top-right search */}
-      <div className="mx-auto max-w-5xl px-4 pt-4 flex justify-end">
-        <button
-          onClick={() => setSearchOpen(true)}
-          className="h-9 w-9 grid place-items-center rounded-full bg-white/10 border border-white/10 hover:bg-white/15"
-          aria-label="Search racers"
-        >
-          <SearchIcon size={18} />
-        </button>
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.08),_transparent_30%),radial-gradient(circle_at_82%_20%,_rgba(59,130,246,0.06),_transparent_24%),linear-gradient(to_bottom,_#04111d_0%,_#03101b_48%,_#020b14_100%)]" />
+        <div className="absolute inset-0 opacity-[0.03] [background-image:linear-gradient(rgba(255,255,255,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.12)_1px,transparent_1px)] [background-size:72px_72px]" />
+        <div className="absolute left-1/2 top-0 h-[340px] w-[340px] -translate-x-1/2 rounded-full bg-cyan-400/5 blur-3xl" />
       </div>
 
-      <div className="mx-auto max-w-5xl px-4 mt-8">
-        {/* header */}
-        <div className="flex flex-col sm:flex-row sm:items-end gap-4">
-          <div className="p-[2px] rounded-full bg-gradient-to-tr from-violet-500 via-fuchsia-500 to-amber-400 inline-block self-center sm:self-auto">
-            <img
-              src={racer.racerImage || stockAvatar}
-              onError={(e) => {
-                const img = e.currentTarget as HTMLImageElement;
-                if (img.src !== stockAvatar) img.src = stockAvatar;
-              }}
-              className="h-28 w-28 sm:h-36 sm:w-36 rounded-full object-cover bg-black"
-            />
-          </div>
+      <div className="relative mx-auto max-w-6xl px-4 pb-12 pt-4">
+        <div className="mb-6 flex justify-end">
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="grid h-10 w-10 place-items-center rounded-full border border-white/10 bg-white/10 text-white transition hover:bg-white/15"
+            aria-label="Search racers"
+          >
+            <SearchIcon size={18} />
+          </button>
+        </div>
 
-          <div className="flex-1">
-            <h1 className="text-2xl sm:text-3xl font-semibold leading-tight text-center sm:text-left">
-              {title}
-            </h1>
+        <div className="relative overflow-hidden rounded-[32px] border border-cyan-400/10 bg-[linear-gradient(180deg,rgba(8,24,39,0.94)_0%,rgba(4,17,29,0.98)_100%)] shadow-[0_20px_70px_rgba(0,0,0,0.28)]">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(34,211,238,0.08),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(59,130,246,0.05),_transparent_24%)]" />
 
-            {racer?.isClaimed && (
-              <div className="mt-2 flex justify-center sm:justify-start">
-                {racer.claimedByUsername ? (
-                  <button
-                    type="button"
-                    onClick={() =>
-                      navigate(`/profile/${racer.claimedByUsername}`)
-                    }
-                    title={`Verified and claimed by @${racer.claimedByUsername}`}
-                    className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-200 border border-emerald-400/20 text-xs hover:bg-emerald-500/20 transition"
-                  >
-                    <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-gradient-to-r from-violet-500 via-fuchsia-500 to-amber-400 text-[10px] text-white font-bold">
-                      ✓
-                    </span>
-                    Verified Athlete
-                  </button>
-                ) : (
-                  <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-200 border border-emerald-400/20 text-xs">
-                    <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-gradient-to-r from-violet-500 via-fuchsia-500 to-amber-400 text-[10px] text-white font-bold">
-                      ✓
-                    </span>
-                    Verified Athlete
-                  </span>
-                )}
-              </div>
-            )}
-
-            {racer?.isClaimed && racer?.claimedByUsername && (
-              <div className="mt-1 flex justify-center sm:justify-start">
-                <button
-                  type="button"
+          <div className="relative p-5 sm:p-7 lg:p-10">
+            <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-center xl:flex-1">
+                <div
+                  className="mx-auto cursor-pointer self-start rounded-full bg-gradient-to-tr from-violet-500 via-fuchsia-500 to-amber-400 p-[2px] sm:mx-0"
                   onClick={() =>
-                    navigate(`/profile/${racer.claimedByUsername}`)
+                    setLightboxUrl(racer.racerImage || stockAvatar)
                   }
-                  className="text-[11px] text-white/50 hover:text-white/80 underline underline-offset-2"
                 >
-                  Claimed by @{racer.claimedByUsername}
-                </button>
-              </div>
-            )}
+                  <img
+                    src={racer.racerImage || stockAvatar}
+                    onError={(e) => {
+                      const img = e.currentTarget as HTMLImageElement;
+                      if (img.src !== stockAvatar) img.src = stockAvatar;
+                    }}
+                    className="h-28 w-28 rounded-full bg-black object-cover sm:h-36 sm:w-36 lg:h-40 lg:w-40"
+                  />
+                </div>
 
-            {hasPendingClaim && (
-              <div className="mt-2 flex justify-center sm:justify-start">
-                <span className="px-2.5 py-1 rounded-full bg-yellow-500/15 text-yellow-200 border border-yellow-400/20 text-xs">
-                  Claim Pending
-                </span>
-              </div>
-            )}
+                <div className="min-w-0 flex-1 text-center sm:text-left">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/15 bg-cyan-400/8 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-cyan-300">
+                    <span className="h-2 w-2 rounded-full bg-cyan-300" />
+                    Athlete profile
+                  </div>
 
-            {hasRejectedClaim && (
-              <div className="mt-2 flex justify-center sm:justify-start">
-                <span className="px-2.5 py-1 rounded-full bg-red-500/15 text-red-200 border border-red-400/20 text-xs">
-                  Previous Claim Rejected
-                </span>
-              </div>
-            )}
+                  <h1 className="mt-4 break-words text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl">
+                    {title}
+                  </h1>
 
-            <div className="mt-1 flex flex-wrap items-center justify-center sm:justify-start gap-2">
-              {chips.length === 0 ? (
-                <p className="text-sm text-white/70">AQUA Racer</p>
-              ) : (
-                chips.map((c, i) => (
-                  <span
-                    key={i}
-                    className="px-2.5 py-0.5 rounded-full border border-white/10 text-[11px] text-white/90"
+                  {racer?.isClaimed && (
+                    <div className="mt-3 flex justify-center sm:justify-start">
+                      {racer.claimedByUsername ? (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            navigate(`/profile/${racer.claimedByUsername}`)
+                          }
+                          title={`Verified and claimed by @${racer.claimedByUsername}`}
+                          className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-500/15 px-3 py-1.5 text-xs text-emerald-200 transition hover:bg-emerald-500/20"
+                        >
+                          <ShieldCheck className="h-4 w-4" />
+                          Verified Athlete
+                        </button>
+                      ) : (
+                        <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-500/15 px-3 py-1.5 text-xs text-emerald-200">
+                          <ShieldCheck className="h-4 w-4" />
+                          Verified Athlete
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {racer?.isClaimed && racer?.claimedByUsername && (
+                    <div className="mt-2 flex justify-center sm:justify-start">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          navigate(`/profile/${racer.claimedByUsername}`)
+                        }
+                        className="text-[11px] text-white/50 underline underline-offset-2 hover:text-white/80"
+                      >
+                        Claimed by @{racer.claimedByUsername}
+                      </button>
+                    </div>
+                  )}
+
+                  {hasPendingClaim && (
+                    <div className="mt-3 flex justify-center sm:justify-start">
+                      <span className="rounded-full border border-yellow-400/20 bg-yellow-500/15 px-3 py-1.5 text-xs text-yellow-200">
+                        Claim Pending
+                      </span>
+                    </div>
+                  )}
+
+                  {hasRejectedClaim && (
+                    <div className="mt-3 flex justify-center sm:justify-start">
+                      <span className="rounded-full border border-red-400/20 bg-red-500/15 px-3 py-1.5 text-xs text-red-200">
+                        Previous Claim Rejected
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="mt-4 flex flex-wrap items-center justify-center gap-2 sm:justify-start">
+                    {chips.length === 0 ? (
+                      <p className="text-sm text-white/70">AQUA Racer</p>
+                    ) : (
+                      chips.map((c, i) => (
+                        <span
+                          key={i}
+                          className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] text-white/90"
+                        >
+                          {c.icon ? c.icon : null}
+                          {c.label}
+                        </span>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap justify-center gap-2 xl:justify-end">
+                {canEdit ? (
+                  <Button
+                    onClick={() => setEditOpen(true)}
+                    className="h-11 bg-white/10 text-white border border-white/20 hover:bg-white/15"
                   >
-                    {c.label}
-                  </span>
-                ))
-              )}
+                    <PencilLine className="mr-2 h-4 w-4" />
+                    Edit
+                  </Button>
+                ) : hasPendingClaim ? (
+                  <Button
+                    disabled
+                    className="h-11 border border-yellow-400/20 bg-yellow-500/20 text-yellow-200"
+                  >
+                    Claim Pending
+                  </Button>
+                ) : canClaim ? (
+                  <Button
+                    onClick={() => setClaimOpen(true)}
+                    className="h-11 bg-violet-500 text-white hover:bg-violet-600"
+                  >
+                    {hasRejectedClaim ? "Submit New Claim" : "Claim Profile"}
+                  </Button>
+                ) : null}
+
+                <Button
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(window.location.href);
+                      toast({ title: "Copied to clipboard" });
+                    } catch {}
+                  }}
+                  className="h-11 bg-white text-black hover:bg-white/90"
+                >
+                  <Share2 className="mr-2 h-4 w-4" />
+                  Share
+                </Button>
+              </div>
             </div>
 
-            <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
               {stats.map((s) => (
                 <StatBox
                   key={s.label}
@@ -666,57 +1097,23 @@ export default function RacerProfilePage({
               ))}
             </div>
           </div>
-
-          <div className="flex w-full gap-2 self-center sm:self-end sm:w-auto justify-center sm:justify-end">
-            {canEdit ? (
-              <Button
-                onClick={() => setEditOpen(true)}
-                className="h-11 sm:h-9 sm:w-auto bg-white/10 text-white border border-white/20 hover:bg-white/15"
-              >
-                <PencilLine className="mr-2 h-4 w-4" /> Edit
-              </Button>
-            ) : hasPendingClaim ? (
-              <Button
-                disabled
-                className="h-11 sm:h-9 sm:w-auto bg-yellow-500/20 text-yellow-200 border border-yellow-400/20"
-              >
-                Claim Pending
-              </Button>
-            ) : canClaim ? (
-              <Button
-                onClick={() => setClaimOpen(true)}
-                className="h-11 sm:h-9 sm:w-auto bg-violet-500 text-white hover:bg-violet-600"
-              >
-                {hasRejectedClaim ? "Submit New Claim" : "Claim Profile"}
-              </Button>
-            ) : null}
-
-            <Button
-              onClick={async () => {
-                try {
-                  await navigator.clipboard.writeText(window.location.href);
-                  toast({ title: "Copied to clipboard" });
-                } catch {}
-              }}
-              className="h-11 sm:h-9 sm:w-auto bg-white text-black hover:bg-white/90"
-            >
-              Share
-            </Button>
-          </div>
         </div>
 
-        {/* content */}
-        <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="order-2 lg:order-1 lg:col-span-1 space-y-6">
-            <Card className="bg-white/5 border-white/10 p-4">
-              <div className="text-sm text-white/80 mb-2">About</div>
-              <p className="text-white/80 text-sm whitespace-pre-wrap">
+        <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="order-2 space-y-6 lg:order-1 lg:col-span-1">
+            <Card className="rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(8,24,39,0.82)_0%,rgba(4,17,29,0.92)_100%)] p-5">
+              <div className="mb-2 text-sm font-semibold uppercase tracking-[0.16em] text-cyan-300/80">
+                About
+              </div>
+              <p className="whitespace-pre-wrap text-sm leading-7 text-white/80">
                 {racer.bio || "Bio coming soon."}
               </p>
             </Card>
 
-            <Card className="bg-white/5 border-white/10 p-4">
-              <div className="text-sm text-white/80 mb-3">World Finals</div>
+            <Card className="rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(8,24,39,0.82)_0%,rgba(4,17,29,0.92)_100%)] p-5">
+              <div className="mb-3 text-sm font-semibold uppercase tracking-[0.16em] text-cyan-300/80">
+                World Finals
+              </div>
               <div className="grid grid-cols-2 gap-3 text-white/80">
                 <MiniStat
                   label="Career WF Wins"
@@ -725,37 +1122,51 @@ export default function RacerProfilePage({
               </div>
             </Card>
 
-            <Card className="bg-white/5 border-white/10 p-4">
-              <div className="text-sm text-white/80 mb-2">
-                AI Racer Analysis:
+            <Card className="rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(8,24,39,0.82)_0%,rgba(4,17,29,0.92)_100%)] p-5">
+              <div className="mb-2 inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.16em] text-cyan-300/80">
+                <Sparkles className="h-4 w-4" />
+                AI Racer Analysis
               </div>
               {analysisLoading ? (
-                <p className="text-white/60 text-sm">Analyzing this racer…</p>
+                <p className="text-sm text-white/60">Analyzing this racer…</p>
               ) : analysisErr ? (
-                <p className="text-red-300 text-sm">{analysisErr}</p>
+                <p className="text-sm text-red-300">{analysisErr}</p>
               ) : analysis ? (
-                <p className="text-white/80 text-sm whitespace-pre-wrap">
+                <p className="whitespace-pre-wrap text-sm leading-7 text-white/80">
                   {analysis}
                 </p>
               ) : (
-                <p className="text-white/60 text-sm">
+                <p className="text-sm text-white/60">
                   Analysis will appear here once available.
                 </p>
               )}
             </Card>
           </div>
 
-          <div className="order-1 lg:order-2 lg:col-span-2 space-y-3">
-            <Card className="bg-white/5 border-white/10 p-4">
-              <div className="text-white/80 text-sm">
-                Race media & posts coming soon.
+          <div className="order-1 space-y-4 lg:order-2 lg:col-span-2">
+            <Card className="rounded-[28px] border border-cyan-400/10 bg-[linear-gradient(180deg,rgba(8,24,39,0.92)_0%,rgba(4,17,29,0.98)_100%)] p-6">
+              <div className="mb-2 text-lg font-semibold text-white">
+                Race Media & Highlights
               </div>
+              <p className="text-sm leading-7 text-slate-300">
+                Racer highlights, posts, media drops, reels, race recaps, and
+                sponsor content to come.
+              </p>
+            </Card>
+
+            <Card className="rounded-[28px] border border-white/10 bg-white/[0.03] p-6">
+              <div className="mb-2 text-lg font-semibold text-white">
+                Performance Timeline
+              </div>
+              <p className="text-sm leading-7 text-slate-300">
+                Racer season history, podium trends, class progression, and
+                race-by-race results to come.
+              </p>
             </Card>
           </div>
         </div>
       </div>
 
-      {/* lightbox */}
       {lightboxUrl && (
         <div
           className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70"
@@ -763,7 +1174,7 @@ export default function RacerProfilePage({
         >
           <button
             onClick={() => setLightboxUrl(null)}
-            className="absolute top-4 right-4 h-9 w-9 grid place-items-center rounded-full bg-white text-black"
+            className="absolute right-4 top-4 grid h-9 w-9 place-items-center rounded-full bg-white text-black"
             aria-label="Close image"
           >
             <XIcon size={18} />
@@ -776,7 +1187,6 @@ export default function RacerProfilePage({
         </div>
       )}
 
-      {/* EDIT MODAL */}
       {editOpen && racer && (
         <EditRacerModal
           initial={{
@@ -1004,7 +1414,6 @@ export default function RacerProfilePage({
         />
       )}
 
-      {/* racer search modal */}
       <RacerSearchModal
         open={searchOpen}
         onClose={() => setSearchOpen(false)}
@@ -1014,373 +1423,6 @@ export default function RacerProfilePage({
           navigate(`/racer/${idStr}`);
         }}
       />
-    </div>
-  );
-}
-
-/* --------- helpers used by modal --------- */
-async function uploadAthleteImage(
-  athleteId: string,
-  userId: string,
-  file: File,
-) {
-  const form = new FormData();
-  form.append("userId", userId);
-  form.append("media", file);
-
-  const res = await apiRequest<any>(
-    "PATCH",
-    `/athletes/${encodeURIComponent(athleteId)}/profile-image`,
-    form as any,
-  );
-
-  const url = res?.mediaUrl ?? res?.data?.mediaUrl ?? res?.url ?? null;
-  if (!url) throw new Error("Upload succeeded but no mediaUrl returned");
-  return String(url);
-}
-async function pollUploadProgress(
-  fileName: string,
-  onTick: (pct: number) => void,
-) {
-  const started = Date.now();
-  while (Date.now() - started < 60_000) {
-    try {
-      const data = await apiRequest<{ progress: number }>(
-        "GET",
-        `/athletes/upload-progress/${encodeURIComponent(fileName)}`,
-      );
-      const pct = Math.max(0, Math.min(100, Number(data?.progress ?? 0)));
-      onTick(pct);
-      if (pct >= 100) break;
-    } catch {}
-    await new Promise((r) => setTimeout(r, 700));
-  }
-}
-type EditValues = {
-  age?: number | string;
-  bio?: string;
-  heightInches?: number | string;
-  origin?: string;
-  boatManufacturers?: string;
-  imageFile?: File | null;
-};
-function toNumOrUndefined(v: any): number | undefined {
-  if (v === null || v === undefined || v === "") return undefined;
-  const n = Number(v);
-  return Number.isFinite(n) ? n : undefined;
-}
-function EditRacerModal({
-  initial,
-  onClose,
-  onSave,
-  uploadPct,
-}: {
-  initial: EditValues;
-  onClose: () => void;
-  onSave: (v: EditValues) => Promise<void> | void;
-  uploadPct?: number | null;
-}) {
-  const [vals, setVals] = useState<EditValues>(initial);
-  const [saving, setSaving] = useState(false);
-  const set =
-    (k: keyof EditValues) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-      setVals((p) => ({ ...p, [k]: e.target.value }));
-
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  React.useEffect(() => {
-    return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-    };
-  }, [previewUrl]);
-
-  return (
-    <div
-      className="fixed inset-0 z-[70] bg-black/70 flex items-center justify-center"
-      onClick={onClose}
-    >
-      <div
-        className="w-full h-full md:h-auto md:max-w-xl md:rounded-xl bg-[#0b0f18] border border-white/10 p-4 overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="text-lg font-semibold text-white">Edit Profile</h2>
-          <button
-            aria-label="Close"
-            className="h-9 w-9 grid place-items-center rounded-full bg-white/10 border border-white/10 hover:bg-white/15"
-            onClick={onClose}
-            disabled={saving}
-          >
-            <XIcon size={16} />
-          </button>
-        </div>
-
-        <div className="space-y-3">
-          <Field label="Age">
-            <input
-              inputMode="numeric"
-              value={vals.age ?? ""}
-              onChange={set("age")}
-              className="w-full h-10 rounded-md bg-white/5 border border-white/10 px-3 text-sm text-white outline-none placeholder:text-white/40"
-              placeholder="e.g., 25"
-            />
-          </Field>
-
-          <Field label="Bio">
-            <textarea
-              value={vals.bio ?? ""}
-              onChange={set("bio")}
-              rows={4}
-              className="w-full rounded-md bg-white/5 border border-white/10 px-3 py-2 text-sm text-white outline-none placeholder:text-white/40"
-              placeholder="Tell people about you…"
-            />
-          </Field>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Field label="Height (inches)">
-              <input
-                type="number"
-                inputMode="numeric"
-                min={36}
-                max={96}
-                step={1}
-                value={vals.heightInches ?? ""}
-                onChange={set("heightInches")}
-                className="w-full h-10 rounded-md bg-white/5 border border-white/10 px-3 text-sm text-white outline-none placeholder:text-white/40"
-                placeholder="e.g., 70"
-              />
-            </Field>
-
-            <Field label="Origin">
-              <input
-                value={vals.origin ?? ""}
-                onChange={set("origin")}
-                className="w-full h-10 rounded-md bg-white/5 border border-white/10 px-3 text-sm text-white outline-none placeholder:text-white/40"
-                placeholder="e.g., USA"
-              />
-            </Field>
-          </div>
-
-          <Field label="Boat Manufacturer">
-            <input
-              value={vals.boatManufacturers ?? ""}
-              onChange={set("boatManufacturers")}
-              className="w-full h-10 rounded-md bg-white/5 border border-white/10 px-3 text-sm text-white outline-none placeholder:text-white/40"
-              placeholder="e.g., Yamaha"
-            />
-          </Field>
-
-          <Field label="Racer Photo (Please use clear headshot)">
-            <input
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              onChange={(e) => {
-                const file = e.currentTarget.files?.[0] || null;
-                if (file && !/^image\/(jpeg|png|webp)$/.test(file.type)) {
-                  // block RAW / DNG / HEIC
-                  alert(
-                    "Please upload a JPG, PNG, or WEBP image (no RAW / DNG).",
-                  );
-                  return;
-                }
-                setVals((p) => ({ ...p, imageFile: file }));
-                if (previewUrl) URL.revokeObjectURL(previewUrl);
-                setPreviewUrl(file ? URL.createObjectURL(file) : null);
-              }}
-              className="w-full h-10 rounded-md bg-white/5 border border-white/10 px-3 py-1 text-sm text-white outline-none"
-            />
-          </Field>
-
-          {vals.imageFile && previewUrl && (
-            <img
-              src={previewUrl}
-              alt="Selected profile preview"
-              className="h-28 w-28 rounded-full object-cover border border-white/10"
-            />
-          )}
-        </div>
-
-        <div className="mt-4 flex justify-end gap-2">
-          <Button
-            variant="ghost"
-            onClick={onClose}
-            className="border border-white/10 bg-transparent text-white hover:bg-white/10"
-            disabled={saving}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={async () => {
-              try {
-                setSaving(true);
-                await onSave(vals);
-              } finally {
-                setSaving(false);
-              }
-            }}
-            className="bg-white text-black hover:bg-white/90"
-            disabled={saving}
-          >
-            {saving
-              ? uploadPct != null
-                ? `Uploading… ${uploadPct}%`
-                : "Saving…"
-              : "Save changes"}
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ClaimAthleteModal({
-  racerName,
-  onClose,
-  onSubmit,
-  loading,
-}: {
-  racerName: string;
-  onClose: () => void;
-  onSubmit: (v: {
-    additionalInfo?: string;
-    idCardImage: File;
-  }) => Promise<void> | void;
-  loading?: boolean;
-}) {
-  const [additionalInfo, setAdditionalInfo] = useState("");
-  const [idCardImage, setIdCardImage] = useState<File | null>(null);
-
-  return (
-    <div
-      className="fixed inset-0 z-[80] bg-black/70 flex items-center justify-center"
-      onClick={onClose}
-    >
-      <div
-        className="w-full h-full md:h-auto md:max-w-xl md:rounded-xl bg-[#0b0f18] border border-white/10 p-4 overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="text-lg font-semibold text-white">
-            Claim Athlete Profile
-          </h2>
-          <button
-            aria-label="Close"
-            className="h-9 w-9 grid place-items-center rounded-full bg-white/10 border border-white/10 hover:bg-white/15"
-            onClick={onClose}
-            disabled={loading}
-          >
-            <XIcon size={16} />
-          </button>
-        </div>
-
-        <p className="text-sm text-white/70 mb-4">
-          Submit a claim for{" "}
-          <span className="text-white font-medium">{racerName}</span>. Upload a
-          clear ID image so an admin can verify ownership.
-        </p>
-
-        <div className="space-y-3">
-          <Field label="Additional Info (optional)">
-            <textarea
-              value={additionalInfo}
-              onChange={(e) => setAdditionalInfo(e.target.value)}
-              rows={4}
-              className="w-full rounded-md bg-white/5 border border-white/10 px-3 py-2 text-sm text-white outline-none placeholder:text-white/40"
-              placeholder="Add any details that help verify this athlete profile..."
-            />
-          </Field>
-
-          <Field label="ID Card Image">
-            <input
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              onChange={(e) => {
-                const file = e.currentTarget.files?.[0] || null;
-                if (!file) {
-                  setIdCardImage(null);
-                  return;
-                }
-                if (!/^image\/(jpeg|png|webp)$/.test(file.type)) {
-                  alert("Please upload a JPG, PNG, or WEBP image.");
-                  return;
-                }
-                setIdCardImage(file);
-              }}
-              className="w-full h-10 rounded-md bg-white/5 border border-white/10 px-3 py-1 text-sm text-white outline-none"
-            />
-          </Field>
-
-          {!idCardImage && (
-            <p className="text-xs text-red-300">
-              An ID card image is required to submit a claim.
-            </p>
-          )}
-        </div>
-
-        <div className="mt-4 flex justify-end gap-2">
-          <Button
-            variant="ghost"
-            onClick={onClose}
-            className="border border-white/10 bg-transparent text-white hover:bg-white/10"
-            disabled={loading}
-          >
-            Cancel
-          </Button>
-
-          <Button
-            onClick={async () => {
-              if (!idCardImage) return;
-              await onSubmit({ additionalInfo, idCardImage });
-            }}
-            className="bg-white text-black hover:bg-white/90"
-            disabled={loading || !idCardImage}
-          >
-            {loading ? "Submitting..." : "Submit Claim"}
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <label className="block">
-      <div className="text-xs text-white/60 mb-1">{label}</div>
-      {children}
-    </label>
-  );
-}
-
-function StatBox({
-  label,
-  value,
-  trophy,
-}: {
-  label: string;
-  value: number;
-  trophy?: boolean;
-}) {
-  return (
-    <div className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3">
-      <div className="text-2xl font-semibold flex items-center gap-2">
-        {value}
-        {trophy && <span>🏆</span>}
-      </div>
-      <div className="text-sm text-white/70">{label}</div>
-    </div>
-  );
-}
-function MiniStat({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="rounded-lg bg-white/5 border border-white/10 px-3 py-2">
-      <div className="text-lg font-semibold">{value}</div>
-      <div className="text-xs text-white/60">{label}</div>
     </div>
   );
 }

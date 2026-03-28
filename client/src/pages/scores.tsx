@@ -1,16 +1,11 @@
-// src/pages/scores.tsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown, X } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { useLocation } from "wouter";
-import { Trophy } from "lucide-react";
-import { apiRequest } from "@/lib/apiClient";
-
-import AquaScoresSection from "@/components/AquaScoresSection";
 import RacerSearchModal from "@/components/RacerSearchModal";
-import AccordionSection from "@/components/AccordionSection";
-import { markHahn300 } from "@/data/markHanRace";
+import AquaTabContent from "@/components/scores/AquaTabContent";
 
 type TabKey = "AQUA" | "MLB" | "NBA" | "NFL" | "NHL" | "NCAAF";
+
 const TAB_ORDER: TabKey[] = ["AQUA", "MLB", "NBA", "NFL", "NHL", "NCAAF"];
 
 const TAB_LABELS: Record<TabKey, string> = {
@@ -23,56 +18,6 @@ const TAB_LABELS: Record<TabKey, string> = {
 };
 
 type ResizeStrategy = "auto" | "scroll";
-
-type AquaOrgEvent = {
-  id: string;
-  name: string;
-  description?: string | null;
-  location?: string | null;
-  startDate: string;
-  endDate?: string | null;
-  organizer?: {
-    id: string;
-    name?: string | null;
-    abbreviation?: string | null;
-  } | null;
-};
-
-function formatEventDateRange(start: string, end?: string | null) {
-  const s = new Date(start);
-  const e = end ? new Date(end) : null;
-
-  const sameDay =
-    e &&
-    s.getFullYear() === e.getFullYear() &&
-    s.getMonth() === e.getMonth() &&
-    s.getDate() === e.getDate();
-
-  const startFmt = s.toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-
-  if (!e) return startFmt;
-  if (sameDay) return startFmt;
-
-  const endFmt = e.toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-
-  return `${startFmt} – ${endFmt}`;
-}
-
-function sortEventsAsc(a: AquaOrgEvent, b: AquaOrgEvent) {
-  return +new Date(a.startDate) - +new Date(b.startDate);
-}
-
-function sortEventsDesc(a: AquaOrgEvent, b: AquaOrgEvent) {
-  return +new Date(b.startDate) - +new Date(a.startDate);
-}
 
 function ResponsiveFrame({
   src,
@@ -121,13 +66,13 @@ function ResponsiveFrame({
   return (
     <div className="w-full">
       <div
-        className="w-full overflow-hidden rounded-2xl shadow-lg border border-white/10 bg-white/5"
+        className="h-full w-full overflow-hidden rounded-2xl border border-white/10 bg-white/5 shadow-lg"
         style={{ height: effectiveHeight }}
       >
         <iframe
           src={src}
           title={title}
-          className="w-full h-full"
+          className="h-full w-full"
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
         />
@@ -163,16 +108,16 @@ function TabDropdown({
   return (
     <div
       ref={wrapperRef}
-      className="relative inline-block text-left w-full sm:w-auto"
+      className="relative inline-block w-full text-left sm:w-auto"
     >
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between gap-2 rounded-xl border border-white/30 bg-white/5 px-4 py-2 text-sm sm:text-base font-semibold text-white hover:bg-white/10 transition"
+        className="flex w-full items-center justify-between gap-2 rounded-xl border border-white/30 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10 sm:text-base"
       >
         <span>{TAB_LABELS[active]}</span>
         <ChevronDown
-          className={`h-4 w-4 sm:h-5 sm:w-5 transition-transform ${
+          className={`h-4 w-4 transition-transform sm:h-5 sm:w-5 ${
             open ? "rotate-180" : ""
           }`}
           strokeWidth={3}
@@ -180,7 +125,7 @@ function TabDropdown({
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-full sm:w-48 origin-top-right rounded-xl border border-white/15 bg-black/90 shadow-xl backdrop-blur-md z-30">
+        <div className="absolute right-0 z-30 mt-2 w-full origin-top-right rounded-xl border border-white/15 bg-black/90 shadow-xl backdrop-blur-md sm:w-48">
           <div className="py-1">
             {TAB_ORDER.filter((key) => key !== active).map((key) => (
               <button
@@ -202,609 +147,35 @@ function TabDropdown({
   );
 }
 
-function trophyFor(place?: number) {
-  switch (place) {
-    case 1:
-      return { show: true, colorClass: "text-amber-400", label: "1st place" };
-    case 2:
-      return { show: true, colorClass: "text-gray-300", label: "2nd place" };
-    case 3:
-      return { show: true, colorClass: "text-[#cd7f32]", label: "3rd place" };
-    default:
-      return { show: false, colorClass: "", label: "" };
-  }
-}
-
-function FeaturedRaceSection() {
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="space-y-1">
-        <p className="text-xs uppercase tracking-[0.18em] text-cyan-300/80">
-          Featured Race
-        </p>
-        <h2 className="text-2xl font-semibold text-white">
-          {markHahn300.title}
-        </h2>
-        <p className="text-sm text-white/70">{markHahn300.date}</p>
-      </div>
-
-      <div className="space-y-3">
-        <AccordionSection
-          labelShow="Show Final Results - Overall"
-          labelHide="Hide Final Results - Overall"
-        >
-          <div className="space-y-4">
-            <div className="text-sm text-white/70">{markHahn300.subtitle}</div>
-
-            {/* Results table */}
-            <div className="rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="min-w-full text-sm">
-                  <thead className="bg-black/30">
-                    <tr className="text-white/80">
-                      <th className="px-2 py-3 text-left font-semibold">
-                        Place
-                      </th>
-                      <th className="px-2 py-3 text-left font-semibold">
-                        Number/MFG
-                      </th>
-                      <th className="px-2 py-3 text-left font-semibold">
-                        Team Name
-                      </th>
-                      <th className="px-2 py-3 text-right font-semibold">
-                        Laps
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/10">
-                    {markHahn300.results.map((r) => (
-                      <tr
-                        key={`${r.place}-${r.boatNumber}-${r.mfg}`}
-                        className="text-white/80"
-                      >
-                        <td className="px-4 py-3 tabular-nums">
-                          <span className="inline-flex items-center gap-2">
-                            {r.place}
-                            {(() => {
-                              const trophy = trophyFor(r.place);
-                              return trophy.show ? (
-                                <Trophy
-                                  aria-label={trophy.label}
-                                  className={`h-4 w-4 ${trophy.colorClass}`}
-                                />
-                              ) : null;
-                            })()}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 tabular-nums">
-                          {r.boatNumber} - {r.mfg}
-                        </td>
-                        <td className="px-4 py-3">{r.teamName}</td>
-                        <td className="px-4 py-3 text-right tabular-nums">
-                          {r.lapsCompleted}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Penalties legend */}
-            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-              <div className="text-sm font-semibold text-white mb-2">
-                Penalties
-              </div>
-              <ul className="list-disc pl-5 space-y-1 text-sm text-white/75">
-                {markHahn300.penalties.map((p) => (
-                  <li key={p}>{p}</li>
-                ))}
-              </ul>
-            </div>
-            {/* Achievments */}
-            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-              <div className="text-sm font-semibold text-white mb-2">
-                Achievements
-              </div>
-              <ul className="list-disc pl-5 space-y-1 text-sm text-white/75">
-                {markHahn300.achievement.map((p) => (
-                  <li key={p}>{p}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </AccordionSection>
-      </div>
-    </div>
-  );
-}
-
-function AllAquaEventsModal({
-  open,
-  onClose,
-}: {
-  open: boolean;
-  onClose: () => void;
-}) {
-  const [, navigate] = useLocation();
-  const [loading, setLoading] = useState(false);
-  const [events, setEvents] = useState<AquaOrgEvent[]>([]);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!open) return;
-
-    let ignore = false;
-
-    async function loadAllEvents() {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const orgRes = await apiRequest<any>(
-          "GET",
-          "/organizations?page=1&limit=50",
-        );
-        const orgs =
-          orgRes?.organizations ??
-          orgRes?.data?.organizations ??
-          orgRes?.data ??
-          [];
-
-        const orgList = Array.isArray(orgs) ? orgs : [];
-
-        const settled = await Promise.allSettled(
-          orgList.map(async (org: any) => {
-            const orgId = String(org.id);
-            const res = await apiRequest<any>(
-              "GET",
-              `/sport-event/organization/${encodeURIComponent(orgId)}?page=1&limit=50&order=ASC`,
-            );
-
-            const items =
-              res?.sportEvents ?? res?.data?.sportEvents ?? res?.data ?? [];
-
-            return Array.isArray(items)
-              ? items.map((event: any) => ({
-                  id: String(event.id),
-                  name: String(event.name ?? "Unnamed Event"),
-                  description: event.description ?? null,
-                  location: event.location ?? null,
-                  startDate: String(event.startDate),
-                  endDate: event.endDate ?? null,
-                  organizer: {
-                    id: orgId,
-                    name: org.name ?? null,
-                    abbreviation: org.abbreviation ?? null,
-                  },
-                }))
-              : [];
-          }),
-        );
-
-        const merged = settled.flatMap((result) =>
-          result.status === "fulfilled" ? result.value : [],
-        );
-
-        const dedupedMap = new Map<string, AquaOrgEvent>();
-        for (const event of merged) {
-          dedupedMap.set(event.id, event);
-        }
-
-        if (!ignore) {
-          setEvents(Array.from(dedupedMap.values()));
-        }
-      } catch (e: any) {
-        if (!ignore) {
-          setError(e?.message || "Failed to load AQUA events.");
-        }
-      } finally {
-        if (!ignore) setLoading(false);
-      }
-    }
-
-    loadAllEvents();
-
-    return () => {
-      ignore = true;
-    };
-  }, [open]);
-
-  useEffect(() => {
-    if (!open) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev || "";
-    };
-  }, [open]);
-
-  if (!open) return null;
-
-  const now = new Date();
-
-  const upcoming = events
-    .filter((event) => new Date(event.endDate ?? event.startDate) >= now)
-    .sort(sortEventsAsc);
-
-  const past = events
-    .filter((event) => new Date(event.endDate ?? event.startDate) < now)
-    .sort(sortEventsDesc);
-
-  function openEvent(eventId: string) {
-    onClose();
-    navigate(`/aqua-organizations/event-details/${eventId}`);
-  }
-
-  return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center">
-      <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-        onClick={onClose}
-      />
-
-      <div className="relative z-10 w-[95vw] max-w-4xl rounded-2xl border border-white/10 bg-[#090D16] shadow-2xl">
-        <div className="flex items-center justify-between border-b border-white/10 px-4 py-4 sm:px-6">
-          <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-cyan-300/80">
-              Jet Ski
-            </p>
-            <h2 className="text-xl sm:text-2xl font-semibold text-white">
-              All AQUA Events
-            </h2>
-            <p className="text-sm text-white/60">
-              Browse every organization’s race schedule.
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white hover:bg-white/10"
-            aria-label="Close events modal"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        <div className="max-h-[75vh] overflow-y-auto px-4 py-4 sm:px-6 sm:py-6">
-          {loading ? (
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-white/70">
-              Loading events…
-            </div>
-          ) : error ? (
-            <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-6 text-white">
-              <div className="font-semibold mb-1">Failed to load events</div>
-              <div className="text-sm text-white/80">{error}</div>
-            </div>
-          ) : (
-            <div className="space-y-8">
-              <section className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-white">Upcoming</h3>
-                  <span className="text-xs uppercase tracking-[0.16em] text-white/45">
-                    {upcoming.length} events
-                  </span>
-                </div>
-
-                {upcoming.length === 0 ? (
-                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/60">
-                    No upcoming events found.
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {upcoming.map((event) => (
-                      <button
-                        key={event.id}
-                        type="button"
-                        onClick={() => openEvent(event.id)}
-                        className="w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-left hover:border-cyan-300/50 hover:bg-white/10 transition"
-                      >
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                          <div className="min-w-0">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <h4 className="text-base sm:text-lg font-semibold text-white break-words">
-                                {event.name}
-                              </h4>
-                              {event.organizer?.abbreviation ? (
-                                <span className="rounded-full border border-white/15 px-2 py-[2px] text-[10px] uppercase tracking-[0.16em] text-white/65">
-                                  {event.organizer.abbreviation}
-                                </span>
-                              ) : null}
-                            </div>
-
-                            <p className="mt-1 text-sm text-white/70">
-                              {event.organizer?.name || "Unknown Organization"}
-                            </p>
-
-                            <div className="mt-2 flex flex-col gap-1 text-sm text-white/55 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4">
-                              <span>
-                                {formatEventDateRange(
-                                  event.startDate,
-                                  event.endDate,
-                                )}
-                              </span>
-                              {event.location ? (
-                                <span>{event.location}</span>
-                              ) : null}
-                            </div>
-                          </div>
-
-                          <span className="shrink-0 text-xs font-semibold uppercase tracking-[0.16em] text-cyan-200">
-                            View Event ↗
-                          </span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </section>
-
-              <section className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-white">Past</h3>
-                  <span className="text-xs uppercase tracking-[0.16em] text-white/45">
-                    {past.length} events
-                  </span>
-                </div>
-
-                {past.length === 0 ? (
-                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/60">
-                    No past events found.
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {past.map((event) => (
-                      <button
-                        key={event.id}
-                        type="button"
-                        onClick={() => openEvent(event.id)}
-                        className="w-full rounded-2xl border border-white/10 bg-black/20 p-4 text-left hover:border-cyan-300/40 hover:bg-white/10 transition"
-                      >
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                          <div className="min-w-0">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <h4 className="text-base sm:text-lg font-semibold text-white break-words">
-                                {event.name}
-                              </h4>
-                              {event.organizer?.abbreviation ? (
-                                <span className="rounded-full border border-white/15 px-2 py-[2px] text-[10px] uppercase tracking-[0.16em] text-white/65">
-                                  {event.organizer.abbreviation}
-                                </span>
-                              ) : null}
-                            </div>
-
-                            <p className="mt-1 text-sm text-white/70">
-                              {event.organizer?.name || "Unknown Organization"}
-                            </p>
-
-                            <div className="mt-2 flex flex-col gap-1 text-sm text-white/55 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4">
-                              <span>
-                                {formatEventDateRange(
-                                  event.startDate,
-                                  event.endDate,
-                                )}
-                              </span>
-                              {event.location ? (
-                                <span>{event.location}</span>
-                              ) : null}
-                            </div>
-                          </div>
-
-                          <span className="shrink-0 text-xs font-semibold uppercase tracking-[0.16em] text-cyan-200">
-                            View Event ↗
-                          </span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </section>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-type AquaView = "hub" | "results";
-
-interface AquaHubSectionProps {
-  onOpenResults: () => void;
-  onOpenRacerSearch: () => void;
-  onOpenUpcomingEvents: () => void;
-}
-
-function AquaHubSection({
-  onOpenResults,
-  onOpenRacerSearch,
-  onOpenUpcomingEvents,
-}: AquaHubSectionProps) {
-  const [, navigate] = useLocation();
-
-  function goToOrganizations() {
-    navigate("/aqua-organizations");
-  }
-
-  return (
-    <div className="space-y-6">
-      {/* AQUA header */}
-      <div className="space-y-1">
-        <p className="text-xs uppercase tracking-[0.18em] text-cyan-300/80">
-          Jet Ski
-        </p>
-        <h2 className="text-2xl font-semibold text-white">AQUA Sports Hub</h2>
-        <p className="text-sm text-white/70">
-          Dive into race organizations, full results, racer profiles, points
-          battles, and news from the week.
-        </p>
-      </div>
-
-      {/* Tile grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {/* Race Organizations */}
-        <button
-          type="button"
-          onClick={goToOrganizations}
-          className="group flex flex-col justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-4 sm:px-5 sm:py-5 text-left hover:border-cyan-300/70 hover:bg-white/10 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
-        >
-          <div className="space-y-2">
-            <h3 className="text-base sm:text-lg font-semibold text-white flex items-center gap-2">
-              Race Organizations
-              <span className="rounded-full border border-white/15 px-2 py-[2px] text-[10px] uppercase tracking-[0.16em] text-white/65">
-                New
-              </span>
-            </h3>
-            <p className="text-xs sm:text-sm text-white/70">
-              Explore IJSBA, regional tours, and how events feed into World
-              Finals.
-            </p>
-          </div>
-        </button>
-
-        {/* Results */}
-        <button
-          type="button"
-          onClick={onOpenResults}
-          className="group flex flex-col justify-between rounded-2xl border border-cyan-400/70 bg-cyan-500/10 px-4 py-4 sm:px-5 sm:py-5 text-left hover:bg-cyan-500/20 hover:border-cyan-300 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
-        >
-          <div className="space-y-2">
-            <h3 className="text-base sm:text-lg font-semibold text-white">
-              Results
-            </h3>
-            <p className="text-xs sm:text-sm text-white/80">
-              Full day-by-day motos, AI breakdowns, and podium stories for every
-              class.
-            </p>
-          </div>
-          <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200">
-            Open Results
-            <span className="text-lg leading-none">↗</span>
-          </span>
-        </button>
-
-        {/* Search Racers */}
-        <button
-          type="button"
-          onClick={onOpenRacerSearch}
-          className="group flex flex-col justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-4 sm:px-5 sm:py-5 text-left hover:border-cyan-300/70 hover:bg-white/10 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
-        >
-          <div className="space-y-2">
-            <h3 className="text-base sm:text-lg font-semibold text-white">
-              Search Racers
-            </h3>
-            <p className="text-xs sm:text-sm text-white/75">
-              Look up individual racers, jump to their profile, and compare
-              results across classes.
-            </p>
-          </div>
-          <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200">
-            Open Search
-            <span className="text-lg leading-none">⌕</span>
-          </span>
-        </button>
-
-        {/* Upcoming Races */}
-        <button
-          type="button"
-          onClick={onOpenUpcomingEvents}
-          className="group flex flex-col justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-4 sm:px-5 sm:py-5 text-left hover:border-cyan-300/70 hover:bg-white/10 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
-        >
-          <div className="space-y-2">
-            <h3 className="text-base sm:text-lg font-semibold text-white flex items-center gap-2">
-              Upcoming Races
-              <span className="rounded-full border border-white/15 px-2 py-[2px] text-[10px] uppercase tracking-[0.16em] text-white/65">
-                2026
-              </span>
-            </h3>
-            <p className="text-xs sm:text-sm text-white/70">
-              See all AQUA events across organizations, split into upcoming and
-              past.
-            </p>
-          </div>
-
-          <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200">
-            Open Schedule
-            <span className="text-lg leading-none">↗</span>
-          </span>
-        </button>
-
-        {/* Fantasy League */}
-        <button
-          type="button"
-          // onClick={onOpenResults}
-          className="group flex flex-col justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-4 sm:px-5 sm:py-5 text-left hover:border-cyan-300/70 hover:bg-white/10 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
-        >
-          <div className="space-y-2">
-            <h3 className="text-base sm:text-lg font-semibold text-white">
-              Play Fantasy
-            </h3>
-            <p className="text-xs sm:text-sm text-white/75">
-              Join a fantasy league with you friends for the racing season.
-            </p>
-          </div>
-          <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200">
-            Coming Soon
-            {/* Open Fantasy Leagues */}
-            <span className="text-lg leading-none">↗</span>
-          </span>
-        </button>
-
-        {/* Points Leaders */}
-        {/* <button
-          type="button"
-          className="group flex flex-col justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-4 sm:px-5 sm:py-5 text-left hover:border-cyan-300/70 hover:bg-white/10 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
-        >
-          <div className="space-y-2">
-            <h3 className="text-base sm:text-lg font-semibold text-white">
-              Points Leaders
-            </h3>
-            <p className="text-xs sm:text-sm text-white/70">
-              Track who’s leading each class over the whole week and who’s still
-              in the hunt. (Coming soon)
-            </p>
-          </div>
-        </button> */}
-
-        {/* All News */}
-        {/* <button
-          type="button"
-          className="group flex flex-col justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-4 sm:px-5 sm:py-5 text-left hover:border-cyan-300/70 hover:bg-white/10 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
-        >
-          <div className="space-y-2">
-            <h3 className="text-base sm:text-lg font-semibold text-white">
-              All News
-            </h3>
-            <p className="text-xs sm:text-sm text-white/70">
-              Race recaps, storylines, and behind-the-scenes coverage from the
-              pits. (Coming soon)
-            </p>
-          </div>
-        </button> */}
-      </div>
-
-      <div className="pt-2">
-        <FeaturedRaceSection />
-      </div>
-    </div>
-  );
-}
-
 export default function ScoresPage() {
-  const [active, setActive] = useState<TabKey>("AQUA");
-  const [aquaView, setAquaView] = useState<AquaView>("hub");
+  const [location, navigate] = useLocation();
   const [racerSearchOpen, setRacerSearchOpen] = useState(false);
-  const [allEventsOpen, setAllEventsOpen] = useState(false);
-  const [, navigate] = useLocation();
 
-  // Reset AQUA subview when leaving AQUA tab
+  const isAquaRoute =
+    location === "/scores" ||
+    location === "/scores/aqua" ||
+    location.endsWith("/scores/aqua");
+
+  const [active, setActive] = useState<TabKey>("AQUA");
+
   useEffect(() => {
-    if (active !== "AQUA" && aquaView !== "hub") {
-      setAquaView("hub");
+    // Normalize /scores -> /scores/aqua so AQUA is the canonical route
+    if (location === "/scores") {
+      navigate("/scores/aqua", { replace: true });
+      setActive("AQUA");
+      return;
     }
-  }, [active, aquaView]);
+
+    if (isAquaRoute) {
+      setActive("AQUA");
+      return;
+    }
+
+    if (location.includes("/scores")) {
+      // preserve current tab if already selected, otherwise default non-aqua view
+      setActive((prev) => (prev === "AQUA" ? "MLB" : prev));
+    }
+  }, [location, isAquaRoute, navigate]);
 
   const MLB_PLAYOFFS_URL =
     "https://widgets.media.sportradar.com/uscommon/en_us/standalone/us.season.mlb.playoffs#border=true&seasonId=125735";
@@ -819,34 +190,26 @@ export default function ScoresPage() {
   const NCAAF_SCORES_URL =
     "https://widgets.media.sportradar.com/uscommon/en_us/standalone/us.season.ncaaf.scores#preMatchLinks=default&liveMatchLinks=default&postMatchLinks=default&border=true&seasonId=127983";
 
-  const MLB_PLAYOFFS_STRATEGY: ResizeStrategy = "auto";
-  const MLB_SCORES_STRATEGY: ResizeStrategy = "auto";
-  const NFL_SCORES_STRATEGY: ResizeStrategy = "auto";
-  const NBA_SCORES_STRATEGY: ResizeStrategy = "auto";
-  const NHL_SCORES_STRATEGY: ResizeStrategy = "auto";
-  const NCAAF_SCORES_STRATEGY: ResizeStrategy = "auto";
+  const handleTabChange = (tab: TabKey) => {
+    setActive(tab);
+
+    if (tab === "AQUA") {
+      navigate("/scores/aqua");
+      return;
+    }
+
+    // other sports stay on /scores for now
+    navigate("/scores");
+    setTimeout(() => setActive(tab), 0);
+  };
 
   const content = useMemo(() => {
     if (active === "AQUA") {
-      if (aquaView === "hub") {
-        return (
-          <AquaHubSection
-            onOpenResults={() => setAquaView("results")}
-            onOpenRacerSearch={() => setRacerSearchOpen(true)}
-            onOpenUpcomingEvents={() => setAllEventsOpen(true)}
-          />
-        );
-      }
-      // aquaView === "results"
       return (
-        <AquaScoresSection
-          onOpenRacerSearch={() => setRacerSearchOpen(true)}
-          onBackToHub={() => setAquaView("hub")}
-        />
+        <AquaTabContent onOpenRacerSearch={() => setRacerSearchOpen(true)} />
       );
     }
 
-    // Other sports tabs
     switch (active) {
       case "MLB":
         return (
@@ -857,19 +220,19 @@ export default function ScoresPage() {
             <ResponsiveFrame
               src={MLB_PLAYOFFS_URL}
               title="MLB Playoffs"
-              strategy={MLB_PLAYOFFS_STRATEGY}
+              strategy="auto"
               initialHeight={450}
               minHeight={450}
               maxHeight={500}
             />
 
-            <h2 className="text-xl font-semibold text-white/90 pt-4">
+            <h2 className="pt-4 text-xl font-semibold text-white/90">
               MLB Season Scores
             </h2>
             <ResponsiveFrame
               src={MLB_SCORES_URL}
               title="MLB Season Scores"
-              strategy={MLB_SCORES_STRATEGY}
+              strategy="auto"
               initialHeight={700}
               minHeight={700}
               maxHeight={800}
@@ -883,7 +246,7 @@ export default function ScoresPage() {
             <ResponsiveFrame
               src={NFL_SCORES_URL}
               title="NFL Season Scores"
-              strategy={NFL_SCORES_STRATEGY}
+              strategy="auto"
               initialHeight={700}
               minHeight={700}
               maxHeight={800}
@@ -897,7 +260,7 @@ export default function ScoresPage() {
             <ResponsiveFrame
               src={NBA_SCORES_URL}
               title="NBA Season Scores"
-              strategy={NBA_SCORES_STRATEGY}
+              strategy="auto"
               initialHeight={700}
               minHeight={700}
               maxHeight={800}
@@ -911,7 +274,7 @@ export default function ScoresPage() {
             <ResponsiveFrame
               src={NHL_SCORES_URL}
               title="NHL Season Scores"
-              strategy={NHL_SCORES_STRATEGY}
+              strategy="auto"
               initialHeight={700}
               minHeight={700}
               maxHeight={800}
@@ -927,7 +290,7 @@ export default function ScoresPage() {
             <ResponsiveFrame
               src={NCAAF_SCORES_URL}
               title="NCAAF Season Scores"
-              strategy={NCAAF_SCORES_STRATEGY}
+              strategy="auto"
               initialHeight={700}
               minHeight={700}
               maxHeight={800}
@@ -939,7 +302,6 @@ export default function ScoresPage() {
     }
   }, [
     active,
-    aquaView,
     MLB_PLAYOFFS_URL,
     MLB_SCORES_URL,
     NFL_SCORES_URL,
@@ -949,42 +311,49 @@ export default function ScoresPage() {
   ]);
 
   return (
-    <div className="p-6 max-w-7xl mx-auto overflow-x-hidden">
-      {/* Header + dropdown */}
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-bold text-white text-center sm:text-left">
-          Live Scores
-        </h1>
-        <div className="flex flex-col items-stretch sm:items-end gap-1">
-          <span className="text-[11px] uppercase tracking-[0.16em] text-white/60">
-            Sport
-          </span>
-          <TabDropdown active={active} onChange={setActive} />
-        </div>
+    <div className="relative min-h-screen overflow-x-hidden bg-[#03101b]">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.07),_transparent_30%),radial-gradient(circle_at_80%_20%,_rgba(59,130,246,0.05),_transparent_22%),linear-gradient(to_bottom,_#04111d_0%,_#03101b_48%,_#020b14_100%)]" />
+        <div className="absolute inset-0 opacity-[0.03] [background-image:linear-gradient(rgba(255,255,255,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.12)_1px,transparent_1px)] [background-size:72px_72px]" />
+        <div className="absolute left-1/2 top-0 h-[340px] w-[340px] -translate-x-1/2 rounded-full bg-cyan-400/5 blur-3xl" />
       </div>
 
-      {/* Content */}
-      {content}
+      <div className="relative mx-auto max-w-7xl overflow-x-hidden p-6">
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.18em] text-cyan-300/75">
+              Live Sports Hub
+            </p>
+            <h1 className="text-center text-2xl font-bold text-white sm:text-left">
+              Live Scores
+            </h1>
+          </div>
 
-      <p className="mt-6 text-xs text-white/50">
-        Note: These embedded widgets are provided by Sportradar and may take a
-        moment to load. Heights are set generously for readability.
-      </p>
+          <div className="flex flex-col items-stretch gap-1 sm:items-end">
+            <span className="text-[11px] uppercase tracking-[0.16em] text-white/60">
+              Sport
+            </span>
+            <TabDropdown active={active} onChange={handleTabChange} />
+          </div>
+        </div>
 
-      <RacerSearchModal
-        open={racerSearchOpen}
-        onClose={() => setRacerSearchOpen(false)}
-        onSelectRacer={(r) => {
-          setRacerSearchOpen(false);
-          const idStr = encodeURIComponent(String(r.id));
-          navigate(`/racer/${idStr}`);
-        }}
-      />
+        {content}
 
-      <AllAquaEventsModal
-        open={allEventsOpen}
-        onClose={() => setAllEventsOpen(false)}
-      />
+        <p className="mt-6 text-xs text-white/50">
+          Note: These embedded widgets are provided by Sportradar and may take a
+          moment to load. Heights are set generously for readability.
+        </p>
+
+        <RacerSearchModal
+          open={racerSearchOpen}
+          onClose={() => setRacerSearchOpen(false)}
+          onSelectRacer={(r) => {
+            setRacerSearchOpen(false);
+            const idStr = encodeURIComponent(String(r.id));
+            navigate(`/racer/${idStr}`);
+          }}
+        />
+      </div>
     </div>
   );
 }

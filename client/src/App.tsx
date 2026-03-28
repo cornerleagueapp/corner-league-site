@@ -124,6 +124,7 @@ function PrivateRouter() {
           <Route path="/feed" component={FeedPage} />
           <Route path="/explore" component={ExploreFeedPage} />
           <Route path="/scores" component={ScoresPage} />
+          <Route path="/scores/aqua" component={ScoresPage} />
           <Route path="/messages" component={MessagesPage} />
           <Route path="/notifications" component={NotificationsPage} />
           <Route path="/welcome" component={WelcomeSplash} />

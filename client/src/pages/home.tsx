@@ -7,33 +7,7 @@ import { PageSEO } from "@/seo/usePageSEO";
 import { useLocation } from "wouter";
 
 import LeagueMediaFeatures from "@/components/LeagueMediaFeatures";
-
-import image4 from "@assets/20250602_1433_Basketball Motion Scene_remix_01jws8ysn9fx1s6c0mgqw48t2g_1754356174336.png";
-import image6 from "@assets/20250603_1013_Floral Football Fusion_remix_01jwvcftvae0d90fjgdpsectw5_1754356174337.png";
-import image7 from "@assets/20250603_1115_Cloud-Headed Baseball Players_remix_01jwvg1dcke14aa440wrbdq0ta_1754356174337.png";
-import image8 from "@assets/20250603_1453_Knicks Jersey Style_remix_01jwvwgmraf65b5vd127wer3sq_1754356174338.png";
-import image9 from "@assets/20250603_1551_Dodgers Ring in Ice_remix_01jwvzvdawfkt8dvx2xgn2mcm7_1754356174338.png";
-import image10 from "@assets/20250604_0923_Penguin Hockey Player_remix_01jwxw19hzecka3510adds358m_1754356174339.png";
 import image13 from "@/assets/jetski4.jpeg";
-import image15 from "@assets/riveteammyles_A_Cristiano_Ronaldo_statue_wearing_his_jersey_i_fee2179e-7b83-45e7-965b-a4078e9c632b_1_1754357010886.png";
-import image16 from "@assets/riveteammyles_A_hockey_player_with_retro-futuristic_NHL_hocke_d89a2adb-e717-4334-b7c8-29d96c171e1d_2_1754357010886.png";
-import image17 from "@assets/riveteammyles_A_minimalistic_formula_1_racer_with_official_f1_9d20295a-d7ae-4472-98bd-709bf74b1987_2_1754357010887.png";
-import image18 from "@assets/riveteammyles_A_minimalistic_surreal_fashion_photograph_of_an_66c7ec51-3ce0-4051-bee1-3afc4a1d4bc7_3_1754357010887.png";
-import image19 from "@assets/riveteammyles_A_minimalistic_surreal_fashion_photograph_of_an_b996191c-ab67-4569-b9a4-e371b03fbfb3_0_1754357010887.png";
-import image20 from "@assets/riveteammyles_A_photograph_of_an_Asian_female_model_a_NHL_Hoc_230d871d-9195-4ccf-9870-150c8d823af6_0_1754357010888.png";
-import image21 from "@assets/riveteammyles_A_photorealistic_portrait_of_a_woman_with_short_77f27986-809b-4c3d-9069-3cd77fafc08e_3_1754357010888.png";
-import image23 from "@assets/riveteammyles_Oil_painting_of_a_portrait_of_an_alien_man_with_8b00f3ad-c3e8-497c-8dbc-1f3cfd20b859_3_1754357010889.png";
-import image24 from "@assets/riveteammyles_Photograph_of_a_white_humanoid_figure_in_a_full_8c88c8eb-769f-4c1e-9018-f7fe304c6374_0_1754357010890.png";
-import image25 from "@assets/riveteammyles_Pink_Floyds_Dark_Side_of_the_Moon_album_cover_f_b68ced20-cd85-47eb-9ebc-6469ed8c7b96_0_1754357010890.png";
-import image28 from "@/assets/image28.png";
-import image29 from "@/assets/image29.png";
-import image30 from "@/assets/image30.png";
-import image31 from "@/assets/image31.png";
-import image32 from "@/assets/image32.png";
-import image33 from "@/assets/image33.png";
-import image34 from "@/assets/image34.png";
-import image35 from "@/assets/image35.png";
-import image36 from "@/assets/image36.png";
 
 import partner1 from "@/assets/fubo.png";
 import partner2 from "@/assets/ibm.png";
@@ -44,31 +18,31 @@ import partner6 from "@/assets/ufc.png";
 import partnerPromo from "../assets/jetSkiBanner.mp4";
 
 const sportsImages = [
-  image4,
-  image6,
-  image7,
-  image8,
-  image9,
-  image10,
-  image15,
-  image16,
-  image17,
-  image18,
-  image19,
-  image20,
-  image21,
-  image23,
-  image24,
-  image25,
-  image28,
-  image29,
-  image30,
-  image31,
-  image32,
-  image33,
-  image34,
-  image35,
-  image36,
+  "https://storage.googleapis.com/cl-beta-428221-app-assets/homePageAssets/1.webp",
+  "https://storage.googleapis.com/cl-beta-428221-app-assets/homePageAssets/11.webp",
+  "https://storage.googleapis.com/cl-beta-428221-app-assets/homePageAssets/12.webp",
+  "https://storage.googleapis.com/cl-beta-428221-app-assets/homePageAssets/13.webp",
+  "https://storage.googleapis.com/cl-beta-428221-app-assets/homePageAssets/14.webp",
+  "https://storage.googleapis.com/cl-beta-428221-app-assets/homePageAssets/15.webp",
+  "https://storage.googleapis.com/cl-beta-428221-app-assets/homePageAssets/18.webp",
+  "https://storage.googleapis.com/cl-beta-428221-app-assets/homePageAssets/19.webp",
+  "https://storage.googleapis.com/cl-beta-428221-app-assets/homePageAssets/20.webp",
+  "https://storage.googleapis.com/cl-beta-428221-app-assets/homePageAssets/21.webp",
+  "https://storage.googleapis.com/cl-beta-428221-app-assets/homePageAssets/22.webp",
+  "https://storage.googleapis.com/cl-beta-428221-app-assets/homePageAssets/23.webp",
+  "https://storage.googleapis.com/cl-beta-428221-app-assets/homePageAssets/24.webp",
+  "https://storage.googleapis.com/cl-beta-428221-app-assets/homePageAssets/25.webp",
+  "https://storage.googleapis.com/cl-beta-428221-app-assets/homePageAssets/26.webp",
+  "https://storage.googleapis.com/cl-beta-428221-app-assets/homePageAssets/27.webp",
+  "https://storage.googleapis.com/cl-beta-428221-app-assets/homePageAssets/28.webp",
+  "https://storage.googleapis.com/cl-beta-428221-app-assets/homePageAssets/29.webp",
+  "https://storage.googleapis.com/cl-beta-428221-app-assets/homePageAssets/3.webp",
+  "https://storage.googleapis.com/cl-beta-428221-app-assets/homePageAssets/30.webp",
+  "https://storage.googleapis.com/cl-beta-428221-app-assets/homePageAssets/31.webp",
+  "https://storage.googleapis.com/cl-beta-428221-app-assets/homePageAssets/33.webp",
+  "https://storage.googleapis.com/cl-beta-428221-app-assets/homePageAssets/34.webp",
+  "https://storage.googleapis.com/cl-beta-428221-app-assets/homePageAssets/35.webp",
+  "https://storage.googleapis.com/cl-beta-428221-app-assets/homePageAssets/36.webp",
 ];
 
 const footerLinks = [
@@ -453,6 +427,104 @@ export default function Home() {
                   </Button>
                 </Link>
               </div>
+            </div>
+          </div>
+        </Section>
+
+        {/* AQUA quick access */}
+        <Section className="pt-0">
+          <div className="rounded-2xl border border-cyan-400/10 bg-[linear-gradient(180deg,rgba(8,24,39,0.92)_0%,rgba(4,17,29,0.98)_100%)] p-5 shadow-[0_18px_50px_rgba(0,0,0,0.22)] sm:p-6 md:p-8">
+            <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+              <div className="max-w-2xl">
+                <Badge>Explore Jet Ski Racing</Badge>
+                <h3 className="mt-3 text-2xl font-semibold text-white md:text-3xl">
+                  Jump straight into Jet Ski content
+                </h3>
+                <p className="mt-2 text-sm leading-7 text-white/70 md:text-base">
+                  Browse race organizations, view the AQUA event hub, search
+                  racers, and keep up with upcoming race coverage.
+                </p>
+              </div>
+
+              <Link href="/scores/aqua">
+                <Button className="rounded-full bg-white px-6 text-black hover:bg-white/90">
+                  Open AQUA Hub
+                </Button>
+              </Link>
+            </div>
+
+            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <Link href="/scores/aqua">
+                <button className="group w-full rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-left transition hover:border-cyan-300/25 hover:bg-white/[0.07]">
+                  <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-400/15 bg-cyan-400/8 text-cyan-300">
+                    🌊
+                  </div>
+                  <div className="mt-4 text-lg font-semibold text-white">
+                    AQUA Hub
+                  </div>
+                  <p className="mt-2 text-sm leading-6 text-white/65">
+                    Enter the main AQUA sports hub for scores, featured content,
+                    and quick navigation.
+                  </p>
+                  <div className="mt-4 text-sm font-semibold text-cyan-300">
+                    Open hub →
+                  </div>
+                </button>
+              </Link>
+
+              <Link href="/aqua-organizations">
+                <button className="group w-full rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-left transition hover:border-cyan-300/25 hover:bg-white/[0.07]">
+                  <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-400/15 bg-cyan-400/8 text-cyan-300">
+                    🏁
+                  </div>
+                  <div className="mt-4 text-lg font-semibold text-white">
+                    Organizations
+                  </div>
+                  <p className="mt-2 text-sm leading-6 text-white/65">
+                    Explore race organizations, tours, and official AQUA event
+                    ecosystems.
+                  </p>
+                  <div className="mt-4 text-sm font-semibold text-cyan-300">
+                    View organizations →
+                  </div>
+                </button>
+              </Link>
+
+              <Link href="/scores/aqua">
+                <button className="group w-full rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-left transition hover:border-cyan-300/25 hover:bg-white/[0.07]">
+                  <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-400/15 bg-cyan-400/8 text-cyan-300">
+                    🔎
+                  </div>
+                  <div className="mt-4 text-lg font-semibold text-white">
+                    Search Racers
+                  </div>
+                  <p className="mt-2 text-sm leading-6 text-white/65">
+                    Find racers, view their profiles, and jump deeper into AQUA
+                    athlete content.
+                  </p>
+                  <div className="mt-4 text-sm font-semibold text-cyan-300">
+                    Start exploring →
+                  </div>
+                </button>
+              </Link>
+
+              <Link href="/scores/aqua">
+                <button className="group w-full rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-left transition hover:border-cyan-300/25 hover:bg-white/[0.07]">
+                  <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-400/15 bg-cyan-400/8 text-cyan-300">
+                    📅
+                  </div>
+                  <div className="mt-4 text-lg font-semibold text-white">
+                    Upcoming Races
+                  </div>
+                  <p className="mt-2 text-sm leading-6 text-white/65">
+                    Keep up with race schedules, upcoming events, and the latest
+                    AQUA coverage.
+                  </p>
+                  <div className="mt-4 text-sm font-semibold text-cyan-300">
+                    See race schedule →
+                  </div>
+                </button>
+              </Link>
             </div>
           </div>
         </Section>
