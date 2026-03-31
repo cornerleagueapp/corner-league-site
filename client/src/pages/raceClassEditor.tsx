@@ -48,6 +48,21 @@ type SportEvent = {
   endDate?: string;
 };
 
+type DivisionFinalResult = {
+  overallPosition: number;
+  participantId: string;
+  athlete?: {
+    id: string;
+    name: string;
+  } | null;
+  team?: {
+    id: string;
+    name: string;
+  } | null;
+  totalPoints: number;
+  sumPositions: number;
+};
+
 export default function RaceClassEditor() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
@@ -63,11 +78,19 @@ export default function RaceClassEditor() {
   const [creating, setCreating] = useState(false);
   const [formName, setFormName] = useState("");
 
+  const [divisionResults, setDivisionResults] = useState<
+    Record<string, DivisionFinalResult[]>
+  >({});
+
+  const [loadingResultsByDivision, setLoadingResultsByDivision] = useState<
+    Record<string, boolean>
+  >({});
+
   // delete dialog
   const [pendingDelete, setPendingDelete] = useState<string | null>(null);
   const deletingDivision = useMemo(
     () => divisions.find((d) => d.id === pendingDelete),
-    [pendingDelete, divisions]
+    [pendingDelete, divisions],
   );
 
   const fmtDate = (s?: string) =>
@@ -113,7 +136,12 @@ export default function RaceClassEditor() {
       });
       const json = await res.json();
       const list = json?.divisions ?? json?.data?.divisions ?? [];
-      setDivisions(Array.isArray(list) ? list : []);
+      const safeDivisions = Array.isArray(list) ? list : [];
+      setDivisions(safeDivisions);
+
+      await Promise.all(
+        safeDivisions.map((division) => loadDivisionResults(division.id)),
+      );
     } catch (e: any) {
       toast({
         variant: "destructive",
@@ -122,6 +150,50 @@ export default function RaceClassEditor() {
       });
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function loadDivisionResults(divisionId: string) {
+    try {
+      setLoadingResultsByDivision((prev) => ({
+        ...prev,
+        [divisionId]: true,
+      }));
+
+      const res = await apiFetch(
+        `/results/final-results-by-division/${divisionId}`,
+        { method: "GET" },
+      );
+
+      const json = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error(json?.message || "Failed to load final results");
+      }
+
+      const list =
+        json?.results ?? json?.data?.results ?? json?.data ?? json ?? [];
+
+      setDivisionResults((prev) => ({
+        ...prev,
+        [divisionId]: Array.isArray(list) ? list : [],
+      }));
+    } catch (e: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: e?.message || "Failed to load final results.",
+      });
+
+      setDivisionResults((prev) => ({
+        ...prev,
+        [divisionId]: [],
+      }));
+    } finally {
+      setLoadingResultsByDivision((prev) => ({
+        ...prev,
+        [divisionId]: false,
+      }));
     }
   }
 
@@ -299,7 +371,7 @@ export default function RaceClassEditor() {
                       className="p-2 m-2 rounded-lg bg-zinc-800/80 border border-zinc-700 hover:bg-zinc-700"
                       onClick={() =>
                         navigate(
-                          `/organization/events/${eventId}/classes/${d.id}/manage`
+                          `/organization/events/${eventId}/classes/${d.id}/manage`,
                         )
                       }
                     >
@@ -323,11 +395,53 @@ export default function RaceClassEditor() {
                   labelHide="Hide results"
                   className="rounded-none border-t border-zinc-800"
                 >
-                  {/* Scores-style compact list (empty state for now) */}
-                  <div className="space-y-2">
-                    <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-6 text-center text-sm text-zinc-400">
-                      No results yet. Add motos & results in “Manage”.
-                    </div>
+                  <div className="space-y-2 p-4">
+                    {loadingResultsByDivision[d.id] ? (
+                      <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-6 text-center text-sm text-zinc-400">
+                        Loading results…
+                      </div>
+                    ) : !divisionResults[d.id] ||
+                      divisionResults[d.id].length === 0 ? (
+                      <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-6 text-center text-sm text-zinc-400">
+                        No results yet. Add motos & results in “Manage”.
+                      </div>
+                    ) : (
+                      <div className="overflow-hidden rounded-xl border border-white/10 bg-white/5">
+                        <table className="w-full text-sm">
+                          <thead className="bg-white/5 text-zinc-300">
+                            <tr>
+                              <th className="px-4 py-3 text-left font-medium">
+                                Pos
+                              </th>
+                              <th className="px-4 py-3 text-left font-medium">
+                                Racer
+                              </th>
+                              <th className="px-4 py-3 text-left font-medium">
+                                Points
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {divisionResults[d.id].map((row) => (
+                              <tr
+                                key={row.participantId}
+                                className="border-t border-white/10 text-white"
+                              >
+                                <td className="px-4 py-3 font-semibold">
+                                  {row.overallPosition}
+                                </td>
+                                <td className="px-4 py-3">
+                                  {row.athlete?.name ||
+                                    row.team?.name ||
+                                    "Unknown"}
+                                </td>
+                                <td className="px-4 py-3">{row.totalPoints}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
                   </div>
                 </AccordionSection>
               </Card>

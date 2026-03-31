@@ -26,7 +26,41 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+
+const RACE_POINTS: Record<number, number> = {
+  1: 60,
+  2: 53,
+  3: 48,
+  4: 43,
+  5: 39,
+  6: 36,
+  7: 33,
+  8: 30,
+  9: 27,
+  10: 24,
+  11: 21,
+  12: 18,
+  13: 16,
+  14: 14,
+  15: 12,
+  16: 10,
+  17: 8,
+  18: 6,
+  19: 4,
+  20: 2,
+};
+
+const RESULT_STATUS_API = {
+  DNF: "DID NOT FINISH",
+  DNS: "DID NOT START",
+} as const;
+
+const RESULT_STATUS_LABEL = {
+  "DID NOT FINISH": "DNF",
+  "DID NOT START": "DNS",
+} as const;
 
 type MatchLite = {
   id: string;
@@ -60,6 +94,12 @@ type ResultLite = {
   raceTime?: number | null;
   score?: number | null;
   status?: string | null;
+
+  athleteId?: string | null;
+  motoId?: string | null;
+  matchId?: string | null;
+  teamId?: string | null;
+
   athlete?: {
     id: string;
     name: string;
@@ -301,14 +341,31 @@ export default function ClassMatchManagePage() {
       if (!res.ok) throw new Error(j?.message || "Failed to load results");
 
       const list = j?.results ?? j?.data?.results ?? [];
-      const parsed = Array.isArray(list) ? list : [];
+      const parsed = Array.isArray(list)
+        ? list.map((r: any) => ({
+            ...r,
+            athleteId: r?.athleteId ?? r?.athlete?.id ?? null,
+            motoId: r?.motoId ?? r?.moto?.id ?? null,
+            matchId: r?.matchId ?? r?.match?.id ?? null,
+            teamId: r?.teamId ?? r?.team?.id ?? null,
+          }))
+        : [];
+
       setResults(parsed);
 
       const nextDrafts: Record<string, string> = {};
       parsed.forEach((r: ResultLite) => {
-        const athleteId = r?.athlete?.id;
-        const motoId = r?.moto?.id;
-        if (athleteId && motoId && r.position != null) {
+        const athleteId = r?.athleteId ?? r?.athlete?.id;
+        const motoId = r?.motoId ?? r?.moto?.id;
+        if (!athleteId || !motoId) return;
+
+        if (r.status === "DID NOT FINISH" || r.status === "DID NOT START") {
+          nextDrafts[`${athleteId}:${motoId}`] =
+            RESULT_STATUS_LABEL[r.status as keyof typeof RESULT_STATUS_LABEL];
+          return;
+        }
+
+        if (r.position != null) {
           nextDrafts[`${athleteId}:${motoId}`] = String(r.position);
         }
       });
@@ -567,9 +624,46 @@ export default function ClassMatchManagePage() {
     }
   }
 
+  async function handleUpdateMotoSequence(motoId: string, sequence: number) {
+    try {
+      const res = await apiFetch(`/motos/${motoId}`, {
+        method: "PUT",
+        body: { sequence },
+      });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(j?.message || "Failed to update moto");
+
+      toast({ title: "Moto updated" });
+      if (match?.id) {
+        await fetchMotos(match.id);
+      }
+    } catch (e: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: e?.message || "Failed to update moto",
+      });
+    }
+  }
+
   async function handleDeleteMoto(motoId: string) {
     if (!match?.id) return;
+
     try {
+      const motoResults = results.filter(
+        (r) => String(r.motoId ?? r.moto?.id ?? "") === String(motoId),
+      );
+
+      for (const result of motoResults) {
+        const res = await apiFetch(`/results/${result.id}`, {
+          method: "DELETE",
+        });
+        const j = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(j?.message || "Failed to delete moto results");
+        }
+      }
+
       const res = await apiFetch(`/motos/${motoId}`, { method: "DELETE" });
       const j = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(j?.message || "Failed to delete moto");
@@ -588,11 +682,11 @@ export default function ClassMatchManagePage() {
   }
 
   function getResultForAthleteMoto(athleteId: string, motoId: string) {
-    return results.find(
-      (r) =>
-        String(r.athlete?.id) === String(athleteId) &&
-        String(r.moto?.id) === String(motoId),
-    );
+    return results.find((r) => {
+      const rAthleteId = String(r.athleteId ?? r.athlete?.id ?? "");
+      const rMotoId = String(r.motoId ?? r.moto?.id ?? "");
+      return rAthleteId === String(athleteId) && rMotoId === String(motoId);
+    });
   }
 
   function getFinalForAthlete(athleteId: string) {
@@ -604,7 +698,8 @@ export default function ClassMatchManagePage() {
   async function saveAthleteMotoResult(args: {
     athleteId: string;
     motoId: string;
-    position?: number;
+    position?: number | null;
+    status?: "DNF" | "DNS" | null;
   }) {
     if (!match?.id) return;
 
@@ -614,29 +709,38 @@ export default function ClassMatchManagePage() {
     try {
       const existing = getResultForAthleteMoto(args.athleteId, args.motoId);
 
+      const mappedStatus = args.status ? RESULT_STATUS_API[args.status] : null;
+
+      const createPayload = {
+        matchId: match.id,
+        motoId: args.motoId,
+        athleteId: args.athleteId,
+        position: mappedStatus ? null : (args.position ?? null),
+        status: mappedStatus,
+      };
+
+      const updatePayload = {
+        athleteId: args.athleteId,
+        position: mappedStatus ? null : (args.position ?? null),
+        status: mappedStatus,
+      };
+
       let res: Response;
 
       if (existing?.id) {
         res = await apiFetch(`/results/${existing.id}`, {
           method: "PUT",
-          body: {
-            athleteId: args.athleteId,
-            position: args.position,
-          },
+          body: updatePayload,
         });
       } else {
         res = await apiFetch(`/results`, {
           method: "POST",
-          body: {
-            matchId: match.id,
-            motoId: args.motoId,
-            athleteId: args.athleteId,
-            position: args.position,
-          },
+          body: createPayload,
         });
       }
 
       const j = await res.json().catch(() => ({}));
+
       if (!res.ok) {
         const msg = Array.isArray(j?.message)
           ? j.message.join(" • ")
@@ -647,7 +751,6 @@ export default function ClassMatchManagePage() {
       await fetchResults(match.id);
       await fetchFinalStandings(match.id);
     } catch (e: any) {
-      console.error("saveAthleteMotoResult error:", e);
       toast({
         variant: "destructive",
         title: "Error",
@@ -860,12 +963,15 @@ export default function ClassMatchManagePage() {
                 )}
 
                 <AlertDialog>
-                  <Button
-                    variant="ghost"
-                    className="text-red-400 hover:bg-red-950/30 hover:text-red-300"
-                  >
-                    Delete
-                  </Button>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="text-red-400 hover:bg-red-950/30 hover:text-red-300"
+                    >
+                      Delete
+                    </Button>
+                  </AlertDialogTrigger>
+
                   <AlertDialogContent className="border-zinc-700 bg-zinc-950 text-white">
                     <AlertDialogHeader>
                       <AlertDialogTitle>Delete this match?</AlertDialogTitle>
@@ -970,14 +1076,34 @@ export default function ClassMatchManagePage() {
                       className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-white"
                     >
                       <span>Moto {moto.sequence}</span>
+
                       {!match?.isFinalized && (
-                        <button
-                          type="button"
-                          className="text-red-400 hover:text-red-300"
-                          onClick={() => handleDeleteMoto(moto.id)}
-                        >
-                          ✕
-                        </button>
+                        <>
+                          <button
+                            type="button"
+                            className="text-white/70 hover:text-white"
+                            onClick={() => {
+                              const next = window.prompt(
+                                "Enter new moto number",
+                                String(moto.sequence),
+                              );
+                              if (!next) return;
+                              const seq = Number(next);
+                              if (!Number.isFinite(seq) || seq < 1) return;
+                              handleUpdateMotoSequence(moto.id, seq);
+                            }}
+                          >
+                            Edit
+                          </button>
+
+                          <button
+                            type="button"
+                            className="text-red-400 hover:text-red-300"
+                            onClick={() => handleDeleteMoto(moto.id)}
+                          >
+                            ✕
+                          </button>
+                        </>
                       )}
                     </div>
                   ))}
@@ -1028,38 +1154,100 @@ export default function ClassMatchManagePage() {
                               return (
                                 <React.Fragment key={moto.id}>
                                   <td className="px-3 py-3">
-                                    <Input
-                                      type="number"
-                                      min={1}
-                                      value={draftPositions[cellKey] ?? ""}
-                                      disabled={!!match?.isFinalized}
-                                      className="w-24 border-zinc-700 bg-zinc-900 text-white"
-                                      onChange={(e) =>
-                                        setDraftPositions((prev) => ({
-                                          ...prev,
-                                          [cellKey]: e.target.value,
-                                        }))
-                                      }
-                                      onBlur={(e) => {
-                                        const raw = e.target.value.trim();
-                                        if (!raw) return;
-                                        const pos = Number(raw);
-                                        if (!Number.isFinite(pos) || pos < 1)
-                                          return;
+                                    <div className="flex items-center gap-2">
+                                      <Input
+                                        value={
+                                          draftPositions[cellKey] ??
+                                          (r?.status === "DID NOT FINISH" ||
+                                          r?.status === "DID NOT START"
+                                            ? RESULT_STATUS_LABEL[
+                                                r.status as keyof typeof RESULT_STATUS_LABEL
+                                              ]
+                                            : r?.position != null
+                                              ? String(r.position)
+                                              : "")
+                                        }
+                                        disabled={!!match?.isFinalized}
+                                        className="w-24 border-zinc-700 bg-zinc-900 text-white"
+                                        placeholder="1 / DNF / DNS"
+                                        onChange={(e) =>
+                                          setDraftPositions((prev) => ({
+                                            ...prev,
+                                            [cellKey]:
+                                              e.target.value.toUpperCase(),
+                                          }))
+                                        }
+                                        onBlur={(e) => {
+                                          const raw = e.target.value
+                                            .trim()
+                                            .toUpperCase();
+                                          if (!raw) return;
 
-                                        saveAthleteMotoResult({
-                                          athleteId: athlete.id,
-                                          motoId: moto.id,
-                                          position: pos,
-                                        });
-                                      }}
-                                    />
+                                          if (raw === "DNF" || raw === "DNS") {
+                                            saveAthleteMotoResult({
+                                              athleteId: athlete.id,
+                                              motoId: moto.id,
+                                              status: raw,
+                                              position: null,
+                                            });
+                                            return;
+                                          }
+
+                                          const pos = Number(raw);
+                                          if (!Number.isFinite(pos) || pos < 1)
+                                            return;
+
+                                          saveAthleteMotoResult({
+                                            athleteId: athlete.id,
+                                            motoId: moto.id,
+                                            position: pos,
+                                            status: null,
+                                          });
+                                        }}
+                                      />
+
+                                      {!match?.isFinalized && (
+                                        <select
+                                          className="h-10 rounded-md border border-zinc-700 bg-zinc-900 px-2 text-sm text-white"
+                                          value=""
+                                          onChange={(e) => {
+                                            const value = e.target.value as
+                                              | "DNF"
+                                              | "DNS"
+                                              | "";
+                                            if (!value) return;
+
+                                            setDraftPositions((prev) => ({
+                                              ...prev,
+                                              [cellKey]: value,
+                                            }));
+
+                                            saveAthleteMotoResult({
+                                              athleteId: athlete.id,
+                                              motoId: moto.id,
+                                              status: value,
+                                              position: null,
+                                            });
+                                          }}
+                                        >
+                                          <option value="">Status</option>
+                                          <option value="DNF">DNF</option>
+                                          <option value="DNS">DNS</option>
+                                        </select>
+                                      )}
+                                    </div>
                                   </td>
 
                                   <td className="px-3 py-3 text-zinc-300">
                                     {scoreSavingKey === cellKey
                                       ? "Saving..."
-                                      : (r?.score ?? "—")}
+                                      : r?.status === "DID NOT FINISH" ||
+                                          r?.status === "DID NOT START"
+                                        ? `0 (${RESULT_STATUS_LABEL[r.status as keyof typeof RESULT_STATUS_LABEL]})`
+                                        : (r?.score ??
+                                          (typeof r?.position === "number"
+                                            ? (RACE_POINTS[r.position] ?? "—")
+                                            : "—"))}
                                   </td>
                                 </React.Fragment>
                               );

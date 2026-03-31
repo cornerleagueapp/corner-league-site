@@ -41,6 +41,23 @@ type Racer = {
   isClaimed?: boolean;
 };
 
+type AthleteHistoryItem = {
+  resultId: string;
+  athleteId: string;
+  eventId?: string | null;
+  eventName?: string | null;
+  eventStartDate?: string | null;
+  divisionId?: string | null;
+  divisionName?: string | null;
+  matchId: string;
+  matchName?: string | null;
+  motoId?: string | null;
+  motoSequence?: number | null;
+  position?: number | null;
+  score?: number | null;
+  status?: string | null;
+};
+
 function inchesToMeters(inches: number) {
   return inches * 0.0254;
 }
@@ -545,6 +562,9 @@ export default function RacerProfilePage({
   const [claimLoading, setClaimLoading] = useState(false);
   const [uploadPct, setUploadPct] = useState<number | null>(null);
 
+  const [history, setHistory] = useState<AthleteHistoryItem[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
   const [claimStatus, setClaimStatus] = useState<{
     hasClaim: boolean;
     status?: "pending" | "approved" | "rejected";
@@ -806,6 +826,44 @@ export default function RacerProfilePage({
       cancelled = true;
     };
   }, [racer?.id]);
+
+  useEffect(() => {
+    if (!racer?.athleteId) {
+      setHistory([]);
+      return;
+    }
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        setHistoryLoading(true);
+
+        const res = await apiRequest<any>(
+          "GET",
+          `/results/athlete/${encodeURIComponent(String(racer.athleteId))}/history`,
+        );
+
+        const list =
+          res?.results ??
+          res?.data?.results ??
+          res?.data ??
+          (Array.isArray(res) ? res : []);
+
+        if (!cancelled) {
+          setHistory(Array.isArray(list) ? list : []);
+        }
+      } catch {
+        if (!cancelled) setHistory([]);
+      } finally {
+        if (!cancelled) setHistoryLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [racer?.athleteId]);
 
   if (loading || authLoading) {
     return (
@@ -1155,13 +1213,82 @@ export default function RacerProfilePage({
             </Card>
 
             <Card className="rounded-[28px] border border-white/10 bg-white/[0.03] p-6">
-              <div className="mb-2 text-lg font-semibold text-white">
+              <div className="mb-4 text-lg font-semibold text-white">
                 Performance Timeline
               </div>
-              <p className="text-sm leading-7 text-slate-300">
-                Racer season history, podium trends, class progression, and
-                race-by-race results to come.
-              </p>
+
+              {historyLoading ? (
+                <p className="text-sm text-slate-300">Loading race history…</p>
+              ) : history.length === 0 ? (
+                <p className="text-sm leading-7 text-slate-300">
+                  No personal race results found yet.
+                </p>
+              ) : (
+                <div className="overflow-x-auto rounded-2xl border border-white/10 bg-white/[0.03]">
+                  <table className="w-full min-w-[760px] text-sm">
+                    <thead className="bg-white/[0.04] text-white/70">
+                      <tr>
+                        <th className="px-4 py-3 text-left font-medium">
+                          Event
+                        </th>
+                        <th className="px-4 py-3 text-left font-medium">
+                          Class
+                        </th>
+                        <th className="px-4 py-3 text-left font-medium">
+                          Moto
+                        </th>
+                        <th className="px-4 py-3 text-left font-medium">
+                          Finish
+                        </th>
+                        <th className="px-4 py-3 text-left font-medium">
+                          Points
+                        </th>
+                        <th className="px-4 py-3 text-left font-medium">
+                          Status
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {history.map((item) => (
+                        <tr
+                          key={item.resultId}
+                          className="border-t border-white/10"
+                        >
+                          <td className="px-4 py-3 text-white">
+                            <div className="font-medium">
+                              {item.eventName || "Unknown Event"}
+                            </div>
+                            <div className="text-xs text-white/50">
+                              {item.eventStartDate
+                                ? new Date(
+                                    item.eventStartDate,
+                                  ).toLocaleDateString()
+                                : "—"}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-white/85">
+                            {item.divisionName || item.matchName || "—"}
+                          </td>
+                          <td className="px-4 py-3 text-white/85">
+                            {item.motoSequence != null
+                              ? `Moto ${item.motoSequence}`
+                              : "Overall"}
+                          </td>
+                          <td className="px-4 py-3 text-white/85">
+                            {item.position ?? "—"}
+                          </td>
+                          <td className="px-4 py-3 text-white/85">
+                            {item.score ?? "—"}
+                          </td>
+                          <td className="px-4 py-3 text-white/85">
+                            {item.status ?? "—"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </Card>
           </div>
         </div>

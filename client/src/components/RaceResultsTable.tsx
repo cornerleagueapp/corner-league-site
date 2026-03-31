@@ -10,6 +10,7 @@ export type RiderResult = {
   bikeNumber?: string | number;
   plateDot?: string;
   rider: string;
+  riderHref?: string;
   age?: number | null;
   motos: Array<{ pos?: number | null; laps?: number | null }>;
   finalPos?: number | null;
@@ -25,7 +26,7 @@ export type RaceResults = {
 function computeFinalPositions(rows: RiderResult[]) {
   const scored = rows.map((r, idx) => {
     const positions = r.motos.map((m) =>
-      m?.pos == null ? 999 : Number(m.pos)
+      m?.pos == null ? 999 : Number(m.pos),
     );
     const sum = positions.reduce((a, b) => a + b, 0);
     const best = Math.min(...positions);
@@ -79,7 +80,7 @@ export default function RaceResultsTable({
     ? data.motoLabels
     : Array.from(
         { length: Math.max(...data.rows.map((r) => r.motos.length), 1) },
-        (_, i) => `Moto ${i + 1}`
+        (_, i) => `Moto ${i + 1}`,
       );
 
   const rowsSorted = React.useMemo(() => {
@@ -99,7 +100,7 @@ export default function RaceResultsTable({
 
   const computed = React.useMemo(
     () => computeFinalPositions(rowsSorted),
-    [rowsSorted]
+    [rowsSorted],
   );
 
   // Mobile flag (<= 767.98px)
@@ -202,7 +203,16 @@ function MobileList({
                     className={`h-4 w-4 ${trophy.colorClass}`}
                   />
                 ) : null}
-                <span className="truncate max-w-[75vw]">{r.rider}</span>
+                {r.riderHref ? (
+                  <a
+                    href={r.riderHref}
+                    className="truncate max-w-[75vw] underline-offset-2 hover:underline hover:text-cyan-300 transition"
+                  >
+                    {r.rider}
+                  </a>
+                ) : (
+                  <span className="truncate max-w-[75vw]">{r.rider}</span>
+                )}
               </span>
             </div>
 
@@ -387,7 +397,17 @@ function DesktopTable({
                         className={`h-4 w-4 ${trophy.colorClass}`}
                       />
                     ) : null}
-                    {r.rider}
+
+                    {r.riderHref ? (
+                      <a
+                        href={r.riderHref}
+                        className="underline-offset-2 hover:underline hover:text-cyan-300 transition"
+                      >
+                        {r.rider}
+                      </a>
+                    ) : (
+                      <span>{r.rider}</span>
+                    )}
                   </span>
                 </td>
                 <td
