@@ -542,18 +542,42 @@ export default function ClassMatchManagePage() {
 
   async function handleFinalize() {
     if (!match) return;
-    const res = await apiFetch(`/match/finalize/${match.id}`, {
+
+    const finalizeRes = await apiFetch(`/match/finalize/${match.id}`, {
       method: "POST",
     });
-    const j = await res.json().catch(() => ({}));
-    if (!res.ok)
+    const finalizeJson = await finalizeRes.json().catch(() => ({}));
+
+    if (!finalizeRes.ok) {
       return toast({
         variant: "destructive",
         title: "Error",
-        description: j?.message || "Finalize failed",
+        description: finalizeJson?.message || "Finalize failed",
       });
+    }
+
+    const aggregateRes = await apiFetch(
+      `/results/final-aggregate-results/${match.id}`,
+      {
+        method: "GET",
+      },
+    );
+    const aggregateJson = await aggregateRes.json().catch(() => ({}));
+
+    if (!aggregateRes.ok) {
+      return toast({
+        variant: "destructive",
+        title: "Finalized, but standings failed",
+        description:
+          aggregateJson?.message ||
+          "Match was finalized, but final standings were not persisted.",
+      });
+    }
+
     toast({ title: "Match finalized" });
     await fetchByDivision();
+    await fetchResults(match.id);
+    await fetchFinalStandings(match.id);
   }
 
   async function handleUnfinalize() {
@@ -1124,10 +1148,10 @@ export default function ClassMatchManagePage() {
                             </th>
                           </React.Fragment>
                         ))}
-                        <th className="px-3 py-3 font-medium">Final Finish</th>
+                        {/* <th className="px-3 py-3 font-medium">Final Finish</th>
                         <th className="px-3 py-3 font-medium">
                           Overall Points
-                        </th>
+                        </th> */}
                       </tr>
                     </thead>
 
@@ -1253,12 +1277,12 @@ export default function ClassMatchManagePage() {
                               );
                             })}
 
-                            <td className="px-3 py-3 font-semibold">
+                            {/* <td className="px-3 py-3 font-semibold">
                               {final?.overallPosition ?? "—"}
                             </td>
                             <td className="px-3 py-3 font-semibold">
                               {final?.totalPoints ?? "—"}
-                            </td>
+                            </td> */}
                           </tr>
                         );
                       })}

@@ -42,6 +42,9 @@ export default function EventListPage() {
   const [totalCount, setTotalCount] = useState(0);
   const [hasNextPage, setHasNextPage] = useState(false);
 
+  const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
   const fmtDate = (s: string) =>
@@ -55,7 +58,7 @@ export default function EventListPage() {
     setLoading(true);
     try {
       const res = await apiFetch(
-        `/sport-event?page=${pageToLoad}&limit=${PAGE_SIZE}&sortBy=createdAt&order=DESC`,
+        `/sport-event?page=${pageToLoad}&limit=${PAGE_SIZE}&sortBy=startDate&order=DESC${search.trim() ? `&search=${encodeURIComponent(search.trim())}` : ""}`,
         { method: "GET" },
       );
       const json = await res.json();
@@ -118,7 +121,7 @@ export default function EventListPage() {
 
   useEffect(() => {
     load(page);
-  }, [page]);
+  }, [page, search]);
 
   async function doDelete(id: string) {
     try {
@@ -194,6 +197,47 @@ export default function EventListPage() {
       ) : (
         <>
           <div className="grid gap-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="w-full sm:max-w-md">
+                <input
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      setPage(1);
+                      setSearch(searchInput);
+                    }
+                  }}
+                  placeholder="Search events by name, sport, or location"
+                  className="h-10 w-full rounded-md border border-zinc-700 bg-zinc-900 px-3 text-sm text-white placeholder:text-zinc-500"
+                />
+              </div>
+
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="border-zinc-700 bg-zinc-900 text-white hover:bg-zinc-800"
+                  onClick={() => {
+                    setPage(1);
+                    setSearch(searchInput);
+                  }}
+                >
+                  Search
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  className="text-zinc-300 hover:bg-zinc-800"
+                  onClick={() => {
+                    setSearchInput("");
+                    setSearch("");
+                    setPage(1);
+                  }}
+                >
+                  Clear
+                </Button>
+              </div>
+            </div>
             {events.map((e) => {
               const dateRange = `${fmtDate(e.startDate)} → ${fmtDate(e.endDate)}`;
 

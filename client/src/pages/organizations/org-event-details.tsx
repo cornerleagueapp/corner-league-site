@@ -210,9 +210,12 @@ export default function OrgEventDetailsPage(props: { params: { id: string } }) {
     queryKey: ["/sport-event/division/event", eventId],
     enabled: !!eventId,
     queryFn: async () => {
-      const res = await apiFetch(`/sport-event/division/event/${eventId}`, {
-        method: "GET",
-      });
+      const res = await apiFetch(
+        `/sport-event/division/event/${eventId}?page=1&limit=50`,
+        {
+          method: "GET",
+        },
+      );
       const json = await res.json().catch(() => ({}));
 
       if (!res.ok) {

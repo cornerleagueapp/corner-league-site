@@ -131,9 +131,12 @@ export default function RaceClassEditor() {
     if (!eventId) return;
     setLoading(true);
     try {
-      const res = await apiFetch(`/sport-event/division/event/${eventId}`, {
-        method: "GET",
-      });
+      const res = await apiFetch(
+        `/sport-event/division/event/${eventId}?page=1&limit=50`,
+        {
+          method: "GET",
+        },
+      );
       const json = await res.json();
       const list = json?.divisions ?? json?.data?.divisions ?? [];
       const safeDivisions = Array.isArray(list) ? list : [];
