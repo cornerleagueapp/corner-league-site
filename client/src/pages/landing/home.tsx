@@ -15,7 +15,7 @@ import partner3 from "@/assets/fanatics.png";
 import partner4 from "@/assets/google.png";
 import partner5 from "@/assets/peloton.png";
 import partner6 from "@/assets/ufc.png";
-import partnerPromo from "../assets/jetSkiBanner.mp4";
+import partnerPromo from "../../assets/jetSkiBanner.mp4";
 
 const sportsImages = [
   "https://storage.googleapis.com/cl-beta-428221-app-assets/homePageAssets/1.webp",

@@ -7,7 +7,7 @@ import { queryClient } from "@/lib/queryClient";
 import { apiFetch, apiRequest } from "@/lib/apiClient";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
-import TagsInput from "../components/TagsInput";
+import TagsInput from "../../components/TagsInput";
 
 type ProfileFromDb = {
   id: string | number;
@@ -107,7 +107,7 @@ export default function Settings() {
 
         const res = await apiRequest<{ data: ProfileFromDb }>(
           "GET",
-          `/users/get-user-by-username/${encodeURIComponent(uname)}`
+          `/users/get-user-by-username/${encodeURIComponent(uname)}`,
         );
 
         const u = res?.data;
