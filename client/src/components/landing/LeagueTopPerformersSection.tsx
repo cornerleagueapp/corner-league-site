@@ -32,20 +32,22 @@ export default function LeagueTopPerformersSection({
         </span>
       </h2>
 
-      <div className="mt-8 flex flex-wrap gap-3">
-        {organizations.map((org) => (
-          <button
-            key={org.id}
-            onClick={() => onSelectOrg(org.id)}
-            className={`px-5 py-3 text-xs font-bold uppercase tracking-[0.18em] ${
-              selectedOrgId === org.id
-                ? "bg-white text-black"
-                : "bg-white/10 text-white/70 hover:bg-white/15"
-            }`}
-          >
-            {org.name}
-          </button>
-        ))}
+      <div className="mt-8 -mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex min-w-max flex-nowrap gap-3 pr-4 sm:min-w-0 sm:flex-wrap sm:pr-0">
+          {organizations.map((org) => (
+            <button
+              key={org.id}
+              onClick={() => onSelectOrg(org.id)}
+              className={`shrink-0 whitespace-nowrap px-5 py-3 text-xs font-bold uppercase tracking-[0.18em] ${
+                selectedOrgId === org.id
+                  ? "bg-white text-black"
+                  : "bg-white/10 text-white/70 hover:bg-white/15"
+              }`}
+            >
+              {org.name}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_1fr]">
@@ -67,38 +69,40 @@ export default function LeagueTopPerformersSection({
               Results and matches coming soon.
             </div>
           ) : (
-            rows.map((person, idx) => (
-              <div
-                key={`${person.participantId}-${idx}`}
-                className="grid grid-cols-[60px_1fr_auto] items-center gap-4 border-b border-white/10 px-4 py-5"
-              >
-                <div className="text-4xl font-black text-white/45">
-                  {String(idx + 1).padStart(2, "0")}
-                </div>
+            <div className="max-h-[420px] overflow-y-auto pr-1 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/10">
+              {rows.map((person, idx) => (
+                <div
+                  key={`${person.participantId}-${idx}`}
+                  className="grid grid-cols-[60px_1fr_auto] items-center gap-4 border-b border-white/10 px-4 py-5"
+                >
+                  <div className="text-4xl font-black text-white/45">
+                    {String(idx + 1).padStart(2, "0")}
+                  </div>
 
-                <div>
-                  {person.racerHref ? (
-                    <Link href={person.racerHref}>
-                      <div className="cursor-pointer font-bold uppercase tracking-[0.06em] text-white hover:text-cyan-300">
+                  <div>
+                    {person.racerHref ? (
+                      <Link href={person.racerHref}>
+                        <div className="cursor-pointer font-bold uppercase tracking-[0.06em] text-white hover:text-cyan-300">
+                          {person.name}
+                        </div>
+                      </Link>
+                    ) : (
+                      <div className="font-bold uppercase tracking-[0.06em] text-white">
                         {person.name}
                       </div>
-                    </Link>
-                  ) : (
-                    <div className="font-bold uppercase tracking-[0.06em] text-white">
-                      {person.name}
-                    </div>
-                  )}
+                    )}
 
-                  <div className="mt-1 text-sm text-white/50">
-                    {person.className}
+                    <div className="mt-1 text-sm text-white/50">
+                      {person.className}
+                    </div>
+                  </div>
+
+                  <div className="text-3xl font-bold text-white">
+                    {person.totalPoints}
                   </div>
                 </div>
-
-                <div className="text-3xl font-bold text-white">
-                  {person.totalPoints}
-                </div>
-              </div>
-            ))
+              ))}
+            </div>
           )}
         </div>
       </div>

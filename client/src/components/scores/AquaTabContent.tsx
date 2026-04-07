@@ -601,9 +601,10 @@ function AquaHubSection({
             icon={<Trophy className="h-5 w-5" />}
             title="Results"
             description="View full motos, race outcomes, podium stories, and class-by-class coverage."
-            onClick={onOpenResults}
+            // onClick={onOpenResults}
             highlighted
-            cta="Open results"
+            // cta="Open results"
+            cta="Coming soon"
           />
 
           <AquaHubCard

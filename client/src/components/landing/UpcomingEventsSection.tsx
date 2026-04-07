@@ -16,12 +16,6 @@ function formatDate(value: string) {
   return d.toLocaleDateString([], { month: "short", day: "numeric" });
 }
 
-function formatTime(value: string) {
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "TBD";
-  return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-}
-
 export default function UpcomingEventsSection({
   organizations,
   selectedOrgId,
@@ -44,31 +38,33 @@ export default function UpcomingEventsSection({
         <span className="bg-[#ff9c9c]/25 px-2 text-[#ffb3b3]">Events</span>
       </h2>
 
-      <div className="mt-8 flex flex-wrap gap-3">
-        <button
-          onClick={() => onSelectOrg("all")}
-          className={`px-5 py-3 text-xs font-bold uppercase tracking-[0.18em] ${
-            selectedOrgId === "all"
-              ? "bg-white text-black"
-              : "bg-white/10 text-white/70 hover:bg-white/15"
-          }`}
-        >
-          All
-        </button>
-
-        {organizations.map((org) => (
+      <div className="mt-8 -mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex min-w-max flex-nowrap gap-3 pr-4 sm:min-w-0 sm:flex-wrap sm:pr-0">
           <button
-            key={org.id}
-            onClick={() => onSelectOrg(org.id)}
-            className={`px-5 py-3 text-xs font-bold uppercase tracking-[0.18em] ${
-              selectedOrgId === org.id
+            onClick={() => onSelectOrg("all")}
+            className={`shrink-0 whitespace-nowrap px-5 py-3 text-xs font-bold uppercase tracking-[0.18em] ${
+              selectedOrgId === "all"
                 ? "bg-white text-black"
                 : "bg-white/10 text-white/70 hover:bg-white/15"
             }`}
           >
-            {org.name}
+            All
           </button>
-        ))}
+
+          {organizations.map((org) => (
+            <button
+              key={org.id}
+              onClick={() => onSelectOrg(org.id)}
+              className={`shrink-0 whitespace-nowrap px-5 py-3 text-xs font-bold uppercase tracking-[0.18em] ${
+                selectedOrgId === org.id
+                  ? "bg-white text-black"
+                  : "bg-white/10 text-white/70 hover:bg-white/15"
+              }`}
+            >
+              {org.name}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="mt-10 border border-white/10 bg-white/[0.03]">
@@ -83,7 +79,7 @@ export default function UpcomingEventsSection({
             Results and matches coming soon.
           </div>
         ) : (
-          <div className="max-h-[600px] overflow-y-auto">
+          <div className="max-h-[600px] overflow-y-auto pr-1 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/10">
             {filtered.map((event) => (
               <div
                 key={event.id}
@@ -93,9 +89,6 @@ export default function UpcomingEventsSection({
                   <div className="text-2xl text-white/90">
                     {formatDate(event.startDate)}
                   </div>
-                  {/* <div className="text-white/40">
-                  {formatTime(event.startDate)}
-                </div> */}
                 </div>
 
                 <div className="self-center">
