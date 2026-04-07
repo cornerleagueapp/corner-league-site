@@ -196,8 +196,22 @@ export function useScoresLandingData() {
     return result;
   }, [orgsQuery.data, performersQuery.data]);
 
+  const sortedOrganizations = useMemo(() => {
+    const orgs = [...(orgsQuery.data ?? [])];
+
+    return orgs.sort((a, b) => {
+      const aIsIhra = a.name.trim().toUpperCase() === "IHRA";
+      const bIsIhra = b.name.trim().toUpperCase() === "IHRA";
+
+      if (aIsIhra && !bIsIhra) return -1;
+      if (!aIsIhra && bIsIhra) return 1;
+
+      return a.name.localeCompare(b.name);
+    });
+  }, [orgsQuery.data]);
+
   return {
-    organizations: orgsQuery.data ?? [],
+    organizations: sortedOrganizations,
     allEvents: eventsQuery.data ?? [],
     upcomingEvents,
     topPerformersByOrg,
