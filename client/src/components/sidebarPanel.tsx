@@ -291,7 +291,7 @@ export default function SidebarPanel({
           })}
         </div>
 
-        <div className="border-t border-gray-700 bg-[#000000] p-4 pb-8 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] md:pb-4">
+        <div className="border-t border-gray-700 bg-[#000000] p-4 pb-8 pb-[calc(env(safe-area-inset-bottom)+7.25rem)] md:pb-4">
           <div className="space-y-2 pb-2 md:pb-0">
             {showSignIn ? (
               <Link href={signInHref}>
