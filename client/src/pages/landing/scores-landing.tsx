@@ -1,6 +1,7 @@
 import { Link } from "wouter";
 import { PageSEO } from "@/seo/usePageSEO";
 import logoPath from "@assets/CL_Logo.png";
+import SpotifyPodcastSection from "@/components/SpotifyPodcastSection";
 
 export default function ScoresLandingPage() {
   const stories = [
@@ -276,6 +277,12 @@ export default function ScoresLandingPage() {
             </div>
           </div>
         </section>
+
+        <SpotifyPodcastSection
+          title="Wally's World WaterX Podcast"
+          subtitle="Weekly updates from the racing world, featured stories, live interviews with racers, and more."
+          showEmbedUrl="https://open.spotify.com/embed/show/0AJKS9cjhpd0DeYULPCsKT?utm_source=generator"
+        />
 
         <section id="latest-section" className="pt-20">
           <div className="mb-2 text-xs uppercase tracking-[0.28em] text-white/40">

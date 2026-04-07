@@ -123,7 +123,11 @@ export default function AquaOrganizationDetailsPage(props: {
     queryKey: ["/organizations", orgId],
     enabled: !!orgId,
     queryFn: async () => {
-      const res = await apiFetch(`/organizations/${orgId}`, { method: "GET" });
+      const res = await apiFetch(`/organizations/${orgId}`, {
+        method: "GET",
+        skipAuth: true,
+        noRefresh: true,
+      });
 
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -148,7 +152,11 @@ export default function AquaOrganizationDetailsPage(props: {
     queryFn: async () => {
       const res = await apiFetch(
         `/sport-event/organization/${orgId}?page=1&limit=50&order=ASC&sortBy=startDate`,
-        { method: "GET" },
+        {
+          method: "GET",
+          skipAuth: true,
+          noRefresh: true,
+        },
       );
 
       const json = await res.json().catch(() => ({}));

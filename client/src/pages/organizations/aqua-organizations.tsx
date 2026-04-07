@@ -19,7 +19,11 @@ export default function AquaOrganizationsPage() {
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["/organizations"],
     queryFn: async () => {
-      const res = await apiFetch("/organizations", { method: "GET" });
+      const res = await apiFetch("/organizations", {
+        method: "GET",
+        skipAuth: true,
+        noRefresh: true,
+      });
 
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
@@ -43,12 +47,12 @@ export default function AquaOrganizationsPage() {
   const orgs = (data ?? []) as Organization[];
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-[#03101f] text-white">
+    <div className="relative min-h-screen overflow-x-hidden bg-black text-white">
       {/* Background */}
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.08),_transparent_30%),radial-gradient(circle_at_80%_20%,_rgba(59,130,246,0.06),_transparent_24%),linear-gradient(to_bottom,_#04111d_0%,_#03101b_48%,_#020b14_100%)]" />
-        <div className="absolute inset-0 opacity-[0.035] [background-image:linear-gradient(rgba(255,255,255,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.12)_1px,transparent_1px)] [background-size:72px_72px]" />
-        <div className="absolute left-1/2 top-0 h-[340px] w-[340px] -translate-x-1/2 rounded-full bg-cyan-400/6 blur-3xl" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.05),_transparent_22%),radial-gradient(circle_at_80%_20%,_rgba(59,130,246,0.03),_transparent_18%),linear-gradient(to_bottom,_#000000_0%,_#02070b_45%,_#000000_100%)]" />
+        <div className="absolute inset-0 opacity-[0.025] [background-image:linear-gradient(rgba(255,255,255,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.12)_1px,transparent_1px)] [background-size:72px_72px]" />
+        <div className="absolute left-1/2 top-0 h-[260px] w-[260px] -translate-x-1/2 rounded-full bg-cyan-400/4 blur-3xl" />
       </div>
 
       <div className="relative mx-auto w-full max-w-[88rem] px-4 pb-12 pt-16 sm:px-6 lg:px-8 lg:pt-10">
@@ -111,7 +115,7 @@ export default function AquaOrganizationsPage() {
                   <div className="text-[11px] uppercase tracking-[0.2em] text-white/45">
                     Total
                   </div>
-                  <div className="text-lg font-bold text-white">
+                  <div className="text-sm font-bold text-white">
                     {orgs.length} organization{orgs.length === 1 ? "" : "s"}
                   </div>
                 </div>
@@ -285,7 +289,7 @@ export default function AquaOrganizationsPage() {
                         ID: {o.id}
                       </p>
 
-                      <span className="inline-flex items-center gap-2 text-sm font-semibold text-cyan-300 transition group-hover:text-cyan-200">
+                      {/* <span className="inline-flex items-center gap-2 text-sm font-semibold text-cyan-300 transition group-hover:text-cyan-200">
                         Open organization
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -300,7 +304,7 @@ export default function AquaOrganizationsPage() {
                           <path d="M7 17 17 7" />
                           <path d="M8 7h9v9" />
                         </svg>
-                      </span>
+                      </span> */}
                     </div>
                   </div>
                 </button>

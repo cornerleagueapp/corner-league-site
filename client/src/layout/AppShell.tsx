@@ -4,6 +4,7 @@ import SidebarPanel, { useAppSidebarSections } from "@/components/sidebarPanel";
 import cornerLeagueLogo from "@assets/CL_Logo.png";
 import { logout } from "@/lib/logout";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 import { queryClient } from "@/lib/queryClient";
 import { clearTokens } from "@/lib/token";
@@ -23,13 +24,14 @@ const keyToPath: Record<string, string> = {
 
 function activeKeyFromPath(pathname: string): string {
   if (pathname === "/profile") return "profile";
-  if (pathname.startsWith("/profile/")) return "";
+  if (pathname.startsWith("/profile/")) return "profile";
   if (pathname === "/settings") return "account";
 
   if (pathname === "/feed") return "feed";
   if (pathname === "/explore") return "explore";
 
   if (pathname === "/scores") return "scores";
+  if (pathname.startsWith("/scores/")) return "scores";
 
   if (pathname === "/clubs") return "my";
   if (pathname.startsWith("/clubs/discover")) return "discover";
@@ -38,13 +40,24 @@ function activeKeyFromPath(pathname: string): string {
   if (pathname === "/messages") return "messages";
   if (pathname === "/notifications") return "alerts";
 
+  if (pathname.startsWith("/racer/")) return "scores";
+  if (pathname.startsWith("/aqua-organizations")) return "scores";
+
   return "";
 }
 
-export default function AppShell({ children }: { children: React.ReactNode }) {
+export default function AppShell({
+  children,
+  guestMode = false,
+}: {
+  children: React.ReactNode;
+  guestMode?: boolean;
+}) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [location, navigate] = useLocation();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  const effectiveGuestMode = guestMode && !isAuthenticated;
+  const { toast } = useToast();
 
   const isSuperAdmin =
     String((user as any)?.role ?? "").toUpperCase() === "SUPER_ADMIN";
@@ -82,10 +95,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!showLogoutConfirm) return;
-
     const onKey = (e: KeyboardEvent) =>
       e.key === "Escape" && setShowLogoutConfirm(false);
-
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [showLogoutConfirm]);
@@ -93,7 +104,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const handler = (e: Event) =>
       setClubsSubKey((e as CustomEvent<"my" | "discover">).detail);
-
     window.addEventListener("clubs:activeTab", handler as EventListener);
     return () =>
       window.removeEventListener("clubs:activeTab", handler as EventListener);
@@ -105,10 +115,23 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const sections = useAppSidebarSections({
     onLogout: () => setShowLogoutConfirm(true),
     isSuperAdmin,
+    guestMode: effectiveGuestMode,
   });
 
+  const guestBlockedKeys = new Set([
+    "profile",
+    "account",
+    "logout",
+    "my",
+    "discover",
+    "messages",
+    "alerts",
+    "feed",
+    "explore",
+  ]);
+
   return (
-    <div className="relative flex min-h-screen bg-black text-white">
+    <div className="relative flex h-screen overflow-hidden bg-black text-white">
       <button
         onClick={() => setIsSidebarOpen((v) => !v)}
         className="fixed left-4 top-4 z-50 rounded-md bg-gray-800 p-2 text-white shadow-lg transition-colors hover:bg-gray-700 md:hidden"
@@ -142,6 +165,17 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         onClose={() => setIsSidebarOpen(false)}
         activeKey={activeKey}
         onChange={(key) => {
+          const isGuestBlocked =
+            effectiveGuestMode && guestBlockedKeys.has(key);
+
+          if (isGuestBlocked) {
+            toast({
+              title: "Please log in to access",
+              description: "That section requires an account.",
+            });
+            return;
+          }
+
           if (key === activeKey) return;
 
           if (key === "my" || key === "discover") {
@@ -154,7 +188,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               );
               return;
             }
-
             if (location !== "/clubs") navigate("/clubs");
             return;
           }
@@ -164,7 +197,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             const to = uname
               ? `/profile/${encodeURIComponent(uname)}`
               : "/profile";
-
             if (location !== to) navigate(to);
             return;
           }
@@ -177,9 +209,19 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         sections={sections}
         logoSrc={cornerLeagueLogo}
         backHref="/"
+        showSignIn={effectiveGuestMode}
+        signInHref={`/auth?next=${encodeURIComponent(location)}`}
+        onGuestPrompt={() =>
+          toast({
+            title: "Please log in to access",
+            description: "That section requires an account.",
+          })
+        }
       />
 
-      <div className="flex flex-1 flex-col">{children}</div>
+      <div className="flex min-w-0 flex-1 flex-col overflow-y-auto md:ml-64">
+        {children}
+      </div>
 
       {showLogoutConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">

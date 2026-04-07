@@ -9,6 +9,7 @@ export type SidebarItem = {
   selectable?: boolean;
   onSelect?: () => void;
   matchPaths?: string[];
+  disabled?: boolean;
 };
 
 export type SidebarSection = {
@@ -20,12 +21,15 @@ export function useAppSidebarSections(opts?: {
   extra?: SidebarSection[];
   onLogout?: () => void;
   isSuperAdmin?: boolean;
+  guestMode?: boolean;
 }) {
   const [, navigate] = useLocation();
 
   return useMemo<SidebarSection[]>(() => {
+    const guest = !!opts?.guestMode;
+
     const base: SidebarSection[] = [
-      ...(opts?.isSuperAdmin
+      ...(opts?.isSuperAdmin && !guest
         ? [
             {
               title: "Admin",
@@ -70,17 +74,19 @@ export function useAppSidebarSections(opts?: {
       {
         title: "Profile",
         items: [
-          { key: "profile", label: "Profile" },
+          { key: "profile", label: "Profile", disabled: guest },
           {
             key: "account",
             label: "Account Settings",
             selectable: false,
+            disabled: guest,
             onSelect: () => navigate("/settings"),
           },
           {
             key: "logout",
             label: "Logout",
             selectable: false,
+            disabled: guest,
             onSelect: () =>
               opts?.onLogout ? opts.onLogout() : void logout("/auth"),
           },
@@ -100,8 +106,8 @@ export function useAppSidebarSections(opts?: {
       {
         title: "Clubs",
         items: [
-          { key: "my", label: "My Clubs" },
-          { key: "discover", label: "Discover Clubs" },
+          { key: "my", label: "My Clubs", disabled: guest },
+          { key: "discover", label: "Discover Clubs", disabled: guest },
         ],
       },
       // {
@@ -115,7 +121,13 @@ export function useAppSidebarSections(opts?: {
     ];
 
     return opts?.extra?.length ? [...base, ...opts.extra] : base;
-  }, [navigate, opts?.extra, opts?.onLogout, opts?.isSuperAdmin]);
+  }, [
+    navigate,
+    opts?.extra,
+    opts?.onLogout,
+    opts?.isSuperAdmin,
+    opts?.guestMode,
+  ]);
 }
 
 type Props = {
@@ -127,6 +139,9 @@ type Props = {
   logoSrc?: string;
   backHref?: string;
   logoAlt?: string;
+  onGuestPrompt?: () => void;
+  showSignIn?: boolean;
+  signInHref?: string;
 };
 
 function Chevron({ open }: { open: boolean }) {
@@ -155,6 +170,9 @@ export default function SidebarPanel({
   logoSrc,
   backHref = "/",
   logoAlt = "Corner League",
+  onGuestPrompt,
+  showSignIn = false,
+  signInHref = "/auth",
 }: Props) {
   const [openMap, setOpenMap] = useState<Record<string, boolean>>({});
   const [location] = useLocation();
@@ -202,7 +220,7 @@ export default function SidebarPanel({
       )}
 
       <div
-        className={`fixed inset-y-0 left-0 z-40 flex h-screen w-full flex-col border-r border-gray-700 bg-[#000000] transition-transform duration-300 ease-in-out md:relative md:w-64 md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex h-screen w-[86vw] max-w-[320px] flex-col border-r border-gray-700 bg-[#000000] transition-transform duration-300 ease-in-out md:w-64 md:translate-x-0 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         } overscroll-contain`}
       >
@@ -235,21 +253,31 @@ export default function SidebarPanel({
                   <div className="mt-2 space-y-1 pl-1">
                     {section.items.map((item) => {
                       const isActive =
-                        isRouteMatch(item) ||
-                        (item.selectable !== false && activeKey === item.key);
+                        !item.disabled &&
+                        (isRouteMatch(item) ||
+                          (item.selectable !== false &&
+                            activeKey === item.key));
 
                       return (
                         <button
                           key={item.key}
                           onClick={() => {
+                            if (item.disabled) {
+                              onGuestPrompt?.();
+                              onClose();
+                              return;
+                            }
+
                             item.onSelect?.();
                             if (item.selectable !== false) onChange(item.key);
                             onClose();
                           }}
                           className={`w-full rounded-md px-3 py-2 text-left text-sm transition-colors ${
-                            isActive
-                              ? "bg-gray-800 font-medium text-white"
-                              : "text-gray-400 hover:bg-gray-800/60 hover:text-gray-100"
+                            item.disabled
+                              ? "cursor-not-allowed text-gray-600 hover:bg-transparent"
+                              : isActive
+                                ? "bg-gray-800 font-medium text-white"
+                                : "text-gray-400 hover:bg-gray-800/60 hover:text-gray-100"
                           }`}
                         >
                           {item.label}
@@ -264,14 +292,27 @@ export default function SidebarPanel({
         </div>
 
         <div className="border-t border-gray-700 bg-[#000000] p-4">
-          <Link href={backHref}>
-            <button
-              onClick={onClose}
-              className="w-full rounded-md px-3 py-2 text-left text-gray-300 transition-colors hover:bg-gray-800 hover:text-white"
-            >
-              ← Back to Home
-            </button>
-          </Link>
+          <div className="space-y-2">
+            {showSignIn ? (
+              <Link href={signInHref}>
+                <button
+                  onClick={onClose}
+                  className="w-full rounded-md border border-cyan-400/20 bg-cyan-400/10 px-3 py-2 text-left text-cyan-200 transition-colors hover:bg-cyan-400/15 hover:text-white"
+                >
+                  Sign In
+                </button>
+              </Link>
+            ) : null}
+
+            <Link href={backHref}>
+              <button
+                onClick={onClose}
+                className="w-full rounded-md px-3 py-2 text-left text-gray-300 transition-colors hover:bg-gray-800 hover:text-white"
+              >
+                ← Back to Home
+              </button>
+            </Link>
+          </div>
         </div>
       </div>
     </>

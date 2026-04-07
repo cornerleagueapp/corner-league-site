@@ -55,6 +55,7 @@ function ProtectedRoute({
 
   useEffect(() => {
     if (isLoading) return;
+
     if (!isAuthenticated) {
       const next = encodeURIComponent(location);
       const t = setTimeout(
@@ -128,13 +129,11 @@ function PrivateRouter() {
           <Route path="/welcome" component={WelcomeSplash} />
           <Route path="/settings" component={Settings} />
 
-          {/* clubs */}
           <Route path="/clubs" component={Clubs} />
           <Route path="/create-club" component={CreateClub} />
           <Route path="/clubs/:id" component={ClubDetailsPage} />
           <Route path="/club-settings/:id" component={ClubSettings} />
 
-          {/* admin */}
           <Route path="/admin/create-racer">
             {() => <SuperAdminRoute component={AdminCreateRacerPage} />}
           </Route>
@@ -177,32 +176,73 @@ function PrivateRouter() {
 function Router() {
   return (
     <Switch>
-      {/* public landing + public sports media */}
       <Route path="/" component={ScoresLandingPage} />
       <Route path="/home" component={Home} />
       <Route path="/about" component={Home} />
-      <Route path="/scores" component={ScoresPage} />
-      <Route path="/scores/aqua" component={ScoresPage} />
       <Route path="/contact" component={ContactPage} />
       <Route path="/terms" component={TermsPage} />
       <Route path="/auth" component={AuthPage} />
 
-      {/* public org + event content */}
-      <Route path="/aqua-organizations" component={AquaOrganizationsPage} />
-      <Route
-        path="/aqua-organizations/:id"
-        component={AquaOrganizationDetailsPage}
-      />
+      <Route path="/scores">
+        {() => (
+          <AppShell guestMode>
+            <ErrorBoundary>
+              <ScoresPage />
+            </ErrorBoundary>
+          </AppShell>
+        )}
+      </Route>
+
+      <Route path="/scores/aqua">
+        {() => (
+          <AppShell guestMode>
+            <ErrorBoundary>
+              <ScoresPage />
+            </ErrorBoundary>
+          </AppShell>
+        )}
+      </Route>
+
+      <Route path="/aqua-organizations">
+        {() => (
+          <AppShell guestMode>
+            <ErrorBoundary>
+              <AquaOrganizationsPage />
+            </ErrorBoundary>
+          </AppShell>
+        )}
+      </Route>
+
+      <Route path="/aqua-organizations/:id">
+        {(params) => (
+          <AppShell guestMode>
+            <ErrorBoundary>
+              <AquaOrganizationDetailsPage params={{ id: params.id }} />
+            </ErrorBoundary>
+          </AppShell>
+        )}
+      </Route>
+
       <Route path="/aqua-organizations/event-details/:id">
-        {(params) => <OrgEventDetailsPage params={{ id: params.id }} />}
+        {(params) => (
+          <AppShell guestMode>
+            <ErrorBoundary>
+              <OrgEventDetailsPage params={{ id: params.id }} />
+            </ErrorBoundary>
+          </AppShell>
+        )}
       </Route>
 
-      {/* public racer profile */}
       <Route path="/racer/:idOrSlug">
-        {(params) => <RacerProfilePage idOrSlugParam={params.idOrSlug} />}
+        {(params) => (
+          <AppShell guestMode>
+            <ErrorBoundary>
+              <RacerProfilePage idOrSlugParam={params.idOrSlug} />
+            </ErrorBoundary>
+          </AppShell>
+        )}
       </Route>
 
-      {/* everything else protected */}
       <Route>{() => <ProtectedRoute component={PrivateRouter} />}</Route>
     </Switch>
   );
