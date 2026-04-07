@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { PageSEO } from "@/seo/usePageSEO";
 import { apiRequest } from "@/lib/apiClient";
+import { getAccessToken } from "@/lib/token";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import stockAvatar from "@/assets/stockprofilepicture.jpeg";
@@ -548,9 +549,9 @@ export default function RacerProfilePage({
 }) {
   const { toast } = useToast();
   const [, navigate] = useLocation();
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, isLoading: authLoading, isAuthenticated } = useAuth();
 
-  const currentUserId = user?.id ? String(user.id) : null;
+  const currentUserId = isAuthenticated && user?.id ? String(user.id) : null;
 
   const [racer, setRacer] = useState<Racer | null>(null);
   const [loading, setLoading] = useState(true);
@@ -815,7 +816,8 @@ export default function RacerProfilePage({
       } catch (e: any) {
         console.error("[RacerProfile] AI analysis error", e);
         if (!cancelled) {
-          setAnalysisErr("Could not generate AI analysis for this racer.");
+          setAnalysisErr("Ai Analysis to come soon.");
+          // setAnalysisErr("Could not generate AI analysis for this racer.");
         }
       } finally {
         if (!cancelled) setAnalysisLoading(false);
@@ -865,9 +867,33 @@ export default function RacerProfilePage({
     };
   }, [racer?.athleteId]);
 
+  useEffect(() => {
+    const hasSession =
+      !!getAccessToken() && !!isAuthenticated && !!currentUserId;
+    if (!hasSession && claimOpen) {
+      setClaimOpen(false);
+    }
+  }, [isAuthenticated, currentUserId, claimOpen]);
+
+  const handleClaimProfileClick = () => {
+    const hasSession =
+      !!getAccessToken() && !!isAuthenticated && !!currentUserId;
+
+    if (!hasSession) {
+      setClaimOpen(false);
+      toast({
+        title: "Please log in to claim profile",
+        description: "You need an account to submit an athlete profile claim.",
+      });
+      return;
+    }
+
+    setClaimOpen(true);
+  };
+
   if (loading || authLoading) {
     return (
-      <div className="grid min-h-screen place-items-center bg-[#03101b] text-white">
+      <div className="grid min-h-screen place-items-center bg-black text-white">
         <PageSEO title="Racer • Corner League" />
         <div className="text-white/70">Loading racer…</div>
       </div>
@@ -876,7 +902,7 @@ export default function RacerProfilePage({
 
   if (err || !racer) {
     return (
-      <div className="grid min-h-screen place-items-center bg-[#03101b] text-white">
+      <div className="grid min-h-screen place-items-center bg-black text-white">
         <PageSEO title="Racer • Corner League" />
         <div className="space-y-3 text-center">
           <div className="text-xl font-semibold">Couldn’t load this racer</div>
@@ -981,13 +1007,13 @@ export default function RacerProfilePage({
   }
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-[#03101b] text-white">
+    <div className="relative min-h-screen overflow-x-hidden bg-black text-white">
       <PageSEO title={`${title} • Corner League`} />
 
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.08),_transparent_30%),radial-gradient(circle_at_82%_20%,_rgba(59,130,246,0.06),_transparent_24%),linear-gradient(to_bottom,_#04111d_0%,_#03101b_48%,_#020b14_100%)]" />
-        <div className="absolute inset-0 opacity-[0.03] [background-image:linear-gradient(rgba(255,255,255,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.12)_1px,transparent_1px)] [background-size:72px_72px]" />
-        <div className="absolute left-1/2 top-0 h-[340px] w-[340px] -translate-x-1/2 rounded-full bg-cyan-400/5 blur-3xl" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.05),_transparent_22%),radial-gradient(circle_at_82%_20%,_rgba(59,130,246,0.03),_transparent_18%),linear-gradient(to_bottom,_#000000_0%,_#02070b_45%,_#000000_100%)]" />
+        <div className="absolute inset-0 opacity-[0.025] [background-image:linear-gradient(rgba(255,255,255,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.12)_1px,transparent_1px)] [background-size:72px_72px]" />
+        <div className="absolute left-1/2 top-0 h-[260px] w-[260px] -translate-x-1/2 rounded-full bg-cyan-400/4 blur-3xl" />
       </div>
 
       <div className="relative mx-auto max-w-6xl px-4 pb-12 pt-4">
@@ -1108,7 +1134,7 @@ export default function RacerProfilePage({
                 {canEdit ? (
                   <Button
                     onClick={() => setEditOpen(true)}
-                    className="h-11 bg-white/10 text-white border border-white/20 hover:bg-white/15"
+                    className="h-11 border border-white/20 bg-white/10 text-white hover:bg-white/15"
                   >
                     <PencilLine className="mr-2 h-4 w-4" />
                     Edit
@@ -1120,15 +1146,14 @@ export default function RacerProfilePage({
                   >
                     Claim Pending
                   </Button>
-                ) : canClaim ? (
+                ) : !racer?.isClaimed ? (
                   <Button
-                    onClick={() => setClaimOpen(true)}
+                    onClick={handleClaimProfileClick}
                     className="h-11 bg-violet-500 text-white hover:bg-violet-600"
                   >
                     {hasRejectedClaim ? "Submit New Claim" : "Claim Profile"}
                   </Button>
                 ) : null}
-
                 <Button
                   onClick={async () => {
                     try {
@@ -1486,60 +1511,68 @@ export default function RacerProfilePage({
         />
       )}
 
-      {claimOpen && racer?.athleteId && currentUserId && (
-        <ClaimAthleteModal
-          racerName={racer.racerName}
-          onClose={() => setClaimOpen(false)}
-          onSubmit={async ({ additionalInfo, idCardImage }) => {
-            try {
-              setClaimLoading(true);
+      {claimOpen &&
+        racer?.athleteId &&
+        isAuthenticated &&
+        currentUserId &&
+        getAccessToken() && (
+          <ClaimAthleteModal
+            racerName={racer.racerName}
+            onClose={() => setClaimOpen(false)}
+            onSubmit={async ({ additionalInfo, idCardImage }) => {
+              try {
+                setClaimLoading(true);
 
-              const form = new FormData();
-              form.append("userId", String(currentUserId));
-              form.append("athleteId", String(racer.athleteId));
-              if (additionalInfo?.trim()) {
-                form.append("additionalInfo", additionalInfo.trim());
+                const form = new FormData();
+                form.append("userId", String(currentUserId));
+                form.append("athleteId", String(racer.athleteId));
+                if (additionalInfo?.trim()) {
+                  form.append("additionalInfo", additionalInfo.trim());
+                }
+                form.append("idCardImage", idCardImage);
+
+                const res = await apiRequest<any>(
+                  "POST",
+                  "/athlete-claims",
+                  form as any,
+                );
+
+                setClaimStatus({
+                  hasClaim: true,
+                  status: "pending",
+                  claimId: res?.claimId,
+                });
+
+                setClaimOpen(false);
+                toast({
+                  title: "Claim submitted",
+                  description:
+                    "Your athlete claim has been sent for admin review.",
+                });
+              } catch (err: any) {
+                logRequestError(
+                  "[AthleteClaim] submit",
+                  err,
+                  "/athlete-claims",
+                );
+                const nice =
+                  humanizeValidationError(err) ||
+                  err?.data?.message ||
+                  err?.data?.error ||
+                  err?.message ||
+                  "Could not submit claim";
+
+                toast({
+                  title: "Claim failed",
+                  description: String(nice),
+                });
+              } finally {
+                setClaimLoading(false);
               }
-              form.append("idCardImage", idCardImage);
-
-              const res = await apiRequest<any>(
-                "POST",
-                "/athlete-claims",
-                form as any,
-              );
-
-              setClaimStatus({
-                hasClaim: true,
-                status: "pending",
-                claimId: res?.claimId,
-              });
-
-              setClaimOpen(false);
-              toast({
-                title: "Claim submitted",
-                description:
-                  "Your athlete claim has been sent for admin review.",
-              });
-            } catch (err: any) {
-              logRequestError("[AthleteClaim] submit", err, "/athlete-claims");
-              const nice =
-                humanizeValidationError(err) ||
-                err?.data?.message ||
-                err?.data?.error ||
-                err?.message ||
-                "Could not submit claim";
-
-              toast({
-                title: "Claim failed",
-                description: String(nice),
-              });
-            } finally {
-              setClaimLoading(false);
-            }
-          }}
-          loading={claimLoading}
-        />
-      )}
+            }}
+            loading={claimLoading}
+          />
+        )}
 
       <RacerSearchModal
         open={searchOpen}

@@ -7,40 +7,43 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import { setTokens, getAccessToken, getRefreshToken } from "@/lib/token";
-import Home from "@/pages/home";
-import Clubs from "@/pages/clubs";
-import CreateClub from "@/pages/create-club";
-import ClubSettings from "./pages/clubSettings";
-import Settings from "@/pages/settings";
-import ContactPage from "@/pages/contact";
+
+import Home from "@/pages/landing/home";
+import ScoresPage from "@/pages/scores";
+import ScoresLandingPage from "@/pages/landing/scores-landing";
+
+import Clubs from "@/pages/clubs/clubs";
+import CreateClub from "@/pages/clubs/create-club";
+import ClubSettings from "./pages/clubs/clubSettings";
+import Settings from "@/pages/profile/settings";
+import ContactPage from "@/pages/clubs/contact";
 import TermsPage from "@/pages/terms";
 import AuthPage from "@/pages/auth";
 import NotFound from "@/pages/not-found";
-import ClubDetailsPage from "./pages/clubDetails";
+import ClubDetailsPage from "./pages/clubs/clubDetails";
 import { useGtagPageview } from "./useGtagPageview";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import RacerProfilePage from "./pages/racer-profile";
 import AppShell from "./layout/AppShell";
-import ProfileRedirect from "@/pages/profile";
-import UserProfilePage from "./pages/user-profile";
-import FeedPage from "@/pages/feed";
-import ExploreFeedPage from "@/pages/explore";
-import ScoresPage from "@/pages/scores";
-import MessagesPage from "@/pages/messages";
-import NotificationsPage from "@/pages/notifications";
+import ProfileRedirect from "@/pages/profile/profile";
+import UserProfilePage from "./pages/profile/user-profile";
+import FeedPage from "@/pages/profile/feed";
+import ExploreFeedPage from "@/pages/profile/explore";
+import MessagesPage from "@/pages/profile/messages";
+import NotificationsPage from "@/pages/profile/notifications";
 import WelcomeSplash from "./pages/welcome-splash";
-import AdminCreateRacerPage from "./pages/admin-create-racer";
+import AdminCreateRacerPage from "./pages/admin/admin-create-racer";
 import AquaOrganizationsPage from "./pages/organizations/aqua-organizations";
 import AdminCreateOrganizationPage from "./pages/organizations/admin-create-organization";
 import AquaOrganizationDetailsPage from "./pages/organizations/aqua-organization-details";
-import AdminAthleteClaimsPage from "./pages/admin-athlete-claims";
+import AdminAthleteClaimsPage from "./pages/admin/admin-athlete-claims";
 import OrgEventDetailsPage from "./pages/organizations/org-event-details";
 
-import UpdateEventPage from "./pages/updateEventPage";
-import CreateEventPage from "./pages/createEventPage";
-import EventListPage from "./pages/eventListPage";
-import RaceClassEditor from "./pages/raceClassEditor";
-import ClassMatchManagePage from "./pages/classMatchManagePage";
+import UpdateEventPage from "./pages/organizations/updateEventPage";
+import CreateEventPage from "./pages/organizations/createEventPage";
+import EventListPage from "./pages/organizations/eventListPage";
+import RaceClassEditor from "./pages/organizations/raceClassEditor";
+import ClassMatchManagePage from "./pages/organizations/classMatchManagePage";
 
 function ProtectedRoute({
   component: Comp,
@@ -52,6 +55,7 @@ function ProtectedRoute({
 
   useEffect(() => {
     if (isLoading) return;
+
     if (!isAuthenticated) {
       const next = encodeURIComponent(location);
       const t = setTimeout(
@@ -90,7 +94,7 @@ function SuperAdminRoute({
     }
 
     if (isAuthenticated && !isSuperAdmin) {
-      const t = setTimeout(() => navigate("/profile", { replace: true }), 150);
+      const t = setTimeout(() => navigate("/", { replace: true }), 150);
       return () => clearTimeout(t);
     }
   }, [isAuthenticated, isLoading, isSuperAdmin, location, navigate]);
@@ -103,7 +107,6 @@ function BootSanitizeTokens() {
   useEffect(() => {
     const at = getAccessToken();
     const rt = getRefreshToken();
-    // re-save to ensure any accidental "Bearer " is stripped
     if (at) setTokens(at, rt ?? undefined);
   }, []);
   return null;
@@ -117,25 +120,19 @@ function PrivateRouter() {
           <Route path="/profile/:username">
             {(params) => <UserProfilePage username={params.username} />}
           </Route>
-          <Route path="/racer/:idOrSlug">
-            {(params) => <RacerProfilePage idOrSlugParam={params.idOrSlug} />}
-          </Route>
+
           <Route path="/profile" component={ProfileRedirect} />
           <Route path="/feed" component={FeedPage} />
           <Route path="/explore" component={ExploreFeedPage} />
-          <Route path="/scores" component={ScoresPage} />
-          <Route path="/scores/aqua" component={ScoresPage} />
           <Route path="/messages" component={MessagesPage} />
           <Route path="/notifications" component={NotificationsPage} />
           <Route path="/welcome" component={WelcomeSplash} />
-          <Route path="/aqua-organizations" component={AquaOrganizationsPage} />
-          <Route
-            path="/aqua-organizations/:id"
-            component={AquaOrganizationDetailsPage}
-          />
-          <Route path="/aqua-organizations/event-details/:id">
-            {(params) => <OrgEventDetailsPage params={{ id: params.id }} />}
-          </Route>
+          <Route path="/settings" component={Settings} />
+
+          <Route path="/clubs" component={Clubs} />
+          <Route path="/create-club" component={CreateClub} />
+          <Route path="/clubs/:id" component={ClubDetailsPage} />
+          <Route path="/club-settings/:id" component={ClubSettings} />
 
           <Route path="/admin/create-racer">
             {() => <SuperAdminRoute component={AdminCreateRacerPage} />}
@@ -169,14 +166,6 @@ function PrivateRouter() {
             {() => <SuperAdminRoute component={ClassMatchManagePage} />}
           </Route>
 
-          {/* existing club flows */}
-          <Route path="/clubs" component={Clubs} />
-          <Route path="/create-club" component={CreateClub} />
-          <Route path="/clubs/:id" component={ClubDetailsPage} />
-          <Route path="/club-settings/:id" component={ClubSettings} />
-          <Route path="/settings" component={Settings} />
-
-          {/* final fallback **inside** shell */}
           <Route component={NotFound} />
         </Switch>
       </ErrorBoundary>
@@ -185,26 +174,75 @@ function PrivateRouter() {
 }
 
 function Router() {
-  function AuthBootstrap() {
-    useEffect(() => {
-      queryClient.prefetchQuery({ queryKey: ["/auth/me"] });
-    }, []);
-    return null;
-  }
-
   return (
     <Switch>
-      {/* public */}
-      <Route path="/" component={Home} />
+      <Route path="/" component={ScoresLandingPage} />
+      <Route path="/home" component={Home} />
+      <Route path="/about" component={Home} />
       <Route path="/contact" component={ContactPage} />
       <Route path="/terms" component={TermsPage} />
       <Route path="/auth" component={AuthPage} />
 
-      {/* catch-all → try private area */}
-      {/* <Route
-        path="/:rest*"
-        component={() => <ProtectedRoute component={PrivateRouter} />}
-      /> */}
+      <Route path="/scores">
+        {() => (
+          <AppShell guestMode>
+            <ErrorBoundary>
+              <ScoresPage />
+            </ErrorBoundary>
+          </AppShell>
+        )}
+      </Route>
+
+      <Route path="/scores/aqua">
+        {() => (
+          <AppShell guestMode>
+            <ErrorBoundary>
+              <ScoresPage />
+            </ErrorBoundary>
+          </AppShell>
+        )}
+      </Route>
+
+      <Route path="/aqua-organizations">
+        {() => (
+          <AppShell guestMode>
+            <ErrorBoundary>
+              <AquaOrganizationsPage />
+            </ErrorBoundary>
+          </AppShell>
+        )}
+      </Route>
+
+      <Route path="/aqua-organizations/:id">
+        {(params) => (
+          <AppShell guestMode>
+            <ErrorBoundary>
+              <AquaOrganizationDetailsPage params={{ id: params.id }} />
+            </ErrorBoundary>
+          </AppShell>
+        )}
+      </Route>
+
+      <Route path="/aqua-organizations/event-details/:id">
+        {(params) => (
+          <AppShell guestMode>
+            <ErrorBoundary>
+              <OrgEventDetailsPage params={{ id: params.id }} />
+            </ErrorBoundary>
+          </AppShell>
+        )}
+      </Route>
+
+      <Route path="/racer/:idOrSlug">
+        {(params) => (
+          <AppShell guestMode>
+            <ErrorBoundary>
+              <RacerProfilePage idOrSlugParam={params.idOrSlug} />
+            </ErrorBoundary>
+          </AppShell>
+        )}
+      </Route>
+
       <Route>{() => <ProtectedRoute component={PrivateRouter} />}</Route>
     </Switch>
   );
@@ -212,6 +250,7 @@ function Router() {
 
 function App() {
   useGtagPageview();
+
   return (
     <QueryClientProvider client={queryClient}>
       <BootSanitizeTokens />

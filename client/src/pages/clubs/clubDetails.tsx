@@ -8,7 +8,7 @@ import { apiRequest } from "@/lib/apiClient";
 import ClubPostFeed from "@/components/club/ClubPostFeed";
 import ClubChannelFeed from "@/components/club/ClubChannelFeed";
 import { PageSEO } from "@/seo/usePageSEO";
-import gearIcon from "../assets/clubSettingsIcon.png";
+import gearIcon from "@/assets/clubSettingsIcon.png";
 import ClubInfoModal from "@/components/ClubInfoModal";
 
 type ClubOwner = {
@@ -49,7 +49,7 @@ export default function ClubDetails() {
     queryFn: async () => {
       const json = await apiRequest<any>(
         "GET",
-        `/clubs/${clubId}/details?user_id=${user?.id ?? ""}`
+        `/clubs/${clubId}/details?user_id=${user?.id ?? ""}`,
       );
       return json?.data as ClubDetails;
     },
@@ -70,7 +70,7 @@ export default function ClubDetails() {
     queryFn: async () => {
       const json = await apiRequest<any>(
         "GET",
-        `/clubs/${clubId}/is-member?userId=${user?.id ?? ""}`
+        `/clubs/${clubId}/is-member?userId=${user?.id ?? ""}`,
       );
       return !!json?.data?.isMember;
     },
@@ -191,7 +191,7 @@ export default function ClubDetails() {
           </Link>
 
           <h1 className="text-xl sm:text-2xl font-semibold">
-            {loadingDetails ? "Club" : details?.clubName ?? "Club"}
+            {loadingDetails ? "Club" : (details?.clubName ?? "Club")}
           </h1>
 
           <div className="flex items-center gap-2">
@@ -217,7 +217,9 @@ export default function ClubDetails() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <div className="text-2xl font-semibold">
-                  {loadingDetails ? "Loading..." : details?.clubName ?? "Club"}
+                  {loadingDetails
+                    ? "Loading..."
+                    : (details?.clubName ?? "Club")}
                 </div>
                 <div className="mt-1 text-sm text-gray-200/80">
                   {details?.memberCount ?? 0} members

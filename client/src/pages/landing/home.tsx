@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
-import logoPath from "@assets/CL_Logo.png";
 import { logout } from "@/lib/logout";
+import PublicTopNav from "@/components/navigation/PublicTopNav";
 import { PageSEO } from "@/seo/usePageSEO";
 import { useLocation } from "wouter";
 
@@ -15,7 +15,7 @@ import partner3 from "@/assets/fanatics.png";
 import partner4 from "@/assets/google.png";
 import partner5 from "@/assets/peloton.png";
 import partner6 from "@/assets/ufc.png";
-import partnerPromo from "../assets/jetSkiBanner.mp4";
+import partnerPromo from "../../assets/jetSkiBanner.mp4";
 
 const sportsImages = [
   "https://storage.googleapis.com/cl-beta-428221-app-assets/homePageAssets/1.webp",
@@ -66,6 +66,28 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-black text-white font-sans overflow-x-hidden relative">
+      <PublicTopNav
+        activeTab="details"
+        selectedSportKey="jet-ski"
+        sports={[
+          {
+            key: "jet-ski",
+            label: "Jet Ski",
+            href: "/scores/aqua",
+            enabled: true,
+          },
+          {
+            key: "supercross",
+            label: "Supercross",
+            href: "/scores/supercross",
+            enabled: false,
+          },
+          { key: "mlb", label: "MLB", href: "/scores/mlb", enabled: false },
+          { key: "nba", label: "NBA", href: "/scores/nba", enabled: false },
+          { key: "nfl", label: "NFL", href: "/scores/nfl", enabled: false },
+        ]}
+      />
+
       <PageSEO
         title="Home"
         description="Discover public clubs or manage your own on Corner League. Join live communities for your favorite teams."
@@ -179,37 +201,6 @@ export default function Home() {
 
       {/* HERO */}
       <div className="hero-overlay relative z-10 min-h-screen flex flex-col">
-        {/* Logo */}
-        <div className="pt-8 pb-4 flex justify-center">
-          <img
-            src={logoPath}
-            alt="Corner League Logo"
-            className="w-12 h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 object-contain"
-          />
-        </div>
-
-        {/* Auth actions (desktop) */}
-        {isAuthenticated && (
-          <div className="hidden md:flex absolute top-10 right-6 z-30 items-center gap-3">
-            <Link href="/welcome">
-              <Button
-                size="sm"
-                className="rounded-full px-5 py-2 text-sm font-semibold text-black bg-white hover:bg-gray-100"
-              >
-                My Scores
-              </Button>
-            </Link>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleLogout}
-              className="rounded-full px-5 py-2 text-sm text-white border-white/40 bg-transparent hover:bg-white/10"
-            >
-              Logout
-            </Button>
-          </div>
-        )}
-
         {/* Center hero text */}
         <div className="flex-1 flex items-center justify-center px-6 py-12">
           <div className="text-center max-w-4xl mx-auto">
@@ -427,104 +418,6 @@ export default function Home() {
                   </Button>
                 </Link>
               </div>
-            </div>
-          </div>
-        </Section>
-
-        {/* AQUA quick access */}
-        <Section className="pt-0">
-          <div className="rounded-2xl border border-cyan-400/10 bg-[linear-gradient(180deg,rgba(8,24,39,0.92)_0%,rgba(4,17,29,0.98)_100%)] p-5 shadow-[0_18px_50px_rgba(0,0,0,0.22)] sm:p-6 md:p-8">
-            <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-              <div className="max-w-2xl">
-                <Badge>Explore Jet Ski Racing</Badge>
-                <h3 className="mt-3 text-2xl font-semibold text-white md:text-3xl">
-                  Jump straight into Jet Ski content
-                </h3>
-                <p className="mt-2 text-sm leading-7 text-white/70 md:text-base">
-                  Browse race organizations, view the AQUA event hub, search
-                  racers, and keep up with upcoming race coverage.
-                </p>
-              </div>
-
-              <Link href="/scores/aqua">
-                <Button className="rounded-full bg-white px-6 text-black hover:bg-white/90">
-                  Open AQUA Hub
-                </Button>
-              </Link>
-            </div>
-
-            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <Link href="/scores/aqua">
-                <button className="group w-full rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-left transition hover:border-cyan-300/25 hover:bg-white/[0.07]">
-                  <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-400/15 bg-cyan-400/8 text-cyan-300">
-                    🌊
-                  </div>
-                  <div className="mt-4 text-lg font-semibold text-white">
-                    AQUA Hub
-                  </div>
-                  <p className="mt-2 text-sm leading-6 text-white/65">
-                    Enter the main AQUA sports hub for scores, featured content,
-                    and quick navigation.
-                  </p>
-                  <div className="mt-4 text-sm font-semibold text-cyan-300">
-                    Open hub →
-                  </div>
-                </button>
-              </Link>
-
-              <Link href="/aqua-organizations">
-                <button className="group w-full rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-left transition hover:border-cyan-300/25 hover:bg-white/[0.07]">
-                  <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-400/15 bg-cyan-400/8 text-cyan-300">
-                    🏁
-                  </div>
-                  <div className="mt-4 text-lg font-semibold text-white">
-                    Organizations
-                  </div>
-                  <p className="mt-2 text-sm leading-6 text-white/65">
-                    Explore race organizations, tours, and official AQUA event
-                    ecosystems.
-                  </p>
-                  <div className="mt-4 text-sm font-semibold text-cyan-300">
-                    View organizations →
-                  </div>
-                </button>
-              </Link>
-
-              <Link href="/scores/aqua">
-                <button className="group w-full rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-left transition hover:border-cyan-300/25 hover:bg-white/[0.07]">
-                  <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-400/15 bg-cyan-400/8 text-cyan-300">
-                    🔎
-                  </div>
-                  <div className="mt-4 text-lg font-semibold text-white">
-                    Search Racers
-                  </div>
-                  <p className="mt-2 text-sm leading-6 text-white/65">
-                    Find racers, view their profiles, and jump deeper into AQUA
-                    athlete content.
-                  </p>
-                  <div className="mt-4 text-sm font-semibold text-cyan-300">
-                    Start exploring →
-                  </div>
-                </button>
-              </Link>
-
-              <Link href="/scores/aqua">
-                <button className="group w-full rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-left transition hover:border-cyan-300/25 hover:bg-white/[0.07]">
-                  <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-400/15 bg-cyan-400/8 text-cyan-300">
-                    📅
-                  </div>
-                  <div className="mt-4 text-lg font-semibold text-white">
-                    Upcoming Races
-                  </div>
-                  <p className="mt-2 text-sm leading-6 text-white/65">
-                    Keep up with race schedules, upcoming events, and the latest
-                    AQUA coverage.
-                  </p>
-                  <div className="mt-4 text-sm font-semibold text-cyan-300">
-                    See race schedule →
-                  </div>
-                </button>
-              </Link>
             </div>
           </div>
         </Section>

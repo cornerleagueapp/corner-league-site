@@ -4,67 +4,65 @@ import SidebarPanel, { useAppSidebarSections } from "@/components/sidebarPanel";
 import cornerLeagueLogo from "@assets/CL_Logo.png";
 import { logout } from "@/lib/logout";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 import { queryClient } from "@/lib/queryClient";
 import { clearTokens } from "@/lib/token";
 
-// map sidebar item -> route
 const keyToPath: Record<string, string> = {
-  // Profile section
   //   profile: "/profile",
   account: "/settings",
   logout: "/auth",
-
-  // Explore section
   feed: "/feed",
   explore: "/explore",
-
-  // Live Scores
-  teams: "/scores/teams",
   scores: "/scores",
-
-  // Clubs
   my: "/clubs",
   discover: "/clubs",
-
-  // Messages / Notifications
   messages: "/messages",
   alerts: "/notifications",
 };
 
 function activeKeyFromPath(pathname: string): string {
-  // exacts first
   if (pathname === "/profile") return "profile";
-  if (pathname.startsWith("/profile/")) return "";
+  if (pathname.startsWith("/profile/")) return "profile";
   if (pathname === "/settings") return "account";
 
   if (pathname === "/feed") return "feed";
   if (pathname === "/explore") return "explore";
 
   if (pathname === "/scores") return "scores";
-  if (pathname.startsWith("/scores/")) return "teams";
+  if (pathname.startsWith("/scores/")) return "scores";
 
   if (pathname === "/clubs") return "my";
   if (pathname.startsWith("/clubs/discover")) return "discover";
   if (pathname.startsWith("/clubs/")) return "my";
 
-  if (pathname.startsWith("/clubs/")) return "my";
-
   if (pathname === "/messages") return "messages";
   if (pathname === "/notifications") return "alerts";
 
-  return ""; // nothing selected
+  if (pathname.startsWith("/racer/")) return "scores";
+  if (pathname.startsWith("/aqua-organizations")) return "scores";
+
+  return "";
 }
 
-export default function AppShell({ children }: { children: React.ReactNode }) {
+export default function AppShell({
+  children,
+  guestMode = false,
+}: {
+  children: React.ReactNode;
+  guestMode?: boolean;
+}) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [location, navigate] = useLocation();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  const effectiveGuestMode = guestMode && !isAuthenticated;
+  const { toast } = useToast();
+
   const isSuperAdmin =
     String((user as any)?.role ?? "").toUpperCase() === "SUPER_ADMIN";
 
   const [clubsSubKey, setClubsSubKey] = useState<"" | "my" | "discover">("");
-
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   useEffect(() => {
@@ -74,16 +72,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     };
 
     const hardLogout = () => {
-      // 1) Clear tokens + stored user
       clearTokens();
-
-      // 2) Clear "me" cache so UI stops thinking you're logged in
       queryClient.setQueryData(["/auth/me"], null);
-
-      // Optional: cancel in-flight queries to prevent weird loading states
       queryClient.cancelQueries();
-
-      // 3) Redirect to auth immediately
       goAuth();
     };
 
@@ -119,23 +110,34 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }, []);
 
   const pathKey = useMemo(() => activeKeyFromPath(location), [location]);
-
   const activeKey = location === "/clubs" ? clubsSubKey || "my" : pathKey || "";
 
   const sections = useAppSidebarSections({
     onLogout: () => setShowLogoutConfirm(true),
     isSuperAdmin,
+    guestMode: effectiveGuestMode,
   });
 
+  const guestBlockedKeys = new Set([
+    "profile",
+    "account",
+    "logout",
+    "my",
+    "discover",
+    "messages",
+    "alerts",
+    "feed",
+    "explore",
+  ]);
+
   return (
-    <div className="min-h-screen bg-black text-white flex relative">
-      {/* Mobile Menu Button */}
+    <div className="relative flex h-screen overflow-hidden bg-black text-white">
       <button
         onClick={() => setIsSidebarOpen((v) => !v)}
-        className="md:hidden fixed top-4 left-4 z-50 p-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 transition-colors shadow-lg"
+        className="fixed left-4 top-4 z-50 rounded-md bg-gray-800 p-2 text-white shadow-lg transition-colors hover:bg-gray-700 md:hidden"
       >
         <svg
-          className="w-6 h-6"
+          className="h-6 w-6"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -163,9 +165,18 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         onClose={() => setIsSidebarOpen(false)}
         activeKey={activeKey}
         onChange={(key) => {
-          if (key === activeKey) {
+          const isGuestBlocked =
+            effectiveGuestMode && guestBlockedKeys.has(key);
+
+          if (isGuestBlocked) {
+            toast({
+              title: "Please log in to access",
+              description: "That section requires an account.",
+            });
             return;
           }
+
+          if (key === activeKey) return;
 
           if (key === "my" || key === "discover") {
             if (location === "/clubs") {
@@ -186,39 +197,39 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             const to = uname
               ? `/profile/${encodeURIComponent(uname)}`
               : "/profile";
-            if (location !== to) {
-              navigate(to);
-            } else {
-            }
+            if (location !== to) navigate(to);
             return;
           }
 
           const path = keyToPath[key];
-          if (path) {
-            if (location !== path) {
-              navigate(path);
-            } else {
-            }
+          if (path && location !== path) {
+            navigate(path);
           }
         }}
         sections={sections}
         logoSrc={cornerLeagueLogo}
         backHref="/"
+        showSignIn={effectiveGuestMode}
+        signInHref={`/auth?next=${encodeURIComponent(location)}`}
+        onGuestPrompt={() =>
+          toast({
+            title: "Please log in to access",
+            description: "That section requires an account.",
+          })
+        }
       />
 
-      {/* Main content area */}
-      <div className="flex-1 flex flex-col">{children}</div>
+      <div className="flex min-w-0 flex-1 flex-col overflow-y-auto md:ml-64">
+        {children}
+      </div>
 
-      {/* Logout Confirm Modal */}
       {showLogoutConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          {/* Backdrop */}
           <button
             aria-label="Close"
             className="absolute inset-0 bg-black/60"
             onClick={() => setShowLogoutConfirm(false)}
           />
-          {/* Dialog */}
           <div
             role="dialog"
             aria-modal="true"
@@ -235,7 +246,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <div className="mt-5 flex justify-end gap-2">
               <button
                 onClick={() => setShowLogoutConfirm(false)}
-                className="px-3 py-2 rounded-md border border-gray-700 text-gray-200 hover:bg-gray-800"
+                className="rounded-md border border-gray-700 px-3 py-2 text-gray-200 hover:bg-gray-800"
               >
                 Cancel
               </button>
@@ -244,7 +255,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   setShowLogoutConfirm(false);
                   await logout("/auth");
                 }}
-                className="px-3 py-2 rounded-md bg-white text-black hover:bg-gray-200 font-medium"
+                className="rounded-md bg-white px-3 py-2 font-medium text-black hover:bg-gray-200"
               >
                 Log out
               </button>

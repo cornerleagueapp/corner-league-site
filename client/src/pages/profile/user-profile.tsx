@@ -19,8 +19,8 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { getTeamLogo } from "@/constants/teamLogos";
 import UserSearchModal from "@/components/userSearchModal";
-import stockAvatar from "../assets/stockprofilepicture.jpeg";
-import clPattern from "../assets/cl_logo_pattern.png";
+import stockAvatar from "../../assets/stockprofilepicture.jpeg";
+import clPattern from "../../assets/cl_logo_pattern.png";
 
 // ---------- types ----------
 type FavoriteTeam = { id: string; name: string; sr_id?: string };

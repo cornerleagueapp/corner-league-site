@@ -9,7 +9,7 @@ import {
   ChevronRight,
   Sparkles,
 } from "lucide-react";
-import { apiRequest } from "@/lib/apiClient";
+import { apiFetch } from "@/lib/apiClient";
 import AquaScoresSection from "@/components/AquaScoresSection";
 import AccordionSection from "@/components/AccordionSection";
 import { markHahn300 } from "@/data/markHanRace";
@@ -92,7 +92,7 @@ function FeaturedRaceSection() {
         <p className="text-sm text-white/65">{markHahn300.date}</p>
       </div>
 
-      <div className="overflow-hidden rounded-[28px] border border-cyan-400/10 bg-[linear-gradient(180deg,rgba(8,24,39,0.94)_0%,rgba(4,17,29,0.98)_100%)] p-5 shadow-[0_18px_50px_rgba(0,0,0,0.22)] sm:p-6">
+      <div className="overflow-hidden rounded-[28px] border border-cyan-400/14 bg-[linear-gradient(180deg,rgba(7,22,33,0.96)_0%,rgba(4,12,18,0.99)_100%)] p-5 shadow-[0_18px_50px_rgba(0,0,0,0.28)] sm:p-6">
         <AccordionSection
           labelShow="Show Final Results - Overall"
           labelHide="Hide Final Results - Overall"
@@ -263,15 +263,16 @@ function AllAquaEventsModal({
         setLoading(true);
         setError(null);
 
-        const orgRes = await apiRequest<any>(
-          "GET",
-          "/organizations?page=1&limit=50",
-        );
+        const orgRes = await apiFetch("/organizations?page=1&limit=50", {
+          skipAuth: true,
+          noRefresh: true,
+        });
+        const orgJson = await orgRes.json();
 
         const orgs =
-          orgRes?.organizations ??
-          orgRes?.data?.organizations ??
-          orgRes?.data ??
+          orgJson?.organizations ??
+          orgJson?.data?.organizations ??
+          orgJson?.data ??
           [];
 
         const orgList = Array.isArray(orgs) ? orgs : [];
@@ -279,13 +280,20 @@ function AllAquaEventsModal({
         const settled = await Promise.allSettled(
           orgList.map(async (org: any) => {
             const orgId = String(org.id);
-            const res = await apiRequest<any>(
-              "GET",
+            const res = await apiFetch(
               `/sport-event/organization/${encodeURIComponent(orgId)}?page=1&limit=50&order=ASC`,
+              {
+                skipAuth: true,
+                noRefresh: true,
+              },
             );
+            const resJson = await res.json();
 
             const items =
-              res?.sportEvents ?? res?.data?.sportEvents ?? res?.data ?? [];
+              resJson?.sportEvents ??
+              resJson?.data?.sportEvents ??
+              resJson?.data ??
+              [];
 
             return Array.isArray(items)
               ? items.map((event: any) => ({
@@ -593,9 +601,10 @@ function AquaHubSection({
             icon={<Trophy className="h-5 w-5" />}
             title="Results"
             description="View full motos, race outcomes, podium stories, and class-by-class coverage."
-            onClick={onOpenResults}
+            // onClick={onOpenResults}
             highlighted
-            cta="Open results"
+            // cta="Open results"
+            cta="Coming soon"
           />
 
           <AquaHubCard

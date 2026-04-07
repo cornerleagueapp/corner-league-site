@@ -66,7 +66,7 @@ function ResponsiveFrame({
   return (
     <div className="w-full">
       <div
-        className="h-full w-full overflow-hidden rounded-2xl border border-white/10 bg-white/5 shadow-lg"
+        className="h-full w-full overflow-hidden rounded-2xl border border-cyan-400/15 bg-[#07131d] shadow-[0_18px_50px_rgba(0,0,0,0.28)]"
         style={{ height: effectiveHeight }}
       >
         <iframe
@@ -311,17 +311,17 @@ export default function ScoresPage() {
   ]);
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-[#03101b]">
+    <div className="relative min-h-screen overflow-x-hidden bg-black">
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.07),_transparent_30%),radial-gradient(circle_at_80%_20%,_rgba(59,130,246,0.05),_transparent_22%),linear-gradient(to_bottom,_#04111d_0%,_#03101b_48%,_#020b14_100%)]" />
-        <div className="absolute inset-0 opacity-[0.03] [background-image:linear-gradient(rgba(255,255,255,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.12)_1px,transparent_1px)] [background-size:72px_72px]" />
-        <div className="absolute left-1/2 top-0 h-[340px] w-[340px] -translate-x-1/2 rounded-full bg-cyan-400/5 blur-3xl" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.05),_transparent_22%),radial-gradient(circle_at_80%_18%,_rgba(59,130,246,0.03),_transparent_18%),linear-gradient(to_bottom,_#000000_0%,_#02070b_42%,_#000000_100%)]" />
+        <div className="absolute inset-0 opacity-[0.025] [background-image:linear-gradient(rgba(255,255,255,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.12)_1px,transparent_1px)] [background-size:72px_72px]" />
+        <div className="absolute left-1/2 top-0 h-[260px] w-[260px] -translate-x-1/2 rounded-full bg-cyan-400/4 blur-3xl" />
       </div>
 
       <div className="relative mx-auto max-w-7xl overflow-x-hidden p-6">
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.18em] text-cyan-300/75">
+            <p className="text-[11px] text-center uppercase tracking-[0.18em] text-cyan-300/75">
               Live Sports Hub
             </p>
             <h1 className="text-center text-2xl font-bold text-white sm:text-left">

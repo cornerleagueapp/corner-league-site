@@ -9,6 +9,7 @@ export type SidebarItem = {
   selectable?: boolean;
   onSelect?: () => void;
   matchPaths?: string[];
+  disabled?: boolean;
 };
 
 export type SidebarSection = {
@@ -20,12 +21,15 @@ export function useAppSidebarSections(opts?: {
   extra?: SidebarSection[];
   onLogout?: () => void;
   isSuperAdmin?: boolean;
+  guestMode?: boolean;
 }) {
   const [, navigate] = useLocation();
 
   return useMemo<SidebarSection[]>(() => {
+    const guest = !!opts?.guestMode;
+
     const base: SidebarSection[] = [
-      ...(opts?.isSuperAdmin
+      ...(opts?.isSuperAdmin && !guest
         ? [
             {
               title: "Admin",
@@ -70,17 +74,19 @@ export function useAppSidebarSections(opts?: {
       {
         title: "Profile",
         items: [
-          { key: "profile", label: "Profile" },
+          { key: "profile", label: "Profile", disabled: guest },
           {
             key: "account",
             label: "Account Settings",
             selectable: false,
+            disabled: guest,
             onSelect: () => navigate("/settings"),
           },
           {
             key: "logout",
             label: "Logout",
             selectable: false,
+            disabled: guest,
             onSelect: () =>
               opts?.onLogout ? opts.onLogout() : void logout("/auth"),
           },
@@ -100,8 +106,8 @@ export function useAppSidebarSections(opts?: {
       {
         title: "Clubs",
         items: [
-          { key: "my", label: "My Clubs" },
-          { key: "discover", label: "Discover Clubs" },
+          { key: "my", label: "My Clubs", disabled: guest },
+          { key: "discover", label: "Discover Clubs", disabled: guest },
         ],
       },
       // {
@@ -115,28 +121,27 @@ export function useAppSidebarSections(opts?: {
     ];
 
     return opts?.extra?.length ? [...base, ...opts.extra] : base;
-  }, [navigate, opts?.extra, opts?.onLogout, opts?.isSuperAdmin]);
+  }, [
+    navigate,
+    opts?.extra,
+    opts?.onLogout,
+    opts?.isSuperAdmin,
+    opts?.guestMode,
+  ]);
 }
 
 type Props = {
-  /** Mobile open/close */
   isOpen: boolean;
   onClose: () => void;
-
-  /** Which tab is currently active (drives highlight) */
   activeKey: string;
-  /** Called when a selectable item is clicked */
   onChange: (key: string) => void;
-
-  /** Sections + items rendered in the panel */
   sections: SidebarSection[];
-
-  /** Logo at the top of the panel */
   logoSrc?: string;
-  /** Footer link */
   backHref?: string;
-  /** ARIA label for logo image */
   logoAlt?: string;
+  onGuestPrompt?: () => void;
+  showSignIn?: boolean;
+  signInHref?: string;
 };
 
 function Chevron({ open }: { open: boolean }) {
@@ -165,6 +170,9 @@ export default function SidebarPanel({
   logoSrc,
   backHref = "/",
   logoAlt = "Corner League",
+  onGuestPrompt,
+  showSignIn = false,
+  signInHref = "/auth",
 }: Props) {
   const [openMap, setOpenMap] = useState<Record<string, boolean>>({});
   const [location] = useLocation();
@@ -204,24 +212,19 @@ export default function SidebarPanel({
 
   return (
     <>
-      {/* Mobile overlay */}
       {isOpen && (
         <div
-          className="md:hidden fixed inset-0 bg-black/70 z-30"
+          className="fixed inset-0 z-30 bg-black/70 md:hidden"
           onClick={onClose}
         />
       )}
 
-      {/* Panel */}
       <div
-        className={`fixed inset-y-0 left-0 z-40 flex flex-col border-r border-gray-700
-              bg-[#000000] transition-transform duration-300 ease-in-out
-              w-full h-screen md:relative md:w-64 md:h-auto md:translate-x-0
-              ${isOpen ? "translate-x-0" : "-translate-x-full"}
-              overscroll-contain`}
+        className={`fixed inset-y-0 left-0 z-40 flex h-screen w-[86vw] max-w-[320px] flex-col border-r border-gray-700 bg-[#000000] transition-transform duration-300 ease-in-out md:w-64 md:translate-x-0 ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        } overscroll-contain`}
       >
-        {/* Header / Logo */}
-        <div className="p-4 border-b border-gray-700 sticky top-0 bg-[#000000] z-10">
+        <div className="sticky top-0 z-10 border-b border-gray-700 bg-[#000000] p-4">
           <div className="flex items-center justify-center">
             {logoSrc ? (
               <img src={logoSrc} alt={logoAlt} className="h-8 w-auto" />
@@ -231,44 +234,50 @@ export default function SidebarPanel({
           </div>
         </div>
 
-        {/* Sections */}
-        <div className="flex-1 p-4 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto p-4">
           {sections.map((section) => {
             const open = !!openMap[section.title];
             return (
               <div className="mb-2" key={section.title}>
-                {/* Clickable section header */}
                 <button
                   type="button"
                   onClick={() => toggleSection(section.title)}
-                  className="w-full flex items-center justify-between px-3 py-2 rounded-md
-                    text-gray-100 hover:text-white hover:bg-white/5
-                    uppercase tracking-wider text-base font-semibold"
+                  className="flex w-full items-center justify-between rounded-md px-3 py-2 text-base font-semibold uppercase tracking-wider text-gray-100 hover:bg-white/5 hover:text-white"
                   aria-expanded={open}
                 >
                   <span>{section.title}</span>
                   <Chevron open={open} />
                 </button>
 
-                {/* Items only when open */}
                 {open && (
                   <div className="mt-2 space-y-1 pl-1">
                     {section.items.map((item) => {
                       const isActive =
-                        isRouteMatch(item) ||
-                        (item.selectable !== false && activeKey === item.key);
+                        !item.disabled &&
+                        (isRouteMatch(item) ||
+                          (item.selectable !== false &&
+                            activeKey === item.key));
+
                       return (
                         <button
                           key={item.key}
                           onClick={() => {
+                            if (item.disabled) {
+                              onGuestPrompt?.();
+                              onClose();
+                              return;
+                            }
+
                             item.onSelect?.();
                             if (item.selectable !== false) onChange(item.key);
                             onClose();
                           }}
-                          className={`w-full text-left px-3 py-2 rounded-md transition-colors text-sm ${
-                            isActive
-                              ? "bg-gray-800 text-white font-medium"
-                              : "text-gray-400 hover:text-gray-100 hover:bg-gray-800/60"
+                          className={`w-full rounded-md px-3 py-2 text-left text-sm transition-colors ${
+                            item.disabled
+                              ? "cursor-not-allowed text-gray-600 hover:bg-transparent"
+                              : isActive
+                                ? "bg-gray-800 font-medium text-white"
+                                : "text-gray-400 hover:bg-gray-800/60 hover:text-gray-100"
                           }`}
                         >
                           {item.label}
@@ -280,28 +289,30 @@ export default function SidebarPanel({
               </div>
             );
           })}
-          <div className="mt-4 md:hidden">
+        </div>
+
+        <div className="border-t border-gray-700 bg-[#000000] p-4">
+          <div className="space-y-2">
+            {showSignIn ? (
+              <Link href={signInHref}>
+                <button
+                  onClick={onClose}
+                  className="w-full rounded-md border border-cyan-400/20 bg-cyan-400/10 px-3 py-2 text-left text-cyan-200 transition-colors hover:bg-cyan-400/15 hover:text-white"
+                >
+                  Sign In
+                </button>
+              </Link>
+            ) : null}
+
             <Link href={backHref}>
               <button
                 onClick={onClose}
-                className="w-full px-3 py-2 text-gray-300 hover:text-white hover:bg-gray-800 rounded-md transition-colors text-left"
+                className="w-full rounded-md px-3 py-2 text-left text-gray-300 transition-colors hover:bg-gray-800 hover:text-white"
               >
                 ← Back to Home
               </button>
             </Link>
           </div>
-        </div>
-
-        {/* Footer */}
-        <div className="p-4 border-t border-gray-700 hidden md:block">
-          <Link href={backHref}>
-            <button
-              onClick={onClose}
-              className="w-full px-3 py-2 text-gray-300 hover:text-white hover:bg-gray-800 rounded-md transition-colors text-left"
-            >
-              ← Back to Home
-            </button>
-          </Link>
         </div>
       </div>
     </>
