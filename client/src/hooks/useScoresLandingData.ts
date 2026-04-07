@@ -198,6 +198,7 @@ export function useScoresLandingData() {
 
   return {
     organizations: orgsQuery.data ?? [],
+    allEvents: eventsQuery.data ?? [],
     upcomingEvents,
     topPerformersByOrg,
     isLoading:

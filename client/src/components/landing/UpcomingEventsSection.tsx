@@ -1,5 +1,6 @@
 import { Link } from "wouter";
 import type { EventItem, OrgItem } from "@/hooks/useScoresLandingData";
+import UpcomingEventsCalendar from "@/components/landing/UpcomingEventsCalendar";
 
 type Props = {
   organizations: OrgItem[];
@@ -82,48 +83,50 @@ export default function UpcomingEventsSection({
             Results and matches coming soon.
           </div>
         ) : (
-          filtered.map((event) => (
-            <div
-              key={event.id}
-              className="grid gap-4 border-b border-white/10 px-4 py-5 md:grid-cols-[130px_1fr_auto]"
-            >
-              <div>
-                <div className="text-2xl text-white/90">
-                  {formatDate(event.startDate)}
-                </div>
-                {/* <div className="text-white/40">
+          <div className="max-h-[600px] overflow-y-auto">
+            {filtered.map((event) => (
+              <div
+                key={event.id}
+                className="grid gap-4 border-b border-white/10 px-4 py-5 md:grid-cols-[130px_1fr_auto]"
+              >
+                <div>
+                  <div className="text-2xl text-white/90">
+                    {formatDate(event.startDate)}
+                  </div>
+                  {/* <div className="text-white/40">
                   {formatTime(event.startDate)}
                 </div> */}
-              </div>
-
-              <div className="self-center">
-                <div className="text-xl font-bold uppercase tracking-[0.08em] text-white">
-                  {event.name}
                 </div>
-                <div className="mt-1 text-sm text-white/45">
-                  {event.organizationName || "Organization"} •{" "}
-                  {event.location || "Location TBD"}
+
+                <div className="self-center">
+                  <div className="text-xl font-bold uppercase tracking-[0.08em] text-white">
+                    {event.name}
+                  </div>
+                  <div className="mt-1 text-sm text-white/45">
+                    {event.organizationName || "Organization"} •{" "}
+                    {event.location || "Location TBD"}
+                  </div>
+                </div>
+
+                <div className="self-center">
+                  <Link
+                    href={`/aqua-organizations/event-details/${event.id}?orgId=${encodeURIComponent(
+                      event.organizationId || "",
+                    )}`}
+                  >
+                    <button className="border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-white">
+                      View
+                    </button>
+                  </Link>
                 </div>
               </div>
-
-              <div className="self-center">
-                <Link
-                  href={`/aqua-organizations/event-details/${event.id}?orgId=${encodeURIComponent(
-                    event.organizationId || "",
-                  )}`}
-                >
-                  <button className="border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-white">
-                    View
-                  </button>
-                </Link>
-              </div>
-            </div>
-          ))
+            ))}
+          </div>
         )}
       </div>
 
-      <div className="mt-8 rounded-[24px] border border-white/10 bg-white/[0.03] p-6 text-white/50">
-        Calendar component goes here next.
+      <div className="mt-8">
+        <UpcomingEventsCalendar events={filtered} />
       </div>
     </section>
   );

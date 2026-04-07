@@ -3,6 +3,7 @@ import { useScoresLandingData } from "@/hooks/useScoresLandingData";
 import LeagueTopPerformersSection from "@/components/landing/LeagueTopPerformersSection";
 import LatestStoriesSection from "@/components/landing/LatestStoriesSection";
 import UpcomingEventsSection from "@/components/landing/UpcomingEventsSection";
+import NationwideMap from "@/components/landing/NationwideMap";
 import { Link } from "wouter";
 import { PageSEO } from "@/seo/usePageSEO";
 import PublicTopNav from "@/components/navigation/PublicTopNav";
@@ -13,8 +14,13 @@ export default function ScoresLandingPage() {
   const [selectedOrgId, setSelectedOrgId] = useState<string>("all");
   const [selectedRankingOrgId, setSelectedRankingOrgId] = useState<string>("");
 
-  const { organizations, upcomingEvents, topPerformersByOrg, isLoading } =
-    useScoresLandingData();
+  const {
+    organizations,
+    allEvents,
+    upcomingEvents,
+    topPerformersByOrg,
+    isLoading,
+  } = useScoresLandingData();
 
   // const latestStories = stories.slice(0, 4);
 
@@ -93,6 +99,8 @@ export default function ScoresLandingPage() {
             />
           </div>
         </section>
+
+        <NationwideMap events={allEvents} />
 
         <LeagueTopPerformersSection
           organizations={organizations}
