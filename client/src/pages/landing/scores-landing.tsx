@@ -1,7 +1,8 @@
 import { Link } from "wouter";
 import { PageSEO } from "@/seo/usePageSEO";
-import logoPath from "@assets/CL_Logo.png";
+import PublicTopNav from "@/components/navigation/PublicTopNav";
 import SpotifyPodcastSection from "@/components/SpotifyPodcastSection";
+import CLLogo from "@assets/corner-league-aqua.png";
 
 export default function ScoresLandingPage() {
   const stories = [
@@ -110,53 +111,27 @@ export default function ScoresLandingPage() {
         canonicalPath="/"
       />
 
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-black/90 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-          <Link href="/">
-            <img src={logoPath} alt="Corner League" className="h-8 w-auto" />
-          </Link>
-
-          <nav className="hidden items-center gap-2 md:flex">
-            <a
-              href="#home-section"
-              className="bg-white px-5 py-3 text-xs font-bold uppercase tracking-[0.18em] text-black"
-            >
-              Home
-            </a>
-            <a
-              href="#rankings-section"
-              className="bg-white/10 px-5 py-3 text-xs font-bold uppercase tracking-[0.18em] text-white/70"
-            >
-              Rankings
-            </a>
-            <a
-              href="#latest-section"
-              className="bg-white/10 px-5 py-3 text-xs font-bold uppercase tracking-[0.18em] text-white/70"
-            >
-              Latest
-            </a>
-            <a
-              href="#schedule-section"
-              className="bg-white/10 px-5 py-3 text-xs font-bold uppercase tracking-[0.18em] text-white/70"
-            >
-              Leagues
-            </a>
-          </nav>
-
-          <div className="flex items-center gap-3">
-            <Link href="/scores/aqua">
-              <button className="bg-white/10 px-4 py-3 text-xs font-bold uppercase tracking-[0.18em] text-white">
-                Jet Ski
-              </button>
-            </Link>
-            <Link href="/auth">
-              <button className="bg-white/10 px-4 py-3 text-xs font-bold uppercase tracking-[0.18em] text-white">
-                Sign In
-              </button>
-            </Link>
-          </div>
-        </div>
-      </header>
+      <PublicTopNav
+        activeTab="home"
+        selectedSportKey="jet-ski"
+        sports={[
+          {
+            key: "jet-ski",
+            label: "Jet Ski",
+            href: "/scores/aqua",
+            enabled: true,
+          },
+          {
+            key: "supercross",
+            label: "Supercross",
+            href: "/scores/supercross",
+            enabled: false,
+          },
+          { key: "mlb", label: "MLB", href: "/scores/mlb", enabled: false },
+          { key: "nba", label: "NBA", href: "/scores/nba", enabled: false },
+          { key: "nfl", label: "NFL", href: "/scores/nfl", enabled: false },
+        ]}
+      />
 
       <main className="mx-auto max-w-7xl px-4 pb-20 pt-10 sm:px-6 lg:px-8">
         <section
@@ -166,40 +141,41 @@ export default function ScoresLandingPage() {
           <div className="flex flex-col justify-center">
             <div className="mb-6 flex items-center gap-4 text-xs uppercase tracking-[0.3em] text-white/40">
               <span className="h-px w-8 bg-white/20" />
-              03 / 04
+              2026 SEASON
             </div>
 
             <div className="text-sm uppercase tracking-[0.22em] text-[#6B6BFF]">
-              {stories[0].kicker}
+              Corner League Sports Hub
             </div>
 
             <h1 className="mt-4 max-w-3xl text-4xl font-bold leading-[0.98] sm:text-5xl lg:text-6xl">
-              {stories[0].title}
+              Welcome to Corner League Aqua
             </h1>
 
             <p className="mt-6 max-w-2xl text-lg leading-8 text-white/65">
-              {stories[0].description}
+              A world wide sports hub dedicated to live scores, rankings, news,
+              and more for the jet ski racing community. Dive into the latest
+              action from the IJSBA, Pro Watercross, and more, all in one place.
             </p>
 
             <div className="mt-8">
               <Link href={stories[0].href}>
                 <button className="bg-white/10 px-6 py-4 text-sm font-medium text-white hover:bg-white/15">
-                  Read Full Story →
+                  Explore The Hub →
                 </button>
               </Link>
             </div>
           </div>
 
-          <div className="relative">
-            <div className="absolute -inset-8 bg-[#1717ff]/10 blur-3xl" />
-            <div className="relative border border-[#3A3AFF] p-2">
-              <img
-                src={stories[0].image}
-                alt={stories[0].title}
-                className="aspect-[4/3] w-full object-cover"
-                loading="eager"
-              />
-            </div>
+          <div className="relative p-2">
+            <div className="pointer-events-none absolute -left-2 -top-2 h-14 w-14 border-l-[3px] border-t-[3px] border-[#3A3AFF]" />
+            <div className="pointer-events-none absolute -bottom-2 -right-2 h-14 w-14 border-b-[3px] border-r-[3px] border-[#3A3AFF]" />
+            <img
+              src={CLLogo}
+              alt="Corner League Aqua Sports Hub Logo"
+              className="aspect-[4/3] w-full object-cover"
+              loading="eager"
+            />
           </div>
         </section>
 

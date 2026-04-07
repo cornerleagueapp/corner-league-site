@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
-import logoPath from "@assets/CL_Logo.png";
 import { logout } from "@/lib/logout";
+import PublicTopNav from "@/components/navigation/PublicTopNav";
 import { PageSEO } from "@/seo/usePageSEO";
 import { useLocation } from "wouter";
 
@@ -66,6 +66,28 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-black text-white font-sans overflow-x-hidden relative">
+      <PublicTopNav
+        activeTab="details"
+        selectedSportKey="jet-ski"
+        sports={[
+          {
+            key: "jet-ski",
+            label: "Jet Ski",
+            href: "/scores/aqua",
+            enabled: true,
+          },
+          {
+            key: "supercross",
+            label: "Supercross",
+            href: "/scores/supercross",
+            enabled: false,
+          },
+          { key: "mlb", label: "MLB", href: "/scores/mlb", enabled: false },
+          { key: "nba", label: "NBA", href: "/scores/nba", enabled: false },
+          { key: "nfl", label: "NFL", href: "/scores/nfl", enabled: false },
+        ]}
+      />
+
       <PageSEO
         title="Home"
         description="Discover public clubs or manage your own on Corner League. Join live communities for your favorite teams."
@@ -179,37 +201,6 @@ export default function Home() {
 
       {/* HERO */}
       <div className="hero-overlay relative z-10 min-h-screen flex flex-col">
-        {/* Logo */}
-        <div className="pt-8 pb-4 flex justify-center">
-          <img
-            src={logoPath}
-            alt="Corner League Logo"
-            className="w-12 h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 object-contain"
-          />
-        </div>
-
-        {/* Auth actions (desktop) */}
-        {isAuthenticated && (
-          <div className="hidden md:flex absolute top-10 right-6 z-30 items-center gap-3">
-            <Link href="/welcome">
-              <Button
-                size="sm"
-                className="rounded-full px-5 py-2 text-sm font-semibold text-black bg-white hover:bg-gray-100"
-              >
-                My Scores
-              </Button>
-            </Link>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleLogout}
-              className="rounded-full px-5 py-2 text-sm text-white border-white/40 bg-transparent hover:bg-white/10"
-            >
-              Logout
-            </Button>
-          </div>
-        )}
-
         {/* Center hero text */}
         <div className="flex-1 flex items-center justify-center px-6 py-12">
           <div className="text-center max-w-4xl mx-auto">
