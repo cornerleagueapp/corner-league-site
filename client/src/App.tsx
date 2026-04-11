@@ -36,6 +36,7 @@ import AdminCreateRacerPage from "./pages/admin/admin-create-racer";
 import AquaOrganizationsPage from "./pages/organizations/aqua-organizations";
 import AdminCreateOrganizationPage from "./pages/organizations/admin-create-organization";
 import AquaOrganizationDetailsPage from "./pages/organizations/aqua-organization-details";
+import AdminRankingsPage from "./pages/admin/admin-rankings";
 import AdminAthleteClaimsPage from "./pages/admin/admin-athlete-claims";
 import OrgEventDetailsPage from "./pages/organizations/org-event-details";
 
@@ -148,6 +149,10 @@ function PrivateRouter() {
 
           <Route path="/organization/event-list">
             {() => <SuperAdminRoute component={EventListPage} />}
+          </Route>
+
+          <Route path="/admin/rankings">
+            {() => <SuperAdminRoute component={AdminRankingsPage} />}
           </Route>
 
           <Route path="/events/create">

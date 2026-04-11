@@ -35,18 +35,18 @@ export function useAppSidebarSections(opts?: {
               title: "Admin",
               items: [
                 {
-                  key: "admin-create-racer",
-                  label: "Create Racer",
-                  selectable: false,
-                  matchPaths: ["/admin/create-racer"],
-                  onSelect: () => navigate("/admin/create-racer"),
-                },
-                {
                   key: "admin-athlete-claims",
                   label: "Athlete Claims",
                   selectable: false,
                   matchPaths: ["/admin/athlete-claims"],
                   onSelect: () => navigate("/admin/athlete-claims"),
+                },
+                {
+                  key: "admin-create-racer",
+                  label: "Create Racer",
+                  selectable: false,
+                  matchPaths: ["/admin/create-racer"],
+                  onSelect: () => navigate("/admin/create-racer"),
                 },
                 {
                   key: "admin-create-organization",
@@ -65,6 +65,13 @@ export function useAppSidebarSections(opts?: {
                     "/organization/events/*",
                   ],
                   onSelect: () => navigate("/organization/event-list"),
+                },
+                {
+                  key: "admin-rankings",
+                  label: "Rankings Dashboard",
+                  selectable: false,
+                  matchPaths: ["/admin/rankings"],
+                  onSelect: () => navigate("/admin/rankings"),
                 },
               ],
             },
