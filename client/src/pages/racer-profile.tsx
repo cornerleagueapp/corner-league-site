@@ -153,6 +153,15 @@ function slugify(s: string) {
     .replace(/^-+|-+$/g, "");
 }
 
+function humanizeClassGroupLabel(value?: string | null) {
+  if (!value) return "";
+
+  return String(value)
+    .replace(/_/g, " ")
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 function mapDetail(rec: any): Racer {
   const a = rec?.athlete ?? {};
   const claimedByUser = a?.claimedByUser ?? rec?.claimedByUser ?? null;
@@ -648,9 +657,9 @@ function RacerRatingHero({ rating }: { rating: RacerRatingCard | null }) {
             Corner League Rating
           </div>
 
-          <div className="mt-1 text-lg font-semibold text-white">
-            {rating.classGroupName || rating.classGroupCode || "Season Rating"}
-          </div>
+          {humanizeClassGroupLabel(
+            rating.classGroupName || rating.classGroupCode,
+          ) || "Season Rating"}
 
           <div className="mt-1 text-xs text-white/50">
             {rating.rankingPeriodName || "Current season"}
@@ -661,7 +670,9 @@ function RacerRatingHero({ rating }: { rating: RacerRatingCard | null }) {
             <RankingBadge
               label="National Rank"
               rank={rating.nationalRankingPosition}
-              subtitle={rating.classGroupCode || "National"}
+              subtitle={
+                humanizeClassGroupLabel(rating.classGroupCode) || "National"
+              }
             />
             <RankingBadge
               label="Org Rank"
