@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
 import { apiFetch } from "@/lib/apiClient";
+import { useToast } from "@/hooks/use-toast";
 
 type ScopeType = "NATIONAL" | "ORGANIZATION";
 
@@ -121,6 +122,9 @@ export default function AdminRankingsPage() {
   const [loading, setLoading] = useState(true);
   const [recalcLoading, setRecalcLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const { toast } = useToast();
+  const [manualLastRunAt, setManualLastRunAt] = useState<string>("");
 
   useEffect(() => {
     const boot = async () => {
@@ -318,6 +322,11 @@ export default function AdminRankingsPage() {
       setRows(
         Array.isArray(refreshJson) ? refreshJson : (refreshJson?.data ?? []),
       );
+      setManualLastRunAt(new Date().toLocaleString());
+      toast({
+        title: "Rankings recalculated",
+        description: "The latest rankings were successfully refreshed.",
+      });
     } catch (e: any) {
       setError(e?.message || "Failed to recalculate");
     } finally {
@@ -448,7 +457,7 @@ export default function AdminRankingsPage() {
               <div className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5">
                 Last recalculated:{" "}
                 <span className="font-medium text-white">
-                  {lastRecalculatedAt || "Not available yet"}
+                  {manualLastRunAt || lastRecalculatedAt || "Not available yet"}
                 </span>
               </div>
             </div>

@@ -210,6 +210,19 @@ function mapAthlete(a: any): Racer {
   };
 }
 
+function PercentStatBox({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-[22px] border border-cyan-400/10 bg-cyan-400/[0.04] px-4 py-4">
+      <div className="text-2xl font-semibold text-white">
+        {value.toFixed(1)}%
+      </div>
+      <div className="mt-1 text-xs uppercase tracking-[0.16em] text-white/50">
+        {label}
+      </div>
+    </div>
+  );
+}
+
 function StatBox({
   label,
   value,
@@ -784,6 +797,51 @@ export default function RacerProfilePage({
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [analysisErr, setAnalysisErr] = useState<string | null>(null);
 
+  const seasonMotoWins = useMemo(() => {
+    return history.filter(
+      (item) => item.motoSequence != null && Number(item.position) === 1,
+    ).length;
+  }, [history]);
+
+  const overallRows = useMemo(
+    () => history.filter((item) => item.motoSequence == null),
+    [history],
+  );
+
+  const motoRows = useMemo(
+    () => history.filter((item) => item.motoSequence != null),
+    [history],
+  );
+
+  const overallWinsCount = useMemo(
+    () => overallRows.filter((item) => Number(item.position) === 1).length,
+    [overallRows],
+  );
+
+  const podiumCount = useMemo(
+    () =>
+      overallRows.filter((item) => {
+        const pos = Number(item.position);
+        return pos >= 1 && pos <= 3;
+      }).length,
+    [overallRows],
+  );
+
+  const motoWinPct = useMemo(() => {
+    if (motoRows.length === 0) return 0;
+    return (seasonMotoWins / motoRows.length) * 100;
+  }, [seasonMotoWins, motoRows.length]);
+
+  const overallWinPct = useMemo(() => {
+    if (overallRows.length === 0) return 0;
+    return (overallWinsCount / overallRows.length) * 100;
+  }, [overallWinsCount, overallRows.length]);
+
+  const podiumPct = useMemo(() => {
+    if (overallRows.length === 0) return 0;
+    return (podiumCount / overallRows.length) * 100;
+  }, [podiumCount, overallRows.length]);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -1169,8 +1227,9 @@ export default function RacerProfilePage({
   }
 
   const stats = [
-    { label: "Career Wins", value: racer.careerWins ?? 0, trophy: true },
-    { label: "Season Wins", value: racer.seasonWins ?? 0 },
+    // { label: "Career Wins", value: racer.careerWins ?? 0, trophy: true },
+    { label: "Season Moto Wins", value: seasonMotoWins, trophy: true },
+    { label: "Season Overall Wins", value: racer.seasonWins ?? 0 },
     { label: "Season Podiums", value: racer.seasonPodiums ?? 0 },
   ];
 
@@ -1437,6 +1496,11 @@ export default function RacerProfilePage({
                 />
               ))}
             </div>
+            <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <PercentStatBox label="Moto Win %" value={motoWinPct} />
+              <PercentStatBox label="Overall Win %" value={overallWinPct} />
+              <PercentStatBox label="Podium %" value={podiumPct} />
+            </div>
           </div>
         </div>
 
@@ -1532,42 +1596,83 @@ export default function RacerProfilePage({
                       </tr>
                     </thead>
                     <tbody>
-                      {history.map((item) => (
-                        <tr
-                          key={item.resultId}
-                          className="border-t border-white/10"
-                        >
-                          <td className="px-4 py-3 text-white">
-                            <div className="font-medium">
-                              {item.eventName || "Unknown Event"}
-                            </div>
-                            <div className="text-xs text-white/50">
-                              {item.eventStartDate
-                                ? new Date(
-                                    item.eventStartDate,
-                                  ).toLocaleDateString()
-                                : "—"}
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 text-white/85">
-                            {item.divisionName || item.matchName || "—"}
-                          </td>
-                          <td className="px-4 py-3 text-white/85">
-                            {item.motoSequence != null
-                              ? `Moto ${item.motoSequence}`
-                              : "Overall"}
-                          </td>
-                          <td className="px-4 py-3 text-white/85">
-                            {item.position ?? "—"}
-                          </td>
-                          <td className="px-4 py-3 text-white/85">
-                            {item.score ?? "—"}
-                          </td>
-                          <td className="px-4 py-3 text-white/85">
-                            {item.status ?? "—"}
-                          </td>
-                        </tr>
-                      ))}
+                      {history.map((item) => {
+                        const isOverall = item.motoSequence == null;
+
+                        return (
+                          <tr
+                            key={item.resultId}
+                            className={`border-t ${
+                              isOverall
+                                ? "border-cyan-400/15 bg-cyan-400/[0.045]"
+                                : "border-white/10"
+                            }`}
+                          >
+                            <td className="px-4 py-3 text-white">
+                              <div className="flex items-start gap-3">
+                                {isOverall ? (
+                                  <span className="mt-1 rounded-full border border-cyan-300/20 bg-cyan-400/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-cyan-300">
+                                    Overall
+                                  </span>
+                                ) : (
+                                  <span className="mt-1 rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/55">
+                                    Moto
+                                  </span>
+                                )}
+
+                                <div>
+                                  <div
+                                    className={`font-medium ${isOverall ? "text-cyan-100" : "text-white"}`}
+                                  >
+                                    {item.eventName || "Unknown Event"}
+                                  </div>
+                                  <div className="text-xs text-white/50">
+                                    {item.eventStartDate
+                                      ? new Date(
+                                          item.eventStartDate,
+                                        ).toLocaleDateString()
+                                      : "—"}
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+
+                            <td
+                              className={`px-4 py-3 ${isOverall ? "text-cyan-100" : "text-white/85"}`}
+                            >
+                              {item.divisionName || item.matchName || "—"}
+                            </td>
+
+                            <td className="px-4 py-3">
+                              {isOverall ? (
+                                <span className="inline-flex rounded-full border border-cyan-300/20 bg-cyan-400/10 px-2.5 py-1 text-xs font-medium text-cyan-200">
+                                  Overall
+                                </span>
+                              ) : (
+                                <span className="inline-flex rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-xs font-medium text-white/75">
+                                  Moto {item.motoSequence}
+                                </span>
+                              )}
+                            </td>
+
+                            <td
+                              className={`px-4 py-3 font-medium ${isOverall ? "text-cyan-100" : "text-white/85"}`}
+                            >
+                              {item.position ?? "—"}
+                            </td>
+
+                            <td
+                              className={`px-4 py-3 font-medium ${isOverall ? "text-cyan-100" : "text-white/85"}`}
+                            >
+                              {item.score ?? "—"}
+                            </td>
+
+                            <td className="px-4 py-3 text-white/85">
+                              {item.status ?? "—"}
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
