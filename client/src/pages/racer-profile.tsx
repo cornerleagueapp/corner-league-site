@@ -842,6 +842,30 @@ export default function RacerProfilePage({
     return (podiumCount / overallRows.length) * 100;
   }, [podiumCount, overallRows.length]);
 
+  const timelineMaxEvents = 4;
+
+  const visibleTimelineRows = useMemo(() => {
+    const seenMatchIds = new Set<string>();
+    const allowedMatchIds = new Set<string>();
+
+    for (const item of history) {
+      if (!seenMatchIds.has(item.matchId)) {
+        seenMatchIds.add(item.matchId);
+
+        if (allowedMatchIds.size < timelineMaxEvents) {
+          allowedMatchIds.add(item.matchId);
+        }
+      }
+    }
+
+    return history.filter((item) => allowedMatchIds.has(item.matchId));
+  }, [history]);
+
+  const hasTimelineOverflow = useMemo(() => {
+    const uniqueMatchIds = new Set(history.map((item) => item.matchId));
+    return uniqueMatchIds.size > timelineMaxEvents;
+  }, [history]);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -1571,7 +1595,13 @@ export default function RacerProfilePage({
                   No personal race results found yet.
                 </p>
               ) : (
-                <div className="overflow-x-auto rounded-2xl border border-white/10 bg-white/[0.03]">
+                <div
+                  className={`overflow-x-auto rounded-2xl border border-white/10 bg-white/[0.03] ${
+                    hasTimelineOverflow
+                      ? "max-h-[540px] overflow-y-auto pr-1"
+                      : ""
+                  }`}
+                >
                   <table className="w-full min-w-[760px] text-sm">
                     <thead className="bg-white/[0.04] text-white/70">
                       <tr>
@@ -1596,7 +1626,7 @@ export default function RacerProfilePage({
                       </tr>
                     </thead>
                     <tbody>
-                      {history.map((item) => {
+                      {visibleTimelineRows.map((item) => {
                         const isOverall = item.motoSequence == null;
 
                         return (

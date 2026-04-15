@@ -27,6 +27,16 @@ export type PerformerItem = {
   racerHref?: string;
 };
 
+export type IhraSkiGpLeaderRow = {
+  participantId: string;
+  athleteId: string;
+  name: string;
+  totalPoints: number;
+  seasonMotoWins: number;
+  overallRating: number;
+  racerHref?: string;
+};
+
 async function fetchOrganizations(): Promise<OrgItem[]> {
   const res = await apiFetch("/organizations", {
     method: "GET",
@@ -75,6 +85,44 @@ async function fetchDivisionsForEvent(eventId: string) {
 async function fetchResultsForDivision(divisionId: string) {
   const res = await apiFetch(
     `/results/final-results-by-division/${divisionId}`,
+    {
+      method: "GET",
+      skipAuth: true,
+      noRefresh: true,
+    },
+  );
+
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) return [];
+
+  return json?.results ?? json?.data?.results ?? json?.data ?? [];
+}
+
+async function fetchAthleteRating(athleteId: string) {
+  const res = await apiFetch(
+    `/ratings/athlete/${encodeURIComponent(athleteId)}`,
+    {
+      method: "GET",
+      skipAuth: true,
+      noRefresh: true,
+    },
+  );
+
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) return null;
+
+  const rows = Array.isArray(json)
+    ? json
+    : Array.isArray(json?.data)
+      ? json.data
+      : [];
+
+  return rows[0] ?? null;
+}
+
+async function fetchAthleteHistory(athleteId: string) {
+  const res = await apiFetch(
+    `/results/athlete/${encodeURIComponent(athleteId)}/history`,
     {
       method: "GET",
       skipAuth: true,
@@ -219,5 +267,124 @@ export function useScoresLandingData() {
       orgsQuery.isLoading || eventsQuery.isLoading || performersQuery.isLoading,
     isError:
       orgsQuery.isError || eventsQuery.isError || performersQuery.isError,
+  };
+}
+
+export function useIhraSkiGpLeaderboard() {
+  const query = useQuery({
+    queryKey: ["ihra-ski-gp-leaderboard"],
+    staleTime: 5 * 60 * 1000,
+    queryFn: async (): Promise<IhraSkiGpLeaderRow[]> => {
+      const orgs = await fetchOrganizations();
+      const ihra = orgs.find((o) => o.name.trim().toUpperCase() === "IHRA");
+
+      if (!ihra) return [];
+
+      const events = await fetchEventsForOrg(ihra.id);
+      const ihraEventIds = new Set(events.map((event) => String(event.id)));
+
+      const allDivisionRows = await Promise.all(
+        events.map(async (event) => {
+          const divisions = await fetchDivisionsForEvent(event.id);
+          const skiGpDivision = divisions.find(
+            (division: any) =>
+              division?.name?.trim().toUpperCase() === "SKI GP",
+          );
+
+          if (!skiGpDivision) return [];
+
+          const rows = await fetchResultsForDivision(skiGpDivision.id);
+
+          return rows.map((row: any) => ({
+            participantId: row.participantId,
+            athleteId: row?.athlete?.id || row?.participantId,
+            name: row?.athlete?.name || row?.team?.name || "Unknown",
+            totalPoints: Number(row.totalPoints ?? 0),
+            racerHref: row?.racerDetailId
+              ? `/racer/${encodeURIComponent(String(row.racerDetailId))}`
+              : row?.athlete?.id
+                ? `/racer/${encodeURIComponent(String(row.athlete.id))}?kind=athlete`
+                : undefined,
+          }));
+        }),
+      );
+
+      const flat = allDivisionRows.flat();
+
+      const grouped = new Map<
+        string,
+        {
+          participantId: string;
+          athleteId: string;
+          name: string;
+          totalPoints: number;
+          racerHref?: string;
+        }
+      >();
+
+      for (const row of flat) {
+        const key = row.athleteId || row.participantId;
+        const existing = grouped.get(key);
+
+        if (!existing) {
+          grouped.set(key, { ...row });
+        } else {
+          existing.totalPoints += row.totalPoints;
+        }
+      }
+
+      const baseRows = Array.from(grouped.values());
+
+      const enriched = await Promise.all(
+        baseRows.map(async (row) => {
+          const [rating, history] = await Promise.all([
+            fetchAthleteRating(row.athleteId),
+            fetchAthleteHistory(row.athleteId),
+          ]);
+
+          const seasonMotoWins = Array.isArray(history)
+            ? history.filter((item: any) => {
+                const divisionName = String(item?.divisionName ?? "")
+                  .trim()
+                  .toUpperCase();
+                const eventId = String(item?.eventId ?? "");
+                const isMoto = item?.motoSequence != null;
+                const isWin = Number(item?.position) === 1;
+
+                return (
+                  divisionName === "SKI GP" &&
+                  isMoto &&
+                  isWin &&
+                  ihraEventIds.has(eventId)
+                );
+              }).length
+            : 0;
+
+          return {
+            ...row,
+            overallRating: Number(rating?.overallRating ?? 0),
+            seasonMotoWins,
+          };
+        }),
+      );
+
+      return enriched
+        .sort((a, b) => {
+          if (b.totalPoints !== a.totalPoints) {
+            return b.totalPoints - a.totalPoints;
+          }
+          if (b.seasonMotoWins !== a.seasonMotoWins) {
+            return b.seasonMotoWins - a.seasonMotoWins;
+          }
+          return b.overallRating - a.overallRating;
+        })
+        .slice(0, 5);
+    },
+  });
+
+  return {
+    rows: query.data ?? [],
+    isLoading: query.isLoading,
+    isError: query.isError,
   };
 }

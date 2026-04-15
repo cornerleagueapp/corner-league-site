@@ -1,79 +1,81 @@
 import { Link } from "wouter";
-import type { OrgItem, PerformerItem } from "@/hooks/useScoresLandingData";
+import { useIhraSkiGpLeaderboard } from "@/hooks/useScoresLandingData";
 
-type Props = {
-  organizations: OrgItem[];
-  selectedOrgId: string;
-  onSelectOrg: (orgId: string) => void;
-  performersByOrg: Record<string, PerformerItem[]>;
-  isLoading?: boolean;
-};
+export default function LeagueTopPerformersSection() {
+  const { rows, isLoading } = useIhraSkiGpLeaderboard();
 
-export default function LeagueTopPerformersSection({
-  organizations,
-  selectedOrgId,
-  onSelectOrg,
-  performersByOrg,
-  isLoading,
-}: Props) {
-  const selectedOrg =
-    organizations.find((o) => o.id === selectedOrgId) ?? organizations[0];
-  const rows = selectedOrg ? (performersByOrg[selectedOrg.id] ?? []) : [];
+  const leader = rows[0];
 
   return (
     <section id="rankings-section" className="pt-16">
       <div className="mb-2 text-xs uppercase tracking-[0.28em] text-white/40">
         Rankings
       </div>
+
       <h2 className="text-4xl font-black uppercase sm:text-5xl">
-        Leagues &{" "}
+        IHRA{" "}
         <span className="bg-[#ff9c9c]/25 px-2 text-[#ffb3b3]">
-          Top Performers
+          Ski GP Rankings
         </span>
       </h2>
 
-      <div className="mt-8 -mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <div className="flex min-w-max flex-nowrap gap-3 pr-4 sm:min-w-0 sm:flex-wrap sm:pr-0">
-          {organizations.map((org) => (
-            <button
-              key={org.id}
-              onClick={() => onSelectOrg(org.id)}
-              className={`shrink-0 whitespace-nowrap px-5 py-3 text-xs font-bold uppercase tracking-[0.18em] ${
-                selectedOrgId === org.id
-                  ? "bg-white text-black"
-                  : "bg-white/10 text-white/70 hover:bg-white/15"
-              }`}
-            >
-              {org.name}
-            </button>
-          ))}
-        </div>
-      </div>
+      <p className="mt-4 max-w-3xl text-sm leading-7 text-white/60">
+        Current top 5 in IHRA Ski GP based on season points, with each racer’s
+        current overall rating and season moto wins.
+      </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_1fr]">
         <div className="flex min-h-[420px] items-center justify-center bg-[linear-gradient(135deg,#6753a6_0%,#d6253d_55%,#f0a125_100%)] p-8">
-          <div className="text-center text-5xl font-black uppercase text-white sm:text-6xl">
-            {rows[0]?.name || "Coming Soon"}
-          </div>
+          {leader ? (
+            <div className="text-center">
+              <div className="text-xs font-bold uppercase tracking-[0.28em] text-white/70">
+                Current Points Leader
+              </div>
+
+              <div className="mt-6 text-5xl font-black uppercase text-white sm:text-6xl">
+                {leader.name}
+              </div>
+
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+                <div className="rounded-full bg-black/25 px-4 py-2 text-sm font-bold uppercase tracking-[0.18em] text-white">
+                  {leader.totalPoints} pts
+                </div>
+                <div className="rounded-full bg-black/25 px-4 py-2 text-sm font-bold uppercase tracking-[0.18em] text-white">
+                  OVR {leader.overallRating.toFixed(1)}
+                </div>
+                <div className="rounded-full bg-black/25 px-4 py-2 text-sm font-bold uppercase tracking-[0.18em] text-white">
+                  {leader.seasonMotoWins} Moto Wins
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center text-5xl font-black uppercase text-white sm:text-6xl">
+              Coming Soon
+            </div>
+          )}
         </div>
 
         <div className="border border-white/10 bg-white/[0.03]">
-          <div className="border-b border-white/10 px-4 py-4 text-sm font-bold uppercase tracking-[0.18em] text-white/45">
-            {selectedOrg?.name || "League"} Standings
+          <div className="grid grid-cols-[70px_1fr_110px_90px_110px] items-center border-b border-white/10 px-4 py-4 text-xs font-bold uppercase tracking-[0.18em] text-white/45">
+            <div>Rank</div>
+            <div>Racer</div>
+            <div className="text-right">Points</div>
+            <div className="text-right">OVR</div>
+            <div className="text-right">Moto Wins</div>
           </div>
 
           {isLoading ? (
-            <div className="px-4 py-8 text-white/60">Loading standings…</div>
+            <div className="px-4 py-8 text-white/60">Loading rankings…</div>
           ) : rows.length === 0 ? (
             <div className="px-4 py-8 text-white/60">
-              Results and matches coming soon.
+              Rankings will appear once IHRA Ski GP season data is available.
             </div>
           ) : (
-            <div className="max-h-[420px] overflow-y-auto pr-1 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/10">
+            <div>
               {rows.map((person, idx) => (
                 <div
                   key={`${person.participantId}-${idx}`}
-                  className="grid grid-cols-[60px_1fr_auto] items-center gap-4 border-b border-white/10 px-4 py-5"
+                  className="grid grid-cols-[70px_1fr_110px_90px_110px] items-center gap-4 border-b border-white/10 px-4 py-5"
                 >
                   <div className="text-4xl font-black text-white/45">
                     {String(idx + 1).padStart(2, "0")}
@@ -93,12 +95,20 @@ export default function LeagueTopPerformersSection({
                     )}
 
                     <div className="mt-1 text-sm text-white/50">
-                      {person.className}
+                      IHRA · Ski GP
                     </div>
                   </div>
 
-                  <div className="text-3xl font-bold text-white">
+                  <div className="text-right text-3xl font-bold text-white">
                     {person.totalPoints}
+                  </div>
+
+                  <div className="text-right text-xl font-bold text-cyan-300">
+                    {person.overallRating.toFixed(1)}
+                  </div>
+
+                  <div className="text-right text-xl font-bold text-white">
+                    {person.seasonMotoWins}
                   </div>
                 </div>
               ))}

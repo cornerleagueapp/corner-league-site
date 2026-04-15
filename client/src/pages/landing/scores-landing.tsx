@@ -102,13 +102,7 @@ export default function ScoresLandingPage() {
 
         <NationwideMap events={allEvents} />
 
-        <LeagueTopPerformersSection
-          organizations={organizations}
-          selectedOrgId={selectedRankingOrgId || organizations[0]?.id || ""}
-          onSelectOrg={setSelectedRankingOrgId}
-          performersByOrg={topPerformersByOrg}
-          isLoading={isLoading}
-        />
+        <LeagueTopPerformersSection />
 
         <SpotifyPodcastSection
           title="Wally's World WaterX Podcast"
