@@ -23,6 +23,13 @@ import RacerSearchModal from "@/components/RacerSearchModal";
 import { generateRacerAnalysis } from "@/lib/geminiRacerAnalysis";
 import { motion, animate } from "framer-motion";
 
+import { trackEvent } from "@/lib/analytics";
+import { AnalyticsEvents } from "@/lib/analytics-events";
+import {
+  getRacerProfileViewCount,
+  trackRacerProfileViewToBackend,
+} from "@/lib/profileViewApi";
+
 type Racer = {
   id: string | number;
   athleteId?: string;
@@ -787,6 +794,8 @@ export default function RacerProfilePage({
   const [ratingCard, setRatingCard] = useState<RacerRatingCard | null>(null);
   const [ratingLoading, setRatingLoading] = useState(false);
 
+  const [profileViewCount, setProfileViewCount] = useState<number | null>(null);
+
   const [claimStatus, setClaimStatus] = useState<{
     hasClaim: boolean;
     status?: "pending" | "approved" | "rejected";
@@ -1223,6 +1232,40 @@ export default function RacerProfilePage({
     };
   }, [racer?.athleteId]);
 
+  useEffect(() => {
+    if (!racer) return;
+
+    const racerDetailId = String(racer.id);
+    const athleteId = racer.athleteId ? String(racer.athleteId) : undefined;
+
+    trackEvent(AnalyticsEvents.RACER_PROFILE_VIEWED, {
+      racer_id: String(racer.athleteId ?? racer.id),
+      racer_detail_id: racerDetailId,
+      racer_name: racer.racerName,
+      is_claimed: !!racer.isClaimed,
+      claimed_by_user_id: racer.claimedByUserId ?? null,
+      claimed_by_username: racer.claimedByUsername ?? null,
+      location: racer.location ?? null,
+      sport: "jet_ski",
+      source_page: "racer_profile",
+    });
+
+    trackRacerProfileViewToBackend({
+      racerDetailId,
+      athleteId,
+      racerName: racer.racerName,
+      viewerUserId: currentUserId,
+    })
+      .then((res) => {
+        setProfileViewCount(Number(res.totalViews ?? 0));
+      })
+      .catch(() => {
+        getRacerProfileViewCount(racerDetailId)
+          .then((res) => setProfileViewCount(Number(res.totalViews ?? 0)))
+          .catch(() => {});
+      });
+  }, [racer?.id, currentUserId]);
+
   if (loading || authLoading) {
     return (
       <div className="grid min-h-screen place-items-center bg-black text-white">
@@ -1481,7 +1524,18 @@ export default function RacerProfilePage({
                   </Button>
                 ) : !racer?.isClaimed ? (
                   <Button
-                    onClick={handleClaimProfileClick}
+                    onClick={() => {
+                      trackEvent(AnalyticsEvents.RACER_CLAIM_STARTED, {
+                        racer_id: racer
+                          ? String(racer.athleteId ?? racer.id)
+                          : null,
+                        racer_detail_id: racer ? String(racer.id) : null,
+                        racer_name: racer?.racerName ?? null,
+                        sport: "jet_ski",
+                      });
+
+                      handleClaimProfileClick();
+                    }}
                     className="h-11 bg-violet-500 text-white hover:bg-violet-600"
                   >
                     {hasRejectedClaim ? "Submit New Claim" : "Claim Profile"}
@@ -1489,6 +1543,16 @@ export default function RacerProfilePage({
                 ) : null}
                 <Button
                   onClick={async () => {
+                    trackEvent(AnalyticsEvents.RACER_PROFILE_SHARED, {
+                      racer_id: racer
+                        ? String(racer.athleteId ?? racer.id)
+                        : null,
+                      racer_detail_id: racer ? String(racer.id) : null,
+                      racer_name: racer?.racerName ?? null,
+                      sport: "jet_ski",
+                      source_page: "racer_profile",
+                    });
+
                     try {
                       await navigator.clipboard.writeText(window.location.href);
                       toast({ title: "Copied to clipboard" });
@@ -1548,6 +1612,19 @@ export default function RacerProfilePage({
                   label="Career WF Wins"
                   value={racer.careerWorldFinalsWins ?? 0}
                 />
+              </div>
+            </Card>
+
+            <Card className="rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(8,24,39,0.82)_0%,rgba(4,17,29,0.92)_100%)] p-5">
+              <div className="rounded-[20px] border border-white/10 bg-white/[0.03] px-4 py-3">
+                <div className="text-lg font-semibold text-white">
+                  {typeof profileViewCount === "number"
+                    ? profileViewCount.toLocaleString()
+                    : "—"}
+                </div>
+                <div className="mt-1 text-xs uppercase tracking-[0.16em] text-white/50">
+                  Unique Profile Views
+                </div>
               </div>
             </Card>
 

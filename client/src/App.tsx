@@ -1,5 +1,9 @@
 // src/App.tsx
 import { useEffect } from "react";
+
+import { AnalyticsEvents } from "@/lib/analytics-events";
+
+import { initAnalytics, persistUtmParams, trackEvent } from "@/lib/analytics";
 import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -21,7 +25,6 @@ import TermsPage from "@/pages/terms";
 import AuthPage from "@/pages/auth";
 import NotFound from "@/pages/not-found";
 import ClubDetailsPage from "./pages/clubs/clubDetails";
-import { useGtagPageview } from "./useGtagPageview";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import RacerProfilePage from "./pages/racer-profile";
 import AppShell from "./layout/AppShell";
@@ -45,6 +48,7 @@ import CreateEventPage from "./pages/organizations/createEventPage";
 import EventListPage from "./pages/organizations/eventListPage";
 import RaceClassEditor from "./pages/organizations/raceClassEditor";
 import ClassMatchManagePage from "./pages/organizations/classMatchManagePage";
+import { AnalyticsIdentity } from "@/components/analytics/AnalyticsIdentity";
 
 function ProtectedRoute({
   component: Comp,
@@ -110,6 +114,31 @@ function BootSanitizeTokens() {
     const rt = getRefreshToken();
     if (at) setTokens(at, rt ?? undefined);
   }, []);
+  return null;
+}
+
+function AnalyticsBoot() {
+  useEffect(() => {
+    initAnalytics();
+    persistUtmParams();
+
+    trackEvent(AnalyticsEvents.APP_LOADED, {
+      page_path: window.location.pathname,
+    });
+  }, []);
+
+  return null;
+}
+
+export function RouteAnalyticsTracker() {
+  const [location] = useLocation();
+
+  useEffect(() => {
+    trackEvent(AnalyticsEvents.PAGE_VIEWED, {
+      page_path: location,
+    });
+  }, [location]);
+
   return null;
 }
 
@@ -254,11 +283,13 @@ function Router() {
 }
 
 function App() {
-  useGtagPageview();
-
   return (
     <QueryClientProvider client={queryClient}>
       <BootSanitizeTokens />
+      <AnalyticsBoot />
+      <AnalyticsIdentity />
+      <RouteAnalyticsTracker />
+
       <TooltipProvider>
         <Toaster />
         <Router />

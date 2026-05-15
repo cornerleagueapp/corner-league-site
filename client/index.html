@@ -1,5 +1,5 @@
 <!-- client/index.html -->
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -20,19 +20,30 @@
     <!-- <link rel="preload" href="/fonts/YourFont.woff2" as="font" type="font/woff2" crossorigin> -->
     <title>Corner League</title>
 
-    <!-- Google tag (gtag.js) -->
-    <script
-      async
-      src="https://www.googletagmanager.com/gtag/js?id=G-326PRN31WK"
-    ></script>
+    <!-- Google Tag Manager -->
     <script>
       window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
-      gtag("js", new Date());
-      gtag("config", "G-326PRN31WK");
     </script>
+
+    <script>
+      (function (w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({
+          "gtm.start": new Date().getTime(),
+          event: "gtm.js",
+        });
+
+        var f = d.getElementsByTagName(s)[0];
+        var j = d.createElement(s);
+        var dl = l != "dataLayer" ? "&l=" + l : "";
+
+        j.async = true;
+        j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+
+        f.parentNode.insertBefore(j, f);
+      })(window, document, "script", "dataLayer", "GTM-KBJ6S7LC");
+    </script>
+    <!-- End Google Tag Manager -->
 
     <script type="application/ld+json">
       {
@@ -48,8 +59,21 @@
       }
     </script>
   </head>
+
   <body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript>
+      <iframe
+        src="https://www.googletagmanager.com/ns.html?id=GTM-XXXXXXX"
+        height="0"
+        width="0"
+        style="display: none; visibility: hidden"
+      ></iframe>
+    </noscript>
+    <!-- End Google Tag Manager (noscript) -->
+
     <div id="root"></div>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -1,4 +1,6 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { trackEvent } from "@/lib/analytics";
+import { AnalyticsEvents } from "@/lib/analytics-events";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/apiClient";
@@ -45,6 +47,16 @@ export default function AquaOrganizationsPage() {
   });
 
   const orgs = (data ?? []) as Organization[];
+
+  useEffect(() => {
+    if (isLoading || isError) return;
+
+    trackEvent(AnalyticsEvents.ORGANIZATIONS_LIST_VIEWED, {
+      organization_count: orgs.length,
+      sport: "jet_ski",
+      page_type: "organizations_list",
+    });
+  }, [isLoading, isError, orgs.length]);
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-black text-white">
@@ -190,7 +202,18 @@ export default function AquaOrganizationsPage() {
                 <button
                   key={o.id}
                   type="button"
-                  onClick={() => navigate(`/aqua-organizations/${o.id}`)}
+                  onClick={() => {
+                    trackEvent(AnalyticsEvents.ORGANIZATION_CLICKED, {
+                      organization_id: o.id,
+                      organization_name: o.name,
+                      organization_abbreviation: o.abbreviation ?? null,
+                      sport: "jet_ski",
+                      source_page: "organizations_list",
+                      card_position: index + 1,
+                    });
+
+                    navigate(`/aqua-organizations/${o.id}`);
+                  }}
                   className="group relative w-full overflow-hidden rounded-[26px] border border-cyan-400/10 bg-[linear-gradient(180deg,rgba(10,26,43,0.92)_0%,rgba(7,19,33,0.98)_100%)] p-5 text-left shadow-[0_15px_40px_rgba(0,0,0,0.24)] transition duration-300 hover:-translate-y-0.5 hover:border-cyan-300/35 hover:shadow-[0_25px_60px_rgba(0,0,0,0.34)] focus:outline-none focus:ring-2 focus:ring-cyan-300/40 sm:p-6"
                 >
                   <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(34,211,238,0.12),_transparent_28%),radial-gradient(circle_at_bottom_left,_rgba(59,130,246,0.10),_transparent_26%)] opacity-80" />

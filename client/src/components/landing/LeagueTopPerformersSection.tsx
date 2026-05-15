@@ -1,9 +1,17 @@
+import { useState } from "react";
 import { Link } from "wouter";
-import { useIhraSkiGpLeaderboard } from "@/hooks/useScoresLandingData";
+import {
+  useIhraSkiGpLeaderboard,
+  useTrendingRacers,
+} from "@/hooks/useScoresLandingData";
 
 export default function LeagueTopPerformersSection() {
   const { rows, isLoading } = useIhraSkiGpLeaderboard();
   const leader = rows[0];
+
+  const [trendingRange, setTrendingRange] = useState<"7d" | "30d">("30d");
+  const { rows: trendingRacers, isLoading: trendingLoading } =
+    useTrendingRacers(trendingRange);
 
   return (
     <section id="rankings-section" className="pt-16">
@@ -121,6 +129,100 @@ export default function LeagueTopPerformersSection() {
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="mt-14 border-t border-white/10 pt-10">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="mb-2 text-xs uppercase tracking-[0.28em] text-white/40">
+              Nationwide Attention
+            </div>
+
+            <h3 className="text-3xl font-black uppercase leading-[0.95] sm:text-4xl">
+              Trending{" "}
+              <span className="inline-block bg-cyan-400/15 px-2 text-cyan-300">
+                Athlete Profiles
+              </span>
+            </h3>
+
+            <p className="mt-4 max-w-3xl text-sm leading-7 text-white/60 sm:text-base">
+              Top athlete profiles by profile views across Corner League Aqua.
+              This is nationwide engagement and is not tied to IHRA standings.
+            </p>
+          </div>
+
+          <div className="inline-flex w-fit overflow-hidden rounded-full border border-white/10 bg-white/[0.03] p-1">
+            <button
+              type="button"
+              onClick={() => setTrendingRange("7d")}
+              className={`rounded-full px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] transition ${
+                trendingRange === "7d"
+                  ? "bg-cyan-300 text-black"
+                  : "text-white/55 hover:text-white"
+              }`}
+            >
+              7D
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setTrendingRange("30d")}
+              className={`rounded-full px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] transition ${
+                trendingRange === "30d"
+                  ? "bg-cyan-300 text-black"
+                  : "text-white/55 hover:text-white"
+              }`}
+            >
+              30D
+            </button>
+          </div>
+        </div>
+
+        {trendingLoading ? (
+          <div className="mt-8 rounded-[24px] border border-white/10 bg-white/[0.03] px-5 py-8 text-white/60">
+            Loading trending athlete profiles…
+          </div>
+        ) : trendingRacers.length === 0 ? null : (
+          <div className="mt-8 overflow-hidden border border-white/10 bg-white/[0.03]">
+            <div className="overflow-x-auto">
+              <div className="min-w-[640px]">
+                <div className="grid grid-cols-[70px_1fr_140px] items-center border-b border-white/10 px-4 py-4 text-xs font-bold uppercase tracking-[0.18em] text-white/45">
+                  <div>Rank</div>
+                  <div>Athlete</div>
+                  <div className="text-right">Profile Views</div>
+                </div>
+
+                {trendingRacers.map((racer, idx) => (
+                  <div
+                    key={`${racer.racerDetailId}-${idx}`}
+                    className="grid grid-cols-[70px_1fr_140px] items-center gap-4 border-b border-white/10 px-4 py-5 last:border-b-0"
+                  >
+                    <div className="text-4xl font-black text-white/45">
+                      {String(idx + 1).padStart(2, "0")}
+                    </div>
+
+                    <div className="min-w-0">
+                      <Link href={racer.racerHref}>
+                        <div className="cursor-pointer break-words font-bold uppercase tracking-[0.06em] text-white hover:text-cyan-300">
+                          {racer.racerName}
+                        </div>
+                      </Link>
+
+                      <div className="mt-1 text-sm text-white/50">
+                        Nationwide · Last {trendingRange === "7d" ? "7" : "30"}{" "}
+                        days
+                      </div>
+                    </div>
+
+                    <div className="text-right text-3xl font-bold text-cyan-300">
+                      {racer.views.toLocaleString()}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );

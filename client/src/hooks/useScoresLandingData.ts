@@ -27,6 +27,14 @@ export type PerformerItem = {
   racerHref?: string;
 };
 
+export type TrendingRacerRow = {
+  racerDetailId: string;
+  athleteId?: string | null;
+  racerName: string;
+  views: number;
+  racerHref: string;
+};
+
 export type IhraSkiGpLeaderRow = {
   participantId: string;
   athleteId: string;
@@ -134,6 +142,38 @@ async function fetchAthleteHistory(athleteId: string) {
   if (!res.ok) return [];
 
   return json?.results ?? json?.data?.results ?? json?.data ?? [];
+}
+
+async function fetchTrendingRacers(
+  range: "7d" | "30d" = "30d",
+): Promise<TrendingRacerRow[]> {
+  const res = await apiFetch(
+    `/analytics/racers/top-viewed?range=${encodeURIComponent(range)}&limit=5`,
+    {
+      method: "GET",
+      skipAuth: true,
+      noRefresh: true,
+    },
+  );
+
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) return [];
+
+  const rows = Array.isArray(json)
+    ? json
+    : Array.isArray(json?.data)
+      ? json.data
+      : [];
+
+  return rows
+    .map((row: any) => ({
+      racerDetailId: String(row.racerDetailId),
+      athleteId: row.athleteId ?? null,
+      racerName: row.racerName || "Unknown Racer",
+      views: Number(row.views ?? 0),
+      racerHref: `/racer/${encodeURIComponent(String(row.racerDetailId))}`,
+    }))
+    .filter((row: TrendingRacerRow) => row.views >= 1);
 }
 
 export function useScoresLandingData() {
@@ -380,6 +420,20 @@ export function useIhraSkiGpLeaderboard() {
         })
         .slice(0, 5);
     },
+  });
+
+  return {
+    rows: query.data ?? [],
+    isLoading: query.isLoading,
+    isError: query.isError,
+  };
+}
+
+export function useTrendingRacers(range: "7d" | "30d" = "30d") {
+  const query = useQuery({
+    queryKey: ["trending-racers", range],
+    queryFn: () => fetchTrendingRacers(range),
+    staleTime: 60 * 1000,
   });
 
   return {

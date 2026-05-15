@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { trackEvent } from "@/lib/analytics";
+import { AnalyticsEvents } from "@/lib/analytics-events";
 import { useScoresLandingData } from "@/hooks/useScoresLandingData";
 import LeagueTopPerformersSection from "@/components/landing/LeagueTopPerformersSection";
 import LatestStoriesSection from "@/components/landing/LatestStoriesSection";
@@ -21,6 +23,16 @@ export default function ScoresLandingPage() {
     topPerformersByOrg,
     isLoading,
   } = useScoresLandingData();
+
+  useEffect(() => {
+    trackEvent(AnalyticsEvents.SCORES_HOME_VIEWED, {
+      sport: "jet_ski",
+      organization_count: organizations.length,
+      event_count: allEvents.length,
+      upcoming_event_count: upcomingEvents.length,
+      page_type: "scores_landing",
+    });
+  }, [organizations.length, allEvents.length, upcomingEvents.length]);
 
   // const latestStories = stories.slice(0, 4);
 
@@ -48,9 +60,19 @@ export default function ScoresLandingPage() {
             href: "/scores/supercross",
             enabled: false,
           },
-          { key: "mlb", label: "MLB", href: "/scores/mlb", enabled: false },
-          { key: "nba", label: "NBA", href: "/scores/nba", enabled: false },
-          { key: "nfl", label: "NFL", href: "/scores/nfl", enabled: false },
+          {
+            key: "motorcross",
+            label: "Motorcross",
+            href: "/scores/motorcross",
+            enabled: false,
+          },
+          {
+            key: "powerboat",
+            label: "Powerboat",
+            href: "/scores/powerboat",
+            enabled: false,
+          },
+          { key: "drag", label: "Drag", href: "/scores/drag", enabled: false },
         ]}
       />
 

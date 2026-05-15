@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/apiClient";
@@ -12,6 +12,9 @@ import {
   Newspaper,
   Clock3,
 } from "lucide-react";
+
+import { trackEvent } from "@/lib/analytics";
+import { AnalyticsEvents } from "@/lib/analytics-events";
 
 type Organization = {
   id: string;
@@ -184,6 +187,18 @@ export default function AquaOrganizationDetailsPage(props: {
 
   const org = orgData as Organization | undefined;
 
+  useEffect(() => {
+    if (!org) return;
+
+    trackEvent(AnalyticsEvents.ORGANIZATION_VIEWED, {
+      organization_id: org.id,
+      organization_name: org.name,
+      organization_abbreviation: org.abbreviation ?? null,
+      sport: "jet_ski",
+      page_type: "organization_details",
+    });
+  }, [org?.id]);
+
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-[#03101b] text-white">
       {/* mellow background */}
@@ -326,7 +341,16 @@ export default function AquaOrganizationDetailsPage(props: {
 
                 <button
                   type="button"
-                  onClick={() => setScheduleOpen(true)}
+                  onClick={() => {
+                    trackEvent(AnalyticsEvents.ORGANIZATION_SCHEDULE_OPENED, {
+                      organization_id: org?.id ?? orgId,
+                      organization_name: org?.name ?? null,
+                      sport: "jet_ski",
+                      page_type: "organization_details",
+                    });
+
+                    setScheduleOpen(true);
+                  }}
                   className="group rounded-[24px] border border-cyan-400/12 bg-white/[0.03] p-5 text-left transition hover:border-cyan-300/25 hover:bg-white/[0.05]"
                 >
                   <div className="flex items-start justify-between gap-4">

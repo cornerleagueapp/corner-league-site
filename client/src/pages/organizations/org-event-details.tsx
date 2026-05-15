@@ -24,6 +24,9 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 
+import { trackEvent } from "@/lib/analytics";
+import { AnalyticsEvents } from "@/lib/analytics-events";
+
 type SportEvent = {
   id: string;
   name: string;
@@ -162,31 +165,6 @@ export default function OrgEventDetailsPage(props: { params: { id: string } }) {
   const activeModal = searchParams.get("modal") || "";
   const activeDivisionId = searchParams.get("division") || "";
 
-  const setModalState = React.useCallback(
-    (modal?: string, division?: string) => {
-      const params = new URLSearchParams(window.location.search);
-
-      if (modal) {
-        params.set("modal", modal);
-      } else {
-        params.delete("modal");
-      }
-
-      if (division) {
-        params.set("division", division);
-      } else {
-        params.delete("division");
-      }
-
-      const query = params.toString();
-      const nextUrl = `${window.location.pathname}${query ? `?${query}` : ""}`;
-
-      window.history.pushState({}, "", nextUrl);
-      bumpUrlVersion();
-    },
-    [],
-  );
-
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["/sport-event", eventId],
     enabled: !!eventId,
@@ -275,11 +253,77 @@ export default function OrgEventDetailsPage(props: { params: { id: string } }) {
     staleTime: 30_000,
   });
 
+  const setModalState = React.useCallback(
+    (modal?: string, division?: string) => {
+      if (modal) {
+        trackEvent(AnalyticsEvents.EVENT_SECTION_OPENED, {
+          event_id: eventId,
+          event_name: data?.name ?? null,
+          modal,
+          division_id: division ?? null,
+          organization_id: orgIdFromQuery || null,
+          sport: data?.sport ?? "jet_ski",
+          source_page: "event_details",
+        });
+
+        if (division) {
+          const selectedDivision = divisions.find((d) => d.id === division);
+
+          trackEvent(AnalyticsEvents.DIVISION_RESULT_VIEWED, {
+            event_id: eventId,
+            event_name: data?.name ?? null,
+            organization_id: orgIdFromQuery || null,
+            division_id: division,
+            division_name: selectedDivision?.name ?? null,
+            sport: data?.sport ?? "jet_ski",
+            source_page: "event_details",
+          });
+        }
+      }
+
+      const params = new URLSearchParams(window.location.search);
+
+      if (modal) {
+        params.set("modal", modal);
+      } else {
+        params.delete("modal");
+      }
+
+      if (division) {
+        params.set("division", division);
+      } else {
+        params.delete("division");
+      }
+
+      const query = params.toString();
+      const nextUrl = `${window.location.pathname}${query ? `?${query}` : ""}`;
+
+      window.history.pushState({}, "", nextUrl);
+      bumpUrlVersion();
+    },
+    [eventId, orgIdFromQuery, data?.id, data?.name, data?.sport, divisions],
+  );
+
   React.useEffect(() => {
     const onPopState = () => bumpUrlVersion();
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
   }, []);
+
+  React.useEffect(() => {
+    if (!data) return;
+
+    trackEvent(AnalyticsEvents.EVENT_DETAILS_VIEWED, {
+      event_id: data.id,
+      event_name: data.name,
+      organization_id: orgIdFromQuery || null,
+      sport: data.sport ?? "jet_ski",
+      location: data.location ?? null,
+      start_date: data.startDate,
+      end_date: data.endDate,
+      page_type: "event_details",
+    });
+  }, [data?.id, orgIdFromQuery]);
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-black text-white">

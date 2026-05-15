@@ -22,6 +22,9 @@ import UserSearchModal from "@/components/userSearchModal";
 import stockAvatar from "../../assets/stockprofilepicture.jpeg";
 import clPattern from "../../assets/cl_logo_pattern.png";
 
+import { trackEvent } from "@/lib/analytics";
+import { AnalyticsEvents } from "@/lib/analytics-events";
+
 // ---------- types ----------
 type FavoriteTeam = { id: string; name: string; sr_id?: string };
 type ProfileUser = {
@@ -385,6 +388,18 @@ export default function UserProfilePage({ username }: { username: string }) {
     };
   }, [followersOpen, lightboxUrl]);
 
+  useEffect(() => {
+    if (!me) return;
+
+    trackEvent(AnalyticsEvents.USER_PROFILE_VIEWED, {
+      profile_user_id: me.id,
+      profile_username: me.username,
+      is_own_profile: isOwn,
+      viewer_id: viewerId,
+      source_page: "user_profile",
+    });
+  }, [me?.id, isOwn, viewerId]);
+
   // ----- loading / error -----
   if (loading) {
     return (
@@ -580,7 +595,16 @@ export default function UserProfilePage({ username }: { username: string }) {
             <Tab
               label="Posts"
               active={activeTab === "posts"}
-              onClick={() => setActiveTab("posts")}
+              onClick={() => {
+                trackEvent(AnalyticsEvents.USER_PROFILE_TAB_CHANGED, {
+                  profile_user_id: me?.id ?? null,
+                  profile_username: me?.username ?? username,
+                  selected_tab: "posts",
+                  is_own_profile: isOwn,
+                });
+
+                setActiveTab("posts");
+              }}
               className="w-1/3 text-center sm:w-auto sm:px-0"
             />
             <Tab
@@ -755,7 +779,21 @@ export default function UserProfilePage({ username }: { username: string }) {
                             disabled={!viewerId}
                             onClick={async () => {
                               if (!viewerId) return;
+
                               const had = !!p.reaction;
+
+                              trackEvent(AnalyticsEvents.USER_POST_REACTED, {
+                                post_id: p.id,
+                                profile_user_id: me?.id ?? null,
+                                profile_username: me?.username ?? username,
+                                viewer_id: viewerId,
+                                action: had
+                                  ? "remove_reaction"
+                                  : "add_reaction",
+                                reaction: had ? p.reaction : "like",
+                                source_page: "user_profile",
+                              });
+
                               setPostOptimistic(p.id, (pp) => ({
                                 ...pp,
                                 reaction: had ? null : "like",
@@ -764,6 +802,7 @@ export default function UserProfilePage({ username }: { username: string }) {
                                   (pp.reactionCount ?? 0) + (had ? -1 : 1),
                                 ),
                               }));
+
                               try {
                                 if (had) await deleteReaction(p.id, viewerId);
                                 else await postReaction(p.id, viewerId, "like");
@@ -796,6 +835,13 @@ export default function UserProfilePage({ username }: { username: string }) {
 
                           <button
                             onClick={async () => {
+                              trackEvent(AnalyticsEvents.USER_POST_SHARED, {
+                                post_id: p.id,
+                                profile_user_id: me?.id ?? null,
+                                profile_username: me?.username ?? username,
+                                source_page: "user_profile",
+                              });
+
                               const url = new URL(window.location.href);
                               url.searchParams.set("post", p.id);
                               try {
@@ -894,6 +940,14 @@ export default function UserProfilePage({ username }: { username: string }) {
                         key={String(u.id)}
                         type="button"
                         onClick={() => {
+                          trackEvent(AnalyticsEvents.USER_PROFILE_CLICKED, {
+                            clicked_user_id: String(u.id),
+                            clicked_username: u.username,
+                            source_page: "user_profile_followers_modal",
+                            current_profile_user_id: me?.id ?? null,
+                            current_profile_username: me?.username ?? username,
+                          });
+
                           setFollowersOpen(false);
                           navigate(`/profile/${u.username}`);
                         }}
@@ -932,6 +986,14 @@ export default function UserProfilePage({ username }: { username: string }) {
                         key={String(u.id)}
                         type="button"
                         onClick={() => {
+                          trackEvent(AnalyticsEvents.USER_PROFILE_CLICKED, {
+                            clicked_user_id: String(u.id),
+                            clicked_username: u.username,
+                            source_page: "user_profile_followers_modal",
+                            current_profile_user_id: me?.id ?? null,
+                            current_profile_username: me?.username ?? username,
+                          });
+
                           setFollowersOpen(false);
                           navigate(`/profile/${u.username}`);
                         }}
