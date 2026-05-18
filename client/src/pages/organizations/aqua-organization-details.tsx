@@ -15,6 +15,7 @@ import {
 
 import { trackEvent } from "@/lib/analytics";
 import { AnalyticsEvents } from "@/lib/analytics-events";
+import { trackContentEngagementToBackend } from "@/lib/contentEngagementApi";
 
 type Organization = {
   id: string;
@@ -197,6 +198,17 @@ export default function AquaOrganizationDetailsPage(props: {
       sport: "jet_ski",
       page_type: "organization_details",
     });
+
+    void trackContentEngagementToBackend({
+      contentType: "organization",
+      action: "organization_viewed",
+      contentId: org.id,
+      contentName: org.name,
+      organizationId: org.id,
+      organizationName: org.name,
+      sport: "jet_ski",
+      sourcePage: "organization_details",
+    }).catch(() => {});
   }, [org?.id]);
 
   return (
@@ -348,6 +360,17 @@ export default function AquaOrganizationDetailsPage(props: {
                       sport: "jet_ski",
                       page_type: "organization_details",
                     });
+
+                    void trackContentEngagementToBackend({
+                      contentType: "organization",
+                      action: "organization_schedule_opened",
+                      contentId: org?.id ?? orgId,
+                      contentName: org?.name ?? null,
+                      organizationId: org?.id ?? orgId,
+                      organizationName: org?.name ?? null,
+                      sport: "jet_ski",
+                      sourcePage: "organization_details",
+                    }).catch(() => {});
 
                     setScheduleOpen(true);
                   }}

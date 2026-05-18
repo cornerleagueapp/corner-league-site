@@ -26,6 +26,7 @@ import {
 
 import { trackEvent } from "@/lib/analytics";
 import { AnalyticsEvents } from "@/lib/analytics-events";
+import { trackContentEngagementToBackend } from "@/lib/contentEngagementApi";
 
 type SportEvent = {
   id: string;
@@ -278,6 +279,21 @@ export default function OrgEventDetailsPage(props: { params: { id: string } }) {
             sport: data?.sport ?? "jet_ski",
             source_page: "event_details",
           });
+
+          void trackContentEngagementToBackend({
+            contentType: "division",
+            action: "division_result_viewed",
+            contentId: division,
+            contentName: selectedDivision?.name ?? null,
+            divisionId: division,
+            divisionName: selectedDivision?.name ?? null,
+            eventId,
+            eventName: data?.name ?? null,
+            organizationId: orgIdFromQuery || null,
+            organizationName: null,
+            sport: data?.sport ?? "jet_ski",
+            sourcePage: "event_details",
+          }).catch(() => {});
         }
       }
 
@@ -323,6 +339,19 @@ export default function OrgEventDetailsPage(props: { params: { id: string } }) {
       end_date: data.endDate,
       page_type: "event_details",
     });
+
+    void trackContentEngagementToBackend({
+      contentType: "event",
+      action: "event_details_viewed",
+      contentId: data.id,
+      contentName: data.name,
+      eventId: data.id,
+      eventName: data.name,
+      organizationId: orgIdFromQuery || null,
+      organizationName: null,
+      sport: data.sport ?? "jet_ski",
+      sourcePage: "event_details",
+    }).catch(() => {});
   }, [data?.id, orgIdFromQuery]);
 
   return (

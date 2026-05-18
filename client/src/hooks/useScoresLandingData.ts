@@ -45,6 +45,32 @@ export type IhraSkiGpLeaderRow = {
   racerHref?: string;
 };
 
+export type EngagedOrganizationRow = {
+  organizationId: string;
+  organizationName: string;
+  engagements: number;
+  organizationHref: string;
+};
+
+export type ViewedEventRow = {
+  eventId: string;
+  eventName: string;
+  organizationId?: string | null;
+  organizationName?: string | null;
+  views: number;
+  eventHref: string;
+};
+
+export type ViewedDivisionRow = {
+  divisionId: string;
+  divisionName: string;
+  eventId?: string | null;
+  eventName?: string | null;
+  organizationId?: string | null;
+  views: number;
+  divisionHref?: string;
+};
+
 async function fetchOrganizations(): Promise<OrgItem[]> {
   const res = await apiFetch("/organizations", {
     method: "GET",
@@ -174,6 +200,117 @@ async function fetchTrendingRacers(
       racerHref: `/racer/${encodeURIComponent(String(row.racerDetailId))}`,
     }))
     .filter((row: TrendingRacerRow) => row.views >= 1);
+}
+
+async function fetchMostEngagedOrganizations(
+  range: "7d" | "30d" = "30d",
+): Promise<EngagedOrganizationRow[]> {
+  const res = await apiFetch(
+    `/analytics/organizations/most-engaged?range=${encodeURIComponent(range)}&limit=5`,
+    {
+      method: "GET",
+      skipAuth: true,
+      noRefresh: true,
+    },
+  );
+
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) return [];
+
+  const rows = Array.isArray(json)
+    ? json
+    : Array.isArray(json?.data)
+      ? json.data
+      : [];
+
+  return rows
+    .map((row: any) => ({
+      organizationId: String(row.organizationId),
+      organizationName: row.organizationName || "Unknown Organization",
+      engagements: Number(row.engagements ?? 0),
+      organizationHref: `/aqua-organizations/${encodeURIComponent(
+        String(row.organizationId),
+      )}`,
+    }))
+    .filter((row: EngagedOrganizationRow) => row.engagements >= 1);
+}
+
+async function fetchMostViewedEvents(
+  range: "7d" | "30d" = "30d",
+): Promise<ViewedEventRow[]> {
+  const res = await apiFetch(
+    `/analytics/events/most-viewed?range=${encodeURIComponent(range)}&limit=5`,
+    {
+      method: "GET",
+      skipAuth: true,
+      noRefresh: true,
+    },
+  );
+
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) return [];
+
+  const rows = Array.isArray(json)
+    ? json
+    : Array.isArray(json?.data)
+      ? json.data
+      : [];
+
+  return rows
+    .map((row: any) => ({
+      eventId: String(row.eventId),
+      eventName: row.eventName || "Unknown Event",
+      organizationId: row.organizationId ?? null,
+      organizationName: row.organizationName ?? null,
+      views: Number(row.views ?? 0),
+      eventHref: `/aqua-organizations/event-details/${encodeURIComponent(
+        String(row.eventId),
+      )}`,
+    }))
+    .filter((row: ViewedEventRow) => row.views >= 1);
+}
+
+async function fetchMostViewedDivisions(
+  range: "7d" | "30d" = "30d",
+): Promise<ViewedDivisionRow[]> {
+  const res = await apiFetch(
+    `/analytics/divisions/most-viewed?range=${encodeURIComponent(range)}&limit=5`,
+    {
+      method: "GET",
+      skipAuth: true,
+      noRefresh: true,
+    },
+  );
+
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) return [];
+
+  const rows = Array.isArray(json)
+    ? json
+    : Array.isArray(json?.data)
+      ? json.data
+      : [];
+
+  return rows
+    .map((row: any) => {
+      const eventId = row.eventId ? String(row.eventId) : null;
+      const divisionId = String(row.divisionId);
+
+      return {
+        divisionId,
+        divisionName: row.divisionName || "Unknown Class",
+        eventId,
+        eventName: row.eventName ?? null,
+        organizationId: row.organizationId ?? null,
+        views: Number(row.views ?? 0),
+        divisionHref: eventId
+          ? `/aqua-organizations/event-details/${encodeURIComponent(
+              eventId,
+            )}?modal=results&division=${encodeURIComponent(divisionId)}`
+          : undefined,
+      };
+    })
+    .filter((row: ViewedDivisionRow) => row.views >= 1);
 }
 
 export function useScoresLandingData() {
@@ -426,6 +563,40 @@ export function useIhraSkiGpLeaderboard() {
     rows: query.data ?? [],
     isLoading: query.isLoading,
     isError: query.isError,
+  };
+}
+
+export function useEngagementLeaderboards(range: "7d" | "30d" = "30d") {
+  const organizationsQuery = useQuery({
+    queryKey: ["most-engaged-organizations", range],
+    queryFn: () => fetchMostEngagedOrganizations(range),
+    staleTime: 60 * 1000,
+  });
+
+  const eventsQuery = useQuery({
+    queryKey: ["most-viewed-events", range],
+    queryFn: () => fetchMostViewedEvents(range),
+    staleTime: 60 * 1000,
+  });
+
+  const divisionsQuery = useQuery({
+    queryKey: ["most-viewed-divisions", range],
+    queryFn: () => fetchMostViewedDivisions(range),
+    staleTime: 60 * 1000,
+  });
+
+  return {
+    organizations: organizationsQuery.data ?? [],
+    events: eventsQuery.data ?? [],
+    divisions: divisionsQuery.data ?? [],
+    isLoading:
+      organizationsQuery.isLoading ||
+      eventsQuery.isLoading ||
+      divisionsQuery.isLoading,
+    isError:
+      organizationsQuery.isError ||
+      eventsQuery.isError ||
+      divisionsQuery.isError,
   };
 }
 

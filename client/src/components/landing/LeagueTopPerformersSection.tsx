@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import {
+  useEngagementLeaderboards,
   useIhraSkiGpLeaderboard,
   useTrendingRacers,
 } from "@/hooks/useScoresLandingData";
@@ -10,8 +11,21 @@ export default function LeagueTopPerformersSection() {
   const leader = rows[0];
 
   const [trendingRange, setTrendingRange] = useState<"7d" | "30d">("30d");
+
   const { rows: trendingRacers, isLoading: trendingLoading } =
     useTrendingRacers(trendingRange);
+
+  const {
+    organizations: engagedOrganizations,
+    events: viewedEvents,
+    divisions: viewedDivisions,
+    isLoading: engagementLoading,
+  } = useEngagementLeaderboards(trendingRange);
+
+  const hasEngagementData =
+    engagedOrganizations.length > 0 ||
+    viewedEvents.length > 0 ||
+    viewedDivisions.length > 0;
 
   return (
     <section id="rankings-section" className="pt-16">
@@ -146,8 +160,8 @@ export default function LeagueTopPerformersSection() {
             </h3>
 
             <p className="mt-4 max-w-3xl text-sm leading-7 text-white/60 sm:text-base">
-              Top athlete profiles by profile views across Corner League Aqua.
-              This is nationwide engagement and is not tied to IHRA standings.
+              Top athlete profiles by profile views across Corner League Aqua
+              nationwide.
             </p>
           </div>
 
@@ -223,6 +237,157 @@ export default function LeagueTopPerformersSection() {
             </div>
           </div>
         )}
+
+        {engagementLoading ? (
+          <div className="mt-8 rounded-[24px] border border-white/10 bg-white/[0.03] px-5 py-8 text-white/60">
+            Loading engagement leaderboards…
+          </div>
+        ) : hasEngagementData ? (
+          <div className="mt-10 grid gap-5 lg:grid-cols-3">
+            {engagedOrganizations.length > 0 && (
+              <div className="rounded-[28px] border border-white/10 bg-white/[0.03] p-5">
+                <div className="text-xs uppercase tracking-[0.22em] text-cyan-300/70">
+                  Organizations
+                </div>
+
+                <h4 className="mt-2 text-xl font-black uppercase text-white">
+                  Most Engaged Orgs
+                </h4>
+
+                <p className="mt-2 text-xs leading-6 text-white/45">
+                  Total organization views, clicks, and schedule opens.
+                </p>
+
+                <div className="mt-5 space-y-3">
+                  {engagedOrganizations.map((org, idx) => (
+                    <Link key={org.organizationId} href={org.organizationHref}>
+                      <div className="group flex cursor-pointer items-center justify-between gap-4 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 hover:border-cyan-300/30 hover:bg-cyan-300/10">
+                        <div className="min-w-0">
+                          <div className="text-xs font-black text-white/40">
+                            #{idx + 1}
+                          </div>
+                          <div className="truncate font-bold uppercase text-white group-hover:text-cyan-300">
+                            {org.organizationName}
+                          </div>
+                          <div className="mt-1 text-xs text-white/45">
+                            Last {trendingRange === "7d" ? "7" : "30"} days
+                          </div>
+                        </div>
+
+                        <div className="text-right text-xl font-black text-cyan-300">
+                          {org.engagements.toLocaleString()}
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {viewedEvents.length > 0 && (
+              <div className="rounded-[28px] border border-white/10 bg-white/[0.03] p-5">
+                <div className="text-xs uppercase tracking-[0.22em] text-cyan-300/70">
+                  Events
+                </div>
+
+                <h4 className="mt-2 text-xl font-black uppercase text-white">
+                  Most Viewed Events
+                </h4>
+
+                <p className="mt-2 text-xs leading-6 text-white/45">
+                  Total event detail page views.
+                </p>
+
+                <div className="mt-5 space-y-3">
+                  {viewedEvents.map((event, idx) => (
+                    <Link key={event.eventId} href={event.eventHref}>
+                      <div className="group flex cursor-pointer items-center justify-between gap-4 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 hover:border-cyan-300/30 hover:bg-cyan-300/10">
+                        <div className="min-w-0">
+                          <div className="text-xs font-black text-white/40">
+                            #{idx + 1}
+                          </div>
+                          <div className="truncate font-bold uppercase text-white group-hover:text-cyan-300">
+                            {event.eventName}
+                          </div>
+                          {event.organizationName ? (
+                            <div className="truncate text-xs text-white/45">
+                              {event.organizationName}
+                            </div>
+                          ) : (
+                            <div className="mt-1 text-xs text-white/45">
+                              Last {trendingRange === "7d" ? "7" : "30"} days
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="text-right text-xl font-black text-cyan-300">
+                          {event.views.toLocaleString()}
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {viewedDivisions.length > 0 && (
+              <div className="rounded-[28px] border border-white/10 bg-white/[0.03] p-5">
+                <div className="text-xs uppercase tracking-[0.22em] text-cyan-300/70">
+                  Classes
+                </div>
+
+                <h4 className="mt-2 text-xl font-black uppercase text-white">
+                  Most Viewed Classes
+                </h4>
+
+                <p className="mt-2 text-xs leading-6 text-white/45">
+                  Total class/result views.
+                </p>
+
+                <div className="mt-5 space-y-3">
+                  {viewedDivisions.map((division, idx) => {
+                    const content = (
+                      <div className="group flex cursor-pointer items-center justify-between gap-4 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 hover:border-cyan-300/30 hover:bg-cyan-300/10">
+                        <div className="min-w-0">
+                          <div className="text-xs font-black text-white/40">
+                            #{idx + 1}
+                          </div>
+                          <div className="truncate font-bold uppercase text-white group-hover:text-cyan-300">
+                            {division.divisionName}
+                          </div>
+                          {division.eventName ? (
+                            <div className="truncate text-xs text-white/45">
+                              {division.eventName}
+                            </div>
+                          ) : (
+                            <div className="mt-1 text-xs text-white/45">
+                              Last {trendingRange === "7d" ? "7" : "30"} days
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="text-right text-xl font-black text-cyan-300">
+                          {division.views.toLocaleString()}
+                        </div>
+                      </div>
+                    );
+
+                    return division.divisionHref ? (
+                      <Link
+                        key={division.divisionId}
+                        href={division.divisionHref}
+                      >
+                        {content}
+                      </Link>
+                    ) : (
+                      <div key={division.divisionId}>{content}</div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : null}
       </div>
     </section>
   );

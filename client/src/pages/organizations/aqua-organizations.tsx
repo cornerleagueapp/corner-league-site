@@ -4,6 +4,7 @@ import { AnalyticsEvents } from "@/lib/analytics-events";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/apiClient";
+import { trackContentEngagementToBackend } from "@/lib/contentEngagementApi";
 
 type Organization = {
   id: string;
@@ -211,6 +212,17 @@ export default function AquaOrganizationsPage() {
                       source_page: "organizations_list",
                       card_position: index + 1,
                     });
+
+                    void trackContentEngagementToBackend({
+                      contentType: "organization",
+                      action: "organization_clicked",
+                      contentId: o.id,
+                      contentName: o.name,
+                      organizationId: o.id,
+                      organizationName: o.name,
+                      sport: "jet_ski",
+                      sourcePage: "organizations_list",
+                    }).catch(() => {});
 
                     navigate(`/aqua-organizations/${o.id}`);
                   }}
