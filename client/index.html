@@ -5,21 +5,50 @@
     <meta charset="UTF-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1, maximum-scale=1"
+      content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover"
     />
+    <title>
+      Corner League Sports | Jet Ski Racing Results, Rankings & Athlete Profiles
+    </title>
     <meta
       name="description"
-      content="Corner League: live sports clubs, chat, and community."
+      content="Corner League Sports is a live jet ski racing hub for event results, racer profiles, rankings, race organizations, schedules, trends, podcasts, and fan engagement."
     />
-    <meta name="theme-color" content="#000000" />
+    <meta
+      name="keywords"
+      content="Corner League, jet ski racing, watercross, race results, racer profiles, athlete rankings, jet ski events, IJSBA, aqua sports"
+    />
+    <meta name="theme-color" content="#030913" />
+    <meta name="color-scheme" content="dark" />
+    <link rel="canonical" href="https://cornerleague.com/" />
     <link rel="icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <!-- Open Graph -->
+    <meta property="og:site_name" content="Corner League Sports" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Corner League Sports" />
+    <meta
+      property="og:description"
+      content="Live jet ski racing results, rankings, racer profiles, event schedules, organizations, trends, and podcast coverage."
+    />
+    <meta property="og:url" content="https://cornerleague.com/" />
+    <
+    <meta property="og:image" content="https://cornerleague.com/favicon.ico" />
+    <meta name="twitter:image" content="https://cornerleague.com/favicon.ico" />
+    <meta property="og:image:alt" content="Corner League Sports" />
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Corner League Sports" />
+    <meta
+      name="twitter:description"
+      content="Live jet ski racing results, rankings, racer profiles, events, organizations, and race coverage."
+    />
+    <meta name="twitter:image" content="https://cornerleague.com/favicon.ico" />
+    <!-- Performance hints -->
     <link rel="preconnect" href="https://www.googletagmanager.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <!-- Optional: preload your main font -->
-    <!-- <link rel="preload" href="/fonts/YourFont.woff2" as="font" type="font/woff2" crossorigin> -->
-    <title>Corner League</title>
-
+    <link rel="dns-prefetch" href="https://open.spotify.com" />
+    <link rel="dns-prefetch" href="https://i.scdn.co" />
     <!-- Google Tag Manager -->
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -45,16 +74,38 @@
     </script>
     <!-- End Google Tag Manager -->
 
+    <!-- Structured Data -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "Organization",
-        "name": "Corner League",
-        "url": "https://www.cornerleague.com",
-        "logo": "https://www.cornerleague.com/favicon.ico",
-        "sameAs": [
-          "https://twitter.com/cornerleague",
-          "https://instagram.com/cornerleague"
+        "@graph": [
+          {
+            "@type": "SportsOrganization",
+            "@id": "https://cornerleague.com/#organization",
+            "name": "Corner League Sports",
+            "url": "https://cornerleague.com/",
+            "logo": "https://cornerleague.com/favicon.ico",
+            "description": "Corner League Sports is a jet ski racing platform for event results, racer profiles, rankings, schedules, organizations, and racing media coverage.",
+            "sport": "Jet Ski Racing",
+            "sameAs": [
+              "https://twitter.com/cornerleague",
+              "https://instagram.com/cornerleague"
+            ]
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://cornerleague.com/#website",
+            "name": "Corner League Sports",
+            "url": "https://cornerleague.com/",
+            "publisher": {
+              "@id": "https://cornerleague.com/#organization"
+            },
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": "https://cornerleague.com/scores/aqua?search=racers&q={search_term_string}",
+              "query-input": "required name=search_term_string"
+            }
+          }
         ]
       }
     </script>
@@ -64,7 +115,7 @@
     <!-- Google Tag Manager (noscript) -->
     <noscript>
       <iframe
-        src="https://www.googletagmanager.com/ns.html?id=GTM-XXXXXXX"
+        src="https://www.googletagmanager.com/ns.html?id=GTM-KBJ6S7LC"
         height="0"
         width="0"
         style="display: none; visibility: hidden"

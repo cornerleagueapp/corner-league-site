@@ -2,59 +2,89 @@
 import { Helmet } from "react-helmet-async";
 
 type SEO = {
-  title?: string; // plain title, prefix with “CL || ”
+  title?: string;
   description?: string;
-  canonicalPath?: string; // e.g. "/clubs" or `/clubs/${id}`
-  image?: string; // absolute URL for social share
-  noindex?: boolean; // for /auth, etc.
+  canonicalPath?: string;
+  image?: string;
+  noindex?: boolean;
+  type?: "website" | "article" | "profile";
 };
 
-const ORIGIN = "https://cornerleague.com"; // set your prod domain
+const ORIGIN = "https://cornerleague.com";
+
+const DEFAULT_TITLE = "Corner League Sports";
+const DEFAULT_DESCRIPTION =
+  "Corner League Sports is a jet ski racing hub for live event results, racer profiles, rankings, race organizations, schedules, trends, podcasts, and fan engagement.";
+const DEFAULT_IMAGE = `${ORIGIN}/favicon.ico`;
+
+function normalizeCanonicalPath(path: string) {
+  if (!path) return "/";
+  if (path.startsWith("http")) return path;
+  return path.startsWith("/") ? path : `/${path}`;
+}
 
 export function PageSEO({
-  title = "Corner League",
-  description = "Join live sports clubs, chat, and compete on Corner League.",
+  title = DEFAULT_TITLE,
+  description = DEFAULT_DESCRIPTION,
   canonicalPath = "/",
-  image = `${ORIGIN}/og/default.png`,
+  image = DEFAULT_IMAGE,
   noindex,
+  type = "website",
 }: SEO) {
-  const fullTitle = title.startsWith("Corner League |")
-    ? title
-    : `Corner League | ${title}`;
-  const canonical = `${ORIGIN}${canonicalPath}`;
+  const fullTitle =
+    title === DEFAULT_TITLE || title.includes("Corner League")
+      ? title
+      : `${title} • Corner League`;
+
+  const normalizedPath = normalizeCanonicalPath(canonicalPath);
+  const canonical = normalizedPath.startsWith("http")
+    ? normalizedPath
+    : `${ORIGIN}${normalizedPath}`;
 
   return (
     <Helmet>
       <title>{fullTitle}</title>
+
       <link rel="canonical" href={canonical} />
+
       {noindex ? (
         <meta name="robots" content="noindex,nofollow" />
       ) : (
         <meta name="robots" content="index,follow" />
       )}
+
       <meta name="description" content={description} />
+
       {/* Open Graph */}
-      <meta property="og:type" content="website" />
+      <meta property="og:site_name" content="Corner League" />
+      <meta property="og:type" content={type} />
       <meta property="og:title" content={fullTitle} />
       <meta property="og:description" content={description} />
       <meta property="og:url" content={canonical} />
       <meta property="og:image" content={image} />
-      {/* Twitter */}
+      <meta property="og:image:alt" content={fullTitle} />
+
+      {/* Twitter / X */}
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={image} />
-      {/* JSON-LD: WebSite + SearchAction (helps sitelinks search box) */}
+
+      {/* JSON-LD: WebSite + SearchAction */}
       <script type="application/ld+json">
         {JSON.stringify({
           "@context": "https://schema.org",
           "@type": "WebSite",
+          "@id": `${ORIGIN}/#website`,
           url: ORIGIN,
           name: "Corner League",
+          publisher: {
+            "@id": `${ORIGIN}/#organization`,
+          },
           potentialAction: {
             "@type": "SearchAction",
-            target: `${ORIGIN}/search?q={query}`,
-            "query-input": "required name=query",
+            target: `${ORIGIN}/scores/aqua?search=racers&q={search_term_string}`,
+            "query-input": "required name=search_term_string",
           },
         })}
       </script>
