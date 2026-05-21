@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
 import SidebarPanel, { useAppSidebarSections } from "@/components/sidebarPanel";
+import RacerSearchModal from "@/components/RacerSearchModal";
 import cornerLeagueLogo from "@assets/CL_Logo.png";
 import { logout } from "@/lib/logout";
 import { useAuth } from "@/hooks/useAuth";
@@ -22,16 +23,26 @@ const keyToPath: Record<string, string> = {
   alerts: "/notifications",
 };
 
-function activeKeyFromPath(pathname: string): string {
-  if (pathname === "/profile") return "profile";
-  if (pathname.startsWith("/profile/")) return "profile";
+function activeKeyFromPath(pathnameWithQuery: string): string {
+  const [pathname, queryString = ""] = pathnameWithQuery.split("?");
+  const params = new URLSearchParams(queryString);
+
+  if (pathname === "/profile") return "your-profile";
+  if (pathname.startsWith("/profile/")) return "your-profile";
   if (pathname === "/settings") return "account";
 
-  if (pathname === "/feed") return "feed";
-  if (pathname === "/explore") return "explore";
+  if (pathname === "/scores" || pathname === "/scores/aqua") {
+    return "racing-hub";
+  }
 
-  if (pathname === "/scores") return "scores";
-  if (pathname.startsWith("/scores/")) return "scores";
+  if (pathname.startsWith("/racer/")) return "search-racers";
+
+  if (pathname === "/aqua-organizations") return "race-organizations";
+  if (pathname.startsWith("/aqua-organizations")) return "race-organizations";
+
+  if (pathname === "/event-map") return "event-map";
+  if (pathname === "/podcast-episodes") return "podcast-episodes";
+  if (pathname === "/top-trends") return "top-trends";
 
   if (pathname === "/clubs") return "my";
   if (pathname.startsWith("/clubs/discover")) return "discover";
@@ -39,9 +50,6 @@ function activeKeyFromPath(pathname: string): string {
 
   if (pathname === "/messages") return "messages";
   if (pathname === "/notifications") return "alerts";
-
-  if (pathname.startsWith("/racer/")) return "scores";
-  if (pathname.startsWith("/aqua-organizations")) return "scores";
 
   return "";
 }
@@ -64,6 +72,7 @@ export default function AppShell({
 
   const [clubsSubKey, setClubsSubKey] = useState<"" | "my" | "discover">("");
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [racerSearchOpen, setRacerSearchOpen] = useState(false);
 
   useEffect(() => {
     const goAuth = () => {
@@ -109,7 +118,27 @@ export default function AppShell({
       window.removeEventListener("clubs:activeTab", handler as EventListener);
   }, []);
 
-  const pathKey = useMemo(() => activeKeyFromPath(location), [location]);
+  useEffect(() => {
+    const onOpenRacerSearch = () => {
+      setRacerSearchOpen(true);
+    };
+
+    window.addEventListener("racer-search:open", onOpenRacerSearch);
+
+    return () => {
+      window.removeEventListener("racer-search:open", onOpenRacerSearch);
+    };
+  }, []);
+
+  const locationWithQuery = `${location}${
+    typeof window !== "undefined" ? window.location.search : ""
+  }`;
+
+  const pathKey = useMemo(
+    () => activeKeyFromPath(locationWithQuery),
+    [locationWithQuery],
+  );
+
   const activeKey = location === "/clubs" ? clubsSubKey || "my" : pathKey || "";
 
   const sections = useAppSidebarSections({
@@ -119,7 +148,7 @@ export default function AppShell({
   });
 
   const guestBlockedKeys = new Set([
-    "profile",
+    "your-profile",
     "account",
     "logout",
     "my",
@@ -134,7 +163,8 @@ export default function AppShell({
     <div className="relative flex h-screen overflow-hidden bg-black text-white">
       <button
         onClick={() => setIsSidebarOpen((v) => !v)}
-        className="fixed left-4 top-4 z-50 rounded-md bg-gray-800 p-2 text-white shadow-lg transition-colors hover:bg-gray-700 md:hidden"
+        className="fixed left-4 top-4 z-50 rounded-2xl border border-cyan-300/15 bg-[#07111F]/90 p-2 text-white shadow-[0_18px_45px_rgba(0,0,0,0.35)] backdrop-blur transition hover:border-cyan-300/30 hover:bg-cyan-300/10 md:hidden"
+        aria-label="Toggle menu"
       >
         <svg
           className="h-6 w-6"
@@ -192,7 +222,7 @@ export default function AppShell({
             return;
           }
 
-          if (key === "profile") {
+          if (key === "your-profile") {
             const uname = (user as any)?.username;
             const to = uname
               ? `/profile/${encodeURIComponent(uname)}`
@@ -219,9 +249,19 @@ export default function AppShell({
         }
       />
 
-      <div className="flex min-w-0 flex-1 flex-col overflow-y-auto md:ml-64">
+      <div className="flex min-w-0 flex-1 flex-col overflow-y-auto md:ml-72">
         {children}
       </div>
+
+      <RacerSearchModal
+        open={racerSearchOpen}
+        onClose={() => setRacerSearchOpen(false)}
+        onSelectRacer={(r) => {
+          setRacerSearchOpen(false);
+          const idStr = encodeURIComponent(String(r.id));
+          navigate(`/racer/${idStr}`);
+        }}
+      />
 
       {showLogoutConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -234,19 +274,25 @@ export default function AppShell({
             role="dialog"
             aria-modal="true"
             aria-labelledby="logout-title"
-            className="relative z-10 w-full max-w-sm rounded-xl border border-gray-700 bg-[#111111] p-5 shadow-xl"
+            className="relative z-10 w-full max-w-sm rounded-[30px] border border-cyan-300/10 bg-[#07111F] p-5 shadow-[0_30px_90px_rgba(0,0,0,0.5)]"
           >
-            <h2 id="logout-title" className="text-lg font-semibold text-white">
+            <div className="text-[10px] font-black uppercase tracking-[0.22em] text-[#FFB199]">
+              Account
+            </div>
+            <h2
+              id="logout-title"
+              className="mt-2 text-2xl font-black uppercase text-white"
+            >
               Log out?
             </h2>
-            <p className="mt-2 text-sm text-gray-400">
+            <p className="mt-2 text-sm leading-7 text-slate-300">
               Are you sure you want to log out?
             </p>
 
             <div className="mt-5 flex justify-end gap-2">
               <button
                 onClick={() => setShowLogoutConfirm(false)}
-                className="rounded-md border border-gray-700 px-3 py-2 text-gray-200 hover:bg-gray-800"
+                className="rounded-full border border-white/10 bg-white/[0.05] px-4 py-2.5 text-xs font-black uppercase tracking-[0.14em] text-white/70 hover:bg-white/10 hover:text-white"
               >
                 Cancel
               </button>
@@ -255,9 +301,9 @@ export default function AppShell({
                   setShowLogoutConfirm(false);
                   await logout("/auth");
                 }}
-                className="rounded-md bg-white px-3 py-2 font-medium text-black hover:bg-gray-200"
+                className="rounded-full border border-[#FF6B35]/20 bg-[#FF6B35]/10 px-4 py-2.5 text-xs font-black uppercase tracking-[0.14em] text-[#FFB199] hover:bg-[#FF6B35]/20 hover:text-white"
               >
-                Log out
+                Log Out
               </button>
             </div>
           </div>

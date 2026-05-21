@@ -5,6 +5,7 @@ import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/apiClient";
 import { trackContentEngagementToBackend } from "@/lib/contentEngagementApi";
+import { PageSEO } from "@/seo/usePageSEO";
 
 type Organization = {
   id: string;
@@ -60,33 +61,51 @@ export default function AquaOrganizationsPage() {
   }, [isLoading, isError, orgs.length]);
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-black text-white">
-      {/* Background */}
+    <div className="relative min-h-screen overflow-x-hidden bg-[#030913] text-white">
+      <PageSEO
+        title="AQUA Organizations • Corner League Sports"
+        description="Explore official jet ski racing organizations, sanctioning bodies, race schedules, and event coverage."
+        canonicalPath="/aqua-organizations"
+      />
+
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.05),_transparent_22%),radial-gradient(circle_at_80%_20%,_rgba(59,130,246,0.03),_transparent_18%),linear-gradient(to_bottom,_#000000_0%,_#02070b_45%,_#000000_100%)]" />
-        <div className="absolute inset-0 opacity-[0.025] [background-image:linear-gradient(rgba(255,255,255,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.12)_1px,transparent_1px)] [background-size:72px_72px]" />
-        <div className="absolute left-1/2 top-0 h-[260px] w-[260px] -translate-x-1/2 rounded-full bg-cyan-400/4 blur-3xl" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.12),transparent_28%),radial-gradient(circle_at_82%_18%,rgba(255,107,53,0.08),transparent_24%),linear-gradient(180deg,#030913_0%,#07111F_48%,#02050A_100%)]" />
+        <div className="absolute inset-0 opacity-[0.04] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:72px_72px]" />
+        <div className="absolute left-1/2 top-0 h-[320px] w-[320px] -translate-x-1/2 rounded-full bg-cyan-400/8 blur-3xl" />
       </div>
 
-      <div className="relative mx-auto w-full max-w-[88rem] px-4 pb-12 pt-16 sm:px-6 lg:px-8 lg:pt-10">
+      <div className="relative mx-auto w-full max-w-[88rem] px-3 pb-12 pt-16 sm:px-6 lg:px-8 lg:pt-10">
         {/* Hero / header */}
-        <div className="relative overflow-hidden rounded-[28px] border border-cyan-400/10 bg-[linear-gradient(180deg,rgba(10,26,43,0.92)_0%,rgba(5,18,33,0.96)_100%)] shadow-[0_0_0_1px_rgba(255,255,255,0.02),0_30px_80px_rgba(0,0,0,0.35)]">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(34,211,238,0.12),_transparent_32%),radial-gradient(circle_at_bottom_right,_rgba(37,99,235,0.10),_transparent_26%)]" />
+        <div className="relative overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[linear-gradient(180deg,rgba(7,17,31,0.96)_0%,rgba(4,10,19,0.98)_100%)] shadow-[0_30px_90px_rgba(0,0,0,0.38)] sm:rounded-[38px]">
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-cyan-400/10 blur-3xl" />
+            <div className="absolute -right-24 bottom-0 h-96 w-96 rounded-full bg-[#FF6B35]/10 blur-3xl" />
+            <div className="absolute inset-0 opacity-[0.05] [background-image:linear-gradient(rgba(255,255,255,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.18)_1px,transparent_1px)] [background-size:72px_72px]" />
+          </div>
 
           <div className="relative flex flex-col gap-6 p-5 sm:p-7 lg:flex-row lg:items-end lg:justify-between lg:p-10">
             <div className="max-w-3xl">
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-cyan-300">
-                <span className="h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_12px_rgba(103,232,249,0.9)]" />
-                Official race organizations
+              <div className="mb-4 flex flex-wrap items-center gap-2 sm:gap-3">
+                <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200 sm:px-4 sm:text-[11px] sm:tracking-[0.24em]">
+                  <span className="h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_18px_rgba(103,232,249,0.95)]" />
+                  Official Race Organizations
+                </div>
+
+                <div className="inline-flex items-center gap-2 rounded-full border border-[#FF6B35]/20 bg-[#FF6B35]/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-[#FFB199] sm:px-4 sm:text-[11px] sm:tracking-[0.24em]">
+                  Jet Ski Racing
+                </div>
               </div>
 
               <div className="space-y-3">
-                <p className="text-xs uppercase tracking-[0.28em] text-cyan-300/75">
-                  Aqua • Jet Ski Racing
+                <p className="text-xs font-black uppercase tracking-[0.28em] text-cyan-200/65">
+                  Aqua • Sanctioning Bodies • Race Series
                 </p>
 
-                <h1 className="text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl">
-                  AQUA Organizations
+                <h1 className="text-[2.35rem] font-black uppercase leading-[0.9] tracking-[-0.04em] text-white min-[380px]:text-4xl sm:text-5xl lg:text-6xl">
+                  AQUA{" "}
+                  <span className="bg-[linear-gradient(90deg,#19E3FF_0%,#FF7849_100%)] bg-clip-text text-transparent">
+                    Organizations
+                  </span>
                 </h1>
 
                 <p className="max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
@@ -102,12 +121,12 @@ export default function AquaOrganizationsPage() {
               <button
                 type="button"
                 onClick={() => navigate("/scores/aqua")}
-                className="inline-flex items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:border-cyan-300/40 hover:bg-white/10"
+                className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/[0.05] px-5 py-3 text-xs font-black uppercase tracking-[0.14em] text-white/75 transition hover:border-cyan-300/25 hover:bg-cyan-300/10 hover:text-white"
               >
                 ← Back to Aqua Home
               </button>
 
-              <div className="inline-flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-left">
+              <div className="inline-flex items-center gap-3 rounded-[24px] border border-cyan-300/10 bg-white/[0.04] px-4 py-3 text-left shadow-[0_18px_45px_rgba(0,0,0,0.22)]">
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-cyan-400/10 text-cyan-300 shadow-[inset_0_0_0_1px_rgba(34,211,238,0.15)]">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -139,7 +158,7 @@ export default function AquaOrganizationsPage() {
 
         {/* States */}
         {isLoading ? (
-          <div className="mt-8 overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.04] p-6 sm:p-8">
+          <div className="mt-8 overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.28)] sm:p-8">
             <div className="flex items-center gap-4">
               <div className="h-12 w-12 animate-pulse rounded-2xl bg-cyan-400/10" />
               <div className="space-y-2">
@@ -152,7 +171,7 @@ export default function AquaOrganizationsPage() {
               {Array.from({ length: 4 }).map((_, idx) => (
                 <div
                   key={idx}
-                  className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5"
+                  className="rounded-[24px] border border-cyan-300/10 bg-white/[0.04] p-5"
                 >
                   <div className="flex items-start gap-4">
                     <div className="h-20 w-20 animate-pulse rounded-2xl bg-white/10" />
@@ -168,7 +187,7 @@ export default function AquaOrganizationsPage() {
             </div>
           </div>
         ) : isError ? (
-          <div className="mt-8 rounded-[28px] border border-red-500/25 bg-red-500/10 p-6 text-white sm:p-8">
+          <div className="mt-8 rounded-[30px] border border-red-400/25 bg-red-500/10 p-6 text-white shadow-[0_24px_70px_rgba(0,0,0,0.28)] sm:p-8">
             <div className="mb-1 text-lg font-semibold">
               Failed to load organizations
             </div>
@@ -177,7 +196,7 @@ export default function AquaOrganizationsPage() {
             </div>
           </div>
         ) : orgs.length === 0 ? (
-          <div className="mt-8 rounded-[28px] border border-white/10 bg-white/[0.04] p-6 text-white/70 sm:p-8">
+          <div className="mt-8 rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-6 text-slate-300 shadow-[0_24px_70px_rgba(0,0,0,0.28)] sm:p-8">
             No organizations found.
           </div>
         ) : (
@@ -185,14 +204,15 @@ export default function AquaOrganizationsPage() {
             {/* Section heading */}
             <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.22em] text-cyan-300/70">
+                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-200/65">
                   Browse
                 </p>
-                <h2 className="mt-1 text-2xl font-bold text-white sm:text-3xl">
+                <h2 className="mt-1 text-3xl font-black uppercase tracking-[-0.03em] text-white sm:text-4xl">
                   Race Organizations
                 </h2>
-                <p className="mt-2 text-sm text-slate-300">
-                  Browse all professional Jet Ski racing organizations
+                <p className="mt-2 text-sm leading-7 text-slate-300">
+                  Browse professional jet ski racing organizations, sanctioning
+                  bodies, and event series.
                 </p>
               </div>
             </div>
@@ -226,16 +246,19 @@ export default function AquaOrganizationsPage() {
 
                     navigate(`/aqua-organizations/${o.id}`);
                   }}
-                  className="group relative w-full overflow-hidden rounded-[26px] border border-cyan-400/10 bg-[linear-gradient(180deg,rgba(10,26,43,0.92)_0%,rgba(7,19,33,0.98)_100%)] p-5 text-left shadow-[0_15px_40px_rgba(0,0,0,0.24)] transition duration-300 hover:-translate-y-0.5 hover:border-cyan-300/35 hover:shadow-[0_25px_60px_rgba(0,0,0,0.34)] focus:outline-none focus:ring-2 focus:ring-cyan-300/40 sm:p-6"
+                  className="group relative min-w-0 w-full overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-5 text-left shadow-[0_24px_70px_rgba(0,0,0,0.28)] transition duration-300 hover:-translate-y-1 hover:border-cyan-300/25 hover:bg-cyan-300/[0.045] focus:outline-none focus:ring-2 focus:ring-cyan-300/30 sm:p-6"
                 >
-                  <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(34,211,238,0.12),_transparent_28%),radial-gradient(circle_at_bottom_left,_rgba(59,130,246,0.10),_transparent_26%)] opacity-80" />
-                  <div className="pointer-events-none absolute right-0 top-0 h-28 w-28 translate-x-8 -translate-y-8 rounded-full bg-cyan-400/10 blur-2xl transition duration-300 group-hover:bg-cyan-300/15" />
+                  <div className="pointer-events-none absolute inset-0">
+                    <div className="absolute -right-20 top-0 h-56 w-56 rounded-full bg-cyan-400/10 blur-3xl transition duration-300 group-hover:bg-cyan-300/15" />
+                    <div className="absolute -left-20 bottom-0 h-52 w-52 rounded-full bg-[#FF6B35]/8 blur-3xl" />
+                    <div className="absolute inset-0 opacity-[0.035] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:54px_54px]" />
+                  </div>
 
                   <div className="relative">
                     {/* top badges */}
                     <div className="mb-5 flex items-start justify-between gap-3">
-                      <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/15 bg-cyan-400/10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-cyan-300">
-                        <span className="h-1.5 w-1.5 rounded-full bg-cyan-300" />
+                      <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-cyan-200">
+                        <span className="h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_12px_rgba(103,232,249,0.9)]" />
                         Organization
                       </div>
 
@@ -263,7 +286,7 @@ export default function AquaOrganizationsPage() {
                     </div>
 
                     <div className="flex items-start gap-4">
-                      <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-[22px] border border-white/10 bg-white/[0.05] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)] sm:h-24 sm:w-24">
+                      <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-[24px] border border-cyan-300/10 bg-white/[0.05] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)] sm:h-24 sm:w-24">
                         {o.logoUrl ? (
                           <img
                             src={o.logoUrl}
@@ -282,12 +305,12 @@ export default function AquaOrganizationsPage() {
 
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="truncate text-lg font-bold tracking-tight text-white sm:text-[1.35rem]">
+                          <h3 className="min-w-0 break-words text-xl font-black uppercase leading-tight tracking-[-0.02em] text-white sm:text-2xl">
                             {o.name}
                           </h3>
 
                           {o.abbreviation ? (
-                            <span className="rounded-full border border-white/12 bg-white/[0.04] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-cyan-200/85">
+                            <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-cyan-100">
                               {o.abbreviation}
                             </span>
                           ) : null}
@@ -299,8 +322,8 @@ export default function AquaOrganizationsPage() {
                       </div>
                     </div>
 
-                    <div className="mt-5 grid grid-cols-2 gap-3">
-                      <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
+                    <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <div className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
                         <div className="text-[10px] uppercase tracking-[0.18em] text-white/40">
                           Type
                         </div>
@@ -309,7 +332,7 @@ export default function AquaOrganizationsPage() {
                         </div>
                       </div>
 
-                      <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
+                      <div className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
                         <div className="text-[10px] uppercase tracking-[0.18em] text-white/40">
                           Details
                         </div>
@@ -320,7 +343,7 @@ export default function AquaOrganizationsPage() {
                     </div>
 
                     <div className="mt-4 flex items-center justify-between gap-3 border-t border-white/8 pt-4">
-                      <p className="truncate text-[11px] uppercase tracking-[0.18em] text-white/35">
+                      <p className="min-w-0 break-all text-[10px] uppercase tracking-[0.16em] text-white/35">
                         ID: {o.id}
                       </p>
 
