@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/apiClient";
 import { Button } from "@/components/ui/button";
+import { PageSEO } from "@/seo/usePageSEO";
 import {
   X,
   CalendarDays,
@@ -212,37 +213,52 @@ export default function AquaOrganizationDetailsPage(props: {
   }, [org?.id]);
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-[#03101b] text-white">
-      {/* mellow background */}
+    <div className="relative min-h-screen overflow-x-hidden bg-[#030913] text-white">
+      <PageSEO
+        title={`${org?.name || "Organization"} • Corner League Sports`}
+        description="View organization details, event schedules, race coverage, and official jet ski racing information."
+        canonicalPath={orgId ? `/aqua-organizations/${orgId}` : undefined}
+      />
+
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.08),_transparent_30%),radial-gradient(circle_at_80%_20%,_rgba(59,130,246,0.06),_transparent_24%),linear-gradient(to_bottom,_#04111d_0%,_#03101b_48%,_#020b14_100%)]" />
-        <div className="absolute inset-0 opacity-[0.035] [background-image:linear-gradient(rgba(255,255,255,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.12)_1px,transparent_1px)] [background-size:72px_72px]" />
-        <div className="absolute left-1/2 top-0 h-[340px] w-[340px] -translate-x-1/2 rounded-full bg-cyan-400/6 blur-3xl" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.12),transparent_28%),radial-gradient(circle_at_82%_18%,rgba(255,107,53,0.08),transparent_24%),linear-gradient(180deg,#030913_0%,#07111F_48%,#02050A_100%)]" />
+        <div className="absolute inset-0 opacity-[0.04] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:72px_72px]" />
+        <div className="absolute left-1/2 top-0 h-[320px] w-[320px] -translate-x-1/2 rounded-full bg-cyan-400/8 blur-3xl" />
       </div>
 
-      <div className="relative mx-auto w-full max-w-[88rem] overflow-x-hidden px-4 pb-8 pt-16 sm:px-6 sm:pt-10">
+      <div className="relative mx-auto w-full max-w-[88rem] overflow-x-hidden px-3 pb-10 pt-16 sm:px-6 sm:pt-10 lg:px-8">
         {/* top hero */}
-        <div className="relative overflow-hidden rounded-[30px] border border-cyan-400/10 bg-[linear-gradient(180deg,rgba(8,24,39,0.94)_0%,rgba(4,17,29,0.98)_100%)] shadow-[0_20px_70px_rgba(0,0,0,0.28)]">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(34,211,238,0.08),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(59,130,246,0.05),_transparent_24%)]" />
+        <div className="relative overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[linear-gradient(180deg,rgba(7,17,31,0.96)_0%,rgba(4,10,19,0.98)_100%)] shadow-[0_30px_90px_rgba(0,0,0,0.38)] sm:rounded-[38px]">
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-cyan-400/10 blur-3xl" />
+            <div className="absolute -right-24 bottom-0 h-96 w-96 rounded-full bg-[#FF6B35]/10 blur-3xl" />
+            <div className="absolute inset-0 opacity-[0.05] [background-image:linear-gradient(rgba(255,255,255,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.18)_1px,transparent_1px)] [background-size:72px_72px]" />
+          </div>
 
           <div className="relative flex flex-col gap-6 p-5 sm:p-7 lg:flex-row lg:items-end lg:justify-between lg:p-10">
             <div className="min-w-0 max-w-4xl">
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-cyan-400/15 bg-cyan-400/8 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-cyan-300">
-                <span className="h-2 w-2 rounded-full bg-cyan-300" />
-                Organization details
+              <div className="mb-4 flex flex-wrap items-center gap-2 sm:gap-3">
+                <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200 sm:px-4 sm:text-[11px] sm:tracking-[0.24em]">
+                  <span className="h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_18px_rgba(103,232,249,0.95)]" />
+                  Organization Details
+                </div>
+
+                <div className="inline-flex items-center gap-2 rounded-full border border-[#FF6B35]/20 bg-[#FF6B35]/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-[#FFB199] sm:px-4 sm:text-[11px] sm:tracking-[0.24em]">
+                  Race Organization
+                </div>
               </div>
 
-              <p className="text-xs uppercase tracking-[0.26em] text-cyan-300/70">
-                Aqua • Jet Ski Racing
+              <p className="text-xs font-black uppercase tracking-[0.26em] text-cyan-200/65">
+                Aqua • Jet Ski Racing • Official Profile
               </p>
 
               <div className="mt-3 flex flex-wrap items-center gap-3">
-                <h1 className="max-w-full break-words text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl">
+                <h1 className="max-w-full break-words text-[2.35rem] font-black uppercase leading-[0.9] tracking-[-0.04em] text-white min-[380px]:text-4xl sm:text-5xl lg:text-6xl">
                   {org?.name || "Organization"}
                 </h1>
 
                 {org?.abbreviation ? (
-                  <span className="rounded-full border border-white/12 bg-white/[0.04] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-cyan-200/85">
+                  <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-cyan-100">
                     {org.abbreviation}
                   </span>
                 ) : null}
@@ -258,13 +274,13 @@ export default function AquaOrganizationDetailsPage(props: {
               <button
                 type="button"
                 onClick={() => navigate("/aqua-organizations")}
-                className="inline-flex items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05] px-5 py-3 text-sm font-semibold text-white transition hover:border-cyan-300/30 hover:bg-white/[0.08]"
+                className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/[0.05] px-5 py-3 text-xs font-black uppercase tracking-[0.14em] text-white/75 transition hover:border-cyan-300/25 hover:bg-cyan-300/10 hover:text-white"
               >
                 ← Back to Organizations
               </button>
 
-              <div className="inline-flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-400/15 bg-cyan-400/8 text-cyan-300">
+              <div className="inline-flex items-center gap-3 rounded-[24px] border border-cyan-300/10 bg-white/[0.04] px-4 py-3 shadow-[0_18px_45px_rgba(0,0,0,0.22)]">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-300/15 bg-cyan-300/10 text-cyan-200">
                   <CalendarDays className="h-5 w-5" />
                 </div>
                 <div>
@@ -281,11 +297,11 @@ export default function AquaOrganizationDetailsPage(props: {
         </div>
 
         {isLoading ? (
-          <div className="mt-8 rounded-[28px] border border-white/10 bg-white/[0.04] p-6 text-white/70">
+          <div className="mt-8 rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-6 text-slate-300 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
             Loading organization…
           </div>
         ) : isError ? (
-          <div className="mt-8 rounded-[28px] border border-red-500/25 bg-red-500/10 p-6 text-white">
+          <div className="mt-8 rounded-[30px] border border-red-400/25 bg-red-500/10 p-6 text-white shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
             <div className="mb-1 font-semibold">
               Failed to load organization
             </div>
@@ -294,16 +310,16 @@ export default function AquaOrganizationDetailsPage(props: {
             </div>
           </div>
         ) : !org ? (
-          <div className="mt-8 rounded-[28px] border border-white/10 bg-white/[0.04] p-6 text-white/70">
+          <div className="mt-8 rounded-[30px] border border-white/10 bg-[#07111F]/80 p-6 text-slate-300 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
             Organization not found.
           </div>
         ) : (
           <>
             {/* main org card */}
-            <div className="mt-8 rounded-[28px] border border-cyan-400/10 bg-[linear-gradient(180deg,rgba(8,24,39,0.94)_0%,rgba(4,17,29,0.98)_100%)] p-5 shadow-[0_18px_50px_rgba(0,0,0,0.22)] sm:p-6">
+            <div className="mt-8 overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.3)] sm:p-6">
               <div className="flex flex-col gap-5 lg:flex-row lg:items-start">
                 <div className="flex items-start gap-4">
-                  <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-[24px] border border-white/10 bg-white/[0.05] sm:h-28 sm:w-28">
+                  <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-[26px] border border-cyan-300/10 bg-white/[0.05] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)] sm:h-28 sm:w-28">
                     {org.logoUrl ? (
                       <img
                         src={org.logoUrl}
@@ -320,7 +336,7 @@ export default function AquaOrganizationDetailsPage(props: {
 
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="text-xl font-bold text-white sm:text-2xl">
+                      <h2 className="break-words text-2xl font-black uppercase leading-tight tracking-[-0.02em] text-white sm:text-3xl">
                         {org.name}
                       </h2>
 
@@ -374,14 +390,14 @@ export default function AquaOrganizationDetailsPage(props: {
 
                     setScheduleOpen(true);
                   }}
-                  className="group rounded-[24px] border border-cyan-400/12 bg-white/[0.03] p-5 text-left transition hover:border-cyan-300/25 hover:bg-white/[0.05]"
+                  className="group min-w-0 rounded-[24px] border border-cyan-300/10 bg-white/[0.04] p-5 text-left transition hover:border-cyan-300/25 hover:bg-cyan-300/[0.045]"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <div className="mb-2 inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-400/15 bg-cyan-400/8 text-cyan-300">
                         <CalendarDays className="h-5 w-5" />
                       </div>
-                      <div className="text-lg font-semibold text-white">
+                      <div className="text-lg font-black uppercase tracking-[-0.01em] text-white">
                         Schedule
                       </div>
                       <div className="mt-2 text-sm leading-7 text-slate-300">
@@ -437,16 +453,18 @@ function InfoCard({
 }) {
   return (
     <div
-      className={`rounded-[24px] border p-5 ${
+      className={`min-w-0 rounded-[24px] border p-5 ${
         muted
-          ? "border-white/10 bg-white/[0.03]"
-          : "border-cyan-400/12 bg-cyan-400/[0.03]"
+          ? "border-white/10 bg-white/[0.04]"
+          : "border-cyan-300/10 bg-cyan-300/[0.04]"
       }`}
     >
-      <div className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-cyan-300">
+      <div className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-300/15 bg-cyan-300/10 text-cyan-200">
         {icon}
       </div>
-      <div className="text-lg font-semibold text-white">{title}</div>
+      <div className="break-words text-lg font-black uppercase tracking-[-0.01em] text-white">
+        {title}
+      </div>
       <p className="mt-2 text-sm leading-7 text-slate-300">{description}</p>
     </div>
   );
@@ -499,15 +517,16 @@ function ScheduleModal({
       onClick={onClose}
     >
       <div
-        className="relative flex h-[92vh] w-full flex-col overflow-hidden rounded-t-[30px] border border-white/10 bg-[#07131f] shadow-2xl sm:h-auto sm:max-h-[88vh] sm:max-w-5xl sm:rounded-[30px]"
+        className="relative flex h-[92vh] w-full flex-col overflow-hidden rounded-t-[30px] border border-cyan-300/10 bg-[#07111F] shadow-[0_30px_90px_rgba(0,0,0,0.5)] sm:h-auto sm:max-h-[88vh] sm:max-w-5xl sm:rounded-[30px]"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="border-b border-white/10 bg-[linear-gradient(180deg,rgba(8,24,39,0.98)_0%,rgba(6,19,31,0.98)_100%)] px-4 py-4 sm:px-6">
+        <div className="border-b border-white/10 bg-[linear-gradient(180deg,rgba(7,17,31,0.98)_0%,rgba(4,10,19,0.98)_100%)] px-4 py-4 sm:px-6">
+          {" "}
           <div className="flex items-start justify-between gap-4">
             <div>
-              <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-cyan-400/15 bg-cyan-400/8 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-300">
-                <span className="h-1.5 w-1.5 rounded-full bg-cyan-300" />
-                Event schedule
+              <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-cyan-200">
+                <span className="h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_12px_rgba(103,232,249,0.9)]" />
+                Event Schedule
               </div>
               <h2 className="text-lg font-semibold text-white sm:text-xl">
                 {orgName} Schedule
@@ -519,7 +538,7 @@ function ScheduleModal({
 
             <Button
               onClick={onClose}
-              className="border border-white/10 bg-white/10 text-white hover:bg-white/15"
+              className="rounded-full border border-white/10 bg-white/[0.05] px-4 py-2.5 text-xs font-black uppercase tracking-[0.14em] text-white/70 hover:bg-white/10 hover:text-white"
             >
               <X className="mr-2 h-4 w-4" />
               Close
@@ -595,7 +614,7 @@ function EventSection({
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h3
-          className={`text-sm font-semibold uppercase tracking-[0.16em] ${headingClass}`}
+          className={`text-sm font-black uppercase tracking-[0.18em] ${headingClass}`}
         >
           {title}
         </h3>
@@ -615,7 +634,7 @@ function EventSection({
               key={event.id}
               type="button"
               onClick={() => onOpenEvent(event.id)}
-              className="group w-full rounded-[24px] border border-white/10 bg-[linear-gradient(180deg,rgba(11,28,44,0.94)_0%,rgba(6,18,30,0.98)_100%)] p-5 text-left transition hover:border-cyan-300/20 hover:bg-white/[0.04]"
+              className="group min-w-0 w-full rounded-[24px] border border-cyan-300/10 bg-[#07111F]/80 p-5 text-left shadow-[0_16px_40px_rgba(0,0,0,0.22)] transition hover:border-cyan-300/25 hover:bg-cyan-300/[0.045]"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
@@ -627,7 +646,7 @@ function EventSection({
                     </span>
                   </div>
 
-                  <div className="mt-3 text-base font-semibold text-white sm:text-lg">
+                  <div className="mt-3 break-words text-base font-black uppercase leading-snug tracking-[-0.01em] text-white sm:text-lg">
                     <span className="line-clamp-2">{event.name}</span>
                   </div>
 
@@ -643,22 +662,26 @@ function EventSection({
                 </div>
               </div>
 
-              <div className="mt-4 grid grid-cols-1 gap-3 text-sm">
+              <div className="mt-4 grid min-w-0 grid-cols-1 gap-3 text-sm">
                 <div className="flex items-start gap-2 text-white/75">
                   <CalendarDays className="mt-0.5 h-4 w-4 shrink-0 text-white/45" />
-                  <div>
+                  <div className="min-w-0 break-words">
                     {formatEventDateRange(event.startDate, event.endDate)}
                   </div>
                 </div>
 
                 <div className="flex items-start gap-2 text-white/75">
                   <Clock3 className="mt-0.5 h-4 w-4 shrink-0 text-white/45" />
-                  <div>{formatEventTime(event.startDate, event.endDate)}</div>
+                  <div className="min-w-0 break-words">
+                    {formatEventTime(event.startDate, event.endDate)}
+                  </div>
                 </div>
 
                 <div className="flex items-start gap-2 text-white/75">
                   <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-white/45" />
-                  <div>{event.location || "Location TBD"}</div>
+                  <div className="min-w-0 break-words">
+                    {event.location || "Location TBD"}
+                  </div>
                 </div>
               </div>
             </button>

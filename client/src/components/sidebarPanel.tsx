@@ -10,6 +10,8 @@ export type SidebarItem = {
   onSelect?: () => void;
   matchPaths?: string[];
   disabled?: boolean;
+  helper?: string;
+  badge?: string;
 };
 
 export type SidebarSection = {
@@ -24,6 +26,13 @@ export function useAppSidebarSections(opts?: {
   guestMode?: boolean;
 }) {
   const [, navigate] = useLocation();
+
+  const goToAuth = () => {
+    const next = encodeURIComponent(
+      `${window.location.pathname}${window.location.search}`,
+    );
+    navigate(`/auth?next=${next}`);
+  };
 
   return useMemo<SidebarSection[]>(() => {
     const guest = !!opts?.guestMode;
@@ -79,52 +88,111 @@ export function useAppSidebarSections(opts?: {
         : []),
 
       {
-        title: "Profile",
+        title: "Explore",
         items: [
-          { key: "profile", label: "Profile", disabled: guest },
           {
-            key: "account",
-            label: "Account Settings",
+            key: "racing-hub",
+            label: "Racing Hub",
             selectable: false,
-            disabled: guest,
-            onSelect: () => navigate("/settings"),
+            matchPaths: ["/scores", "/scores/aqua"],
+            onSelect: () => navigate("/scores/aqua"),
+          },
+          // {
+          //   key: "featured-races",
+          //   label: "Featured Races",
+          //   selectable: false,
+          //   matchPaths: [],
+          //   onSelect: () => navigate("/scores/aqua"),
+          // },
+          {
+            key: "search-racers",
+            label: "Search Racers",
+            selectable: false,
+            matchPaths: ["/racer/*"],
+            onSelect: () => {
+              window.dispatchEvent(new CustomEvent("racer-search:open"));
+            },
           },
           {
-            key: "logout",
-            label: "Logout",
+            key: "race-organizations",
+            label: "Race Organizations",
             selectable: false,
-            disabled: guest,
-            onSelect: () =>
-              opts?.onLogout ? opts.onLogout() : void logout("/auth"),
+            matchPaths: ["/aqua-organizations", "/aqua-organizations/*"],
+            onSelect: () => navigate("/aqua-organizations"),
+          },
+          {
+            key: "event-map",
+            label: "Event Map",
+            selectable: false,
+            matchPaths: ["/event-map"],
+            onSelect: () => navigate("/event-map"),
+          },
+          {
+            key: "podcast-episodes",
+            label: "Podcast Episodes",
+            selectable: false,
+            matchPaths: ["/podcast-episodes"],
+            onSelect: () => navigate("/podcast-episodes"),
+          },
+          {
+            key: "top-trends",
+            label: "Top Trends",
+            selectable: false,
+            matchPaths: ["/top-trends"],
+            onSelect: () => navigate("/top-trends"),
           },
         ],
       },
-      // {
-      //   title: "Explore",
-      //   items: [
-      //     { key: "feed", label: "My Feed" },
-      //     { key: "explore", label: "Explore Feed" },
-      //   ],
-      // },
+
       {
-        title: "Live Scores",
-        items: [{ key: "scores", label: "All Scores" }],
+        title: guest ? "Access" : "Account",
+        items: guest
+          ? [
+              {
+                key: "signin",
+                label: "Sign in to access",
+                selectable: false,
+                badge: "Required",
+                onSelect: goToAuth,
+              },
+              {
+                key: "your-profile",
+                label: "Your profile",
+                selectable: false,
+                disabled: true,
+                helper: "Sign in required",
+              },
+            ]
+          : [
+              {
+                key: "signed-in",
+                label: "Signed in ✓",
+                selectable: false,
+                helper: "Account active",
+              },
+              {
+                key: "your-profile",
+                label: "Your profile",
+                selectable: false,
+                matchPaths: ["/profile", "/profile/*"],
+                onSelect: () => navigate("/profile"),
+              },
+              {
+                key: "account",
+                label: "Account Settings",
+                selectable: false,
+                matchPaths: ["/settings"],
+                onSelect: () => navigate("/settings"),
+              },
+              {
+                key: "logout",
+                label: "Logout",
+                selectable: false,
+                onSelect: () =>
+                  opts?.onLogout ? opts.onLogout() : void logout("/auth"),
+              },
+            ],
       },
-      {
-        title: "Clubs",
-        items: [
-          { key: "my", label: "My Clubs", disabled: guest },
-          { key: "discover", label: "Discover Clubs", disabled: guest },
-        ],
-      },
-      // {
-      //   title: "Messages",
-      //   items: [{ key: "messages", label: "Direct Messages" }],
-      // },
-      // {
-      //   title: "Notifications",
-      //   items: [{ key: "alerts", label: "My Alerts" }],
-      // },
     ];
 
     return opts?.extra?.length ? [...base, ...opts.extra] : base;
@@ -221,27 +289,59 @@ export default function SidebarPanel({
     <>
       {isOpen && (
         <div
-          className="fixed inset-0 z-30 bg-black/70 md:hidden"
+          className="fixed inset-0 z-30 bg-black/70 backdrop-blur-sm md:hidden"
           onClick={onClose}
         />
       )}
 
       <div
-        className={`fixed inset-y-0 left-0 z-40 flex h-screen w-[86vw] max-w-[320px] flex-col border-r border-gray-700 bg-[#000000] transition-transform duration-300 ease-in-out md:w-64 md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex h-screen w-[86vw] max-w-[330px] flex-col overflow-hidden border-r border-cyan-300/10 bg-[#030913] shadow-[0_30px_90px_rgba(0,0,0,0.55)] transition-transform duration-300 ease-in-out md:w-72 md:translate-x-0 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         } overscroll-contain`}
       >
-        <div className="sticky top-0 z-10 border-b border-gray-700 bg-[#000000] p-4">
-          <div className="flex items-center justify-center">
-            {logoSrc ? (
-              <img src={logoSrc} alt={logoAlt} className="h-8 w-auto" />
-            ) : (
-              <div className="h-8" />
-            )}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-cyan-400/10 blur-3xl" />
+          <div className="absolute -right-24 bottom-0 h-96 w-96 rounded-full bg-[#FF6B35]/10 blur-3xl" />
+          <div className="absolute inset-0 opacity-[0.045] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:64px_64px]" />
+        </div>
+        <div className="sticky top-0 z-10 border-b border-cyan-300/10 bg-[#030913]/90 p-4 backdrop-blur-xl">
+          <div className="flex items-center justify-between gap-3">
+            <Link href={backHref}>
+              <button
+                type="button"
+                onClick={onClose}
+                className="grid h-11 w-11 place-items-center rounded-2xl border border-cyan-300/15 bg-cyan-300/[0.06] transition hover:border-cyan-300/30 hover:bg-cyan-300/[0.1]"
+                aria-label="Go home"
+              >
+                {logoSrc ? (
+                  <img src={logoSrc} alt={logoAlt} className="h-7 w-auto" />
+                ) : (
+                  <span className="text-sm font-black text-white">CL</span>
+                )}
+              </button>
+            </Link>
+
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-[11px] font-black uppercase tracking-[0.22em] text-white">
+                Corner League
+              </div>
+              <div className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-cyan-200/55">
+                Sports
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="grid h-10 w-10 place-items-center rounded-full border border-white/10 bg-white/[0.05] text-white/65 transition hover:border-[#FF6B35]/25 hover:bg-[#FF6B35]/10 hover:text-white md:hidden"
+              aria-label="Close menu"
+            >
+              ×
+            </button>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="relative z-10 flex-1 overflow-y-auto p-4 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-cyan-300/20">
           {sections.map((section) => {
             const open = !!openMap[section.title];
             return (
@@ -249,7 +349,7 @@ export default function SidebarPanel({
                 <button
                   type="button"
                   onClick={() => toggleSection(section.title)}
-                  className="flex w-full items-center justify-between rounded-md px-3 py-2 text-base font-semibold uppercase tracking-wider text-gray-100 hover:bg-white/5 hover:text-white"
+                  className="flex w-full items-center justify-between rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-3 text-[11px] font-black uppercase tracking-[0.18em] text-white/70 transition hover:border-cyan-300/20 hover:bg-cyan-300/[0.06] hover:text-white"
                   aria-expanded={open}
                 >
                   <span>{section.title}</span>
@@ -261,9 +361,8 @@ export default function SidebarPanel({
                     {section.items.map((item) => {
                       const isActive =
                         !item.disabled &&
-                        (isRouteMatch(item) ||
-                          (item.selectable !== false &&
-                            activeKey === item.key));
+                        (item.key === activeKey ||
+                          (!activeKey && isRouteMatch(item)));
 
                       return (
                         <button
@@ -279,15 +378,31 @@ export default function SidebarPanel({
                             if (item.selectable !== false) onChange(item.key);
                             onClose();
                           }}
-                          className={`w-full rounded-md px-3 py-2 text-left text-sm transition-colors ${
+                          className={`group w-full rounded-2xl border px-3 py-3 text-left transition ${
                             item.disabled
-                              ? "cursor-not-allowed text-gray-600 hover:bg-transparent"
+                              ? "cursor-not-allowed border-white/5 bg-white/[0.02] text-white/25"
                               : isActive
-                                ? "bg-gray-800 font-medium text-white"
-                                : "text-gray-400 hover:bg-gray-800/60 hover:text-gray-100"
+                                ? "border-cyan-300/25 bg-cyan-300/10 text-cyan-100 shadow-[0_0_24px_rgba(34,211,238,0.08)]"
+                                : "border-transparent bg-transparent text-white/55 hover:border-cyan-300/15 hover:bg-cyan-300/[0.06] hover:text-white"
                           }`}
                         >
-                          {item.label}
+                          <div className="flex min-w-0 items-center justify-between gap-3">
+                            <span className="min-w-0 break-words text-sm font-bold">
+                              {item.label}
+                            </span>
+
+                            {item.badge ? (
+                              <span className="shrink-0 rounded-full border border-[#FF6B35]/20 bg-[#FF6B35]/10 px-2 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-[#FFB199]">
+                                {item.badge}
+                              </span>
+                            ) : null}
+                          </div>
+
+                          {item.helper ? (
+                            <div className="mt-1 text-xs leading-5 text-white/35">
+                              {item.helper}
+                            </div>
+                          ) : null}
                         </button>
                       );
                     })}
@@ -298,27 +413,26 @@ export default function SidebarPanel({
           })}
         </div>
 
-        <div className="border-t border-gray-700 bg-[#000000] p-4 pb-8 pb-[calc(env(safe-area-inset-bottom)+7.25rem)] md:pb-4">
-          <div className="space-y-2 pb-2 md:pb-0">
-            {showSignIn ? (
-              <Link href={signInHref}>
-                <button
-                  onClick={onClose}
-                  className="w-full rounded-md border border-cyan-400/20 bg-cyan-400/10 px-3 py-2 text-left text-cyan-200 transition-colors hover:bg-cyan-400/15 hover:text-white"
-                >
-                  Sign In
-                </button>
-              </Link>
-            ) : null}
-
-            <Link href={backHref}>
+        <div className="relative z-10 border-t border-cyan-300/10 bg-[#030913]/90 p-4 pb-8 pb-[calc(env(safe-area-inset-bottom)+2rem)] backdrop-blur-xl md:pb-4">
+          <div className="space-y-3">
+            <Link href="/">
               <button
+                type="button"
                 onClick={onClose}
-                className="w-full rounded-md px-3 py-2 text-left text-gray-300 transition-colors hover:bg-gray-800 hover:text-white"
+                className="w-full rounded-full border border-cyan-300/20 bg-cyan-300/10 px-4 py-3 text-left text-xs font-black uppercase tracking-[0.14em] text-cyan-100 transition hover:border-cyan-300/35 hover:bg-cyan-300 hover:text-[#06111d]"
               >
-                ← Back to Home
+                ← Go to Home
               </button>
             </Link>
+
+            <div className="rounded-2xl border border-white/10 bg-white/[0.035] px-4 py-3">
+              <div className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-200/55">
+                Corner League Sports
+              </div>
+              <div className="mt-1 text-xs leading-5 text-white/35">
+                Jet ski racing results, rankings, events, and athlete profiles.
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -67,7 +67,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-black text-white font-sans overflow-x-hidden relative">
       <PublicTopNav
-        activeTab="details"
+        activeTab="home"
         selectedSportKey="jet-ski"
         sports={[
           {

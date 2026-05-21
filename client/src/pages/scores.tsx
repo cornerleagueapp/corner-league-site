@@ -110,7 +110,7 @@ function TabDropdown({
       ref={wrapperRef}
       className="relative inline-block w-full text-left sm:w-auto"
     >
-      <button
+      {/* <button
         type="button"
         onClick={() => setOpen((v) => !v)}
         className="flex w-full items-center justify-between gap-2 rounded-xl border border-white/30 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10 sm:text-base"
@@ -122,7 +122,7 @@ function TabDropdown({
           }`}
           strokeWidth={3}
         />
-      </button>
+      </button> */}
 
       {open && (
         <div className="absolute right-0 z-30 mt-2 w-full origin-top-right rounded-xl border border-white/15 bg-black/90 shadow-xl backdrop-blur-md sm:w-48">
@@ -151,16 +151,23 @@ export default function ScoresPage() {
   const [location, navigate] = useLocation();
   const [racerSearchOpen, setRacerSearchOpen] = useState(false);
 
+  const pathname = location.split("?")[0];
+
   const isAquaRoute =
-    location === "/scores" ||
-    location === "/scores/aqua" ||
-    location.endsWith("/scores/aqua");
+    pathname === "/scores" ||
+    pathname === "/scores/aqua" ||
+    pathname.endsWith("/scores/aqua");
 
   const [active, setActive] = useState<TabKey>("AQUA");
 
+  const openRacerSearch = () => {
+    setActive("AQUA");
+    setRacerSearchOpen(true);
+  };
+
   useEffect(() => {
     // Normalize /scores -> /scores/aqua so AQUA is the canonical route
-    if (location === "/scores") {
+    if (pathname === "/scores") {
       navigate("/scores/aqua", { replace: true });
       setActive("AQUA");
       return;
@@ -171,11 +178,31 @@ export default function ScoresPage() {
       return;
     }
 
-    if (location.includes("/scores")) {
+    if (pathname.includes("/scores")) {
       // preserve current tab if already selected, otherwise default non-aqua view
       setActive((prev) => (prev === "AQUA" ? "MLB" : prev));
     }
-  }, [location, isAquaRoute, navigate]);
+  }, [pathname, isAquaRoute, navigate]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+
+    if (params.get("search") === "racers") {
+      openRacerSearch();
+    }
+  }, [location]);
+
+  useEffect(() => {
+    const onOpenRacerSearch = () => {
+      openRacerSearch();
+    };
+
+    window.addEventListener("racer-search:open", onOpenRacerSearch);
+
+    return () => {
+      window.removeEventListener("racer-search:open", onOpenRacerSearch);
+    };
+  }, []);
 
   const MLB_PLAYOFFS_URL =
     "https://widgets.media.sportradar.com/uscommon/en_us/standalone/us.season.mlb.playoffs#border=true&seasonId=125735";
@@ -205,9 +232,7 @@ export default function ScoresPage() {
 
   const content = useMemo(() => {
     if (active === "AQUA") {
-      return (
-        <AquaTabContent onOpenRacerSearch={() => setRacerSearchOpen(true)} />
-      );
+      return <AquaTabContent onOpenRacerSearch={openRacerSearch} />;
     }
 
     switch (active) {
@@ -329,12 +354,12 @@ export default function ScoresPage() {
             </h1>
           </div>
 
-          <div className="flex flex-col items-stretch gap-1 sm:items-end">
+          {/* <div className="flex flex-col items-stretch gap-1 sm:items-end">
             <span className="text-[11px] uppercase tracking-[0.16em] text-white/60">
               Sport
             </span>
             <TabDropdown active={active} onChange={handleTabChange} />
-          </div>
+          </div> */}
         </div>
 
         {content}
@@ -346,7 +371,15 @@ export default function ScoresPage() {
 
         <RacerSearchModal
           open={racerSearchOpen}
-          onClose={() => setRacerSearchOpen(false)}
+          onClose={() => {
+            setRacerSearchOpen(false);
+
+            const params = new URLSearchParams(window.location.search);
+
+            if (params.get("search") === "racers") {
+              navigate("/scores/aqua", { replace: true });
+            }
+          }}
           onSelectRacer={(r) => {
             setRacerSearchOpen(false);
             const idStr = encodeURIComponent(String(r.id));

@@ -82,102 +82,115 @@ function trophyFor(place?: number) {
 function FeaturedRaceSection() {
   return (
     <div className="space-y-6">
-      <div className="space-y-1">
-        <p className="text-xs uppercase tracking-[0.18em] text-cyan-300/75">
+      <div>
+        <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[#FF6B35]/20 bg-[#FF6B35]/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-[#FFB199]">
           Featured Race
-        </p>
-        <h2 className="text-2xl font-semibold text-white">
+        </div>
+
+        <h2 className="text-3xl font-black uppercase leading-[0.95] tracking-[-0.03em] text-white sm:text-4xl">
           {markHahn300.title}
         </h2>
-        <p className="text-sm text-white/65">{markHahn300.date}</p>
+
+        <p className="mt-3 text-sm font-bold uppercase tracking-[0.16em] text-cyan-200/65">
+          {markHahn300.date}
+        </p>
       </div>
 
-      <div className="overflow-hidden rounded-[28px] border border-cyan-400/14 bg-[linear-gradient(180deg,rgba(7,22,33,0.96)_0%,rgba(4,12,18,0.99)_100%)] p-5 shadow-[0_18px_50px_rgba(0,0,0,0.28)] sm:p-6">
-        <AccordionSection
-          labelShow="Show Final Results - Overall"
-          labelHide="Hide Final Results - Overall"
-        >
-          <div className="space-y-4">
-            <div className="text-sm text-white/70">{markHahn300.subtitle}</div>
+      <div className="relative overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-4 shadow-[0_24px_70px_rgba(0,0,0,0.3)] sm:p-6">
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -left-24 top-0 h-72 w-72 rounded-full bg-cyan-400/10 blur-3xl" />
+          <div className="absolute -right-24 bottom-0 h-80 w-80 rounded-full bg-[#FF6B35]/10 blur-3xl" />
+        </div>
 
-            <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04]">
-              <div className="overflow-x-auto">
-                <table className="min-w-full text-sm">
-                  <thead className="bg-black/25">
-                    <tr className="text-white/80">
-                      <th className="px-2 py-3 text-left font-semibold">
-                        Place
-                      </th>
-                      <th className="px-2 py-3 text-left font-semibold">
-                        Number/MFG
-                      </th>
-                      <th className="px-2 py-3 text-left font-semibold">
-                        Team Name
-                      </th>
-                      <th className="px-2 py-3 text-right font-semibold">
-                        Laps
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/10">
-                    {markHahn300.results.map((r) => (
-                      <tr
-                        key={`${r.place}-${r.boatNumber}-${r.mfg}`}
-                        className="text-white/80"
-                      >
-                        <td className="px-4 py-3 tabular-nums">
-                          <span className="inline-flex items-center gap-2">
-                            {r.place}
-                            {(() => {
-                              const trophy = trophyFor(r.place);
-                              return trophy.show ? (
-                                <Trophy
-                                  aria-label={trophy.label}
-                                  className={`h-4 w-4 ${trophy.colorClass}`}
-                                />
-                              ) : null;
-                            })()}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 tabular-nums">
-                          {r.boatNumber} - {r.mfg}
-                        </td>
-                        <td className="px-4 py-3">{r.teamName}</td>
-                        <td className="px-4 py-3 text-right tabular-nums">
-                          {r.lapsCompleted}
-                        </td>
+        <div className="relative">
+          <AccordionSection
+            labelShow="Show Final Results - Overall"
+            labelHide="Hide Final Results - Overall"
+          >
+            <div className="space-y-4">
+              <div className="text-sm text-white/70">
+                {markHahn300.subtitle}
+              </div>
+
+              <div className="overflow-hidden rounded-[24px] border border-white/10 bg-black/25">
+                <div className="overflow-x-auto [scrollbar-width:thin] [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-cyan-300/20">
+                  <table className="min-w-[680px] text-sm">
+                    <thead className="bg-black/25">
+                      <tr className="text-white/80">
+                        <th className="px-2 py-3 text-left font-semibold">
+                          Place
+                        </th>
+                        <th className="px-2 py-3 text-left font-semibold">
+                          Number/MFG
+                        </th>
+                        <th className="px-2 py-3 text-left font-semibold">
+                          Team Name
+                        </th>
+                        <th className="px-2 py-3 text-right font-semibold">
+                          Laps
+                        </th>
                       </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/10">
+                      {markHahn300.results.map((r) => (
+                        <tr
+                          key={`${r.place}-${r.boatNumber}-${r.mfg}`}
+                          className="text-white/80"
+                        >
+                          <td className="px-4 py-3 tabular-nums">
+                            <span className="inline-flex items-center gap-2">
+                              {r.place}
+                              {(() => {
+                                const trophy = trophyFor(r.place);
+                                return trophy.show ? (
+                                  <Trophy
+                                    aria-label={trophy.label}
+                                    className={`h-4 w-4 ${trophy.colorClass}`}
+                                  />
+                                ) : null;
+                              })()}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 tabular-nums">
+                            {r.boatNumber} - {r.mfg}
+                          </td>
+                          <td className="px-4 py-3">{r.teamName}</td>
+                          <td className="px-4 py-3 text-right tabular-nums">
+                            {r.lapsCompleted}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                <div className="rounded-[24px] border border-cyan-300/10 bg-white/[0.04] p-4">
+                  <div className="mb-2 text-sm font-semibold text-white">
+                    Penalties
+                  </div>
+                  <ul className="list-disc space-y-1 pl-5 text-sm text-white/75">
+                    {markHahn300.penalties.map((p) => (
+                      <li key={p}>{p}</li>
                     ))}
-                  </tbody>
-                </table>
+                  </ul>
+                </div>
+
+                <div className="rounded-[24px] border border-cyan-300/10 bg-white/[0.04] p-4">
+                  <div className="mb-2 text-sm font-semibold text-white">
+                    Achievements
+                  </div>
+                  <ul className="list-disc space-y-1 pl-5 text-sm text-white/75">
+                    {markHahn300.achievement.map((p) => (
+                      <li key={p}>{p}</li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </div>
-
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-                <div className="mb-2 text-sm font-semibold text-white">
-                  Penalties
-                </div>
-                <ul className="list-disc space-y-1 pl-5 text-sm text-white/75">
-                  {markHahn300.penalties.map((p) => (
-                    <li key={p}>{p}</li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-                <div className="mb-2 text-sm font-semibold text-white">
-                  Achievements
-                </div>
-                <ul className="list-disc space-y-1 pl-5 text-sm text-white/75">
-                  {markHahn300.achievement.map((p) => (
-                    <li key={p}>{p}</li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
-        </AccordionSection>
+          </AccordionSection>
+        </div>
       </div>
     </div>
   );
@@ -204,37 +217,41 @@ function AquaHubCard({
     <button
       type="button"
       onClick={onClick}
-      className={`group relative overflow-hidden rounded-[26px] border p-5 text-left transition duration-300 hover:-translate-y-0.5 sm:p-6 ${
+      className={`group relative min-w-0 overflow-hidden rounded-[30px] border p-5 text-left shadow-[0_24px_70px_rgba(0,0,0,0.24)] transition duration-300 hover:-translate-y-1 sm:p-6 ${
         highlighted
-          ? "border-cyan-400/30 bg-[linear-gradient(180deg,rgba(14,55,83,0.55)_0%,rgba(7,23,37,0.95)_100%)]"
-          : "border-cyan-400/10 bg-[linear-gradient(180deg,rgba(8,24,39,0.94)_0%,rgba(4,17,29,0.98)_100%)] hover:border-cyan-300/25"
+          ? "border-cyan-300/25 bg-[linear-gradient(135deg,rgba(25,227,255,0.16)_0%,rgba(7,17,31,0.98)_46%,rgba(255,107,53,0.12)_100%)]"
+          : "border-cyan-300/10 bg-[#07111F]/80 hover:border-cyan-300/25 hover:bg-cyan-300/[0.045]"
       }`}
     >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(34,211,238,0.08),_transparent_30%)]" />
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -right-20 top-0 h-52 w-52 rounded-full bg-cyan-400/8 blur-3xl" />
+        <div className="absolute inset-0 opacity-[0.035] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:54px_54px]" />
+      </div>
 
-      <div className="relative flex h-full flex-col justify-between gap-6">
-        <div>
-          <div className="mb-4 flex items-start justify-between gap-3">
-            <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-cyan-400/15 bg-cyan-400/8 text-cyan-300">
+      <div className="relative flex h-full min-w-0 flex-col justify-between gap-6">
+        <div className="min-w-0">
+          <div className="mb-5 flex items-start justify-between gap-3">
+            <div className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-cyan-300/15 bg-cyan-300/10 text-cyan-200 shadow-[0_0_24px_rgba(34,211,238,0.08)]">
               {icon}
             </div>
 
             {badge ? (
-              <span className="rounded-full border border-white/12 bg-white/[0.04] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/65">
+              <span className="max-w-[120px] truncate rounded-full border border-[#FF6B35]/20 bg-[#FF6B35]/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-[#FFB199]">
                 {badge}
               </span>
             ) : null}
           </div>
 
-          <h3 className="text-lg font-semibold text-white sm:text-xl">
+          <h3 className="break-words text-xl font-black uppercase leading-tight tracking-[-0.02em] text-white">
             {title}
           </h3>
+
           <p className="mt-3 text-sm leading-7 text-slate-300">{description}</p>
         </div>
 
-        <div className="inline-flex items-center gap-2 text-sm font-semibold text-cyan-300">
+        <div className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-cyan-200">
           {cta}
-          <ChevronRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
+          <ChevronRight className="h-4 w-4 transition group-hover:translate-x-1" />
         </div>
       </div>
     </button>
@@ -374,8 +391,8 @@ function AllAquaEventsModal({
         onClick={onClose}
       />
 
-      <div className="relative z-10 flex max-h-[88vh] w-[95vw] max-w-5xl flex-col overflow-hidden rounded-[30px] border border-white/10 bg-[#07131f] shadow-2xl">
-        <div className="border-b border-white/10 bg-[linear-gradient(180deg,rgba(8,24,39,0.98)_0%,rgba(6,19,31,0.98)_100%)] px-4 py-4 sm:px-6">
+      <div className="relative z-10 flex max-h-[88vh] w-[95vw] max-w-5xl flex-col overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F] shadow-[0_30px_90px_rgba(0,0,0,0.5)]">
+        <div className="border-b border-white/10 bg-[linear-gradient(180deg,rgba(7,17,31,0.98)_0%,rgba(4,10,19,0.98)_100%)] px-4 py-4 sm:px-6">
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-cyan-400/15 bg-cyan-400/8 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-300">
@@ -432,7 +449,7 @@ function AllAquaEventsModal({
                         key={event.id}
                         type="button"
                         onClick={() => openEvent(event.id)}
-                        className="rounded-[24px] border border-cyan-400/10 bg-[linear-gradient(180deg,rgba(8,24,39,0.94)_0%,rgba(4,17,29,0.98)_100%)] p-5 text-left transition hover:border-cyan-300/25 hover:bg-white/[0.04]"
+                        className="min-w-0 rounded-[24px] border border-cyan-300/10 bg-[#07111F]/80 p-5 text-left shadow-[0_16px_40px_rgba(0,0,0,0.22)] transition hover:border-cyan-300/25 hover:bg-cyan-300/[0.045]"
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
@@ -491,7 +508,7 @@ function AllAquaEventsModal({
                         key={event.id}
                         type="button"
                         onClick={() => openEvent(event.id)}
-                        className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5 text-left transition hover:border-cyan-300/20 hover:bg-white/[0.05]"
+                        className="min-w-0 rounded-[24px] border border-white/10 bg-white/[0.04] p-5 text-left transition hover:border-cyan-300/20 hover:bg-cyan-300/[0.04]"
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
@@ -551,21 +568,34 @@ function AquaHubSection({
 
   return (
     <div className="space-y-8">
-      <div className="relative overflow-hidden rounded-[30px] border border-cyan-400/10 bg-[linear-gradient(180deg,rgba(8,24,39,0.94)_0%,rgba(4,17,29,0.98)_100%)] shadow-[0_20px_70px_rgba(0,0,0,0.28)]">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(34,211,238,0.08),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(59,130,246,0.05),_transparent_24%)]" />
+      <div className="relative overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[linear-gradient(180deg,rgba(7,17,31,0.96)_0%,rgba(4,10,19,0.98)_100%)] shadow-[0_30px_90px_rgba(0,0,0,0.38)] sm:rounded-[38px]">
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-cyan-400/10 blur-3xl" />
+          <div className="absolute -right-24 bottom-0 h-96 w-96 rounded-full bg-[#FF6B35]/10 blur-3xl" />
+          <div className="absolute inset-0 opacity-[0.05] [background-image:linear-gradient(rgba(255,255,255,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.18)_1px,transparent_1px)] [background-size:72px_72px]" />
+        </div>
 
         <div className="relative p-5 sm:p-7 lg:p-10">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-cyan-400/15 bg-cyan-400/8 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-cyan-300">
-            <span className="h-2 w-2 rounded-full bg-cyan-300" />
-            Official aqua tab
+          <div className="mb-4 flex flex-wrap items-center gap-2 sm:gap-3">
+            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200 sm:px-4 sm:text-[11px] sm:tracking-[0.24em]">
+              <span className="h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_18px_rgba(103,232,249,0.95)]" />
+              Official Aqua Tab
+            </div>
+
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#FF6B35]/20 bg-[#FF6B35]/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-[#FFB199] sm:px-4 sm:text-[11px] sm:tracking-[0.24em]">
+              Jet Ski Racing
+            </div>
           </div>
 
-          <p className="text-xs uppercase tracking-[0.26em] text-cyan-300/70">
-            Aqua • Jet Ski Racing
+          <p className="text-xs font-black uppercase tracking-[0.26em] text-cyan-200/65">
+            Aqua • Race Results • Athlete Profiles
           </p>
 
-          <h2 className="mt-3 text-3xl font-bold text-white sm:text-4xl lg:text-5xl">
-            AQUA Sports Hub
+          <h2 className="mt-3 max-w-4xl text-[2.35rem] font-black uppercase leading-[0.9] tracking-[-0.04em] text-white min-[380px]:text-4xl sm:text-5xl lg:text-6xl">
+            AQUA{" "}
+            <span className="bg-[linear-gradient(90deg,#19E3FF_0%,#FF7849_100%)] bg-clip-text text-transparent">
+              Sports Hub
+            </span>
           </h2>
 
           <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-300 sm:text-base">
@@ -578,10 +608,10 @@ function AquaHubSection({
       <div>
         <div className="mb-5 flex items-end justify-between gap-4">
           <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-cyan-300/70">
+            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-200/65">
               Browse
             </p>
-            <h3 className="mt-1 text-2xl font-bold text-white">
+            <h3 className="mt-1 text-3xl font-black uppercase tracking-[-0.03em] text-white">
               AQUA Sections
             </h3>
           </div>

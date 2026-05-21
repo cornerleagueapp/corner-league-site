@@ -42,6 +42,9 @@ import AquaOrganizationDetailsPage from "./pages/organizations/aqua-organization
 import AdminRankingsPage from "./pages/admin/admin-rankings";
 import AdminAthleteClaimsPage from "./pages/admin/admin-athlete-claims";
 import OrgEventDetailsPage from "./pages/organizations/org-event-details";
+import EventMapPage from "@/pages/event-map";
+import TopTrendsPage from "@/pages/top-trends";
+import PodcastEpisodesPage from "@/pages/podcast-episodes";
 
 import UpdateEventPage from "./pages/organizations/updateEventPage";
 import CreateEventPage from "./pages/organizations/createEventPage";
@@ -272,6 +275,36 @@ function Router() {
           <AppShell guestMode>
             <ErrorBoundary>
               <RacerProfilePage idOrSlugParam={params.idOrSlug} />
+            </ErrorBoundary>
+          </AppShell>
+        )}
+      </Route>
+
+      <Route path="/event-map">
+        {() => (
+          <AppShell guestMode>
+            <ErrorBoundary>
+              <EventMapPage />
+            </ErrorBoundary>
+          </AppShell>
+        )}
+      </Route>
+
+      <Route path="/top-trends">
+        {() => (
+          <AppShell guestMode>
+            <ErrorBoundary>
+              <TopTrendsPage />
+            </ErrorBoundary>
+          </AppShell>
+        )}
+      </Route>
+
+      <Route path="/podcast-episodes">
+        {() => (
+          <AppShell guestMode>
+            <ErrorBoundary>
+              <PodcastEpisodesPage />
             </ErrorBoundary>
           </AppShell>
         )}

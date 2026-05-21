@@ -364,7 +364,7 @@ function EditRacerModal({
       onClick={onClose}
     >
       <div
-        className="h-full w-full overflow-y-auto border border-white/10 bg-[#0b0f18] p-4 md:h-auto md:max-w-xl md:rounded-xl"
+        className="h-full w-full overflow-y-auto border border-cyan-300/10 bg-[#07111F] p-4 shadow-[0_24px_70px_rgba(0,0,0,0.45)] md:h-auto md:max-w-xl md:rounded-[30px] md:p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-2 flex items-center justify-between">
@@ -519,7 +519,7 @@ function ClaimAthleteModal({
       onClick={onClose}
     >
       <div
-        className="h-full w-full overflow-y-auto border border-white/10 bg-[#0b0f18] p-4 md:h-auto md:max-w-xl md:rounded-xl"
+        className="h-full w-full overflow-y-auto border border-cyan-300/10 bg-[#07111F] p-4 shadow-[0_24px_70px_rgba(0,0,0,0.45)] md:h-auto md:max-w-xl md:rounded-[30px] md:p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-2 flex items-center justify-between">
@@ -1268,25 +1268,52 @@ export default function RacerProfilePage({
 
   if (loading || authLoading) {
     return (
-      <div className="grid min-h-screen place-items-center bg-black text-white">
+      <div className="relative grid min-h-screen place-items-center overflow-hidden bg-[#030913] text-white">
         <PageSEO title="Racer • Corner League" />
-        <div className="text-white/70">Loading racer…</div>
+
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.12),transparent_28%),radial-gradient(circle_at_80%_20%,rgba(255,107,53,0.08),transparent_24%),linear-gradient(180deg,#030913_0%,#07111F_48%,#02050A_100%)]" />
+          <div className="absolute inset-0 opacity-[0.04] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:72px_72px]" />
+        </div>
+
+        <div className="relative rounded-[28px] border border-cyan-300/10 bg-[#07111F]/80 px-8 py-7 text-center shadow-[0_24px_70px_rgba(0,0,0,0.36)]">
+          <div className="mx-auto mb-4 h-10 w-10 animate-pulse rounded-full border border-cyan-300/25 bg-cyan-300/10 shadow-[0_0_26px_rgba(34,211,238,0.18)]" />
+          <div className="text-xs font-black uppercase tracking-[0.22em] text-cyan-200/70">
+            Loading Racer Profile
+          </div>
+          <div className="mt-2 text-sm text-slate-300">
+            Pulling athlete data, rankings, and race history…
+          </div>
+        </div>
       </div>
     );
   }
 
   if (err || !racer) {
     return (
-      <div className="grid min-h-screen place-items-center bg-black text-white">
+      <div className="relative grid min-h-screen place-items-center overflow-hidden bg-[#030913] px-4 text-white">
         <PageSEO title="Racer • Corner League" />
-        <div className="space-y-3 text-center">
-          <div className="text-xl font-semibold">Couldn’t load this racer</div>
-          <div className="text-white/70">{err || "Not found"}</div>
+
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.12),transparent_28%),radial-gradient(circle_at_80%_20%,rgba(255,107,53,0.08),transparent_24%),linear-gradient(180deg,#030913_0%,#07111F_48%,#02050A_100%)]" />
+        </div>
+
+        <div className="relative max-w-md rounded-[30px] border border-cyan-300/10 bg-[#07111F]/85 p-7 text-center shadow-[0_24px_70px_rgba(0,0,0,0.36)]">
+          <div className="text-[10px] font-black uppercase tracking-[0.22em] text-[#FFB199]">
+            Racer Profile
+          </div>
+          <div className="mt-3 text-2xl font-black uppercase text-white">
+            Couldn’t load this racer
+          </div>
+          <div className="mt-3 text-sm leading-7 text-slate-300">
+            {err || "Not found"}
+          </div>
+
           <Button
             onClick={() => window.history.back()}
-            className="bg-white text-black"
+            className="mt-6 rounded-full bg-cyan-300 px-6 py-3 text-xs font-black uppercase tracking-[0.16em] text-[#06111d] hover:bg-cyan-200"
           >
-            Go back
+            Go Back
           </Button>
         </div>
       </div>
@@ -1383,28 +1410,33 @@ export default function RacerProfilePage({
   }
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-black text-white">
+    <div className="relative min-h-screen overflow-x-hidden bg-[#030913] text-white">
       <PageSEO title={`${title} • Corner League`} />
 
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.05),_transparent_22%),radial-gradient(circle_at_82%_20%,_rgba(59,130,246,0.03),_transparent_18%),linear-gradient(to_bottom,_#000000_0%,_#02070b_45%,_#000000_100%)]" />
-        <div className="absolute inset-0 opacity-[0.025] [background-image:linear-gradient(rgba(255,255,255,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.12)_1px,transparent_1px)] [background-size:72px_72px]" />
-        <div className="absolute left-1/2 top-0 h-[260px] w-[260px] -translate-x-1/2 rounded-full bg-cyan-400/4 blur-3xl" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.12),transparent_28%),radial-gradient(circle_at_82%_18%,rgba(255,107,53,0.08),transparent_24%),linear-gradient(180deg,#030913_0%,#07111F_48%,#02050A_100%)]" />
+        <div className="absolute inset-0 opacity-[0.04] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:72px_72px]" />
+        <div className="absolute left-1/2 top-0 h-[320px] w-[320px] -translate-x-1/2 rounded-full bg-cyan-400/8 blur-3xl" />
       </div>
 
-      <div className="relative mx-auto max-w-6xl px-4 pb-12 pt-4">
+      <div className="relative mx-auto max-w-6xl px-3 pb-12 pt-4 sm:px-4">
         <div className="mb-6 flex justify-end">
           <button
             onClick={() => setSearchOpen(true)}
-            className="grid h-10 w-10 place-items-center rounded-full border border-white/10 bg-white/10 text-white transition hover:bg-white/15"
+            className="inline-flex items-center gap-2 rounded-full border border-cyan-300/15 bg-cyan-300/10 px-4 py-3 text-xs font-black uppercase tracking-[0.16em] text-cyan-100 transition hover:border-cyan-300/30 hover:bg-cyan-300/15"
             aria-label="Search racers"
           >
-            <SearchIcon size={18} />
+            <SearchIcon size={16} />
+            <span className="hidden sm:inline">Search Racers</span>
           </button>
         </div>
 
-        <div className="relative overflow-hidden rounded-[32px] border border-cyan-400/10 bg-[linear-gradient(180deg,rgba(8,24,39,0.94)_0%,rgba(4,17,29,0.98)_100%)] shadow-[0_20px_70px_rgba(0,0,0,0.28)]">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(34,211,238,0.08),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(59,130,246,0.05),_transparent_24%)]" />
+        <div className="relative overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[linear-gradient(180deg,rgba(7,17,31,0.96)_0%,rgba(4,10,19,0.98)_100%)] shadow-[0_30px_90px_rgba(0,0,0,0.42)] sm:rounded-[38px]">
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-cyan-400/10 blur-3xl" />
+            <div className="absolute -right-24 bottom-0 h-96 w-96 rounded-full bg-[#FF6B35]/10 blur-3xl" />
+            <div className="absolute inset-0 opacity-[0.05] [background-image:linear-gradient(rgba(255,255,255,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.18)_1px,transparent_1px)] [background-size:72px_72px]" />
+          </div>
 
           <div className="relative p-5 sm:p-7 lg:p-10">
             <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
@@ -1510,7 +1542,7 @@ export default function RacerProfilePage({
                 {canEdit ? (
                   <Button
                     onClick={() => setEditOpen(true)}
-                    className="h-11 border border-white/20 bg-white/10 text-white hover:bg-white/15"
+                    className="h-11 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-5 text-xs font-black uppercase tracking-[0.14em] text-cyan-100 hover:border-cyan-200/40 hover:bg-cyan-300 hover:text-[#06111d]"
                   >
                     <PencilLine className="mr-2 h-4 w-4" />
                     Edit
@@ -1518,7 +1550,7 @@ export default function RacerProfilePage({
                 ) : hasPendingClaim ? (
                   <Button
                     disabled
-                    className="h-11 border border-yellow-400/20 bg-yellow-500/20 text-yellow-200"
+                    className="h-11 rounded-full border border-yellow-400/20 bg-yellow-500/20 px-5 text-xs font-black uppercase tracking-[0.14em] text-yellow-200"
                   >
                     Claim Pending
                   </Button>
@@ -1536,7 +1568,7 @@ export default function RacerProfilePage({
 
                       handleClaimProfileClick();
                     }}
-                    className="h-11 bg-violet-500 text-white hover:bg-violet-600"
+                    className="h-11 rounded-full border border-[#FF6B35]/20 bg-[#FF6B35]/10 px-5 text-xs font-black uppercase tracking-[0.14em] text-[#FFB199] hover:border-[#FF7849]/40 hover:bg-[#FF6B35]/20 hover:text-white"
                   >
                     {hasRejectedClaim ? "Submit New Claim" : "Claim Profile"}
                   </Button>
@@ -1558,7 +1590,7 @@ export default function RacerProfilePage({
                       toast({ title: "Copied to clipboard" });
                     } catch {}
                   }}
-                  className="h-11 bg-white text-black hover:bg-white/90"
+                  className="h-11 rounded-full bg-cyan-300 px-5 text-xs font-black uppercase tracking-[0.14em] text-[#06111d] shadow-[0_0_26px_rgba(34,211,238,0.22)] hover:bg-cyan-200"
                 >
                   <Share2 className="mr-2 h-4 w-4" />
                   Share
@@ -1594,7 +1626,8 @@ export default function RacerProfilePage({
 
         <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="order-2 space-y-6 lg:order-1 lg:col-span-1">
-            <Card className="rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(8,24,39,0.82)_0%,rgba(4,17,29,0.92)_100%)] p-5">
+            <Card className="overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
+              {" "}
               <div className="mb-2 text-sm font-semibold uppercase tracking-[0.16em] text-cyan-300/80">
                 About
               </div>
@@ -1603,7 +1636,8 @@ export default function RacerProfilePage({
               </p>
             </Card>
 
-            <Card className="rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(8,24,39,0.82)_0%,rgba(4,17,29,0.92)_100%)] p-5">
+            <Card className="overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
+              {" "}
               <div className="mb-3 text-sm font-semibold uppercase tracking-[0.16em] text-cyan-300/80">
                 World Finals
               </div>
@@ -1615,9 +1649,10 @@ export default function RacerProfilePage({
               </div>
             </Card>
 
-            <Card className="rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(8,24,39,0.82)_0%,rgba(4,17,29,0.92)_100%)] p-5">
-              <div className="rounded-[20px] border border-white/10 bg-white/[0.03] px-4 py-3">
-                <div className="text-lg font-semibold text-white">
+            <Card className="overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
+              {" "}
+              <div className="rounded-[20px] border border-cyan-300/10 bg-cyan-300/10 px-4 py-3">
+                <div className="text-lg font-semibold text-cyan-300">
                   {typeof profileViewCount === "number"
                     ? profileViewCount.toLocaleString()
                     : "—"}
@@ -1628,7 +1663,8 @@ export default function RacerProfilePage({
               </div>
             </Card>
 
-            <Card className="rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(8,24,39,0.82)_0%,rgba(4,17,29,0.92)_100%)] p-5">
+            <Card className="overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
+              {" "}
               <div className="mb-2 inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.16em] text-cyan-300/80">
                 <Sparkles className="h-4 w-4" />
                 AI Racer Analysis
@@ -1650,7 +1686,8 @@ export default function RacerProfilePage({
           </div>
 
           <div className="order-1 space-y-4 lg:order-2 lg:col-span-2">
-            <Card className="rounded-[28px] border border-cyan-400/10 bg-[linear-gradient(180deg,rgba(8,24,39,0.92)_0%,rgba(4,17,29,0.98)_100%)] p-6">
+            <Card className="overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)] sm:p-6">
+              {" "}
               <div className="mb-2 text-lg font-semibold text-white">
                 Race Media & Highlights
               </div>
@@ -1660,7 +1697,7 @@ export default function RacerProfilePage({
               </p>
             </Card>
 
-            <Card className="rounded-[28px] border border-white/10 bg-white/[0.03] p-6">
+            <Card className="overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)] sm:p-6">
               <div className="mb-4 text-lg font-semibold text-white">
                 Performance Timeline
               </div>
@@ -1673,7 +1710,7 @@ export default function RacerProfilePage({
                 </p>
               ) : (
                 <div
-                  className={`overflow-x-auto rounded-2xl border border-white/10 bg-white/[0.03] ${
+                  className={`overflow-x-auto rounded-[24px] border border-white/10 bg-black/25 [scrollbar-width:thin] [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-cyan-300/20 ${
                     hasTimelineOverflow
                       ? "max-h-[540px] overflow-y-auto pr-1"
                       : ""

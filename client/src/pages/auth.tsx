@@ -17,12 +17,33 @@ import { FaApple, FaGoogle, FaEnvelope, FaArrowLeft } from "react-icons/fa";
 import logoPath from "@assets/CL_Logo.png";
 
 type AuthSuccess = { accessToken: string; refreshToken?: string; user: User };
+
 type LoginResponse = {
   data?: { accessToken?: string; refreshToken?: string; user?: User };
   accessToken?: string;
   refreshToken?: string;
   user?: User;
 };
+
+const authInputClass =
+  "w-full rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-4 text-sm text-white outline-none placeholder:text-white/40 transition focus:border-cyan-300/35 focus:bg-cyan-300/[0.06] focus:ring-2 focus:ring-cyan-300/10";
+
+const authPrimaryButtonClass =
+  "flex w-full items-center justify-center gap-2 rounded-full bg-cyan-300 px-6 py-4 text-xs font-black uppercase tracking-[0.16em] text-[#06111d] shadow-[0_0_28px_rgba(34,211,238,0.25)] transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:bg-white/20 disabled:text-white/40";
+
+const authSecondaryButtonClass =
+  "rounded-full border border-white/10 bg-white/[0.05] px-4 py-3 text-xs font-black uppercase tracking-[0.14em] text-white/70 transition hover:border-cyan-300/25 hover:bg-cyan-300/10 hover:text-white";
+
+const authChipClass = (active: boolean, tone: "cyan" | "orange" = "cyan") =>
+  `rounded-full border px-4 py-2.5 text-xs font-black uppercase tracking-[0.12em] transition ${
+    active
+      ? tone === "orange"
+        ? "border-[#FF6B35]/30 bg-[#FF6B35] text-white"
+        : "border-cyan-300/30 bg-cyan-300 text-[#06111d]"
+      : tone === "orange"
+        ? "border-white/10 bg-white/[0.05] text-white/65 hover:border-[#FF6B35]/25 hover:bg-[#FF6B35]/10 hover:text-white"
+        : "border-white/10 bg-white/[0.05] text-white/65 hover:border-cyan-300/25 hover:bg-cyan-300/10 hover:text-white"
+  }`;
 
 export default function AuthPage() {
   const [, setLocation] = useLocation();
@@ -90,7 +111,7 @@ export default function AuthPage() {
       const json = await apiRequest<LoginResponse>(
         "POST",
         "/auth/sign-in",
-        payload
+        payload,
       );
       const data = json.data ?? json;
       const accessToken = data?.accessToken;
@@ -162,10 +183,10 @@ export default function AuthPage() {
 
   const toggleFromList = (
     setList: Dispatch<SetStateAction<string[]>>,
-    v: string
+    v: string,
   ) =>
     setList((prev) =>
-      prev.includes(v) ? prev.filter((x) => x !== v) : [...prev, v]
+      prev.includes(v) ? prev.filter((x) => x !== v) : [...prev, v],
     );
   const toggleSport = (s: string) => {
     setSportsError("");
@@ -174,13 +195,13 @@ export default function AuthPage() {
   const toggleTag = (t: string) => {
     setTagsError("");
     setSelectedTags((p) =>
-      p.includes(t) ? p.filter((x) => x !== t) : p.length >= 2 ? p : [...p, t]
+      p.includes(t) ? p.filter((x) => x !== t) : p.length >= 2 ? p : [...p, t],
     );
   };
 
   const checkUsernameAvailability = async () => {
     const username = registerData.username.trim().toLowerCase();
-    if (!username) return setUsernameError("Username is required"), false;
+    if (!username) return (setUsernameError("Username is required"), false);
     if (!usernameRegex.test(username))
       return (
         setUsernameError("Only letters, numbers, and underscores are allowed."),
@@ -189,7 +210,7 @@ export default function AuthPage() {
     try {
       const res = await apiFetch(
         `/users/check-username/${encodeURIComponent(username)}`,
-        { method: "GET", skipAuth: true }
+        { method: "GET", skipAuth: true },
       );
       const json = await res.json();
       const taken = !!json?.exists;
@@ -203,13 +224,13 @@ export default function AuthPage() {
 
   const checkEmailAvailability = async () => {
     const email = registerData.email.trim();
-    if (!email) return setEmailError("Email is required"), false;
+    if (!email) return (setEmailError("Email is required"), false);
     if (!emailRegex.test(email))
-      return setEmailError("Invalid email format."), false;
+      return (setEmailError("Invalid email format."), false);
     try {
       const res = await apiFetch(
         `/users/check-email/${encodeURIComponent(email)}`,
-        { method: "GET", skipAuth: true }
+        { method: "GET", skipAuth: true },
       );
       const json = await res.json();
       const taken = !!json?.exists;
@@ -225,7 +246,7 @@ export default function AuthPage() {
     setPasswordError(
       !registerData.password || registerData.password.length < 6
         ? "Password must be at least 6 characters"
-        : ""
+        : "",
     );
 
   const passwordsMatch =
@@ -270,7 +291,7 @@ export default function AuthPage() {
         {
           email: form.email.trim(),
           password: form.password,
-        }
+        },
       );
       const data = loginJson.data ?? loginJson;
       const accessToken = data?.accessToken;
@@ -365,32 +386,51 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center p-6">
+    <div className="relative flex min-h-screen items-center justify-center overflow-x-hidden bg-[#030913] p-3 text-white sm:p-6">
       <PageSEO title="Sign in" canonicalPath="/auth" noindex />
-      <div className="w-full max-w-md">
+
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.12),transparent_28%),radial-gradient(circle_at_82%_18%,rgba(255,107,53,0.08),transparent_24%),linear-gradient(180deg,#030913_0%,#07111F_48%,#02050A_100%)]" />
+        <div className="absolute inset-0 opacity-[0.04] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:72px_72px]" />
+      </div>
+
+      <div className="relative w-full max-w-md overflow-hidden rounded-[34px] border border-cyan-300/10 bg-[#07111F]/85 p-5 shadow-[0_30px_90px_rgba(0,0,0,0.42)] backdrop-blur sm:p-7">
         {authMethod === "welcome" ? (
           /* Welcome Screen */
           <>
             {/* Back Arrow */}
-            <div className="absolute top-6 left-6">
+            <div className="mb-5">
               <button
                 onClick={() => setLocation("/")}
-                className="text-gray-400 hover:text-white transition-colors"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] text-white/65 transition hover:border-cyan-300/25 hover:bg-cyan-300/10 hover:text-white"
+                aria-label="Back to home"
               >
-                <FaArrowLeft size={24} />
+                <FaArrowLeft size={16} />
               </button>
             </div>
 
             {/* Logo */}
-            <div className="text-center mb-16">
-              <div className="flex justify-center mb-8">
+            <div className="text-center">
+              <div className="mx-auto mb-6 grid h-20 w-20 place-items-center rounded-[28px] border border-cyan-300/15 bg-cyan-300/[0.06] shadow-[0_0_38px_rgba(34,211,238,0.12)]">
                 <img
                   src={logoPath}
                   alt="Corner League Logo"
-                  className="w-16 h-16 object-contain"
+                  className="h-12 w-12 object-contain"
                 />
               </div>
-              <h1 className="text-4xl font-light mb-4">Welcome</h1>
+
+              <div className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-200/70">
+                Corner League Sports
+              </div>
+
+              <h1 className="mt-3 text-4xl font-black uppercase tracking-[-0.04em] text-white">
+                Welcome
+              </h1>
+
+              <p className="mx-auto mt-4 max-w-xs text-sm leading-7 text-slate-300">
+                Sign in to follow racers, claim profiles, manage clubs, and
+                access the Corner League racing platform.
+              </p>
             </div>
 
             {/* Auth Options */}
@@ -418,19 +458,19 @@ export default function AuthPage() {
               </button> */}
 
               {/* Email */}
-              <button
-                onClick={() => setAuthMethod("email")}
-                className="w-20 h-20 rounded-full border border-gray-600 hover:border-gray-400 transition-colors duration-300 flex items-center justify-center group"
-              >
-                <FaEnvelope
-                  size={24}
-                  className="text-gray-400 group-hover:text-white transition-colors"
-                />
-              </button>
+              <div className="mt-8">
+                <button
+                  onClick={() => setAuthMethod("email")}
+                  className="flex w-full items-center justify-center gap-3 rounded-full bg-cyan-300 px-6 py-4 text-xs font-black uppercase tracking-[0.16em] text-[#06111d] shadow-[0_0_28px_rgba(34,211,238,0.25)] transition hover:bg-cyan-200"
+                >
+                  <FaEnvelope size={16} />
+                  Continue With Email
+                </button>
+              </div>
             </div>
 
             {/* Terms */}
-            <p className="text-center text-sm text-gray-500 px-8 leading-relaxed">
+            <p className="mt-6 px-4 text-center text-xs leading-6 text-white/45">
               By continuing, you agree to our Terms and Privacy Policy.
             </p>
           </>
@@ -438,54 +478,77 @@ export default function AuthPage() {
           /* Email Auth Form */
           <>
             {/* Back Button */}
-            <div className="absolute top-6 left-6">
+            <div className="mb-5">
               <button
                 onClick={() => setAuthMethod("welcome")}
-                className="text-gray-400 hover:text-white transition-colors"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] text-white/65 transition hover:border-cyan-300/25 hover:bg-cyan-300/10 hover:text-white"
+                aria-label="Back to welcome"
               >
-                <FaArrowLeft size={24} />
+                <FaArrowLeft size={16} />
               </button>
             </div>
 
             {/* Header */}
-            <div className="text-center mb-8">
-              <h1 className="text-3xl font-light mb-4">
+            <div className="mb-8 text-center">
+              <div className="mx-auto mb-5 grid h-16 w-16 place-items-center rounded-[24px] border border-cyan-300/15 bg-cyan-300/[0.06]">
+                <img
+                  src={logoPath}
+                  alt="Corner League Logo"
+                  className="h-10 w-10 object-contain"
+                />
+              </div>
+
+              <div className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-200/70">
+                Corner League Sports
+              </div>
+
+              <h1 className="mt-3 text-3xl font-black uppercase tracking-[-0.03em] text-white">
                 {isLogin ? "Sign In" : "Create Account"}
               </h1>
-              <p className="text-gray-400">
+
+              <p className="mt-3 text-sm leading-7 text-slate-300">
                 {isLogin
-                  ? "Sign in to access clubs and connect with other fans"
-                  : "Create your account to get started"}
+                  ? "Sign in to access clubs, racer profiles, and Corner League tools."
+                  : "Create your account to follow the sport, claim profiles, and join the platform."}
               </p>
 
               {!isLogin && (
-                <p className="mt-3 text-sm text-gray-400">
+                <p className="mt-3 text-xs leading-6 text-white/45">
                   This login works for{" "}
-                  <span className="font-medium">Olympic AI</span> and the
-                  <span className="font-medium"> Corner League Mobile App</span>
+                  <span className="font-semibold text-white/70">
+                    Olympic AI
+                  </span>{" "}
+                  and the
+                  <span className="font-semibold text-white/70">
+                    {" "}
+                    Corner League Mobile App
+                  </span>
                   .
                 </p>
               )}
             </div>
 
             {/* Auth Toggle */}
-            <div className="flex mb-8 bg-gray-900 rounded-lg p-1">
+            <div className="mb-8 grid grid-cols-2 overflow-hidden rounded-full border border-white/10 bg-white/[0.04] p-1">
               <button
+                type="button"
                 onClick={() => setIsLogin(true)}
-                className={`flex-1 py-3 px-4 rounded-md transition-colors ${
+                className={`rounded-full px-4 py-3 text-xs font-black uppercase tracking-[0.16em] transition ${
                   isLogin
-                    ? "bg-white text-black"
-                    : "text-gray-400 hover:text-white"
+                    ? "bg-cyan-300 text-[#06111d] shadow-[0_0_22px_rgba(34,211,238,0.2)]"
+                    : "text-white/55 hover:text-white"
                 }`}
               >
                 Sign In
               </button>
+
               <button
+                type="button"
                 onClick={() => setIsLogin(false)}
-                className={`flex-1 py-3 px-4 rounded-md transition-colors ${
+                className={`rounded-full px-4 py-3 text-xs font-black uppercase tracking-[0.16em] transition ${
                   !isLogin
-                    ? "bg-white text-black"
-                    : "text-gray-400 hover:text-white"
+                    ? "bg-cyan-300 text-[#06111d] shadow-[0_0_22px_rgba(34,211,238,0.2)]"
+                    : "text-white/55 hover:text-white"
                 }`}
               >
                 Sign Up
@@ -496,145 +559,112 @@ export default function AuthPage() {
             <div className="space-y-6">
               {isLogin ? (
                 /* Login Form */
-                <form onSubmit={handleLogin} className="space-y-6">
-                  <div>
-                    <input
-                      type="text"
-                      value={loginData.identifier}
-                      onChange={(e) =>
-                        setLoginData({
-                          ...loginData,
-                          identifier: e.target.value,
-                        })
-                      }
-                      className="w-full px-4 py-4 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
-                      placeholder="Email"
-                      required
-                    />
-                  </div>
+                <form onSubmit={handleLogin} className="space-y-5">
+                  <input
+                    type="text"
+                    value={loginData.identifier}
+                    onChange={(e) =>
+                      setLoginData({
+                        ...loginData,
+                        identifier: e.target.value,
+                      })
+                    }
+                    className={authInputClass}
+                    placeholder="Email or username"
+                    required
+                  />
 
-                  <div>
-                    <input
-                      type="password"
-                      minLength={6}
-                      value={loginData.password}
-                      onChange={(e) =>
-                        setLoginData({ ...loginData, password: e.target.value })
-                      }
-                      className="w-full px-4 py-4 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
-                      placeholder="Password"
-                      required
-                    />
-                  </div>
+                  <input
+                    type="password"
+                    minLength={6}
+                    value={loginData.password}
+                    onChange={(e) =>
+                      setLoginData({ ...loginData, password: e.target.value })
+                    }
+                    className={authInputClass}
+                    placeholder="Password"
+                    required
+                  />
 
                   <button
                     type="submit"
                     disabled={loginMutation.isPending}
-                    className="w-full px-6 py-4 bg-white text-black font-medium rounded-lg hover:bg-gray-100 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                    className={authPrimaryButtonClass}
                   >
-                    {loginMutation.isPending ? (
-                      <>
-                        <svg
-                          className="animate-spin -ml-1 mr-3 h-5 w-5 text-black"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          ></circle>
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          ></path>
-                        </svg>
-                        Signing in...
-                      </>
-                    ) : (
-                      "Sign In"
-                    )}
+                    {loginMutation.isPending ? "Signing In..." : "Sign In"}
                   </button>
-                  <form onSubmit={handleLogin} className="space-y-6">
-                    {/* identifier + password inputs (unchanged) */}
 
-                    {/* Forgot link */}
-                    <div className="flex items-center justify-between -mt-2">
-                      <button
-                        type="button"
-                        onClick={() => setShowForgot((v) => !v)}
-                        className="text-sm text-gray-400 hover:text-white underline"
-                      >
-                        {showForgot ? "Hide reset" : "Forgot password?"}
-                      </button>
-                    </div>
+                  <div className="flex items-center justify-center">
+                    <button
+                      type="button"
+                      onClick={() => setShowForgot((v) => !v)}
+                      className="text-xs font-bold uppercase tracking-[0.14em] text-white/45 underline-offset-4 hover:text-cyan-200 hover:underline"
+                    >
+                      {showForgot ? "Hide Reset" : "Forgot Password?"}
+                    </button>
+                  </div>
 
-                    {/* Inline reset panel */}
-                    {showForgot && (
-                      <div className="mt-2 rounded-lg border border-gray-800 bg-gray-900 p-3 space-y-3">
-                        <input
-                          type="email"
-                          value={forgotEmail}
-                          onChange={(e) => setForgotEmail(e.target.value)}
-                          placeholder="Enter your account email"
-                          className="w-full px-3 py-3 bg-gray-950 border border-gray-700 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
-                        />
-                        <div className="flex gap-2">
-                          <button
-                            type="button"
-                            disabled={
-                              sendingReset || !emailRegex.test(forgotEmail)
+                  {showForgot && (
+                    <div className="rounded-[24px] border border-cyan-300/10 bg-black/25 p-4">
+                      <input
+                        type="email"
+                        value={forgotEmail}
+                        onChange={(e) => setForgotEmail(e.target.value)}
+                        placeholder="Enter your account email"
+                        className={authInputClass}
+                      />
+
+                      <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                        <button
+                          type="button"
+                          disabled={
+                            sendingReset || !emailRegex.test(forgotEmail)
+                          }
+                          onClick={async () => {
+                            try {
+                              setSendingReset(true);
+                              await sendPasswordReset(forgotEmail.trim());
+                              setShowForgot(false);
+                              setForgotEmail("");
+                              toast({
+                                title: "Email sent",
+                                description:
+                                  "Check your inbox for the password reset link (and spam folder just in case).",
+                              });
+                            } catch (e: any) {
+                              toast({
+                                title: "Couldn’t send reset email",
+                                description: e?.message ?? "Please try again.",
+                                variant: "destructive",
+                              });
+                            } finally {
+                              setSendingReset(false);
                             }
-                            onClick={async () => {
-                              try {
-                                setSendingReset(true);
-                                await sendPasswordReset(forgotEmail.trim());
-                                setShowForgot(false);
-                                setForgotEmail("");
-                                toast({
-                                  title: "Email sent",
-                                  description:
-                                    "Check your inbox for the password reset link (and spam folder just in case).",
-                                });
-                              } catch (e: any) {
-                                toast({
-                                  title: "Couldn’t send reset email",
-                                  description:
-                                    e?.message ?? "Please try again.",
-                                  variant: "destructive",
-                                });
-                              } finally {
-                                setSendingReset(false);
-                              }
-                            }}
-                            className="px-4 py-2 rounded-md bg-white text-black hover:bg-gray-200 disabled:bg-gray-600 disabled:text-white disabled:cursor-not-allowed"
-                          >
-                            {sendingReset ? "Sending…" : "Send reset link"}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setShowForgot(false)}
-                            className="px-4 py-2 rounded-md bg-transparent border border-white/20 hover:bg-white/10"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                        <p className="text-xs text-gray-500">
-                          We’ll send a secure link from Firebase to reset your
-                          password.
-                        </p>
+                          }}
+                          className={authPrimaryButtonClass}
+                        >
+                          {sendingReset ? "Sending..." : "Send Link"}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setShowForgot(false)}
+                          className={authSecondaryButtonClass}
+                        >
+                          Cancel
+                        </button>
                       </div>
-                    )}
-                  </form>
+
+                      <p className="mt-3 text-xs leading-6 text-white/45">
+                        We’ll send a secure link from Firebase to reset your
+                        password.
+                      </p>
+                    </div>
+                  )}
                 </form>
               ) : (
-                <form onSubmit={handleRegister} className="space-y-6">
-                  <div className="grid grid-cols-2 gap-4">
+                <form onSubmit={handleRegister} className="space-y-5">
+                  <div className={authInputClass}>
                     <input
                       type="text"
                       value={registerData.firstName}
@@ -664,7 +694,7 @@ export default function AuthPage() {
                   </div>
 
                   {usernameError && (
-                    <p className="text-red-500 text-xs mb-1">{usernameError}</p>
+                    <p className="mb-1 text-xs text-red-300">{usernameError}</p>
                   )}
                   <input
                     type="text"
@@ -676,15 +706,17 @@ export default function AuthPage() {
                       })
                     }
                     onBlur={checkUsernameAvailability}
-                    className={`w-full px-4 py-4 bg-gray-900 border rounded-lg ${
-                      usernameError ? "border-red-500" : "border-gray-700"
-                    } text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent`}
+                    className={`${authInputClass} ${
+                      usernameError
+                        ? "border-red-400/50 focus:border-red-400/60"
+                        : ""
+                    }`}
                     placeholder="Choose a username"
                     required
                   />
 
                   {emailError && (
-                    <p className="text-red-500 text-xs mb-1">{emailError}</p>
+                    <p className="mb-1 text-xs text-red-300">{emailError}</p>
                   )}
                   <input
                     type="email"
@@ -696,9 +728,11 @@ export default function AuthPage() {
                       })
                     }
                     onBlur={checkEmailAvailability}
-                    className={`w-full px-4 py-4 bg-gray-900 border rounded-lg ${
-                      emailError ? "border-red-500" : "border-gray-700"
-                    } text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent`}
+                    className={`${authInputClass} ${
+                      emailError
+                        ? "border-red-400/50 focus:border-red-400/60"
+                        : ""
+                    }`}
                     placeholder="Enter your email"
                     required
                   />
@@ -717,12 +751,10 @@ export default function AuthPage() {
                             key={s}
                             aria-pressed={selected}
                             onClick={() => toggleSport(s)}
-                            className={`px-3 py-2 rounded-full border text-sm transition
-                            ${
-                              selected
-                                ? "bg-white text-black border-white"
-                                : "bg-gray-900 text-gray-300 border-gray-700 hover:border-gray-500"
-                            }`}
+                            className={authChipClass(
+                              selectedSports.includes(s),
+                              "cyan",
+                            )}
                           >
                             {s}
                           </button>
@@ -730,7 +762,7 @@ export default function AuthPage() {
                       })}
                     </div>
                     {sportsError && (
-                      <p className="text-red-500 text-xs mt-2">{sportsError}</p>
+                      <p className="mb-1 text-xs text-red-300">{sportsError}</p>
                     )}
                   </div>
 
@@ -750,15 +782,10 @@ export default function AuthPage() {
                             key={t}
                             aria-pressed={selected}
                             onClick={() => !capReached && toggleTag(t)}
-                            className={`px-3 py-2 rounded-full border text-sm transition
-                            ${
-                              selected
-                                ? "bg-white text-black border-white"
-                                : "bg-gray-900 text-gray-300 border-gray-700 hover:border-gray-500"
-                            }
-                            ${
-                              capReached ? "opacity-40 cursor-not-allowed" : ""
-                            }`}
+                            className={authChipClass(
+                              selectedTags.includes(t),
+                              "orange",
+                            )}
                           >
                             {t}
                           </button>
@@ -769,12 +796,12 @@ export default function AuthPage() {
                       {selectedTags.length}/2 selected
                     </p>
                     {tagsError && (
-                      <p className="text-red-500 text-xs mt-2">{tagsError}</p>
+                      <p className="mb-1 text-xs text-red-300">{tagsError}</p>
                     )}
                   </div>
 
                   {passwordError && (
-                    <p className="text-red-500 text-xs mb-1">{passwordError}</p>
+                    <p className="mb-1 text-xs text-red-300">{passwordError}</p>
                   )}
                   <input
                     type="password"
@@ -819,13 +846,11 @@ export default function AuthPage() {
 
                   <button
                     type="submit"
-                    disabled={registerMutation.isPending || !canSubmit}
-                    className="w-full px-6 py-4 bg-white text-black font-medium rounded-lg
-                      hover:bg-gray-100 disabled:bg-gray-600 disabled:cursor-not-allowed
-                      transition-colors flex items-center justify-center gap-2"
+                    disabled={!canSubmit || registerMutation.isPending}
+                    className={authPrimaryButtonClass}
                   >
                     {registerMutation.isPending
-                      ? "Creating account..."
+                      ? "Creating Account..."
                       : "Create Account"}
                   </button>
                 </form>
