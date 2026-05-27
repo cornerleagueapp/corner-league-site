@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import stockAvatar from "@/assets/stockprofilepicture.jpeg";
 import {
-  Camera,
   PencilLine,
   Play,
   Search as SearchIcon,
@@ -17,6 +16,46 @@ function getSkillLevelLabel(skillLevel?: string | null) {
   if (skillLevel === "junior") return "Junior";
   if (skillLevel === "pro") return "Pro";
   return "Amateur";
+}
+
+function getResponsiveNameStyle(name?: string | null): React.CSSProperties {
+  const length = (name ?? "").trim().length;
+
+  if (length >= 28) {
+    return {
+      fontSize: "clamp(2rem, 4.6vw, 4.25rem)",
+      lineHeight: 0.92,
+      wordBreak: "break-word",
+    };
+  }
+
+  if (length >= 20) {
+    return {
+      fontSize: "clamp(2.25rem, 5.4vw, 4.75rem)",
+      lineHeight: 0.94,
+      wordBreak: "break-word",
+    };
+  }
+
+  return {
+    fontSize: "clamp(2.6rem, 6.4vw, 5.25rem)",
+    lineHeight: 0.94,
+    wordBreak: "break-word",
+  };
+}
+
+function getLocationLabel(racer: Racer) {
+  const r = racer as Racer & {
+    city?: string | null;
+    stateCode?: string | null;
+    countryCode?: string | null;
+  };
+
+  const location =
+    r.location ||
+    [r.city, r.stateCode, r.countryCode].filter(Boolean).join(", ");
+
+  return location || "";
 }
 
 export function PremiumRacerHero({
@@ -34,7 +73,6 @@ export function PremiumRacerHero({
   onSearch,
   onShare,
   onProfileImageClick,
-  onClaimedUserClick,
 }: {
   racer: Racer;
   ratingCard: RacerRatingCard | null;
@@ -79,24 +117,29 @@ export function PremiumRacerHero({
   const heroImage = racer.headerImageUrl || racer.racerImage || stockAvatar;
   const profileImage = racer.racerImage || stockAvatar;
   const hasSocialLinks = !!socialLinks?.length;
+  const locationLabel = getLocationLabel(racer);
+  const rideAndLocation = [
+    racer.boatManufacturers || "Aqua Racer",
+    locationLabel,
+  ].filter(Boolean);
 
   return (
     <section className="relative -mx-3 overflow-hidden border-b border-cyan-300/10 bg-[#020812] shadow-[0_24px_80px_rgba(0,0,0,0.45)] sm:mx-0 sm:rounded-[38px] sm:border">
-      <div className="relative min-h-[600px] sm:min-h-[640px] lg:min-h-[520px]">
+      <div className="relative min-h-[520px] sm:min-h-[620px] lg:min-h-[520px]">
         <div className="absolute inset-0">
           <img
             src={heroImage}
             alt={racer.racerName}
-            className="h-full w-full object-cover opacity-80"
+            className="h-full w-full object-cover opacity-90"
             onError={(e) => {
               const img = e.currentTarget as HTMLImageElement;
               if (img.src !== stockAvatar) img.src = stockAvatar;
             }}
           />
 
-          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,8,18,0.98)_0%,rgba(2,8,18,0.74)_40%,rgba(2,8,18,0.34)_100%)]" />
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,8,18,0.05)_0%,rgba(2,8,18,0.72)_68%,#030913_100%)]" />
-          <div className="absolute inset-0 opacity-[0.055] [background-image:linear-gradient(rgba(255,255,255,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.18)_1px,transparent_1px)] [background-size:72px_72px]" />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,8,18,0.95)_0%,rgba(2,8,18,0.66)_42%,rgba(2,8,18,0.25)_100%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,8,18,0.04)_0%,rgba(2,8,18,0.55)_68%,#030913_100%)]" />
+          <div className="absolute inset-0 opacity-[0.045] [background-image:linear-gradient(rgba(255,255,255,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.18)_1px,transparent_1px)] [background-size:72px_72px]" />
           <div className="absolute -left-24 top-10 h-72 w-72 rounded-full bg-cyan-300/10 blur-3xl" />
           <div className="absolute -right-24 bottom-8 h-80 w-80 rounded-full bg-blue-500/10 blur-3xl" />
         </div>
@@ -121,106 +164,123 @@ export function PremiumRacerHero({
           </button>
         </div>
 
-        <div className="relative z-10 px-4 pt-16 sm:px-7 sm:pt-20 lg:pt-24">
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start">
-            <div className="grid gap-5 sm:grid-cols-[170px_minmax(0,1fr)] sm:items-start">
-              <div className="flex flex-row items-end gap-3 sm:flex-col sm:items-center">
-                <button
-                  type="button"
-                  onClick={onProfileImageClick}
-                  className="relative shrink-0 rounded-full border border-cyan-300/25 bg-black/40 p-1 shadow-[0_0_34px_rgba(34,211,238,0.18)]"
-                >
-                  <img
-                    src={profileImage}
-                    alt={racer.racerName}
-                    className="h-32 w-32 rounded-full bg-black object-cover sm:h-40 sm:w-40"
-                    onError={(e) => {
-                      const img = e.currentTarget as HTMLImageElement;
-                      if (img.src !== stockAvatar) img.src = stockAvatar;
-                    }}
-                  />
-                </button>
+        <div className="relative z-10 px-4 pt-10 sm:px-7 sm:pt-14 lg:pt-20">
+          <div className="grid grid-cols-[116px_minmax(0,1fr)] gap-4 sm:grid-cols-[150px_minmax(0,1fr)_250px] sm:items-end lg:grid-cols-[170px_minmax(0,1fr)_300px]">
+            <div className="row-span-2 flex flex-col items-center gap-3 sm:row-span-1">
+              <button
+                type="button"
+                onClick={onProfileImageClick}
+                className="relative shrink-0 rounded-full border border-cyan-300/25 bg-black/40 p-1 shadow-[0_0_34px_rgba(34,211,238,0.18)]"
+              >
+                <img
+                  src={profileImage}
+                  alt={racer.racerName}
+                  className="h-[108px] w-[108px] rounded-full bg-black object-cover sm:h-36 sm:w-36 lg:h-40 lg:w-40"
+                  onError={(e) => {
+                    const img = e.currentTarget as HTMLImageElement;
+                    if (img.src !== stockAvatar) img.src = stockAvatar;
+                  }}
+                />
+              </button>
 
-                {hasSocialLinks ? (
-                  <div className="flex flex-wrap gap-2 sm:justify-center">
-                    {socialLinks!.map((link) => (
-                      <a
-                        key={link.label}
-                        href={link.href}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="grid h-10 w-10 place-items-center rounded-full border border-white/10 bg-black/30 text-white/80 backdrop-blur-md transition hover:border-cyan-300/30 hover:bg-cyan-300/10 hover:text-cyan-100"
-                        aria-label={link.label}
-                      >
-                        {link.icon}
-                      </a>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
+              {racer.isClaimed ? (
+                <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/20 bg-emerald-500/15 px-2.5 py-1 text-[10px] font-semibold text-emerald-200 sm:text-[11px]">
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  Verified
+                </div>
+              ) : null}
+            </div>
 
-              <div className="min-w-0 pt-1">
-                <div className="mb-3 inline-flex items-center rounded-full border border-cyan-300/25 bg-cyan-300/10 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.22em] text-cyan-200">
+            <div className="min-w-0 self-center sm:self-end">
+              <div className="mb-3 flex flex-wrap items-center gap-2">
+                <div className="inline-flex items-center rounded-full border border-cyan-300/25 bg-cyan-300/10 px-3 py-1 text-[9px] font-black uppercase tracking-[0.2em] text-cyan-200 sm:px-4 sm:py-1.5 sm:text-[10px]">
                   {getSkillLevelLabel(racer.skillLevel)}
                 </div>
 
-                <h1 className="max-w-[640px] break-words text-4xl font-black uppercase italic leading-[0.95] tracking-[0.08em] text-white sm:text-6xl lg:text-7xl">
-                  {racer.racerName || "Racer"}
-                </h1>
-
                 {racer.nickname ? (
-                  <div className="mt-3 text-sm font-semibold uppercase tracking-[0.18em] text-cyan-200/80">
+                  <div className="inline-flex items-center rounded-full border border-white/10 bg-black/25 px-3 py-1 text-[9px] font-bold uppercase tracking-[0.18em] text-white/70 sm:px-4 sm:py-1.5 sm:text-[10px]">
                     “{racer.nickname}”
                   </div>
                 ) : null}
+              </div>
 
-                <div className="mt-4 text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
-                  {racer.boatManufacturers || "Aqua Racer"}
-                </div>
+              <h1
+                className="max-w-[720px] uppercase italic tracking-[0.08em] text-white"
+                style={getResponsiveNameStyle(racer.racerName || "Racer")}
+              >
+                {racer.racerName || "Racer"}
+              </h1>
 
-                {racer.isClaimed ? (
-                  <div className="mt-4 flex flex-wrap items-center gap-3">
-                    <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-500/15 px-3 py-1.5 text-xs text-emerald-200">
-                      <ShieldCheck className="h-4 w-4" />
-                      Verified Athlete
-                    </div>
-
-                    {racer.claimedByUsername ? (
-                      <button
-                        type="button"
-                        onClick={onClaimedUserClick}
-                        className="text-left text-[11px] text-white/55 underline underline-offset-2 transition hover:text-white"
-                      >
-                        Claimed by @{racer.claimedByUsername}
-                      </button>
+              <div className="mt-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-white/60 sm:text-xs">
+                {rideAndLocation.map((item, index) => (
+                  <span key={`${item}-${index}`}>
+                    {index > 0 ? (
+                      <span className="mx-2 text-white/30">|</span>
                     ) : null}
-                  </div>
-                ) : null}
+                    {item}
+                  </span>
+                ))}
               </div>
             </div>
 
-            <div className="rounded-[18px] border border-cyan-300/15 bg-[#06111f]/85 p-5 shadow-[0_0_28px_rgba(34,211,238,0.14)] backdrop-blur-md lg:ml-auto lg:mt-16 lg:w-[300px]">
-              <div className="text-[10px] font-black uppercase tracking-[0.2em] text-white/70">
-                {seasonYear} Season Ranking
+            <div className="col-start-2 mt-2 w-full justify-self-start sm:col-start-auto sm:mt-0 lg:ml-auto lg:w-[260px]">
+              {/* Mobile only: Season Ranking + OVR side-by-side */}
+              <div className="grid grid-cols-2 gap-2 sm:hidden">
+                <div className="rounded-[16px] border border-cyan-300/15 bg-[#06111f]/85 p-3 shadow-[0_0_28px_rgba(34,211,238,0.14)] backdrop-blur-md">
+                  <div className="text-[8px] font-black uppercase tracking-[0.16em] text-white/70">
+                    {seasonYear} Ranking
+                  </div>
+
+                  <div className="mt-2 text-3xl font-black text-cyan-300">
+                    #{nationalRank ?? "—"}
+                  </div>
+
+                  <div className="mt-1 text-[9px] font-bold uppercase tracking-[0.12em] text-white/70">
+                    {ratingCard?.nationalRankingScore
+                      ? `${Number(ratingCard.nationalRankingScore).toFixed(0)} pts`
+                      : "Season pts"}
+                  </div>
+                </div>
+
+                <div className="rounded-[16px] border border-cyan-300/25 bg-[radial-gradient(circle_at_30%_30%,rgba(125,211,252,0.30),rgba(34,211,238,0.12)_42%,rgba(6,17,31,0.95)_100%)] p-3 text-center shadow-[0_0_24px_rgba(34,211,238,0.20),inset_0_0_28px_rgba(125,211,252,0.10)] backdrop-blur-md">
+                  <div className="text-[8px] font-black uppercase tracking-[0.18em] text-cyan-200/90">
+                    OVR
+                  </div>
+
+                  <div className="mt-2 text-3xl font-black text-white drop-shadow-[0_0_14px_rgba(125,211,252,0.35)]">
+                    {overall > 0 ? overall.toFixed(0) : "—"}
+                  </div>
+
+                  <div className="mt-1 text-[9px] font-bold uppercase tracking-[0.12em] text-white/55">
+                    Rating
+                  </div>
+                </div>
               </div>
 
-              <div className="mt-3 text-6xl font-black text-cyan-300">
-                #{nationalRank ?? "—"}
-              </div>
+              {/* Tablet/Desktop keeps the exact original single ranking card */}
+              <div className="hidden rounded-[16px] border border-cyan-300/15 bg-[#06111f]/85 p-3 shadow-[0_0_28px_rgba(34,211,238,0.14)] backdrop-blur-md sm:block sm:max-w-none sm:p-4">
+                <div className="text-[9px] font-black uppercase tracking-[0.18em] text-white/70 sm:text-[10px]">
+                  {seasonYear} Season Ranking
+                </div>
 
-              <div className="mt-1 text-xs font-bold uppercase tracking-[0.16em] text-white/70">
-                {ratingCard?.nationalRankingScore
-                  ? `${Number(ratingCard.nationalRankingScore).toFixed(0)} Points`
-                  : "Season Points"}
+                <div className="mt-2 text-4xl font-black text-cyan-300 sm:text-5xl lg:text-6xl">
+                  #{nationalRank ?? "—"}
+                </div>
+
+                <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.14em] text-white/70 sm:text-xs">
+                  {ratingCard?.nationalRankingScore
+                    ? `${Number(ratingCard.nationalRankingScore).toFixed(0)} Points`
+                    : "Season Points"}
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="mt-8 grid grid-cols-[1fr_auto_auto] gap-3 lg:grid-cols-[220px_66px_66px_minmax(280px,520px)] lg:items-center">
+          <div className="mt-8 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 lg:grid-cols-[220px_auto_minmax(320px,1fr)]">
             {canEdit ? (
               <Button
                 onClick={onEdit}
-                className="h-16 rounded-[16px] bg-indigo-500 text-sm font-black uppercase tracking-[0.08em] text-white hover:bg-indigo-400"
+                className="h-16 min-w-0 rounded-[16px] bg-indigo-500 px-4 text-sm font-black uppercase tracking-[0.08em] text-white hover:bg-indigo-400 lg:w-[220px]"
               >
                 <PencilLine className="mr-2 h-5 w-5" />
                 Edit Profile
@@ -228,7 +288,7 @@ export function PremiumRacerHero({
             ) : canClaim ? (
               <Button
                 onClick={onClaim}
-                className="h-16 rounded-[16px] bg-indigo-500 text-sm font-black uppercase tracking-[0.08em] text-white hover:bg-indigo-400"
+                className="h-16 min-w-0 rounded-[16px] bg-indigo-500 px-4 text-sm font-black uppercase tracking-[0.08em] text-white hover:bg-indigo-400 lg:w-[220px]"
               >
                 <Sparkles className="mr-2 h-5 w-5" />
                 {hasRejectedClaim ? "Submit New Claim" : "Claim Profile"}
@@ -236,7 +296,7 @@ export function PremiumRacerHero({
             ) : hasPendingClaim ? (
               <Button
                 disabled
-                className="h-16 rounded-[16px] border border-yellow-400/20 bg-yellow-500/20 text-sm font-black uppercase tracking-[0.08em] text-yellow-100"
+                className="h-16 min-w-0 rounded-[16px] border border-yellow-400/20 bg-yellow-500/20 px-4 text-sm font-black uppercase tracking-[0.08em] text-yellow-100 lg:w-[220px]"
               >
                 Claim Pending
               </Button>
@@ -244,30 +304,31 @@ export function PremiumRacerHero({
               <div className="hidden lg:block" />
             )}
 
-            <button
-              type="button"
-              onClick={canEdit ? onEdit : undefined}
-              className="grid h-16 w-16 place-items-center rounded-[16px] border border-white/10 bg-black/25 text-white transition hover:border-cyan-300/25 hover:bg-cyan-300/10"
-              aria-label="Edit racer photos"
-            >
-              <Camera className="h-6 w-6" />
-            </button>
+            {hasSocialLinks ? (
+              <div className="flex h-16 shrink-0 items-center justify-end gap-2">
+                {socialLinks!.slice(0, 5).map((link) => (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="grid h-10 w-10 place-items-center rounded-full border border-white/10 bg-black/35 text-white/80 backdrop-blur-md transition hover:border-cyan-300/30 hover:bg-cyan-300/10 hover:text-cyan-100"
+                    aria-label={link.label}
+                  >
+                    {link.icon}
+                  </a>
+                ))}
+              </div>
+            ) : (
+              <div className="hidden lg:block" />
+            )}
 
             <button
               type="button"
               onClick={onGallery}
-              className="grid h-16 w-16 place-items-center rounded-[16px] border border-white/10 bg-black/25 text-white transition hover:border-cyan-300/25 hover:bg-cyan-300/10"
-              aria-label="Open racer videos"
+              className="col-span-2 flex h-16 w-full min-w-0 items-center justify-between rounded-[18px] border border-cyan-300/30 bg-cyan-300/[0.06] px-4 text-left shadow-[0_0_30px_rgba(34,211,238,0.16)] transition hover:bg-cyan-300/[0.10] lg:col-span-1 lg:px-5"
             >
-              <Play className="h-6 w-6" />
-            </button>
-
-            <button
-              type="button"
-              onClick={onGallery}
-              className="col-span-3 flex h-16 items-center justify-between rounded-[18px] border border-cyan-300/30 bg-cyan-300/[0.06] px-5 text-left shadow-[0_0_30px_rgba(34,211,238,0.16)] transition hover:bg-cyan-300/[0.10] lg:col-span-1"
-            >
-              <span className="flex min-w-0 items-center gap-4">
+              <span className="flex min-w-0 items-center gap-3">
                 <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-white/10 bg-black/25">
                   <Play className="h-5 w-5 text-white" />
                 </span>
@@ -277,7 +338,7 @@ export function PremiumRacerHero({
                     View Racer Gallery
                   </span>
                   <span className="block truncate text-xs text-white/50">
-                    Videos & photos of highlights
+                    Videos & photos
                   </span>
                 </span>
               </span>
@@ -288,7 +349,7 @@ export function PremiumRacerHero({
         </div>
       </div>
 
-      <div className="mt-6  border border-cyan-300/10 bg-[#03101d]/80 p-5 backdrop-blur-md">
+      <div className="relative z-10 mt-0 border border-cyan-300/10 bg-[#03101d]/80 p-5 backdrop-blur-md">
         <div className="mb-2 text-xs font-black uppercase tracking-[0.18em] text-cyan-300/70">
           About
         </div>
@@ -297,6 +358,7 @@ export function PremiumRacerHero({
           {racer.bio || "Bio coming soon."}
         </p>
       </div>
+
       <div className="relative z-10 grid grid-cols-[1fr_1fr_112px] border-t border-cyan-300/10 bg-[#03101d]/90 px-4 py-5 sm:grid-cols-[1fr_1fr_150px] sm:px-7">
         <div className="border-r border-cyan-300/10 pr-4">
           <div className="text-[10px] font-black uppercase tracking-[0.2em] text-white/45">
@@ -322,16 +384,16 @@ export function PremiumRacerHero({
           <div className="text-sm text-white/55">{orgLabel}</div>
         </div>
 
-        <div className="grid place-items-center pl-3">
+        <div className="grid place-items-center pl-0 sm:pl-3">
           <div className="flex flex-col items-center">
-            <div className="mt-2 text-center">
-              <div className="mt-2 text-3xl font-black text-white">
+            <div className="text-center">
+              <div className="text-3xl font-black text-white">
                 {typeof profileViewCount === "number"
                   ? profileViewCount.toLocaleString()
                   : "—"}
               </div>
               <div className="text-[10px] font-black uppercase tracking-[0.2em] text-white/45">
-                Profile Views
+                Page Views
               </div>
             </div>
           </div>

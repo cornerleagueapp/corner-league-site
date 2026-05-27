@@ -12,6 +12,7 @@ import {
   Play,
   ExternalLink,
   Globe2,
+  Music2,
   Instagram,
   Youtube,
 } from "lucide-react";
@@ -36,7 +37,6 @@ import {
   getGalleryThumb,
   getSponsorLogo,
   getSponsorWebsite,
-  humanizeClassGroupLabel,
   humanizeValidationError,
   inchesToMeters,
   isProbablyId,
@@ -720,7 +720,7 @@ export default function RacerProfilePage({
     racer.tiktokUrl && {
       label: "TikTok",
       href: racer.tiktokUrl,
-      icon: <Play className="h-4 w-4" />,
+      icon: <Music2 className="h-4 w-4" />,
     },
     racer.facebookUrl && {
       label: "Facebook",
@@ -802,6 +802,52 @@ export default function RacerProfilePage({
         }}
       />
     );
+  }
+
+  function formatHeightFromMeters(heightMeters?: number | null) {
+    if (typeof heightMeters !== "number" || !Number.isFinite(heightMeters)) {
+      return "Coming soon";
+    }
+
+    const totalInches = Math.round(heightMeters / 0.0254);
+    const feet = Math.floor(totalInches / 12);
+    const inches = totalInches % 12;
+
+    return `${feet}'${inches}"`;
+  }
+
+  function formatAgeYearsAndDays(dateOfBirth?: string | Date | null) {
+    if (!dateOfBirth) return "Coming soon";
+
+    const birth = new Date(dateOfBirth);
+    if (Number.isNaN(birth.getTime())) return "Coming soon";
+
+    const today = new Date();
+
+    let years = today.getFullYear() - birth.getFullYear();
+
+    const birthdayThisYear = new Date(
+      today.getFullYear(),
+      birth.getMonth(),
+      birth.getDate(),
+    );
+
+    if (today < birthdayThisYear) {
+      years -= 1;
+    }
+
+    const lastBirthday = new Date(
+      today.getFullYear() - (today < birthdayThisYear ? 1 : 0),
+      birth.getMonth(),
+      birth.getDate(),
+    );
+
+    const msPerDay = 1000 * 60 * 60 * 24;
+    const days = Math.floor(
+      (today.getTime() - lastBirthday.getTime()) / msPerDay,
+    );
+
+    return `${years} years, ${days} days`;
   }
 
   function buildUpdateBody(
@@ -923,21 +969,19 @@ export default function RacerProfilePage({
         <div className="mt-4 grid grid-cols-2 gap-3 rounded-[24px] border border-cyan-300/10 bg-[#07111F]/80 p-4 sm:grid-cols-4">
           <div>
             <div className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300/70">
-              Location
+              Height
             </div>
             <div className="mt-2 text-sm text-white/80">
-              {racer.location || "Coming soon"}
+              {formatHeightFromMeters(racer.height)}
             </div>
           </div>
 
           <div>
             <div className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300/70">
-              Class
+              Age
             </div>
             <div className="mt-2 text-sm text-white/80">
-              {humanizeClassGroupLabel(
-                ratingCard?.classGroupName || ratingCard?.classGroupCode,
-              ) || "Coming soon"}
+              {formatAgeYearsAndDays(racer.dateOfBirth)}
             </div>
           </div>
 
@@ -1471,14 +1515,8 @@ export default function RacerProfilePage({
 
               if (hasEdits) {
                 const body = buildUpdateBody(racer, currentUserId, edited);
-                const onlyUserAndName =
-                  Object.keys(body).length === 2 &&
-                  "userId" in body &&
-                  "name" in body;
 
-                if (!onlyUserAndName) {
-                  await apiRequest("PATCH", endpoint, body);
-                }
+                await apiRequest("PATCH", endpoint, body);
 
                 setRacer((prev): Racer | null => {
                   if (!prev) return prev;
