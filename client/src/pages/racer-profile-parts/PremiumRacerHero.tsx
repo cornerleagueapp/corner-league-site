@@ -124,7 +124,7 @@ export function PremiumRacerHero({
   ].filter(Boolean);
 
   return (
-    <section className="relative -mx-3 overflow-hidden border-b border-cyan-300/10 bg-[#020812] shadow-[0_24px_80px_rgba(0,0,0,0.45)] sm:mx-0 sm:rounded-[38px] sm:border">
+    <section className="relative -mx-3 overflow-hidden border-b border-cyan-300/10 bg-[linear-gradient(180deg,#030913_0%,#07111F_48%,#02050A_100%)] shadow-[0_30px_90px_rgba(0,0,0,0.48)] sm:mx-0 sm:rounded-[38px] sm:border sm:border-cyan-300/10">
       <div className="relative min-h-[520px] sm:min-h-[620px] lg:min-h-[520px]">
         <div className="absolute inset-0">
           <img
@@ -193,19 +193,20 @@ export function PremiumRacerHero({
 
             <div className="min-w-0 self-center sm:self-end">
               <div className="mb-3 flex flex-wrap items-center gap-2">
-                <div className="inline-flex items-center rounded-full border border-cyan-300/25 bg-cyan-300/10 px-3 py-1 text-[9px] font-black uppercase tracking-[0.2em] text-cyan-200 sm:px-4 sm:py-1.5 sm:text-[10px]">
+                <div className="inline-flex items-center rounded-full border border-cyan-300/25 bg-cyan-300/10 px-3 py-1 text-[9px] font-black uppercase tracking-[0.2em] text-cyan-200 shadow-[0_0_22px_rgba(34,211,238,0.14)] sm:px-4 sm:py-1.5 sm:text-[10px]">
+                  <span className="mr-2 h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_14px_rgba(103,232,249,0.95)]" />
                   {getSkillLevelLabel(racer.skillLevel)}
                 </div>
 
                 {racer.nickname ? (
-                  <div className="inline-flex items-center rounded-full border border-white/10 bg-black/25 px-3 py-1 text-[9px] font-bold uppercase tracking-[0.18em] text-white/70 sm:px-4 sm:py-1.5 sm:text-[10px]">
+                  <div className="inline-flex items-center rounded-full border border-[#FF6B35]/20 bg-[#FF6B35]/10 px-3 py-1 text-[9px] font-bold uppercase tracking-[0.18em] text-[#FFB199] sm:px-4 sm:py-1.5 sm:text-[10px]">
                     “{racer.nickname}”
                   </div>
                 ) : null}
               </div>
 
               <h1
-                className="max-w-[720px] uppercase italic tracking-[0.08em] text-white"
+                className="max-w-[720px] bg-[linear-gradient(90deg,#FFFFFF_0%,#7CF4FF_48%,#FF7849_100%)] bg-clip-text uppercase italic tracking-[0.08em] text-transparent drop-shadow-[0_0_26px_rgba(34,211,238,0.12)]"
                 style={getResponsiveNameStyle(racer.racerName || "Racer")}
               >
                 {racer.racerName || "Racer"}
@@ -258,12 +259,12 @@ export function PremiumRacerHero({
               </div>
 
               {/* Tablet/Desktop keeps the exact original single ranking card */}
-              <div className="hidden rounded-[16px] border border-cyan-300/15 bg-[#06111f]/85 p-3 shadow-[0_0_28px_rgba(34,211,238,0.14)] backdrop-blur-md sm:block sm:max-w-none sm:p-4">
+              <div className="hidden rounded-[22px] border border-cyan-300/15 bg-[linear-gradient(135deg,rgba(34,211,238,0.10)_0%,rgba(7,17,31,0.92)_44%,rgba(255,107,53,0.08)_100%)] p-3 shadow-[0_24px_70px_rgba(0,0,0,0.34),0_0_34px_rgba(34,211,238,0.12)] backdrop-blur-md sm:block sm:max-w-none sm:p-4">
                 <div className="text-[9px] font-black uppercase tracking-[0.18em] text-white/70 sm:text-[10px]">
                   {seasonYear} Season Ranking
                 </div>
 
-                <div className="mt-2 text-4xl font-black text-cyan-300 sm:text-5xl lg:text-6xl">
+                <div className="mt-2 bg-[linear-gradient(90deg,#19E3FF_0%,#7CF4FF_45%,#FF7849_100%)] bg-clip-text text-4xl font-black text-transparent sm:text-5xl lg:text-6xl">
                   #{nationalRank ?? "—"}
                 </div>
 
@@ -280,7 +281,7 @@ export function PremiumRacerHero({
             {canEdit ? (
               <Button
                 onClick={onEdit}
-                className="h-16 min-w-0 rounded-[16px] bg-indigo-500 px-4 text-sm font-black uppercase tracking-[0.08em] text-white hover:bg-indigo-400 lg:w-[220px]"
+                className="h-16 min-w-0 rounded-[16px] bg-cyan-300 px-4 text-sm font-black uppercase tracking-[0.08em] text-[#06111d] shadow-[0_0_28px_rgba(34,211,238,0.25)] hover:bg-cyan-200 lg:w-[220px]"
               >
                 <PencilLine className="mr-2 h-5 w-5" />
                 Edit Profile
@@ -288,7 +289,7 @@ export function PremiumRacerHero({
             ) : canClaim ? (
               <Button
                 onClick={onClaim}
-                className="h-16 min-w-0 rounded-[16px] bg-indigo-500 px-4 text-sm font-black uppercase tracking-[0.08em] text-white hover:bg-indigo-400 lg:w-[220px]"
+                className="h-16 min-w-0 rounded-[16px] bg-cyan-300 px-4 text-sm font-black uppercase tracking-[0.08em] text-[#06111d] shadow-[0_0_28px_rgba(34,211,238,0.25)] hover:bg-cyan-200 lg:w-[220px]"
               >
                 <Sparkles className="mr-2 h-5 w-5" />
                 {hasRejectedClaim ? "Submit New Claim" : "Claim Profile"}
@@ -312,7 +313,7 @@ export function PremiumRacerHero({
                     href={link.href}
                     target="_blank"
                     rel="noreferrer"
-                    className="grid h-10 w-10 place-items-center rounded-full border border-white/10 bg-black/35 text-white/80 backdrop-blur-md transition hover:border-cyan-300/30 hover:bg-cyan-300/10 hover:text-cyan-100"
+                    className="grid h-10 w-10 place-items-center rounded-full border border-white/10 bg-black/35 text-white/80 backdrop-blur-md transition hover:border-[#FF6B35]/35 hover:bg-[#FF6B35]/10 hover:text-[#FFB199]"
                     aria-label={link.label}
                   >
                     {link.icon}
@@ -326,7 +327,7 @@ export function PremiumRacerHero({
             <button
               type="button"
               onClick={onGallery}
-              className="col-span-2 flex h-16 w-full min-w-0 items-center justify-between rounded-[18px] border border-cyan-300/30 bg-cyan-300/[0.06] px-4 text-left shadow-[0_0_30px_rgba(34,211,238,0.16)] transition hover:bg-cyan-300/[0.10] lg:col-span-1 lg:px-5"
+              className="col-span-2 flex h-16 w-full min-w-0 items-center justify-between rounded-[18px] border border-cyan-300/25 bg-[linear-gradient(135deg,rgba(34,211,238,0.09)_0%,rgba(7,17,31,0.78)_55%,rgba(255,107,53,0.08)_100%)] px-4 text-left shadow-[0_0_30px_rgba(34,211,238,0.14)] transition hover:border-[#FF6B35]/35 hover:bg-[#FF6B35]/10 lg:col-span-1 lg:px-5"
             >
               <span className="flex min-w-0 items-center gap-3">
                 <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-white/10 bg-black/25">
@@ -349,7 +350,7 @@ export function PremiumRacerHero({
         </div>
       </div>
 
-      <div className="relative z-10 mt-0 border border-cyan-300/10 bg-[#03101d]/80 p-5 backdrop-blur-md">
+      <div className="relative z-10 mt-0 border border-cyan-300/10 bg-[linear-gradient(180deg,rgba(7,17,31,0.92)_0%,rgba(3,9,19,0.96)_100%)] p-5 backdrop-blur-md">
         <div className="mb-2 text-xs font-black uppercase tracking-[0.18em] text-cyan-300/70">
           About
         </div>
@@ -359,7 +360,7 @@ export function PremiumRacerHero({
         </p>
       </div>
 
-      <div className="relative z-10 grid grid-cols-[1fr_1fr_112px] border-t border-cyan-300/10 bg-[#03101d]/90 px-4 py-5 sm:grid-cols-[1fr_1fr_150px] sm:px-7">
+      <div className="relative z-10 grid grid-cols-[1fr_1fr_112px] border-t border-cyan-300/10 bg-[linear-gradient(90deg,rgba(7,17,31,0.95)_0%,rgba(3,9,19,0.98)_55%,rgba(255,107,53,0.06)_100%)] px-4 py-5 sm:grid-cols-[1fr_1fr_150px] sm:px-7">
         <div className="border-r border-cyan-300/10 pr-4">
           <div className="text-[10px] font-black uppercase tracking-[0.2em] text-white/45">
             National Rank

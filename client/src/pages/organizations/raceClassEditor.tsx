@@ -32,7 +32,16 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-import { Pencil, Trash2 } from "lucide-react";
+import {
+  ArrowLeft,
+  CalendarDays,
+  Flag,
+  Layers3,
+  Pencil,
+  Plus,
+  Trophy,
+  Trash2,
+} from "lucide-react";
 
 type Division = {
   id: string;
@@ -255,65 +264,99 @@ export default function RaceClassEditor() {
   }
 
   return (
-    <div className="w-full max-w-6xl mx-auto py-16 px-4 sm:px-6 lg:px-8 text-white space-y-6">
-      <div className="space-y-3">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-semibold text-white">
-              Classes & Results
-            </h1>
-            <p className="text-sm text-zinc-400">
-              Manage classes (divisions), motos, and results for this event.
-            </p>
+    <div className="relative min-h-dvh overflow-x-hidden bg-[#030913] text-white">
+      <div className="pointer-events-none fixed inset-0 -z-10">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.12),transparent_28%),radial-gradient(circle_at_82%_12%,rgba(255,107,53,0.10),transparent_24%),linear-gradient(180deg,#030913_0%,#07111F_48%,#02050A_100%)]" />
+        <div className="absolute inset-0 opacity-[0.04] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:72px_72px]" />
+      </div>
+
+      <main className="mx-auto w-full max-w-6xl space-y-6 px-4 py-8 pb-24 sm:px-6 sm:py-12 lg:px-8">
+        <section className="relative overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[linear-gradient(180deg,rgba(7,17,31,0.94)_0%,rgba(4,10,19,0.98)_100%)] p-5 shadow-[0_30px_90px_rgba(0,0,0,0.42)] sm:rounded-[38px] sm:p-8">
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-cyan-400/10 blur-3xl" />
+            <div className="absolute -right-24 bottom-0 h-96 w-96 rounded-full bg-[#FF6B35]/10 blur-3xl" />
+            <div className="absolute inset-0 opacity-[0.05] [background-image:linear-gradient(rgba(255,255,255,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.18)_1px,transparent_1px)] [background-size:72px_72px]" />
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
-            <Button
-              variant="outline"
-              className="bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700"
-              onClick={() => navigate(`/organization/events/${eventId}`)}
-            >
-              Back to Event
-            </Button>
+          <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+            <div className="min-w-0">
+              <button
+                type="button"
+                onClick={() => navigate(`/organization/events/${eventId}`)}
+                className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-white/70 transition hover:bg-white/10 hover:text-white"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to Event
+              </button>
+
+              <div className="mb-4 flex flex-wrap items-center gap-2">
+                <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-cyan-200">
+                  <span className="h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_18px_rgba(103,232,249,0.95)]" />
+                  Admin Classes
+                </div>
+
+                <div className="inline-flex items-center rounded-full border border-[#FF6B35]/20 bg-[#FF6B35]/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-[#FFB199]">
+                  Results Setup
+                </div>
+              </div>
+
+              <h1 className="max-w-4xl text-3xl font-black uppercase leading-[0.95] tracking-[-0.04em] text-white sm:text-5xl">
+                Classes &{" "}
+                <span className="bg-[linear-gradient(90deg,#19E3FF_0%,#7CF4FF_35%,#FF7849_100%)] bg-clip-text text-transparent">
+                  Results
+                </span>
+              </h1>
+
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
+                Manage classes, divisions, motos, and event result groups.
+              </p>
+            </div>
 
             <Dialog open={createOpen} onOpenChange={setCreateOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-white text-black hover:bg-zinc-200">
-                  + Add Class
+                <Button className="h-12 w-full rounded-full bg-cyan-300 px-6 text-xs font-black uppercase tracking-[0.16em] text-[#06111d] shadow-[0_0_28px_rgba(34,211,238,0.25)] hover:bg-cyan-200 sm:w-auto">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Class
                 </Button>
               </DialogTrigger>
-              <DialogContent className="bg-zinc-950 border-zinc-700 text-white">
+
+              <DialogContent className="rounded-[28px] border border-cyan-300/10 bg-[#07111F] text-white shadow-[0_30px_90px_rgba(0,0,0,0.52)]">
                 <DialogHeader>
-                  <DialogTitle>Create Class</DialogTitle>
-                  <DialogDescription className="text-zinc-400">
-                    Add a race class (e.g., “Novice Runabout Stock”).
+                  <DialogTitle className="text-2xl font-black uppercase tracking-[-0.03em] text-white">
+                    Create Class
+                  </DialogTitle>
+                  <DialogDescription className="text-slate-300">
+                    Add a race class, such as “Novice Runabout Stock”.
                   </DialogDescription>
                 </DialogHeader>
 
                 <div className="space-y-4 pt-2">
                   <div className="grid gap-2">
-                    <Label className="text-zinc-300">Class name *</Label>
+                    <Label className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">
+                      Class name *
+                    </Label>
                     <Input
                       autoFocus
                       value={formName}
                       onChange={(e) => setFormName(e.target.value)}
                       placeholder="Enter race class name…"
-                      className="bg-zinc-900 border-zinc-700 text-white placeholder:text-zinc-500"
+                      className="h-12 rounded-[14px] border-white/10 bg-white/[0.055] text-white placeholder:text-white/35 focus-visible:ring-cyan-300/30"
                     />
                   </div>
                 </div>
 
-                <DialogFooter className="pt-2">
+                <DialogFooter className="gap-2 pt-2 sm:gap-2">
                   <DialogClose asChild>
                     <Button
                       variant="outline"
-                      className="bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700"
+                      className="h-11 rounded-full border-white/10 bg-white/[0.05] px-5 text-white hover:bg-white/10"
                     >
                       Cancel
                     </Button>
                   </DialogClose>
+
                   <Button
-                    className="bg-white text-black hover:bg-zinc-200"
+                    className="h-11 rounded-full bg-cyan-300 px-5 text-xs font-black uppercase tracking-[0.14em] text-[#06111d] hover:bg-cyan-200"
                     onClick={handleCreate}
                     disabled={creating}
                   >
@@ -323,164 +366,220 @@ export default function RaceClassEditor() {
               </DialogContent>
             </Dialog>
           </div>
-        </div>
 
-        {event ? (
-          <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3">
-            <div className="text-sm text-white/90 font-medium">
-              {event.name}
-            </div>
-            <div className="text-xs text-white/60">
-              {event.location} • {fmtDate(event.startDate)} →{" "}
-              {fmtDate(event.endDate)}
-            </div>
-          </div>
-        ) : (
-          <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-xs text-white/60">
-            Loading event…
-          </div>
-        )}
-      </div>
-
-      {/* Classes list */}
-      <Card className="bg-zinc-900 border border-zinc-700 p-6">
-        {loading ? (
-          <div className="text-zinc-400">Loading…</div>
-        ) : divisions.length === 0 ? (
-          <div className="text-zinc-300">No classes yet.</div>
-        ) : (
-          <div className="space-y-3">
-            {divisions.map((d) => (
-              <Card
-                key={d.id}
-                className="bg-zinc-900/70 border border-zinc-700/70 p-0 overflow-hidden"
-              >
-                {/* Row header */}
-                <div className="flex items-start justify-between px-4 py-3">
+          <div className="relative mt-6">
+            {event ? (
+              <div className="rounded-[22px] border border-cyan-300/10 bg-cyan-300/[0.04] px-4 py-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="min-w-0">
-                    <div className="text-white font-semibold truncate">
-                      {d.name}
+                    <div className="break-words text-base font-black uppercase tracking-[-0.02em] text-white">
+                      {event.name}
                     </div>
-                    <div className="text-xs text-zinc-400">
-                      {d.isWorldFinal ? "World Finals" : "Class"}
+                    <div className="mt-2 flex flex-wrap gap-2 text-xs text-white/55">
+                      <span className="inline-flex items-center gap-1.5">
+                        <Flag className="h-3.5 w-3.5 text-cyan-200" />
+                        {event.location || "Location TBD"}
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <CalendarDays className="h-3.5 w-3.5 text-[#FFB199]" />
+                        {fmtDate(event.startDate)} → {fmtDate(event.endDate)}
+                      </span>
                     </div>
                   </div>
 
-                  {/* Icon actions (better on mobile) */}
-                  <div className="flex items-center gap-1">
-                    <button
-                      aria-label="Edit class"
-                      title="Edit / Manage"
-                      className="p-2 m-2 rounded-lg bg-zinc-800/80 border border-zinc-700 hover:bg-zinc-700"
-                      onClick={() =>
-                        navigate(
-                          `/organization/events/${eventId}/classes/${d.id}/manage`,
-                        )
-                      }
-                    >
-                      <Pencil size={16} className="text-white" />
-                    </button>
-
-                    <button
-                      aria-label="Delete class"
-                      title="Delete"
-                      className="p-2 rounded-lg bg-red-950/40 border border-red-900 hover:bg-red-900/30"
-                      onClick={() => setPendingDelete(d.id)}
-                    >
-                      <Trash2 size={16} className="text-red-400" />
-                    </button>
+                  <div className="inline-flex w-fit items-center rounded-full border border-cyan-300/15 bg-cyan-300/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200">
+                    {divisions.length} Class{divisions.length === 1 ? "" : "es"}
                   </div>
                 </div>
-
-                {/* Results accordion */}
-                <AccordionSection
-                  labelShow="Show results"
-                  labelHide="Hide results"
-                  className="rounded-none border-t border-zinc-800"
-                >
-                  <div className="space-y-2 p-4">
-                    {loadingResultsByDivision[d.id] ? (
-                      <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-6 text-center text-sm text-zinc-400">
-                        Loading results…
-                      </div>
-                    ) : !divisionResults[d.id] ||
-                      divisionResults[d.id].length === 0 ? (
-                      <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-6 text-center text-sm text-zinc-400">
-                        No results yet. Add motos & results in “Manage”.
-                      </div>
-                    ) : (
-                      <div className="overflow-hidden rounded-xl border border-white/10 bg-white/5">
-                        <table className="w-full text-sm">
-                          <thead className="bg-white/5 text-zinc-300">
-                            <tr>
-                              <th className="px-4 py-3 text-left font-medium">
-                                Pos
-                              </th>
-                              <th className="px-4 py-3 text-left font-medium">
-                                Racer
-                              </th>
-                              <th className="px-4 py-3 text-left font-medium">
-                                Points
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {divisionResults[d.id].map((row) => (
-                              <tr
-                                key={row.participantId}
-                                className="border-t border-white/10 text-white"
-                              >
-                                <td className="px-4 py-3 font-semibold">
-                                  {row.overallPosition}
-                                </td>
-                                <td className="px-4 py-3">
-                                  {row.athlete?.name ||
-                                    row.team?.name ||
-                                    "Unknown"}
-                                </td>
-                                <td className="px-4 py-3">{row.totalPoints}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
-                  </div>
-                </AccordionSection>
-              </Card>
-            ))}
+              </div>
+            ) : (
+              <div className="rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-4 text-sm text-white/55">
+                Loading event…
+              </div>
+            )}
           </div>
-        )}
-      </Card>
+        </section>
 
-      {/* Delete class confirm */}
-      <AlertDialog
-        open={!!pendingDelete}
-        onOpenChange={(o) => !o && setPendingDelete(null)}
-      >
-        <AlertDialogContent className="bg-zinc-950 border-zinc-700 text-white">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete this class?</AlertDialogTitle>
-            <AlertDialogDescription className="text-zinc-400">
-              {deletingDivision?.name
-                ? `“${deletingDivision.name}”`
-                : "This class"}{" "}
-              will be permanently removed.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="bg-zinc-800 border border-zinc-700 text-white hover:bg-zinc-700">
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-red-500 hover:bg-red-600 text-white"
-              onClick={() => pendingDelete && handleDelete(pendingDelete)}
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        <Card className="overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/90 p-0 shadow-[0_28px_80px_rgba(0,0,0,0.32)]">
+          <div className="border-b border-white/10 px-5 py-5 sm:px-6">
+            <div className="flex items-center gap-3">
+              <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-cyan-300/20 bg-cyan-300/10 text-cyan-200">
+                <Layers3 className="h-5 w-5" />
+              </div>
+
+              <div>
+                <div className="text-xs font-black uppercase tracking-[0.22em] text-cyan-300/80">
+                  Classes List
+                </div>
+                <p className="mt-1 text-sm text-white/55">
+                  Open a class to manage motos and final results.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 sm:p-5">
+            {loading ? (
+              <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-6 text-sm text-white/60">
+                Loading classes…
+              </div>
+            ) : divisions.length === 0 ? (
+              <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-6 text-sm text-white/60">
+                No classes yet.
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {divisions.map((d) => (
+                  <Card
+                    key={d.id}
+                    className="overflow-hidden rounded-[24px] border border-white/10 bg-white/[0.045] p-0 transition hover:border-cyan-300/25 hover:bg-white/[0.06]"
+                  >
+                    <div className="flex flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <div className="break-words text-base font-black uppercase tracking-[-0.01em] text-white sm:text-lg">
+                            {d.name}
+                          </div>
+
+                          {d.isWorldFinal ? (
+                            <span className="inline-flex items-center rounded-full border border-[#FF6B35]/20 bg-[#FF6B35]/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-[#FFB199]">
+                              World Finals
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center rounded-full border border-cyan-300/15 bg-cyan-300/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200">
+                              Class
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="mt-2 text-xs text-white/45">
+                          Manage racers, motos, scoring, and final standings.
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
+                        <button
+                          aria-label="Edit class"
+                          title="Edit / Manage"
+                          className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-cyan-300/15 bg-cyan-300/10 px-4 text-xs font-black uppercase tracking-[0.12em] text-cyan-100 transition hover:bg-cyan-300/15"
+                          onClick={() =>
+                            navigate(
+                              `/organization/events/${eventId}/classes/${d.id}/manage`,
+                            )
+                          }
+                        >
+                          <Pencil size={15} />
+                          Manage
+                        </button>
+
+                        <button
+                          aria-label="Delete class"
+                          title="Delete"
+                          className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-red-400/15 bg-red-500/10 px-4 text-xs font-black uppercase tracking-[0.12em] text-red-200 transition hover:bg-red-500/20"
+                          onClick={() => setPendingDelete(d.id)}
+                        >
+                          <Trash2 size={15} />
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+
+                    <AccordionSection
+                      labelShow="Show results"
+                      labelHide="Hide results"
+                      className="rounded-none border-t border-white/10"
+                    >
+                      <div className="space-y-2 p-4">
+                        {loadingResultsByDivision[d.id] ? (
+                          <div className="rounded-[20px] border border-white/10 bg-white/[0.04] px-4 py-6 text-center text-sm text-white/55">
+                            Loading results…
+                          </div>
+                        ) : !divisionResults[d.id] ||
+                          divisionResults[d.id].length === 0 ? (
+                          <div className="rounded-[20px] border border-white/10 bg-white/[0.04] px-4 py-6 text-center text-sm text-white/55">
+                            No results yet. Add motos & results in “Manage”.
+                          </div>
+                        ) : (
+                          <div className="overflow-x-auto rounded-[20px] border border-white/10 bg-white/[0.04]">
+                            <table className="min-w-[520px] w-full text-sm">
+                              <thead className="bg-white/[0.05] text-white/65">
+                                <tr>
+                                  <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-[0.14em]">
+                                    Pos
+                                  </th>
+                                  <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-[0.14em]">
+                                    Racer
+                                  </th>
+                                  <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-[0.14em]">
+                                    Points
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {divisionResults[d.id].map((row) => (
+                                  <tr
+                                    key={row.participantId}
+                                    className="border-t border-white/10 text-white"
+                                  >
+                                    <td className="px-4 py-3 font-black text-cyan-200">
+                                      #{row.overallPosition}
+                                    </td>
+                                    <td className="px-4 py-3">
+                                      {row.athlete?.name ||
+                                        row.team?.name ||
+                                        "Unknown"}
+                                    </td>
+                                    <td className="px-4 py-3">
+                                      <span className="inline-flex items-center gap-1.5 rounded-full border border-[#FF6B35]/15 bg-[#FF6B35]/10 px-2.5 py-1 text-xs font-semibold text-[#FFB199]">
+                                        <Trophy className="h-3.5 w-3.5" />
+                                        {row.totalPoints}
+                                      </span>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </div>
+                    </AccordionSection>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        </Card>
+
+        <AlertDialog
+          open={!!pendingDelete}
+          onOpenChange={(o) => !o && setPendingDelete(null)}
+        >
+          <AlertDialogContent className="rounded-[28px] border border-cyan-300/10 bg-[#07111F] text-white shadow-[0_30px_90px_rgba(0,0,0,0.52)]">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-xl font-black uppercase tracking-[-0.02em] text-white">
+                Delete this class?
+              </AlertDialogTitle>
+              <AlertDialogDescription className="text-slate-300">
+                {deletingDivision?.name
+                  ? `“${deletingDivision.name}”`
+                  : "This class"}{" "}
+                will be permanently removed.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="rounded-full border border-white/10 bg-white/[0.05] px-5 text-white hover:bg-white/10">
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                className="rounded-full bg-red-500 px-5 text-white hover:bg-red-600"
+                onClick={() => pendingDelete && handleDelete(pendingDelete)}
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </main>
     </div>
   );
 }

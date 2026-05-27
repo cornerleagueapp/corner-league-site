@@ -15,18 +15,23 @@ import {
   Share2,
   Plus as PlusIcon,
   Search as SearchIcon,
+  Trophy,
+  Users,
+  Sparkles,
+  UserRound,
+  Star,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getTeamLogo } from "@/constants/teamLogos";
 import UserSearchModal from "@/components/userSearchModal";
 import stockAvatar from "../../assets/stockprofilepicture.jpeg";
-import clPattern from "../../assets/cl_logo_pattern.png";
 
 import { trackEvent } from "@/lib/analytics";
 import { AnalyticsEvents } from "@/lib/analytics-events";
 
 // ---------- types ----------
 type FavoriteTeam = { id: string; name: string; sr_id?: string };
+
 type ProfileUser = {
   id: string;
   username: string;
@@ -36,6 +41,7 @@ type ProfileUser = {
   bio?: string | null;
   tags?: { profile?: string[] };
 };
+
 type ProfilePost = {
   id: string;
   content: string;
@@ -57,16 +63,19 @@ const EMOJI: Record<string, string> = {
   sigh: "😮‍💨",
   clown: "🤡",
 };
+
 function timeAgo(d: string | number | Date) {
   const now = Date.now();
   const diff = Math.max(0, now - new Date(d).getTime());
-  const m = 60_000,
-    h = 60 * m,
-    day = 24 * h,
-    wk = 7 * day;
+  const m = 60_000;
+  const h = 60 * m;
+  const day = 24 * h;
+  const wk = 7 * day;
+
   if (diff < h) return `${Math.floor(diff / m) || 1}m`;
   if (diff < day) return `${Math.floor(diff / h)}h`;
   if (diff < wk) return `${Math.floor(diff / day)}d`;
+
   return `${Math.floor(diff / wk)}w`;
 }
 
@@ -88,7 +97,6 @@ async function unfollowUser(viewerId: string, targetId: string) {
   );
 }
 
-// fire-and-forget create notification
 async function createFollowNotification({
   recipientUserId,
   senderUserId,
@@ -103,8 +111,8 @@ async function createFollowNotification({
   try {
     await apiRequest("POST", "/notifications", {
       type: "follow",
-      userId: String(recipientUserId), // who receives the notification
-      senderId: String(senderUserId), // who performed the action
+      userId: String(recipientUserId),
+      senderId: String(senderUserId),
       content: `${senderUsername ?? "Someone"} followed you.`,
       profilePicture: senderAvatar ?? null,
     });
@@ -160,7 +168,6 @@ export default function UserProfilePage({ username }: { username: string }) {
   >([]);
   const [loadingFollows, setLoadingFollows] = useState(false);
 
-  // tabs
   const [activeTab, setActiveTab] = useState<"scores" | "posts" | "clubs">(
     "scores",
   );
@@ -171,6 +178,7 @@ export default function UserProfilePage({ username }: { username: string }) {
 
   useEffect(() => {
     let ignore = false;
+
     (async () => {
       try {
         setLoading(true);
@@ -179,6 +187,7 @@ export default function UserProfilePage({ username }: { username: string }) {
         const uRes = await apiGet<{ data: ProfileUser }>(
           `/users/get-user-by-username/${encodeURIComponent(username)}`,
         );
+
         const u = uRes?.data;
         if (!u) throw new Error("User not found");
 
@@ -194,9 +203,11 @@ export default function UserProfilePage({ username }: { username: string }) {
         const all = await apiGet<{ data: { profilePosts: any[] } }>(
           `/social/profile-posts`,
         );
+
         const onlyMine = (all?.data?.profilePosts || []).filter(
           (p) => String(p?.user?.id) === String(u.id),
         );
+
         const normalized = onlyMine
           .map((p: any) => ({
             ...p,
@@ -229,6 +240,7 @@ export default function UserProfilePage({ username }: { username: string }) {
                     `/social/profile-posts/${p.id}/comments-count`,
                   ),
                 ]);
+
               return {
                 ...p,
                 reaction:
@@ -250,6 +262,7 @@ export default function UserProfilePage({ username }: { username: string }) {
         );
 
         if (ignore) return;
+
         setMe(u);
         setFollowers(counts?.data?.followersCount ?? 0);
         setFollowingCount(counts?.data?.followingCount ?? 0);
@@ -264,9 +277,11 @@ export default function UserProfilePage({ username }: { username: string }) {
             const following = await apiGet<{
               data: { followingList: Array<{ id: string | number }> };
             }>(`/users/${viewerId}/get-following-list`);
+
             const amIFollowing = (following?.data?.followingList ?? []).some(
               (f) => String(f.id) === String(u.id),
             );
+
             if (!ignore) setIsFollowing(amIFollowing);
           }
         } catch {}
@@ -276,19 +291,21 @@ export default function UserProfilePage({ username }: { username: string }) {
         if (!ignore) setLoading(false);
       }
     })();
+
     return () => {
       ignore = true;
     };
   }, [username, viewerId]);
 
-  // reactions
   async function authHeaders() {
     const token = localStorage.getItem("authToken");
+
     return {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     };
   }
+
   async function postReaction(postId: string, uid: string, reaction: string) {
     const res = await apiFetch("/social/post-reactions", {
       method: "POST",
@@ -299,22 +316,28 @@ export default function UserProfilePage({ username }: { username: string }) {
         reaction,
       }),
     });
+
     if (!res.ok) throw new Error(await res.text());
+
     return res.json();
   }
+
   async function deleteReaction(postId: string, uid: string) {
     const res = await apiFetch(`/social/post-reactions/${postId}/${uid}`, {
       method: "DELETE",
       headers: await authHeaders(),
     });
+
     if (!res.ok) throw new Error(await res.text());
   }
+
   function setPostOptimistic(
     postId: string,
     updater: (p: ProfilePost) => ProfilePost,
   ) {
     setPosts((prev) => prev.map((p) => (p.id === postId ? updater(p) : p)));
   }
+
   async function refreshOne(postId: string) {
     try {
       const [userReaction, reactionCount, commentCount] = await Promise.all([
@@ -326,6 +349,7 @@ export default function UserProfilePage({ username }: { username: string }) {
           `/social/profile-posts/${postId}/comments-count`,
         ),
       ]);
+
       setPostOptimistic(postId, (p) => ({
         ...p,
         reaction:
@@ -340,10 +364,12 @@ export default function UserProfilePage({ username }: { username: string }) {
 
   async function loadFollowers(userId: string | number) {
     setLoadingFollows(true);
+
     try {
       const res = await apiGet<{ data: { followersList: any[] } }>(
         `/users/${userId}/get-followers-list`,
       );
+
       setFollowersList(res?.data?.followersList ?? []);
     } finally {
       setLoadingFollows(false);
@@ -352,10 +378,12 @@ export default function UserProfilePage({ username }: { username: string }) {
 
   async function loadFollowing(userId: string | number) {
     setLoadingFollows(true);
+
     try {
       const res = await apiGet<{ data: { followingList: any[] } }>(
         `/users/${userId}/get-following-list`,
       );
+
       setFollowingList(res?.data?.followingList ?? []);
     } finally {
       setLoadingFollows(false);
@@ -363,6 +391,7 @@ export default function UserProfilePage({ username }: { username: string }) {
   }
 
   const norm = followSearch.trim().toLowerCase();
+
   const filteredFollowers = followersList.filter(
     (u) =>
       !norm ||
@@ -370,6 +399,7 @@ export default function UserProfilePage({ username }: { username: string }) {
         .toLowerCase()
         .includes(norm),
   );
+
   const filteredFollowing = followingList.filter(
     (u) =>
       !norm ||
@@ -381,8 +411,10 @@ export default function UserProfilePage({ username }: { username: string }) {
   useEffect(() => {
     const anyModal = followersOpen || !!lightboxUrl;
     const prev = document.body.style.overflow;
+
     if (anyModal) document.body.style.overflow = "hidden";
     else document.body.style.overflow = prev || "";
+
     return () => {
       document.body.style.overflow = prev || "";
     };
@@ -400,26 +432,32 @@ export default function UserProfilePage({ username }: { username: string }) {
     });
   }, [me?.id, isOwn, viewerId]);
 
-  // ----- loading / error -----
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#090D16] text-white">
+      <div className="relative min-h-dvh overflow-x-hidden bg-[#030913] text-white">
         <PageSEO title="Profile • Corner League" />
         <ProfileSkeleton />
       </div>
     );
   }
+
   if (error) {
     return (
-      <div className="min-h-screen bg-[#090D16] text-white grid place-items-center">
-        <div className="text-center space-y-3">
-          <div className="text-xl font-semibold">
+      <div className="relative grid min-h-dvh place-items-center overflow-x-hidden bg-[#030913] px-4 text-white">
+        <PageSEO title="Profile • Corner League" />
+
+        <div className="pointer-events-none fixed inset-0 -z-10">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.12),transparent_28%),radial-gradient(circle_at_82%_12%,rgba(255,107,53,0.10),transparent_24%),linear-gradient(180deg,#030913_0%,#07111F_48%,#02050A_100%)]" />
+        </div>
+
+        <div className="max-w-md rounded-[28px] border border-cyan-300/10 bg-[#07111F]/90 p-6 text-center shadow-[0_28px_80px_rgba(0,0,0,0.32)]">
+          <div className="text-xl font-black uppercase text-white">
             Couldn’t load this profile
           </div>
-          <div className="text-white/70">{error}</div>
+          <div className="mt-2 text-sm text-white/60">{error}</div>
           <Button
             onClick={() => window.history.back()}
-            className="bg-white text-black"
+            className="mt-5 rounded-full bg-cyan-300 px-6 text-[#06111d] hover:bg-cyan-200"
           >
             Go back
           </Button>
@@ -428,461 +466,494 @@ export default function UserProfilePage({ username }: { username: string }) {
     );
   }
 
-  // ----- UI -----
   return (
-    <div className="min-h-screen bg-[#090D16] text-white ">
-      {/* <div className="relative min-h-screen bg-[#090D16] text-white overflow-hidden"> */}
+    <div className="relative min-h-dvh overflow-x-hidden bg-[#030913] text-white">
       <PageSEO
         title={`${me ? `${me.firstName} ${me.lastName}` : "Profile"} • Corner League`}
       />
 
-      {/* <div
-        className="pointer-events-none absolute inset-0 opacity-[0.01]"
-        style={{
-          backgroundImage: `url(${clPattern})`,
-          backgroundRepeat: "repeat",
-          backgroundPosition: "center",
-        }}
-      /> */}
-
-      {/* top-right actions */}
-      <div className="mx-auto max-w-5xl px-4 pt-4 flex justify-end gap-2">
-        <button
-          onClick={() => setSearchOpen(true)}
-          className="h-9 w-9 grid place-items-center rounded-full bg-white/10 border border-white/10 hover:bg-white/15"
-          aria-label="Search users"
-        >
-          <SearchIcon size={18} />
-        </button>
+      <div className="pointer-events-none fixed inset-0 -z-10">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.12),transparent_28%),radial-gradient(circle_at_82%_12%,rgba(255,107,53,0.10),transparent_24%),linear-gradient(180deg,#030913_0%,#07111F_48%,#02050A_100%)]" />
+        <div className="absolute inset-0 opacity-[0.04] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:72px_72px]" />
       </div>
 
-      <div className="mx-auto max-w-5xl px-4 mt-8">
-        {/* header */}
-        <div className="flex flex-col sm:flex-row sm:items-end gap-4">
-          <div className="p-[2px] rounded-full bg-gradient-to-tr from-violet-500 via-fuchsia-500 to-amber-400 inline-block self-center sm:self-auto">
-            <img
-              src={me?.profilePicture || stockAvatar}
-              onError={(e) => {
-                const img = e.currentTarget as HTMLImageElement;
-                if (img.src !== stockAvatar) img.src = stockAvatar;
-              }}
-              className="h-28 w-28 sm:h-36 sm:w-36 rounded-full object-cover bg-black"
-            />
+      <main className="mx-auto w-full max-w-6xl px-4 py-6 pb-24 sm:px-6 sm:py-10 lg:px-8">
+        <div className="mb-4 flex justify-end">
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="grid h-11 w-11 place-items-center rounded-full border border-cyan-300/15 bg-cyan-300/10 text-cyan-100 shadow-[0_0_24px_rgba(34,211,238,0.12)] hover:bg-cyan-300/15"
+            aria-label="Search users"
+          >
+            <SearchIcon size={18} />
+          </button>
+        </div>
+
+        <section className="relative overflow-hidden rounded-[32px] border border-cyan-300/10 bg-[linear-gradient(180deg,rgba(7,17,31,0.94)_0%,rgba(4,10,19,0.98)_100%)] p-5 shadow-[0_30px_90px_rgba(0,0,0,0.42)] sm:p-7">
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-cyan-400/10 blur-3xl" />
+            <div className="absolute -right-24 bottom-0 h-96 w-96 rounded-full bg-[#FF6B35]/10 blur-3xl" />
+            <div className="absolute inset-0 opacity-[0.05] [background-image:linear-gradient(rgba(255,255,255,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.18)_1px,transparent_1px)] [background-size:72px_72px]" />
           </div>
 
-          <div className="flex-1">
-            <h1 className="text-2xl sm:text-3xl font-semibold leading-tight text-center sm:text-left">
-              {me ? `${me.firstName} ${me.lastName}` : " "}
-            </h1>
+          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-end">
+            <div className="mx-auto shrink-0 rounded-full border border-cyan-300/25 bg-black/40 p-1 shadow-[0_0_34px_rgba(34,211,238,0.18)] sm:mx-0">
+              <img
+                src={me?.profilePicture || stockAvatar}
+                onError={(e) => {
+                  const img = e.currentTarget as HTMLImageElement;
+                  if (img.src !== stockAvatar) img.src = stockAvatar;
+                }}
+                className="h-28 w-28 rounded-full bg-black object-cover sm:h-36 sm:w-36"
+                alt={`${me?.username || "User"} profile`}
+              />
+            </div>
 
-            <div className="mt-1 flex flex-col items-center sm:flex-row sm:items-center sm:gap-2">
-              <p className="text-sm text-white/70">@{me?.username}</p>
+            <div className="min-w-0 flex-1 text-center sm:text-left">
+              <div className="mb-3 flex flex-wrap justify-center gap-2 sm:justify-start">
+                <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-cyan-200">
+                  <UserRound className="h-3.5 w-3.5" />
+                  Profile
+                </div>
 
-              {!!me?.tags?.profile?.length && (
-                <div className="mt-1 sm:mt-0 flex flex-wrap justify-center sm:justify-start gap-2">
-                  {me.tags!.profile!.map((t, i) => (
+                {!!me?.tags?.profile?.length &&
+                  me.tags.profile.map((t, i) => (
                     <span
-                      key={i}
-                      className="px-2.5 py-0.5 rounded-full border border-white/10 text-[11px] text-white/90"
+                      key={`${t}-${i}`}
+                      className="rounded-full border border-[#FF6B35]/20 bg-[#FF6B35]/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-[#FFB199]"
                     >
                       {t}
                     </span>
                   ))}
+              </div>
+
+              <h1 className="break-words bg-[linear-gradient(90deg,#FFFFFF_0%,#7CF4FF_48%,#FF7849_100%)] bg-clip-text text-3xl font-black uppercase tracking-[-0.04em] text-transparent sm:text-5xl">
+                {me ? `${me.firstName} ${me.lastName}` : " "}
+              </h1>
+
+              <p className="mt-2 text-sm font-semibold text-white/60">
+                @{me?.username}
+              </p>
+
+              <BioBlock text={me?.bio} className="mt-4 sm:hidden" />
+
+              <div className="mt-5 grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
+                <button
+                  onClick={() => {
+                    if (!me?.id) return;
+                    setFollowersOpen(true);
+                    setFollowersTab("followers");
+                    loadFollowers(me.id);
+                    loadFollowing(me.id);
+                  }}
+                  className="text-left"
+                  aria-label="Open followers list"
+                >
+                  <StatBox label="Followers" value={followers} />
+                </button>
+
+                <StatBox label="Points" value={points} trophy />
+              </div>
+            </div>
+
+            <div
+              className={cn(
+                "relative flex w-full gap-2 sm:w-auto sm:self-end",
+                isOwn ? "justify-center" : "justify-start",
+                "sm:justify-end",
+              )}
+            >
+              {!isOwn && (
+                <Button
+                  onClick={async () => {
+                    if (!viewerId || !me?.id) return;
+
+                    const wasFollowing = isFollowing;
+                    setIsFollowing(!wasFollowing);
+                    setFollowers((c) =>
+                      Math.max(0, c + (wasFollowing ? -1 : 1)),
+                    );
+
+                    try {
+                      if (wasFollowing) {
+                        await unfollowUser(viewerId, String(me.id));
+                      } else {
+                        await followUser(viewerId, String(me.id));
+                        await createFollowNotification({
+                          recipientUserId: me.id,
+                          senderUserId: viewerId,
+                          senderUsername: (viewer as any)?.username,
+                          senderAvatar: (viewer as any)?.profilePicture,
+                        });
+                      }
+                    } catch (e: any) {
+                      setIsFollowing(wasFollowing);
+                      setFollowers((c) =>
+                        Math.max(0, c + (wasFollowing ? 1 : -1)),
+                      );
+                      toast({
+                        title: wasFollowing
+                          ? "Unfollow failed"
+                          : "Follow failed",
+                        description: e?.message || "Please try again.",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                  className={cn(
+                    "h-12 flex-1 rounded-full text-xs font-black uppercase tracking-[0.14em] sm:flex-none sm:px-6",
+                    isFollowing
+                      ? "border border-[#FF6B35]/20 bg-[#FF6B35]/15 text-[#FFB199] hover:bg-[#FF6B35]/20"
+                      : "bg-cyan-300 text-[#06111d] hover:bg-cyan-200",
+                  )}
+                >
+                  {isFollowing ? "Following" : "Follow"}
+                </Button>
+              )}
+
+              <Button
+                onClick={async () => {
+                  const url = new URL(window.location.href);
+                  try {
+                    await navigator.clipboard.writeText(url.toString());
+                    toast({ title: "Copied to clipboard" });
+                  } catch {}
+                }}
+                className={cn(
+                  "h-12 rounded-full border border-white/10 bg-white/[0.05] px-5 text-white hover:bg-white/10",
+                  isOwn ? "mx-auto" : "flex-1 sm:flex-none",
+                )}
+              >
+                <Share2 className="mr-2 h-4 w-4" />
+                Share
+              </Button>
+            </div>
+          </div>
+
+          <BioBlock text={me?.bio} className="relative mt-5 hidden sm:block" />
+        </section>
+
+        <div className="mt-6 overflow-hidden rounded-[26px] border border-cyan-300/10 bg-[#07111F]/90 shadow-[0_20px_60px_rgba(0,0,0,0.26)]">
+          <div className="border-b border-white/10">
+            <div className="grid grid-cols-3 text-sm">
+              <Tab
+                label="Scores"
+                active={activeTab === "scores"}
+                onClick={() => setActiveTab("scores")}
+              />
+              <Tab
+                label="Posts"
+                active={activeTab === "posts"}
+                onClick={() => {
+                  trackEvent(AnalyticsEvents.USER_PROFILE_TAB_CHANGED, {
+                    profile_user_id: me?.id ?? null,
+                    profile_username: me?.username ?? username,
+                    selected_tab: "posts",
+                    is_own_profile: isOwn,
+                  });
+
+                  setActiveTab("posts");
+                }}
+              />
+              <Tab
+                label="Clubs"
+                active={activeTab === "clubs"}
+                onClick={() => setActiveTab("clubs")}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 p-4 sm:p-5 lg:grid-cols-3">
+            <div className="order-2 space-y-6 lg:order-1 lg:col-span-1">
+              <Card className="rounded-[24px] border border-white/10 bg-white/[0.045] p-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-300/80">
+                    Favorite Teams
+                  </p>
+
+                  {isOwn && (
+                    <button
+                      onClick={() => toast({ title: "Add team coming soon" })}
+                      className="grid h-9 w-9 place-items-center rounded-full border border-cyan-300/15 bg-cyan-300/10 text-cyan-100 hover:bg-cyan-300/15"
+                      aria-label="Add favorite team"
+                      title="Add favorite team"
+                    >
+                      <PlusIcon className="h-4 w-4" strokeWidth={2.5} />
+                    </button>
+                  )}
+                </div>
+
+                <div className="mt-4 flex flex-wrap gap-3">
+                  {teams.map((t) => {
+                    const logo = getTeamLogo(t.name);
+
+                    return (
+                      <div
+                        key={t.id}
+                        className="grid h-12 w-12 place-items-center overflow-hidden rounded-full border border-white/10 bg-white/[0.04]"
+                        title={t.name}
+                      >
+                        {logo ? (
+                          <img
+                            src={logo}
+                            alt={t.name}
+                            className="h-10 w-10 object-contain"
+                          />
+                        ) : (
+                          <span className="text-xs text-white/70">
+                            {t.name.slice(0, 2)}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+
+                  {!teams.length && (
+                    <p className="text-sm text-white/55">
+                      {isOwn
+                        ? "Add your favorite teams."
+                        : "No favorite teams yet."}
+                    </p>
+                  )}
+                </div>
+              </Card>
+            </div>
+
+            <div className="order-1 lg:order-2 lg:col-span-2">
+              {activeTab === "scores" && (
+                <Card className="rounded-[24px] border border-white/10 bg-white/[0.045] p-5">
+                  <div className="flex items-center gap-3">
+                    <div className="grid h-11 w-11 place-items-center rounded-2xl border border-cyan-300/20 bg-cyan-300/10 text-cyan-200">
+                      <Trophy className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-white">
+                        Scores widgets coming here.
+                      </p>
+                      <p className="mt-1 text-xs text-white/45">
+                        Racing and profile score cards can live in this section.
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              )}
+
+              {activeTab === "clubs" && (
+                <Card className="rounded-[24px] border border-white/10 bg-white/[0.045] p-5 text-white/70">
+                  <p>Clubs content goes here</p>
+                </Card>
+              )}
+
+              {activeTab === "posts" && (
+                <div className="space-y-4">
+                  {isOwn && (
+                    <Composer
+                      avatarSrc={me?.profilePicture || stockAvatar}
+                      onPosted={async () => {
+                        try {
+                          const all = await apiGet<{
+                            data: { profilePosts: any[] };
+                          }>(`/social/profile-posts`);
+
+                          const mine = (all?.data?.profilePosts || []).filter(
+                            (p) => String(p?.user?.id) === String(me?.id),
+                          );
+
+                          const normalized = mine
+                            .map((p: any) => ({
+                              ...p,
+                              mediaUrls: Array.isArray(p.mediaUrls)
+                                ? p.mediaUrls
+                                : Array.isArray(p.media_urls)
+                                  ? p.media_urls
+                                  : (() => {
+                                      try {
+                                        return JSON.parse(p.mediaUrls ?? "[]");
+                                      } catch {
+                                        return [];
+                                      }
+                                    })(),
+                            }))
+                            .sort(
+                              (a, b) =>
+                                +new Date(b.createdAt) - +new Date(a.createdAt),
+                            );
+
+                          setPosts(normalized);
+                        } catch {}
+                      }}
+                    />
+                  )}
+
+                  {posts.length === 0 && (
+                    <Card className="rounded-[24px] border border-white/10 bg-white/[0.045] p-6 text-center text-white/60">
+                      No posts yet.
+                    </Card>
+                  )}
+
+                  {posts.map((p) => (
+                    <Card
+                      key={p.id}
+                      className="rounded-[24px] border border-white/10 bg-white/[0.045] p-4"
+                    >
+                      <div className="flex gap-3">
+                        <img
+                          src={me?.profilePicture || stockAvatar}
+                          onError={(e) => {
+                            const img = e.currentTarget as HTMLImageElement;
+                            if (img.src !== stockAvatar) img.src = stockAvatar;
+                          }}
+                          className="h-12 w-12 shrink-0 rounded-full object-cover"
+                          alt="Post author"
+                        />
+
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2 text-sm">
+                            <span className="font-semibold text-white">
+                              {p.user?.firstName || me?.firstName}{" "}
+                              {p.user?.lastName || me?.lastName}
+                            </span>
+                            <span className="text-white/55">
+                              @{me?.username}
+                            </span>
+                            <span className="text-white/35">
+                              • {timeAgo(p.createdAt)}
+                            </span>
+                          </div>
+
+                          {!!p.content && (
+                            <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-white/85">
+                              {p.content}
+                            </p>
+                          )}
+
+                          {!!p.mediaUrls?.length && (
+                            <div className="mt-3 grid grid-cols-2 gap-2">
+                              {p.mediaUrls.map((u, i) => (
+                                <img
+                                  key={`${u}-${i}`}
+                                  src={u}
+                                  onClick={() => setLightboxUrl(u)}
+                                  className="aspect-[4/3] w-full cursor-zoom-in rounded-[18px] border border-white/10 bg-black object-cover"
+                                  alt="Post media"
+                                />
+                              ))}
+                            </div>
+                          )}
+
+                          <footer className="mt-3 flex items-center gap-5 text-sm text-white/65">
+                            <button
+                              disabled={!viewerId}
+                              onClick={async () => {
+                                if (!viewerId) return;
+
+                                const had = !!p.reaction;
+
+                                trackEvent(AnalyticsEvents.USER_POST_REACTED, {
+                                  post_id: p.id,
+                                  profile_user_id: me?.id ?? null,
+                                  profile_username: me?.username ?? username,
+                                  viewer_id: viewerId,
+                                  action: had
+                                    ? "remove_reaction"
+                                    : "add_reaction",
+                                  reaction: had ? p.reaction : "like",
+                                  source_page: "user_profile",
+                                });
+
+                                setPostOptimistic(p.id, (pp) => ({
+                                  ...pp,
+                                  reaction: had ? null : "like",
+                                  reactionCount: Math.max(
+                                    0,
+                                    (pp.reactionCount ?? 0) + (had ? -1 : 1),
+                                  ),
+                                }));
+
+                                try {
+                                  if (had) await deleteReaction(p.id, viewerId);
+                                  else
+                                    await postReaction(p.id, viewerId, "like");
+                                } finally {
+                                  await refreshOne(p.id);
+                                }
+                              }}
+                              className="inline-flex items-center gap-1 hover:text-white"
+                              title="Like"
+                              type="button"
+                            >
+                              {p.reaction ? (
+                                <span className="text-lg">
+                                  {EMOJI[p.reaction] ?? "👍"}
+                                </span>
+                              ) : (
+                                <Heart size={18} />
+                              )}
+
+                              <span className="tabular-nums">
+                                {p.reactionCount ?? 0}
+                              </span>
+                            </button>
+
+                            <div className="inline-flex items-center gap-1">
+                              <MessageCircle size={18} />
+                              <span className="tabular-nums">
+                                {p.commentCount ?? 0}
+                              </span>
+                            </div>
+
+                            <button
+                              onClick={async () => {
+                                trackEvent(AnalyticsEvents.USER_POST_SHARED, {
+                                  post_id: p.id,
+                                  profile_user_id: me?.id ?? null,
+                                  profile_username: me?.username ?? username,
+                                  source_page: "user_profile",
+                                });
+
+                                const url = new URL(window.location.href);
+                                url.searchParams.set("post", p.id);
+
+                                try {
+                                  await navigator.clipboard.writeText(
+                                    url.toString(),
+                                  );
+                                  toast({ title: "Copied to clipboard" });
+                                } catch {}
+                              }}
+                              className="ml-auto inline-flex items-center gap-2 hover:text-white"
+                              title="Share"
+                              type="button"
+                            >
+                              <Share2 size={18} />
+                            </button>
+                          </footer>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
                 </div>
               )}
             </div>
-
-            <BioBlock text={me?.bio} className="mt-3 w-full sm:hidden" />
-
-            <div className="flex gap-3 mt-4 justify-center sm:justify-start">
-              <button
-                onClick={() => {
-                  if (!me?.id) return;
-                  setFollowersOpen(true);
-                  setFollowersTab("followers");
-                  loadFollowers(me.id);
-                  loadFollowing(me.id);
-                }}
-                className="text-left"
-                aria-label="Open followers list"
-              >
-                <StatBox label="Followers" value={followers} />
-              </button>
-              <StatBox label="Points" value={points} trophy />
-            </div>
-          </div>
-
-          <div
-            className={cn(
-              "flex w-full gap-2 self-center sm:self-end sm:w-auto",
-              isOwn ? "justify-center" : "justify-start",
-              "sm:justify-end",
-            )}
-          >
-            {!isOwn && (
-              <Button
-                onClick={async () => {
-                  if (!viewerId || !me?.id) return;
-
-                  const wasFollowing = isFollowing;
-                  setIsFollowing(!wasFollowing);
-                  setFollowers((c) => Math.max(0, c + (wasFollowing ? -1 : 1)));
-
-                  try {
-                    if (wasFollowing) {
-                      await unfollowUser(viewerId, String(me.id));
-                    } else {
-                      await followUser(viewerId, String(me.id));
-                      await createFollowNotification({
-                        recipientUserId: me.id,
-                        senderUserId: viewerId,
-                        senderUsername: (viewer as any)?.username,
-                        senderAvatar: (viewer as any)?.profilePicture,
-                      });
-                    }
-                  } catch (e: any) {
-                    setIsFollowing(wasFollowing);
-                    setFollowers((c) =>
-                      Math.max(0, c + (wasFollowing ? 1 : -1)),
-                    );
-                    toast({
-                      title: wasFollowing ? "Unfollow failed" : "Follow failed",
-                      description: e?.message || "Please try again.",
-                      variant: "destructive",
-                    });
-                  }
-                }}
-                className={cn(
-                  "h-11 w-[70%] sm:h-9 sm:w-auto border hover:bg-white/15",
-                  isFollowing
-                    ? "bg-purple-500/45 border-white-400/30"
-                    : "bg-white/10 border-white/10",
-                )}
-              >
-                {isFollowing ? "Following" : "Follow"}
-              </Button>
-            )}
-            <Button
-              onClick={async () => {
-                const url = new URL(window.location.href);
-                try {
-                  await navigator.clipboard.writeText(url.toString());
-                  toast({ title: "Copied to clipboard" });
-                } catch {}
-              }}
-              className={cn(
-                "h-11 sm:h-9 sm:w-auto bg-white text-black hover:bg-white/90",
-                isOwn ? "mx-auto w-auto" : "w-[30%]",
-              )}
-            >
-              Share
-            </Button>
           </div>
         </div>
-
-        <BioBlock text={me?.bio} className="mt-3 hidden sm:block" />
-
-        {/* tabs */}
-        <div className="mt-8 border-b border-white/10">
-          {/* Mobile: centered 3-up; Desktop: left-aligned with gap */}
-          <div className="flex text-sm justify-center sm:justify-start sm:gap-8">
-            <Tab
-              label="Scores"
-              active={activeTab === "scores"}
-              onClick={() => setActiveTab("scores")}
-              className="w-1/3 text-center sm:w-auto sm:px-0"
-            />
-            <Tab
-              label="Posts"
-              active={activeTab === "posts"}
-              onClick={() => {
-                trackEvent(AnalyticsEvents.USER_PROFILE_TAB_CHANGED, {
-                  profile_user_id: me?.id ?? null,
-                  profile_username: me?.username ?? username,
-                  selected_tab: "posts",
-                  is_own_profile: isOwn,
-                });
-
-                setActiveTab("posts");
-              }}
-              className="w-1/3 text-center sm:w-auto sm:px-0"
-            />
-            <Tab
-              label="Clubs"
-              active={activeTab === "clubs"}
-              onClick={() => setActiveTab("clubs")}
-              className="w-1/3 text-center sm:w-auto sm:px-0"
-            />
-          </div>
-        </div>
-
-        {/* content */}
-        <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* left column: favorite teams */}
-          <div className="order-2 lg:order-1 lg:col-span-1 space-y-6">
-            <Card className="relative bg-white/5 border-white/10 p-4">
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-white/80">Favorite Teams</p>
-                {isOwn && (
-                  <button
-                    onClick={() => toast({ title: "Add team coming soon" })}
-                    className="h-8 w-8 grid place-items-center rounded-full bg-white/10 border border-white/10 hover:bg-white/15"
-                    aria-label="Add favorite team"
-                    title="Add favorite team"
-                  >
-                    <PlusIcon className="text-white" strokeWidth={2.5} />
-                  </button>
-                )}
-              </div>
-              <div className="mt-3 flex flex-wrap gap-3">
-                {teams.map((t) => {
-                  const logo = getTeamLogo(t.name);
-                  return (
-                    <div
-                      key={t.id}
-                      className="h-12 w-12 rounded-full bg-white/5 border border-white/10 grid place-items-center overflow-hidden"
-                      title={t.name}
-                    >
-                      {logo ? (
-                        <img
-                          src={logo}
-                          alt={t.name}
-                          className="h-10 w-10 object-contain"
-                        />
-                      ) : (
-                        <span className="text-xs text-white/70">
-                          {t.name.slice(0, 2)}
-                        </span>
-                      )}
-                    </div>
-                  );
-                })}
-                {!teams.length && (
-                  <p className="text-white/60 text-sm">
-                    {isOwn
-                      ? "Add your favorite teams."
-                      : "No favorite teams yet."}
-                  </p>
-                )}
-              </div>
-            </Card>
-          </div>
-
-          {/* main column */}
-          <div className="order-1 lg:order-2 lg:col-span-2">
-            {activeTab === "scores" && (
-              <Card className="bg-white/5 border-white/10 p-4">
-                <p className="text-white/70 text-sm">
-                  Scores widgets coming here.
-                </p>
-              </Card>
-            )}
-
-            {activeTab === "clubs" && (
-              <Card className="bg-white/5 border-white/10 p-4 text-white/70">
-                <p>Clubs content goes here</p>
-              </Card>
-            )}
-
-            {activeTab === "posts" && (
-              <div className="space-y-3">
-                {/* composer only if viewing own profile */}
-                {isOwn && (
-                  <Composer
-                    avatarSrc={me?.profilePicture || stockAvatar}
-                    onPosted={async () => {
-                      // simple refresh by reloading posts part
-                      try {
-                        const all = await apiGet<{
-                          data: { profilePosts: any[] };
-                        }>(`/social/profile-posts`);
-                        const mine = (all?.data?.profilePosts || []).filter(
-                          (p) => String(p?.user?.id) === String(me?.id),
-                        );
-                        const normalized = mine
-                          .map((p: any) => ({
-                            ...p,
-                            mediaUrls: Array.isArray(p.mediaUrls)
-                              ? p.mediaUrls
-                              : Array.isArray(p.media_urls)
-                                ? p.media_urls
-                                : (() => {
-                                    try {
-                                      return JSON.parse(p.mediaUrls ?? "[]");
-                                    } catch {
-                                      return [];
-                                    }
-                                  })(),
-                          }))
-                          .sort(
-                            (a, b) =>
-                              +new Date(b.createdAt) - +new Date(a.createdAt),
-                          );
-                        setPosts(normalized);
-                      } catch {}
-                    }}
-                  />
-                )}
-
-                {/* posts list */}
-                {posts.length === 0 && (
-                  <Card className="bg-white/5 border-white/10 p-6 text-center text-white/70">
-                    No posts yet.
-                  </Card>
-                )}
-
-                {posts.map((p) => (
-                  <Card key={p.id} className="bg-white/5 border-white/10 p-4">
-                    <div className="flex gap-3">
-                      <img
-                        src={me?.profilePicture || stockAvatar}
-                        onError={(e) => {
-                          const img = e.currentTarget as HTMLImageElement;
-                          if (img.src !== stockAvatar) img.src = stockAvatar;
-                        }}
-                        className="h-12 w-12 rounded-full object-cover"
-                      />
-
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 text-sm">
-                          <span className="font-medium text-white">
-                            {p.user?.firstName || me?.firstName}{" "}
-                            {p.user?.lastName || me?.lastName}
-                          </span>
-                          <span className="text-white/60">@{me?.username}</span>
-                          <span className="text-white/40">
-                            • {timeAgo(p.createdAt)}
-                          </span>
-                        </div>
-
-                        {!!p.content && (
-                          <p className="mt-2 whitespace-pre-wrap text-white">
-                            {p.content}
-                          </p>
-                        )}
-
-                        {!!p.mediaUrls?.length && (
-                          <div className="mt-3 grid grid-cols-2 gap-2">
-                            {p.mediaUrls!.map((u, i) => (
-                              <img
-                                key={i}
-                                src={u}
-                                onClick={() => setLightboxUrl(u)}
-                                className="cursor-zoom-in rounded-lg object-cover w-full aspect-[4/3] bg-black"
-                              />
-                            ))}
-                          </div>
-                        )}
-
-                        <footer className="mt-3 flex items-center gap-5 text-sm text-white/70">
-                          <button
-                            disabled={!viewerId}
-                            onClick={async () => {
-                              if (!viewerId) return;
-
-                              const had = !!p.reaction;
-
-                              trackEvent(AnalyticsEvents.USER_POST_REACTED, {
-                                post_id: p.id,
-                                profile_user_id: me?.id ?? null,
-                                profile_username: me?.username ?? username,
-                                viewer_id: viewerId,
-                                action: had
-                                  ? "remove_reaction"
-                                  : "add_reaction",
-                                reaction: had ? p.reaction : "like",
-                                source_page: "user_profile",
-                              });
-
-                              setPostOptimistic(p.id, (pp) => ({
-                                ...pp,
-                                reaction: had ? null : "like",
-                                reactionCount: Math.max(
-                                  0,
-                                  (pp.reactionCount ?? 0) + (had ? -1 : 1),
-                                ),
-                              }));
-
-                              try {
-                                if (had) await deleteReaction(p.id, viewerId);
-                                else await postReaction(p.id, viewerId, "like");
-                              } finally {
-                                await refreshOne(p.id);
-                              }
-                            }}
-                            className="inline-flex items-center gap-1 hover:text-white"
-                            title="Like"
-                            type="button"
-                          >
-                            {p.reaction ? (
-                              <span className="text-lg">
-                                {EMOJI[p.reaction] ?? "👍"}
-                              </span>
-                            ) : (
-                              <Heart size={18} />
-                            )}
-                            <span className="tabular-nums">
-                              {p.reactionCount ?? 0}
-                            </span>
-                          </button>
-
-                          <div className="inline-flex items-center gap-1">
-                            <MessageCircle size={18} />
-                            <span className="tabular-nums">
-                              {p.commentCount ?? 0}
-                            </span>
-                          </div>
-
-                          <button
-                            onClick={async () => {
-                              trackEvent(AnalyticsEvents.USER_POST_SHARED, {
-                                post_id: p.id,
-                                profile_user_id: me?.id ?? null,
-                                profile_username: me?.username ?? username,
-                                source_page: "user_profile",
-                              });
-
-                              const url = new URL(window.location.href);
-                              url.searchParams.set("post", p.id);
-                              try {
-                                await navigator.clipboard.writeText(
-                                  url.toString(),
-                                );
-                                toast({ title: "Copied to clipboard" });
-                              } catch {}
-                            }}
-                            className="ml-auto inline-flex items-center gap-2 hover:text-white"
-                            title="Share"
-                            type="button"
-                          >
-                            <Share2 size={18} />
-                          </button>
-                        </footer>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+      </main>
 
       {followersOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
-            className="absolute inset-0 bg-black/60"
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
             onClick={() => setFollowersOpen(false)}
           />
-          <div className="relative z-10 w-full max-w-lg rounded-xl border border-white/10 bg-[#0b0f18] p-4">
-            <div className="flex items-center justify-between">
+
+          <div className="relative z-10 max-h-[86vh] w-full max-w-lg overflow-hidden rounded-[28px] border border-cyan-300/10 bg-[#07111F] shadow-[0_30px_90px_rgba(0,0,0,0.52)]">
+            <div className="flex items-center justify-between border-b border-white/10 p-4">
               <div className="flex gap-2">
                 <button
                   className={cn(
-                    "px-3 py-2 rounded-md text-sm",
+                    "rounded-full px-3 py-2 text-xs font-black uppercase tracking-[0.12em]",
                     followersTab === "followers"
-                      ? "bg-white/10 text-white"
-                      : "text-white/70 hover:text-white",
+                      ? "bg-cyan-300 text-[#06111d]"
+                      : "border border-white/10 bg-white/[0.04] text-white/65 hover:bg-white/10 hover:text-white",
                   )}
                   onClick={() => {
                     setFollowersTab("followers");
@@ -891,12 +962,13 @@ export default function UserProfilePage({ username }: { username: string }) {
                 >
                   Followers ({followers})
                 </button>
+
                 <button
                   className={cn(
-                    "px-3 py-2 rounded-md text-sm",
+                    "rounded-full px-3 py-2 text-xs font-black uppercase tracking-[0.12em]",
                     followersTab === "following"
-                      ? "bg-white/10 text-white"
-                      : "text-white/70 hover:text-white",
+                      ? "bg-cyan-300 text-[#06111d]"
+                      : "border border-white/10 bg-white/[0.04] text-white/65 hover:bg-white/10 hover:text-white",
                   )}
                   onClick={() => {
                     setFollowersTab("following");
@@ -906,24 +978,25 @@ export default function UserProfilePage({ username }: { username: string }) {
                   Following ({followingCount})
                 </button>
               </div>
+
               <button
-                className="text-white/70 hover:text-white"
+                className="grid h-9 w-9 place-items-center rounded-full border border-white/10 bg-white/[0.04] text-white/70 hover:bg-white/10 hover:text-white"
                 onClick={() => setFollowersOpen(false)}
               >
                 ✕
               </button>
             </div>
 
-            <div className="mt-3">
+            <div className="border-b border-white/10 p-4">
               <input
                 value={followSearch}
                 onChange={(e) => setFollowSearch(e.target.value)}
                 placeholder="Search users…"
-                className="h-10 w-full rounded-lg bg-white/5 border border-white/10 px-3 text-sm outline-none placeholder:text-white/40 focus:bg-white/7"
+                className="h-11 w-full rounded-[16px] border border-white/10 bg-white/[0.055] px-3 text-sm text-white outline-none placeholder:text-white/35 focus:border-cyan-300/30 focus:ring-2 focus:ring-cyan-300/10"
               />
             </div>
 
-            <div className="max-h-[60vh] overflow-y-auto space-y-2">
+            <div className="max-h-[58vh] space-y-2 overflow-y-auto p-4">
               {loadingFollows && (
                 <div className="py-8 text-center text-white/60">Loading…</div>
               )}
@@ -936,39 +1009,17 @@ export default function UserProfilePage({ username }: { username: string }) {
                     </div>
                   ) : (
                     filteredFollowers.map((u) => (
-                      <button
+                      <FollowerRow
                         key={String(u.id)}
-                        type="button"
+                        user={u}
+                        currentProfileUserId={me?.id ?? null}
+                        currentProfileUsername={me?.username ?? username}
+                        sourcePage="user_profile_followers_modal"
                         onClick={() => {
-                          trackEvent(AnalyticsEvents.USER_PROFILE_CLICKED, {
-                            clicked_user_id: String(u.id),
-                            clicked_username: u.username,
-                            source_page: "user_profile_followers_modal",
-                            current_profile_user_id: me?.id ?? null,
-                            current_profile_username: me?.username ?? username,
-                          });
-
                           setFollowersOpen(false);
                           navigate(`/profile/${u.username}`);
                         }}
-                        className={cn(
-                          "w-full text-left flex items-center gap-3 rounded-lg border border-white/10 p-3",
-                          "hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-white/20 cursor-pointer",
-                        )}
-                        aria-label={`Open @${u.username}'s profile`}
-                      >
-                        <img
-                          src={u.profilePicture || stockAvatar}
-                          onError={(e) => {
-                            const img = e.currentTarget as HTMLImageElement;
-                            if (img.src !== stockAvatar) img.src = stockAvatar;
-                          }}
-                          className="h-9 w-9 rounded-full object-cover"
-                        />
-                        <div className="text-sm">
-                          <div className="font-medium">{u.username}</div>
-                        </div>
-                      </button>
+                      />
                     ))
                   )}
                 </>
@@ -982,40 +1033,17 @@ export default function UserProfilePage({ username }: { username: string }) {
                     </div>
                   ) : (
                     filteredFollowing.map((u) => (
-                      <button
+                      <FollowerRow
                         key={String(u.id)}
-                        type="button"
+                        user={u}
+                        currentProfileUserId={me?.id ?? null}
+                        currentProfileUsername={me?.username ?? username}
+                        sourcePage="user_profile_followers_modal"
                         onClick={() => {
-                          trackEvent(AnalyticsEvents.USER_PROFILE_CLICKED, {
-                            clicked_user_id: String(u.id),
-                            clicked_username: u.username,
-                            source_page: "user_profile_followers_modal",
-                            current_profile_user_id: me?.id ?? null,
-                            current_profile_username: me?.username ?? username,
-                          });
-
                           setFollowersOpen(false);
                           navigate(`/profile/${u.username}`);
                         }}
-                        className={cn(
-                          "w-full text-left flex items-center gap-3 rounded-lg border border-white/10 p-3",
-                          "hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-white/20 cursor-pointer",
-                        )}
-                        aria-label={`Open @${u.username}'s profile`}
-                      >
-                        <img
-                          src={u.profilePicture || stockAvatar}
-                          onError={(e) => {
-                            const img = e.currentTarget as HTMLImageElement;
-                            if (img.src !== stockAvatar) img.src = stockAvatar;
-                          }}
-                          className="h-9 w-9 rounded-full object-cover"
-                        />
-
-                        <div className="text-sm">
-                          <div className="font-medium">{u.username}</div>
-                        </div>
-                      </button>
+                      />
                     ))
                   )}
                 </>
@@ -1025,28 +1053,28 @@ export default function UserProfilePage({ username }: { username: string }) {
         </div>
       )}
 
-      {/* lightbox */}
       {lightboxUrl && (
         <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70"
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
           onClick={() => setLightboxUrl(null)}
         >
           <button
             onClick={() => setLightboxUrl(null)}
-            className="absolute top-4 right-4 h-9 w-9 grid place-items-center rounded-full bg-white text-black"
+            className="absolute right-4 top-4 grid h-11 w-11 place-items-center rounded-full border border-white/10 bg-white text-black"
             aria-label="Close image"
           >
             <XIcon size={18} />
           </button>
+
           <img
             src={lightboxUrl}
-            className="max-h-[85vh] max-w-[92vw] rounded-xl border border-white/10 object-contain"
+            className="max-h-[85vh] max-w-[92vw] rounded-[24px] border border-white/10 object-contain"
             onClick={(e) => e.stopPropagation()}
+            alt="Expanded post media"
           />
         </div>
       )}
 
-      {/* user search */}
       <UserSearchModal
         open={searchOpen}
         onClose={() => setSearchOpen(false)}
@@ -1070,12 +1098,15 @@ function StatBox({
   trophy?: boolean;
 }) {
   return (
-    <div className="min-w-[140px] rounded-lg bg-white/5 border border-white/10 px-4 py-3">
-      <div className="text-2xl font-semibold flex items-center gap-2">
+    <div className="rounded-[20px] border border-white/10 bg-white/[0.045] px-4 py-3 transition hover:border-cyan-300/20 hover:bg-white/[0.06] sm:min-w-[140px]">
+      <div className="flex items-center gap-2 text-2xl font-black text-white">
         {value}
-        {trophy && <span>🏆</span>}
+        {trophy ? <Trophy className="h-5 w-5 text-[#FFB199]" /> : null}
       </div>
-      <div className="text-sm text-white/70">{label}</div>
+
+      <div className="mt-1 text-xs font-bold uppercase tracking-[0.14em] text-white/45">
+        {label}
+      </div>
     </div>
   );
 }
@@ -1084,26 +1115,22 @@ function Tab({
   label,
   active,
   onClick,
-  className,
 }: {
   label: string;
   active?: boolean;
   onClick?: () => void;
-  className?: string;
 }) {
   return (
     <button
       onClick={onClick}
       className={cn(
-        "relative py-3 text-white/70 hover:text-white",
-        "sm:px-4", // spacing on desktop
-        active && "text-white font-medium",
-        className, // allow caller to set w-1/3 text-center on mobile
+        "relative py-4 text-xs font-black uppercase tracking-[0.14em] text-white/55 transition hover:text-white",
+        active && "text-white",
       )}
     >
       {label}
       {active && (
-        <span className="absolute -bottom-px left-0 right-0 h-0.5 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-amber-400" />
+        <span className="absolute bottom-0 left-4 right-4 h-0.5 rounded-full bg-[linear-gradient(90deg,#19E3FF_0%,#7CF4FF_45%,#FF7849_100%)] shadow-[0_0_16px_rgba(34,211,238,0.45)]" />
       )}
     </button>
   );
@@ -1111,83 +1138,27 @@ function Tab({
 
 function ProfileSkeleton() {
   return (
-    <div className="mx-auto max-w-5xl px-4 mt-16 sm:mt-20 animate-pulse">
-      <div className="flex flex-col sm:flex-row sm:items-end gap-4">
-        <div className="h-28 w-28 sm:h-36 sm:w-36 rounded-full bg-white/10" />
-        <div className="flex-1">
-          <div className="h-6 w-48 bg-white/10 rounded" />
-          <div className="mt-2 flex gap-2">
-            <div className="h-4 w-24 bg-white/10 rounded" />
-            <div className="h-4 w-16 bg-white/10 rounded" />
-          </div>
-          <div className="mt-4 flex gap-3">
-            <div className="min-w-[140px] rounded-lg bg-white/5 border border-white/10 px-4 py-3">
-              <div className="h-7 w-12 bg-white/10 rounded" />
-              <div className="mt-1 h-4 w-20 bg-white/10 rounded" />
-            </div>
-            <div className="min-w-[140px] rounded-lg bg-white/5 border border-white/10 px-4 py-3">
-              <div className="h-7 w-12 bg-white/10 rounded" />
-              <div className="mt-1 h-4 w-14 bg-white/10 rounded" />
-            </div>
-          </div>
-        </div>
-        <div className="h-9 w-24 bg-white/10 rounded-full" />
+    <div className="relative mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
+      <div className="pointer-events-none fixed inset-0 -z-10">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.12),transparent_28%),radial-gradient(circle_at_82%_12%,rgba(255,107,53,0.10),transparent_24%),linear-gradient(180deg,#030913_0%,#07111F_48%,#02050A_100%)]" />
       </div>
 
-      <div className="mt-8 border-b border-white/10">
-        <div className="flex gap-8 text-sm">
-          <div className="h-9 w-16 bg-white/10 rounded" />
-          <div className="h-9 w-16 bg-white/10 rounded" />
-          <div className="h-9 w-16 bg-white/10 rounded" />
+      <div className="animate-pulse overflow-hidden rounded-[32px] border border-cyan-300/10 bg-[#07111F]/90 p-5 sm:p-7">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-end">
+          <div className="h-28 w-28 rounded-full bg-white/10 sm:h-36 sm:w-36" />
+          <div className="flex-1">
+            <div className="h-8 w-56 rounded bg-white/10" />
+            <div className="mt-3 h-4 w-28 rounded bg-white/10" />
+            <div className="mt-5 grid grid-cols-2 gap-3 sm:flex">
+              <div className="h-20 rounded-[20px] bg-white/10 sm:w-[140px]" />
+              <div className="h-20 rounded-[20px] bg-white/10 sm:w-[140px]" />
+            </div>
+          </div>
+          <div className="h-12 w-32 rounded-full bg-white/10" />
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="order-2 lg:order-1 lg:col-span-1 space-y-6">
-          <div className="bg-white/5 border border-white/10 p-4 rounded-xl">
-            <div className="flex items-center justify-between">
-              <div className="h-4 w-28 bg-white/10 rounded" />
-              <div className="h-8 w-8 bg-white/10 rounded-full" />
-            </div>
-            <div className="mt-3 flex gap-3">
-              <div className="h-12 w-12 rounded-full bg-white/10" />
-              <div className="h-12 w-12 rounded-full bg-white/10" />
-              <div className="h-12 w-12 rounded-full bg-white/10" />
-            </div>
-          </div>
-        </div>
-
-        <div className="order-1 lg:order-2 lg:col-span-2 space-y-3">
-          <div className="bg-white/5 border border-white/10 p-4 rounded-xl">
-            <div className="flex gap-3">
-              <div className="h-12 w-12 rounded-full bg-white/10" />
-              <div className="flex-1 space-y-3">
-                <div className="h-16 bg-white/10 rounded-2xl" />
-                <div className="h-8 w-28 bg-white/10 rounded-full ml-auto" />
-              </div>
-            </div>
-          </div>
-          {[0, 1].map((i) => (
-            <div
-              key={i}
-              className="bg-white/5 border border-white/10 p-4 rounded-xl"
-            >
-              <div className="flex gap-3">
-                <div className="h-12 w-12 rounded-full bg-white/10" />
-                <div className="flex-1">
-                  <div className="h-4 w-40 bg-white/10 rounded" />
-                  <div className="mt-2 h-12 w-full bg-white/10 rounded" />
-                  <div className="mt-3 flex gap-5">
-                    <div className="h-5 w-10 bg-white/10 rounded" />
-                    <div className="h-5 w-10 bg-white/10 rounded" />
-                    <div className="ml-auto h-5 w-5 bg-white/10 rounded" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      <div className="mt-6 h-80 rounded-[26px] border border-cyan-300/10 bg-[#07111F]/70" />
     </div>
   );
 }
@@ -1206,30 +1177,40 @@ function Composer({
 
   async function uploadMediaIfNeeded(): Promise<string[]> {
     if (!selectedImage) return [];
+
     const form = new FormData();
     form.append("media", selectedImage);
+
     const res = await apiFetch("/social/profile-posts/upload-media", {
       method: "POST",
       body: form,
     });
+
     if (!res.ok) throw new Error(await res.text());
+
     const json = await res.json();
     const url = json?.data?.mediaUrl as string | undefined;
+
     return url ? [url] : [];
   }
 
   async function handleCreatePost() {
     if (!postText.trim() && !selectedImage) return;
+
     try {
       setUploading(true);
+
       const mediaUrls = await uploadMediaIfNeeded();
+
       await apiRequest("POST", "/social/profile-posts", {
         content: postText.trim(),
         mediaUrls,
       });
+
       setPostText("");
       setSelectedImage(null);
       setImagePreview(null);
+
       await onPosted();
     } finally {
       setUploading(false);
@@ -1237,15 +1218,16 @@ function Composer({
   }
 
   return (
-    <Card className="bg-white/5 border-white/10 p-4">
-      <div className="flex flex-col md:flex-row gap-3">
+    <Card className="rounded-[24px] border border-white/10 bg-white/[0.045] p-4">
+      <div className="flex flex-col gap-3 md:flex-row">
         <img
           src={avatarSrc || stockAvatar}
           onError={(e) => {
             const img = e.currentTarget as HTMLImageElement;
             if (img.src !== stockAvatar) img.src = stockAvatar;
           }}
-          className="h-12 w-12 rounded-full object-cover self-start md:self-auto"
+          className="h-12 w-12 self-start rounded-full object-cover md:self-auto"
+          alt="Composer avatar"
         />
 
         <div className="flex-1">
@@ -1254,14 +1236,15 @@ function Composer({
             onChange={(e) => setPostText(e.target.value)}
             placeholder="What's happening?"
             maxLength={500}
-            className="w-full min-h-[64px] resize-y rounded-2xl bg-white/5 border border-white/10 px-4 py-3 text-sm outline-none placeholder:text-white/40 focus:bg-white/7 text-white"
+            className="min-h-[74px] w-full resize-y rounded-[20px] border border-white/10 bg-white/[0.055] px-4 py-3 text-sm text-white outline-none placeholder:text-white/35 focus:border-cyan-300/30 focus:ring-2 focus:ring-cyan-300/10"
           />
 
           {imagePreview && (
             <div className="relative mt-3 inline-block">
               <img
                 src={imagePreview}
-                className="max-h-36 rounded-xl object-cover border border-white/10"
+                className="max-h-36 rounded-[18px] border border-white/10 object-cover"
+                alt="Selected post preview"
               />
               <button
                 aria-label="Remove image"
@@ -1269,7 +1252,7 @@ function Composer({
                   setSelectedImage(null);
                   setImagePreview(null);
                 }}
-                className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-white text-black grid place-items-center shadow"
+                className="absolute -right-2 -top-2 grid h-7 w-7 place-items-center rounded-full bg-white text-black shadow"
                 title="Remove"
               >
                 <XIcon size={16} />
@@ -1279,7 +1262,7 @@ function Composer({
 
           <div className="mt-3 flex items-center gap-2">
             <label
-              className="cursor-pointer inline-flex items-center gap-2 text-sm px-3 py-2 rounded-full border border-white/10 bg-white/5 hover:bg-white/7 text-white"
+              className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-cyan-300/15 bg-cyan-300/10 px-4 text-sm text-cyan-100 hover:bg-cyan-300/15"
               title="Add photo/video"
             >
               <input
@@ -1299,7 +1282,7 @@ function Composer({
             <Button
               disabled={uploading || (!postText.trim() && !selectedImage)}
               onClick={handleCreatePost}
-              className="ml-auto rounded-full px-5 bg-white text-black hover:bg-white/90 disabled:opacity-60"
+              className="ml-auto rounded-full bg-cyan-300 px-5 text-[#06111d] hover:bg-cyan-200 disabled:opacity-60"
             >
               {uploading ? "Posting…" : "Post"}
             </Button>
@@ -1318,14 +1301,69 @@ function BioBlock({
   className?: string;
 }) {
   const content = (text ?? "").trim();
+
   return (
     <div
       className={cn(
-        "rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-sm text-white/80",
+        "rounded-[20px] border border-white/10 bg-white/[0.045] px-4 py-3 text-sm leading-7 text-white/75",
         className,
       )}
     >
       {content ? content : "No bio yet."}
     </div>
+  );
+}
+
+function FollowerRow({
+  user,
+  currentProfileUserId,
+  currentProfileUsername,
+  sourcePage,
+  onClick,
+}: {
+  user: {
+    id: string | number;
+    username: string;
+    profilePicture?: string | null;
+  };
+  currentProfileUserId: string | number | null;
+  currentProfileUsername: string;
+  sourcePage: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        trackEvent(AnalyticsEvents.USER_PROFILE_CLICKED, {
+          clicked_user_id: String(user.id),
+          clicked_username: user.username,
+          source_page: sourcePage,
+          current_profile_user_id: currentProfileUserId,
+          current_profile_username: currentProfileUsername,
+        });
+
+        onClick();
+      }}
+      className={cn(
+        "flex w-full cursor-pointer items-center gap-3 rounded-[18px] border border-white/10 p-3 text-left",
+        "bg-white/[0.035] hover:bg-white/[0.06] focus:outline-none focus:ring-2 focus:ring-cyan-300/20",
+      )}
+      aria-label={`Open @${user.username}'s profile`}
+    >
+      <img
+        src={user.profilePicture || stockAvatar}
+        onError={(e) => {
+          const img = e.currentTarget as HTMLImageElement;
+          if (img.src !== stockAvatar) img.src = stockAvatar;
+        }}
+        className="h-10 w-10 rounded-full object-cover"
+        alt={`${user.username} avatar`}
+      />
+
+      <div className="text-sm">
+        <div className="font-semibold text-white">@{user.username}</div>
+      </div>
+    </button>
   );
 }

@@ -7,6 +7,14 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { getAccessToken, getRefreshToken, setTokens } from "@/lib/token";
 import { apiFetch } from "@/lib/apiClient";
+import {
+  ArrowLeft,
+  LockKeyhole,
+  Search,
+  ShieldCheck,
+  Sparkles,
+  UserPlus,
+} from "lucide-react";
 
 const ADMIN_PIN = "1234";
 const AUTH_KEY = "__admin_authed_v1";
@@ -106,39 +114,67 @@ type CreateBody = {
 
 function PinGate({ onUnlock }: { onUnlock: (ok: boolean) => void }) {
   const [pin, setPin] = useState("");
+
   return (
-    <div className="min-h-[60vh] grid place-items-center">
-      <Card className="bg-white/5 border-white/10 p-6 w-full max-w-sm">
-        <h2 className="text-xl font-semibold text-white mb-2">Admin Access</h2>
-        <p className="text-sm text-white/70 mb-4">Enter 4-digit PIN</p>
-        <input
-          value={pin}
-          onChange={(e) =>
-            setPin(e.target.value.replace(/\D/g, "").slice(0, 4))
-          }
-          inputMode="numeric"
-          className="w-full h-11 rounded-md bg-white/5 border border-white/10 px-3 text-white tracking-[0.3em] text-center text-lg outline-none"
-          placeholder="••••"
-        />
-        <div className="mt-4 flex gap-2">
-          <Button
-            className="flex-1 bg-white text-black hover:bg-white/90"
-            onClick={() => onUnlock(pin === ADMIN_PIN)}
-            disabled={pin.length !== 4}
-          >
-            Unlock
-          </Button>
-          <Button
-            variant="ghost"
-            className="border border-white/10 text-white"
-            onClick={() => setPin("")}
-          >
-            Clear
-          </Button>
+    <div className="grid min-h-[70vh] place-items-center px-4">
+      <Card className="relative w-full max-w-md overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/90 p-0 shadow-[0_30px_90px_rgba(0,0,0,0.42)]">
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -left-24 top-0 h-72 w-72 rounded-full bg-cyan-400/10 blur-3xl" />
+          <div className="absolute -right-24 bottom-0 h-72 w-72 rounded-full bg-[#FF6B35]/10 blur-3xl" />
+          <div className="absolute inset-0 opacity-[0.05] [background-image:linear-gradient(rgba(255,255,255,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.18)_1px,transparent_1px)] [background-size:64px_64px]" />
         </div>
-        <p className="mt-3 text-xs text-white/50">
-          (Dev note: PIN is hard-coded client-side for now.)
-        </p>
+
+        <div className="relative border-b border-white/10 p-5 sm:p-6">
+          <div className="mb-4 grid h-12 w-12 place-items-center rounded-2xl border border-cyan-300/20 bg-cyan-300/10 text-cyan-200 shadow-[0_0_28px_rgba(34,211,238,0.14)]">
+            <LockKeyhole className="h-5 w-5" />
+          </div>
+
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#FF6B35]/20 bg-[#FF6B35]/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-[#FFB199]">
+            Admin Gate
+          </div>
+
+          <h2 className="mt-4 text-2xl font-black uppercase tracking-[-0.03em] text-white">
+            Admin Access
+          </h2>
+
+          <p className="mt-2 text-sm leading-6 text-white/60">
+            Enter the 4-digit PIN to create a new racer profile.
+          </p>
+        </div>
+
+        <div className="relative space-y-4 p-5 sm:p-6">
+          <input
+            value={pin}
+            onChange={(e) =>
+              setPin(e.target.value.replace(/\D/g, "").slice(0, 4))
+            }
+            inputMode="numeric"
+            className="h-14 w-full rounded-[16px] border border-white/10 bg-white/[0.05] px-3 text-center text-xl tracking-[0.45em] text-white outline-none placeholder:text-white/25 focus:border-cyan-300/30 focus:ring-2 focus:ring-cyan-300/10"
+            placeholder="••••"
+          />
+
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <Button
+              className="h-12 rounded-full bg-cyan-300 text-xs font-black uppercase tracking-[0.16em] text-[#06111d] shadow-[0_0_28px_rgba(34,211,238,0.25)] hover:bg-cyan-200 disabled:opacity-50"
+              onClick={() => onUnlock(pin === ADMIN_PIN)}
+              disabled={pin.length !== 4}
+            >
+              Unlock
+            </Button>
+
+            <Button
+              variant="ghost"
+              className="h-12 rounded-full border border-white/10 text-xs font-black uppercase tracking-[0.16em] text-white/70 hover:bg-white/10 hover:text-white"
+              onClick={() => setPin("")}
+            >
+              Clear
+            </Button>
+          </div>
+
+          <p className="rounded-[16px] border border-white/10 bg-black/20 px-4 py-3 text-xs leading-5 text-white/45">
+            Dev note: PIN is hard-coded client-side for now.
+          </p>
+        </div>
       </Card>
     </div>
   );
@@ -173,7 +209,7 @@ function CreateRacerForm() {
 
   const canSubmit = useMemo(
     () => vals.name.trim().length > 0 && !exactExists,
-    [vals.name, exactExists]
+    [vals.name, exactExists],
   );
 
   useEffect(() => {
@@ -203,7 +239,7 @@ function CreateRacerForm() {
           params.set("sortBy", "createdAt");
 
           const resp = await apiFetch(
-            `/jet-ski-racer-details?${params.toString()}`
+            `/jet-ski-racer-details?${params.toString()}`,
           );
 
           if (!resp.ok) {
@@ -211,7 +247,7 @@ function CreateRacerForm() {
               "[CreateRacer] suggestion page fetch failed",
               resp.status,
               "page=" + pageNum,
-              "limit=" + LIMIT
+              "limit=" + LIMIT,
             );
             return { normalized: [], hasNextPage: false };
           }
@@ -237,10 +273,10 @@ function CreateRacerForm() {
                 rec?.uuid ??
                 rec?.racerId ??
                 rec?.athlete?.id ??
-                ""
+                "",
             ),
             name: String(
-              rec?.athlete?.name ?? rec?.name ?? rec?.racerName ?? ""
+              rec?.athlete?.name ?? rec?.name ?? rec?.racerName ?? "",
             ).trim(),
           }));
 
@@ -444,7 +480,7 @@ function CreateRacerForm() {
       if (athleteId) {
         toast({ title: "Racer created" });
         navigate(
-          `/racer/${encodeURIComponent(String(athleteId))}?kind=athlete`
+          `/racer/${encodeURIComponent(String(athleteId))}?kind=athlete`,
         );
         setSubmitting(false);
         return;
@@ -463,7 +499,7 @@ function CreateRacerForm() {
       logRequestError(
         "AdminCreateRacer POST /jet-ski-racer-details",
         e,
-        "/jet-ski-racer-details"
+        "/jet-ski-racer-details",
       );
 
       const nice =
@@ -479,130 +515,212 @@ function CreateRacerForm() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl">
-      <Card className="bg-white/5 border-white/10 p-5">
-        <h2 className="text-xl font-semibold text-white mb-4">Create Racer</h2>
+    <div className="mx-auto w-full max-w-5xl">
+      <Card className="relative overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/90 p-0 shadow-[0_28px_80px_rgba(0,0,0,0.34)]">
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-cyan-400/10 blur-3xl" />
+          <div className="absolute -right-24 bottom-0 h-96 w-96 rounded-full bg-[#FF6B35]/10 blur-3xl" />
+          <div className="absolute inset-0 opacity-[0.04] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:72px_72px]" />
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <Field label="Name *">
-            <div className="relative">
-              <input
-                className="fld"
-                value={vals.name}
-                onChange={set("name")}
-                onFocus={() => setShowSuggest(true)}
-                onBlur={() => setTimeout(() => setShowSuggest(false), 120)}
-                placeholder="Type a name…"
-              />
-
-              {exactExists && vals.name.trim() && (
-                <div className="mt-1 text-xs text-amber-300">
-                  An athlete named “{vals.name.trim()}” already exists. Please
-                  change the name or pick the existing athlete.
+        <div className="relative border-b border-white/10 px-5 py-5 sm:px-6 sm:py-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <div className="mb-4 flex flex-wrap items-center gap-2">
+                <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-cyan-200">
+                  <span className="h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_18px_rgba(103,232,249,0.95)]" />
+                  Admin Tool
                 </div>
-              )}
 
-              {showSuggest && suggestions.length > 0 && (
-                <div className="absolute z-20 mt-1 w-full rounded-md border border-white/10 bg-[#0b0f18] shadow-lg">
-                  {suggestions
-                    .filter((s) =>
-                      s.name
-                        .toLowerCase()
-                        .includes(vals.name.trim().toLowerCase())
-                    )
-                    .map((s) => (
-                      <button
-                        key={s.id}
-                        type="button"
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={() => {
-                          setVals((p) => ({ ...p, name: s.name }));
-                          setExactExists(true);
-                          setShowSuggest(false);
-                        }}
-                        className="w-full text-left px-3 py-2 text-white text-sm hover:bg-white/10"
-                      >
-                        {s.name}
-                      </button>
-                    ))}
+                <div className="inline-flex items-center rounded-full border border-[#FF6B35]/20 bg-[#FF6B35]/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-[#FFB199]">
+                  Racer Setup
                 </div>
-              )}
+              </div>
+
+              <h2 className="text-3xl font-black uppercase leading-[0.95] tracking-[-0.04em] text-white sm:text-5xl">
+                Create{" "}
+                <span className="bg-[linear-gradient(90deg,#19E3FF_0%,#7CF4FF_35%,#FF7849_100%)] bg-clip-text text-transparent">
+                  Racer
+                </span>
+              </h2>
+
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-white/60 sm:text-base">
+                Add a new athlete profile, baseline racing details, and ride
+                data to the Corner League database.
+              </p>
             </div>
-          </Field>
 
-          <Field label="Age">
-            <input
-              className="fld"
-              inputMode="numeric"
-              value={vals.age}
-              onChange={set("age")}
-            />
-          </Field>
-
-          <Field label="Height (inches)">
-            <input
-              className="fld"
-              type="number"
-              inputMode="numeric"
-              min={36}
-              max={96}
-              step={1}
-              placeholder="e.g., 70"
-              value={vals.heightInches}
-              onChange={set("heightInches")}
-            />
-          </Field>
-
-          <Field label="Origin">
-            <input
-              className="fld"
-              value={vals.origin}
-              onChange={set("origin")}
-            />
-          </Field>
-
-          <Field label="Boat Manufacturer">
-            <input
-              className="fld"
-              value={vals.boatManufacturers}
-              onChange={set("boatManufacturers")}
-            />
-          </Field>
-
-          <div className="md:col-span-2">
-            <Field label="Bio">
-              <textarea
-                className="fld h-28"
-                value={vals.bio}
-                onChange={set("bio")}
-              />
-            </Field>
+            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-cyan-300/20 bg-cyan-300/10 text-cyan-200 shadow-[0_0_28px_rgba(34,211,238,0.14)]">
+              <UserPlus className="h-5 w-5" />
+            </div>
           </div>
         </div>
 
-        <div className="mt-4 flex justify-end">
-          <Button
-            onClick={handleSubmit}
-            disabled={!canSubmit || submitting}
-            className="bg-white text-black hover:bg-white/90"
-          >
-            {submitting ? "Creating…" : "Create Racer"}
-          </Button>
+        <div className="relative p-5 sm:p-6">
+          <div className="mb-5 rounded-[20px] border border-cyan-300/10 bg-cyan-300/[0.04] px-4 py-3">
+            <div className="flex items-start gap-3">
+              <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-cyan-200" />
+              <div>
+                <div className="text-sm font-semibold text-white">
+                  Duplicate protection is active
+                </div>
+                <p className="mt-1 text-xs leading-5 text-white/55">
+                  Start typing a racer name and existing athletes will be
+                  checked before creation.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <Field label="Name *">
+              <div className="relative">
+                <input
+                  className="fld"
+                  value={vals.name}
+                  onChange={set("name")}
+                  onFocus={() => setShowSuggest(true)}
+                  onBlur={() => setTimeout(() => setShowSuggest(false), 120)}
+                  placeholder="Type a name…"
+                />
+
+                {exactExists && vals.name.trim() && (
+                  <div className="mt-2 rounded-[14px] border border-[#FF6B35]/20 bg-[#FF6B35]/10 px-3 py-2 text-xs leading-5 text-[#FFB199]">
+                    An athlete named “{vals.name.trim()}” already exists. Please
+                    change the name or pick the existing athlete.
+                  </div>
+                )}
+
+                {showSuggest && suggestions.length > 0 && (
+                  <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-[18px] border border-cyan-300/10 bg-[#07111F] shadow-[0_20px_50px_rgba(0,0,0,0.45)]">
+                    <div className="flex items-center gap-2 border-b border-white/10 px-3 py-2 text-xs uppercase tracking-[0.14em] text-white/45">
+                      <Search className="h-3.5 w-3.5" />
+                      Existing racers
+                    </div>
+
+                    {suggestions
+                      .filter((s) =>
+                        s.name
+                          .toLowerCase()
+                          .includes(vals.name.trim().toLowerCase()),
+                      )
+                      .map((s) => (
+                        <button
+                          key={s.id}
+                          type="button"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => {
+                            setVals((p) => ({ ...p, name: s.name }));
+                            setExactExists(true);
+                            setShowSuggest(false);
+                          }}
+                          className="w-full px-3 py-3 text-left text-sm text-white transition hover:bg-cyan-300/10"
+                        >
+                          {s.name}
+                        </button>
+                      ))}
+                  </div>
+                )}
+              </div>
+            </Field>
+
+            <Field label="Age">
+              <input
+                className="fld"
+                inputMode="numeric"
+                value={vals.age}
+                onChange={set("age")}
+              />
+            </Field>
+
+            <Field label="Height (inches)">
+              <input
+                className="fld"
+                type="number"
+                inputMode="numeric"
+                min={36}
+                max={96}
+                step={1}
+                placeholder="e.g., 70"
+                value={vals.heightInches}
+                onChange={set("heightInches")}
+              />
+            </Field>
+
+            <Field label="Origin">
+              <input
+                className="fld"
+                value={vals.origin}
+                onChange={set("origin")}
+              />
+            </Field>
+
+            <Field label="Boat Manufacturer">
+              <input
+                className="fld"
+                value={vals.boatManufacturers}
+                onChange={set("boatManufacturers")}
+              />
+            </Field>
+
+            <div className="md:col-span-2">
+              <Field label="Bio">
+                <textarea
+                  className="fld h-32"
+                  value={vals.bio}
+                  onChange={set("bio")}
+                />
+              </Field>
+            </div>
+          </div>
+
+          <div className="mt-6 flex flex-col gap-3 border-t border-white/10 pt-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="text-xs leading-6 text-white/45">
+              Required: name, age, bio, and boat manufacturer.
+            </div>
+
+            <Button
+              onClick={handleSubmit}
+              disabled={!canSubmit || submitting}
+              className="h-12 rounded-full bg-cyan-300 px-6 text-xs font-black uppercase tracking-[0.16em] text-[#06111d] shadow-[0_0_28px_rgba(34,211,238,0.25)] hover:bg-cyan-200 disabled:opacity-50"
+            >
+              {submitting ? "Creating…" : "Create Racer"}
+            </Button>
+          </div>
         </div>
       </Card>
 
       <style>{`
         .fld {
           width: 100%;
-          height: 42px;
-          border-radius: 8px;
-          background: rgba(255,255,255,0.05);
-          border: 1px solid rgba(255,255,255,0.1);
-          padding: 0 12px;
+          min-height: 48px;
+          border-radius: 14px;
+          background: rgba(255,255,255,0.055);
+          border: 1px solid rgba(255,255,255,0.10);
+          padding: 0 14px;
           color: white;
           outline: none;
+          transition:
+            border-color 160ms ease,
+            box-shadow 160ms ease,
+            background 160ms ease;
         }
-        textarea.fld { height: auto; padding: 10px 12px; }
+
+        .fld::placeholder {
+          color: rgba(255,255,255,0.34);
+        }
+
+        .fld:focus {
+          border-color: rgba(103,232,249,0.34);
+          box-shadow: 0 0 0 3px rgba(34,211,238,0.10);
+          background: rgba(255,255,255,0.075);
+        }
+
+        textarea.fld {
+          height: auto;
+          padding: 12px 14px;
+          resize: vertical;
+        }
       `}</style>
     </div>
   );
@@ -617,7 +735,9 @@ function Field({
 }) {
   return (
     <label className="block">
-      <div className="text-xs text-white/60 mb-1">{label}</div>
+      <div className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-white/60">
+        {label}
+      </div>
       {children}
     </label>
   );
@@ -640,8 +760,21 @@ export default function AdminCreateRacerPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#090D16] text-white py-8 px-4">
+    <div className="relative min-h-dvh overflow-x-hidden bg-[#030913] px-4 py-8 pb-24 text-white sm:px-6 sm:py-12">
       <PageSEO title="Admin • Create Racer" />
+
+      <div className="pointer-events-none fixed inset-0 -z-10">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.12),transparent_28%),radial-gradient(circle_at_82%_12%,rgba(255,107,53,0.10),transparent_24%),linear-gradient(180deg,#030913_0%,#07111F_48%,#02050A_100%)]" />
+        <div className="absolute inset-0 opacity-[0.04] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:72px_72px]" />
+      </div>
+
+      <div className="mx-auto mb-6 flex w-full max-w-5xl items-center justify-between gap-3">
+        <div className="hidden items-center gap-2 rounded-full border border-cyan-300/15 bg-cyan-300/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-cyan-200 sm:inline-flex">
+          <Sparkles className="h-3.5 w-3.5" />
+          Corner League Admin
+        </div>
+      </div>
+
       {authed ? <CreateRacerForm /> : <PinGate onUnlock={handleUnlock} />}
     </div>
   );

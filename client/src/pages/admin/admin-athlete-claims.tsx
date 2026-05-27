@@ -6,7 +6,20 @@ import { apiRequest } from "@/lib/apiClient";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Check, X, Search, Shield, Clock3, Eye, ArrowLeft } from "lucide-react";
+import {
+  Check,
+  X,
+  Search,
+  Shield,
+  Clock3,
+  Eye,
+  ArrowLeft,
+  UserRound,
+  BadgeCheck,
+  FileText,
+  Image as ImageIcon,
+  Sparkles,
+} from "lucide-react";
 
 type ClaimStatus = "pending" | "approved" | "rejected";
 
@@ -67,14 +80,16 @@ function timeAgo(d?: string | null) {
 function StatusBadge({ status }: { status: ClaimStatus }) {
   const cls =
     status === "approved"
-      ? "bg-emerald-500/15 text-emerald-200 border border-emerald-400/20"
+      ? "border border-emerald-400/20 bg-emerald-500/15 text-emerald-200"
       : status === "rejected"
-        ? "bg-red-500/15 text-red-200 border border-red-400/20"
-        : "bg-yellow-500/15 text-yellow-200 border border-yellow-400/20";
+        ? "border border-red-400/20 bg-red-500/15 text-red-200"
+        : "border border-[#FF6B35]/25 bg-[#FF6B35]/10 text-[#FFB199]";
 
   return (
-    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${cls}`}>
-      {status.toUpperCase()}
+    <span
+      className={`inline-flex items-center rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] ${cls}`}
+    >
+      {status}
     </span>
   );
 }
@@ -227,9 +242,17 @@ export default function AdminAthleteClaimsPage() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-[#090D16] text-white grid place-items-center">
+      <div className="relative grid min-h-dvh place-items-center overflow-x-hidden bg-[#030913] text-white">
         <PageSEO title="Admin Claims • Corner League" />
-        <div className="animate-pulse text-white/70">Loading admin claims…</div>
+
+        <div className="pointer-events-none fixed inset-0 -z-10">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.12),transparent_28%),radial-gradient(circle_at_82%_12%,rgba(255,107,53,0.10),transparent_24%),linear-gradient(180deg,#030913_0%,#07111F_48%,#02050A_100%)]" />
+          <div className="absolute inset-0 opacity-[0.04] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:72px_72px]" />
+        </div>
+
+        <div className="rounded-full border border-cyan-300/15 bg-cyan-300/10 px-5 py-3 text-sm text-cyan-100 shadow-[0_0_30px_rgba(34,211,238,0.14)]">
+          Loading admin claims…
+        </div>
       </div>
     );
   }
@@ -237,69 +260,99 @@ export default function AdminAthleteClaimsPage() {
   if (!isSuperAdmin) return null;
 
   return (
-    <div className="min-h-screen bg-[#090D16] text-white">
+    <div className="relative min-h-dvh overflow-x-hidden bg-[#030913] text-white">
       <PageSEO title="Admin Claims • Corner League" />
 
-      <div className="mx-auto max-w-7xl px-4 py-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <button
-              onClick={() => navigate("/profile")}
-              className="mb-3 inline-flex items-center gap-2 text-white/70 hover:text-white"
-            >
-              <ArrowLeft size={16} />
-              Back
-            </button>
+      <div className="pointer-events-none fixed inset-0 -z-10">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.12),transparent_28%),radial-gradient(circle_at_82%_12%,rgba(255,107,53,0.10),transparent_24%),linear-gradient(180deg,#030913_0%,#07111F_48%,#02050A_100%)]" />
+        <div className="absolute inset-0 opacity-[0.04] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:72px_72px]" />
+      </div>
 
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-violet-500/20 border border-violet-400/20 grid place-items-center">
-                <Shield size={18} className="text-violet-200" />
+      <main className="mx-auto max-w-7xl px-4 py-8 pb-24 sm:px-6 sm:py-12 lg:px-8">
+        <section className="relative overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[linear-gradient(180deg,rgba(7,17,31,0.94)_0%,rgba(4,10,19,0.98)_100%)] p-5 shadow-[0_30px_90px_rgba(0,0,0,0.42)] sm:rounded-[38px] sm:p-8">
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-cyan-400/10 blur-3xl" />
+            <div className="absolute -right-24 bottom-0 h-96 w-96 rounded-full bg-[#FF6B35]/10 blur-3xl" />
+            <div className="absolute inset-0 opacity-[0.05] [background-image:linear-gradient(rgba(255,255,255,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.18)_1px,transparent_1px)] [background-size:72px_72px]" />
+          </div>
+
+          <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+            <div className="min-w-0">
+              <button
+                onClick={() => navigate("/profile")}
+                className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-white/70 transition hover:bg-white/10 hover:text-white"
+              >
+                <ArrowLeft size={16} />
+                Back
+              </button>
+
+              <div className="mb-4 flex flex-wrap items-center gap-2">
+                <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-cyan-200">
+                  <span className="h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_18px_rgba(103,232,249,0.95)]" />
+                  Admin Review
+                </div>
+
+                <div className="inline-flex items-center rounded-full border border-[#FF6B35]/20 bg-[#FF6B35]/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-[#FFB199]">
+                  Athlete Claims
+                </div>
               </div>
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-semibold">
-                  Admin Claims Dashboard
-                </h1>
-                <p className="text-white/60 text-sm">
-                  Review athlete profile claims and approve or reject them.
-                </p>
-              </div>
+
+              <h1 className="max-w-4xl text-3xl font-black uppercase leading-[0.95] tracking-[-0.04em] text-white sm:text-5xl">
+                Claims{" "}
+                <span className="bg-[linear-gradient(90deg,#19E3FF_0%,#7CF4FF_35%,#FF7849_100%)] bg-clip-text text-transparent">
+                  Dashboard
+                </span>
+              </h1>
+
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
+                Review athlete profile claims and approve or reject verified
+                racer ownership requests.
+              </p>
+            </div>
+
+            <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl border border-cyan-300/20 bg-cyan-300/10 text-cyan-200 shadow-[0_0_28px_rgba(34,211,238,0.14)]">
+              <Shield className="h-6 w-6" />
             </div>
           </div>
 
-          <div className="flex gap-2 flex-wrap">
+          <div className="relative mt-6 flex flex-wrap gap-2">
             {(["pending", "approved", "rejected", "ALL"] as const).map((s) => (
               <button
                 key={s}
                 onClick={() => setStatusFilter(s)}
-                className={`h-10 px-4 rounded-full border text-sm ${
+                className={`h-11 rounded-full border px-4 text-xs font-black uppercase tracking-[0.14em] transition ${
                   statusFilter === s
-                    ? "bg-white text-black border-white"
-                    : "bg-white/5 text-white border-white/10 hover:bg-white/10"
+                    ? "border-cyan-300 bg-cyan-300 text-[#06111d] shadow-[0_0_26px_rgba(34,211,238,0.20)]"
+                    : "border-white/10 bg-white/[0.04] text-white/65 hover:bg-white/10 hover:text-white"
                 }`}
               >
-                {s === "ALL" ? "ALL" : s.toUpperCase()}
+                {s === "ALL" ? "ALL" : s}
               </button>
             ))}
           </div>
-        </div>
+        </section>
 
-        <div className="mt-6 grid grid-cols-1 xl:grid-cols-5 gap-6">
-          <div className="xl:col-span-2 space-y-4">
-            <Card className="bg-white/5 border-white/10 p-4">
-              <div className="flex items-center gap-2 rounded-lg bg-white/5 border border-white/10 px-3 h-11">
-                <Search size={16} className="text-white/50" />
+        <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-5">
+          <div className="space-y-4 xl:col-span-2">
+            <Card className="overflow-hidden rounded-[26px] border border-cyan-300/10 bg-[#07111F]/90 p-4 shadow-[0_20px_60px_rgba(0,0,0,0.26)]">
+              <div className="mb-3 text-xs font-black uppercase tracking-[0.22em] text-cyan-300/75">
+                Search Claims
+              </div>
+
+              <div className="flex h-12 items-center gap-2 rounded-[16px] border border-white/10 bg-white/[0.05] px-3">
+                <Search size={16} className="shrink-0 text-white/45" />
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search athlete, username, email..."
-                  className="w-full bg-transparent outline-none text-sm text-white placeholder:text-white/40"
+                  className="h-full w-full bg-transparent text-sm text-white outline-none placeholder:text-white/35"
                 />
               </div>
             </Card>
 
             <div className="space-y-3">
               {filteredClaims.length === 0 ? (
-                <Card className="bg-white/5 border-white/10 p-6 text-white/60">
+                <Card className="rounded-[26px] border border-white/10 bg-white/[0.04] p-6 text-sm text-white/60">
                   No claims found.
                 </Card>
               ) : (
@@ -309,33 +362,36 @@ export default function AdminAthleteClaimsPage() {
                     <button
                       key={claim.id}
                       onClick={() => loadClaimDetails(claim.id)}
-                      className={`w-full text-left rounded-xl border p-4 transition ${
+                      className={`w-full rounded-[24px] border p-4 text-left transition ${
                         active
-                          ? "bg-violet-500/10 border-violet-400/30"
-                          : "bg-white/5 border-white/10 hover:bg-white/7"
+                          ? "border-cyan-300/35 bg-cyan-300/10 shadow-[0_0_34px_rgba(34,211,238,0.12)]"
+                          : "border-white/10 bg-white/[0.045] hover:border-cyan-300/20 hover:bg-white/[0.065]"
                       }`}
                     >
                       <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <div className="font-medium text-white">
+                        <div className="min-w-0">
+                          <div className="truncate text-base font-black uppercase tracking-[-0.01em] text-white">
                             {claim.athlete?.name || "Unknown Athlete"}
                           </div>
-                          <div className="text-sm text-white/60 mt-1">
+                          <div className="mt-1 truncate text-sm text-white/55">
                             @{claim.claimant?.username || "unknown"} •{" "}
                             {claim.claimant?.email || "No email"}
                           </div>
                         </div>
+
                         <StatusBadge status={claim.status} />
                       </div>
 
-                      <div className="mt-3 flex items-center gap-2 text-xs text-white/50">
-                        <Clock3 size={13} />
-                        Submitted {timeAgo(claim.createdAt)}
-                      </div>
+                      <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-white/45">
+                        <span className="inline-flex items-center gap-2">
+                          <Clock3 size={13} />
+                          Submitted {timeAgo(claim.createdAt)}
+                        </span>
 
-                      <div className="mt-3 inline-flex items-center gap-2 text-sm text-white/80">
-                        <Eye size={14} />
-                        View details
+                        <span className="inline-flex items-center gap-2 text-cyan-200/80">
+                          <Eye size={14} />
+                          View details
+                        </span>
                       </div>
                     </button>
                   );
@@ -345,149 +401,178 @@ export default function AdminAthleteClaimsPage() {
           </div>
 
           <div className="xl:col-span-3">
-            <Card className="bg-white/5 border-white/10 p-5 min-h-[500px]">
+            <Card className="min-h-[560px] overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/90 p-0 shadow-[0_28px_80px_rgba(0,0,0,0.32)]">
               {!selectedClaimId && (
-                <div className="h-full grid place-items-center text-white/50">
-                  Select a claim to review.
+                <div className="grid min-h-[560px] place-items-center p-6 text-center">
+                  <div>
+                    <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl border border-cyan-300/20 bg-cyan-300/10 text-cyan-200">
+                      <FileText className="h-6 w-6" />
+                    </div>
+                    <div className="text-lg font-black uppercase text-white">
+                      Select a claim
+                    </div>
+                    <p className="mt-2 text-sm text-white/50">
+                      Choose a claim from the list to review details.
+                    </p>
+                  </div>
                 </div>
               )}
 
               {selectedClaimId && detailsLoading && (
-                <div className="h-full grid place-items-center text-white/60">
+                <div className="grid min-h-[560px] place-items-center p-6 text-sm text-white/60">
                   Loading claim details…
                 </div>
               )}
 
               {selectedClaim && !detailsLoading && (
-                <div className="space-y-6">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                      <h2 className="text-xl text-white font-semibold">
-                        {selectedClaim.athlete?.name || "Athlete Claim"}
-                      </h2>
-                      <p className="text-white text-sm mt-1">
-                        Submitted by @
-                        {selectedClaim.claimant?.username || "unknown"}
+                <div>
+                  <div className="border-b border-white/10 p-5 sm:p-6">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="min-w-0">
+                        <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-cyan-300/15 bg-cyan-300/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200">
+                          <BadgeCheck className="h-3.5 w-3.5" />
+                          Claim Review
+                        </div>
+
+                        <h2 className="break-words text-2xl font-black uppercase tracking-[-0.03em] text-white">
+                          {selectedClaim.athlete?.name || "Athlete Claim"}
+                        </h2>
+
+                        <p className="mt-2 text-sm text-white/55">
+                          Submitted by @
+                          {selectedClaim.claimant?.username || "unknown"}
+                        </p>
+                      </div>
+
+                      <StatusBadge status={selectedClaim.status} />
+                    </div>
+                  </div>
+
+                  <div className="space-y-5 p-5 sm:p-6">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                      <Card className="rounded-[24px] border border-white/10 bg-white/[0.045] p-4">
+                        <div className="mb-3 flex items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-cyan-300/75">
+                          <UserRound className="h-4 w-4" />
+                          Claimant
+                        </div>
+
+                        <div className="space-y-2 text-sm">
+                          <div className="text-white">
+                            <span className="text-white/50">Username:</span>{" "}
+                            {selectedClaim.claimant?.username || "—"}
+                          </div>
+                          <div className="text-white">
+                            <span className="text-white/50">Name:</span>{" "}
+                            {selectedClaim.claimant?.firstName || ""}{" "}
+                            {selectedClaim.claimant?.lastName || ""}
+                          </div>
+                          <div className="break-words text-white">
+                            <span className="text-white/50">Email:</span>{" "}
+                            {selectedClaim.claimant?.email || "—"}
+                          </div>
+                        </div>
+                      </Card>
+
+                      <Card className="rounded-[24px] border border-white/10 bg-white/[0.045] p-4">
+                        <div className="mb-3 flex items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-[#FFB199]/80">
+                          <Sparkles className="h-4 w-4" />
+                          Athlete
+                        </div>
+
+                        <div className="space-y-2 text-sm">
+                          <div className="text-white">
+                            <span className="text-white/50">Name:</span>{" "}
+                            {selectedClaim.athlete?.name || "—"}
+                          </div>
+                          <div className="text-white">
+                            <span className="text-white/50">Origin:</span>{" "}
+                            {selectedClaim.athlete?.origin || "—"}
+                          </div>
+                          <div className="text-white">
+                            <span className="text-white/50">Age:</span>{" "}
+                            {selectedClaim.athlete?.age ?? "—"}
+                          </div>
+                        </div>
+                      </Card>
+                    </div>
+
+                    <Card className="rounded-[24px] border border-white/10 bg-white/[0.045] p-4">
+                      <div className="mb-2 text-xs font-black uppercase tracking-[0.18em] text-cyan-300/75">
+                        Additional Info
+                      </div>
+                      <p className="whitespace-pre-wrap text-sm leading-7 text-white/75">
+                        {selectedClaim.additionalInfo?.trim() ||
+                          "No additional info provided."}
                       </p>
-                    </div>
-
-                    <StatusBadge status={selectedClaim.status} />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Card className="bg-white/5 border-white/10 p-4">
-                      <div className="text-sm text-white mb-2">Claimant</div>
-                      <div className="space-y-1 text-sm">
-                        <div className="text-white">
-                          <span className="text-white/60">Username:</span>{" "}
-                          {selectedClaim.claimant?.username || "—"}
-                        </div>
-                        <div className="text-white">
-                          <span className="text-white/60">Name:</span>{" "}
-                          {selectedClaim.claimant?.firstName || ""}{" "}
-                          {selectedClaim.claimant?.lastName || ""}
-                        </div>
-                        <div className="text-white">
-                          <span className="text-white/60">Email:</span>{" "}
-                          {selectedClaim.claimant?.email || "—"}
-                        </div>
-                      </div>
                     </Card>
 
-                    <Card className="bg-white/5 border-white/10 p-4">
-                      <div className="text-sm text-white mb-2">Athlete</div>
-                      <div className="space-y-1 text-sm">
-                        <div className="text-white">
-                          <span className="text-white/60">Name:</span>{" "}
-                          {selectedClaim.athlete?.name || "—"}
-                        </div>
-                        <div className="text-white">
-                          <span className="text-white/60">Origin:</span>{" "}
-                          {selectedClaim.athlete?.origin || "—"}
-                        </div>
-                        <div className="text-white">
-                          <span className="text-white/60">Age:</span>{" "}
-                          {selectedClaim.athlete?.age ?? "—"}
-                        </div>
+                    <Card className="rounded-[24px] border border-white/10 bg-white/[0.045] p-4">
+                      <div className="mb-3 flex items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-cyan-300/75">
+                        <ImageIcon className="h-4 w-4" />
+                        Uploaded ID Image
                       </div>
+
+                      {selectedClaim.idCardImageUrl ? (
+                        <img
+                          src={selectedClaim.idCardImageUrl}
+                          alt="Uploaded ID"
+                          className="max-h-[520px] w-full rounded-[20px] border border-white/10 bg-black/30 object-contain"
+                        />
+                      ) : (
+                        <div className="rounded-[18px] border border-white/10 bg-black/20 p-5 text-sm text-white/50">
+                          No image available.
+                        </div>
+                      )}
                     </Card>
-                  </div>
 
-                  <Card className="bg-white/5 border-white/10 p-4">
-                    <div className="text-sm text-white/60 mb-2">
-                      Additional Info
-                    </div>
-                    <p className="text-sm text-white whitespace-pre-wrap">
-                      {selectedClaim.additionalInfo?.trim() ||
-                        "No additional info provided."}
-                    </p>
-                  </Card>
-
-                  <Card className="bg-white/5 border-white/10 p-4">
-                    <div className="text-sm text-white/60 mb-3">
-                      Uploaded ID Image
-                    </div>
-
-                    {selectedClaim.idCardImageUrl ? (
-                      <img
-                        src={selectedClaim.idCardImageUrl}
-                        alt="Uploaded ID"
-                        className="w-full max-h-[520px] object-contain rounded-xl border border-white/10 bg-black/20"
+                    <Card className="rounded-[24px] border border-white/10 bg-white/[0.045] p-4">
+                      <div className="mb-2 text-xs font-black uppercase tracking-[0.18em] text-cyan-300/75">
+                        Review Note
+                      </div>
+                      <textarea
+                        value={reviewNote}
+                        onChange={(e) => setReviewNote(e.target.value)}
+                        rows={4}
+                        className="w-full rounded-[16px] border border-white/10 bg-white/[0.05] px-3 py-3 text-sm text-white outline-none placeholder:text-white/35 focus:border-cyan-300/30 focus:ring-2 focus:ring-cyan-300/10"
+                        placeholder="Add a note for this approval or rejection..."
+                        disabled={
+                          selectedClaim.status !== "pending" || reviewLoading
+                        }
                       />
+                    </Card>
+
+                    {selectedClaim.status === "pending" ? (
+                      <div className="flex flex-col-reverse gap-3 border-t border-white/10 pt-5 sm:flex-row sm:justify-end">
+                        <Button
+                          onClick={() => handleReview("rejected")}
+                          disabled={reviewLoading}
+                          className="h-12 rounded-full border border-red-400/15 bg-red-500/15 px-6 text-xs font-black uppercase tracking-[0.16em] text-red-100 hover:bg-red-500/25"
+                        >
+                          <X className="mr-2 h-4 w-4" />
+                          Reject
+                        </Button>
+
+                        <Button
+                          onClick={() => handleReview("approved")}
+                          disabled={reviewLoading}
+                          className="h-12 rounded-full bg-cyan-300 px-6 text-xs font-black uppercase tracking-[0.16em] text-[#06111d] shadow-[0_0_28px_rgba(34,211,238,0.25)] hover:bg-cyan-200"
+                        >
+                          <Check className="mr-2 h-4 w-4" />
+                          Approve
+                        </Button>
+                      </div>
                     ) : (
-                      <div className="text-white/50 text-sm">
-                        No image available.
+                      <div className="rounded-[18px] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white/50">
+                        This claim has already been reviewed.
                       </div>
                     )}
-                  </Card>
-
-                  <Card className="bg-white/5 border-white/10 p-4">
-                    <div className="text-sm text-white/60 mb-2">
-                      Review Note
-                    </div>
-                    <textarea
-                      value={reviewNote}
-                      onChange={(e) => setReviewNote(e.target.value)}
-                      rows={4}
-                      className="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm text-white outline-none placeholder:text-white/40"
-                      placeholder="Add a note for this approval or rejection..."
-                      disabled={
-                        selectedClaim.status !== "pending" || reviewLoading
-                      }
-                    />
-                  </Card>
-
-                  {selectedClaim.status === "pending" ? (
-                    <div className="flex flex-wrap gap-3 justify-end">
-                      <Button
-                        onClick={() => handleReview("rejected")}
-                        disabled={reviewLoading}
-                        className="bg-red-500/90 text-white hover:bg-red-600"
-                      >
-                        <X className="mr-2 h-4 w-4" />
-                        Reject
-                      </Button>
-
-                      <Button
-                        onClick={() => handleReview("approved")}
-                        disabled={reviewLoading}
-                        className="bg-emerald-500 text-white hover:bg-emerald-600"
-                      >
-                        <Check className="mr-2 h-4 w-4" />
-                        Approve
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="text-sm text-white/50">
-                      This claim has already been reviewed.
-                    </div>
-                  )}
+                  </div>
                 </div>
               )}
             </Card>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

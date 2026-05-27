@@ -4,6 +4,17 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { apiFetch } from "@/lib/apiClient";
 import { Link } from "wouter";
+import {
+  CalendarDays,
+  ChevronLeft,
+  ChevronRight,
+  MapPin,
+  Plus,
+  Search,
+  Trash2,
+  Pencil,
+  X,
+} from "lucide-react";
 
 import {
   AlertDialog,
@@ -165,58 +176,96 @@ export default function EventListPage() {
   }, [events.length, page, totalCount]);
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-6 px-4 py-16 text-white sm:px-6 lg:px-8">
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-white">Events</h1>
-          <p className="text-sm text-zinc-400">
-            Manage your organization’s events.
-          </p>
-          <p className="mt-1 text-xs text-zinc-500">{rangeLabel}</p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="rounded-full border border-zinc-700 bg-zinc-900/70 px-3 py-1 text-xs text-zinc-300">
-            Total: {totalCount || events.length}
-          </div>
-
-          <Link href="/events/create">
-            <Button className="bg-white text-black hover:bg-zinc-200" size="sm">
-              + New Event
-            </Button>
-          </Link>
-        </div>
+    <div className="relative min-h-dvh overflow-x-hidden bg-[#030913] text-white">
+      <div className="pointer-events-none fixed inset-0 -z-10">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.12),transparent_28%),radial-gradient(circle_at_82%_12%,rgba(255,107,53,0.10),transparent_24%),linear-gradient(180deg,#030913_0%,#07111F_48%,#02050A_100%)]" />
+        <div className="absolute inset-0 opacity-[0.04] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:72px_72px]" />
       </div>
 
-      {loading ? (
-        <div className="text-zinc-400">Loading…</div>
-      ) : events.length === 0 ? (
-        <Card className="border border-zinc-700 bg-zinc-900 p-6 text-zinc-300">
-          No events yet.
-        </Card>
-      ) : (
-        <>
-          <div className="grid gap-4">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="w-full sm:max-w-md">
-                <input
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      setPage(1);
-                      setSearch(searchInput);
-                    }
-                  }}
-                  placeholder="Search events by name, sport, or location"
-                  className="h-10 w-full rounded-md border border-zinc-700 bg-zinc-900 px-3 text-sm text-white placeholder:text-zinc-500"
-                />
+      <main className="mx-auto w-full max-w-6xl space-y-6 px-4 py-8 pb-24 sm:px-6 sm:py-12 lg:px-8">
+        <section className="relative overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[linear-gradient(180deg,rgba(7,17,31,0.94)_0%,rgba(4,10,19,0.98)_100%)] p-5 shadow-[0_30px_90px_rgba(0,0,0,0.42)] sm:rounded-[38px] sm:p-8">
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-cyan-400/10 blur-3xl" />
+            <div className="absolute -right-24 bottom-0 h-96 w-96 rounded-full bg-[#FF6B35]/10 blur-3xl" />
+            <div className="absolute inset-0 opacity-[0.05] [background-image:linear-gradient(rgba(255,255,255,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.18)_1px,transparent_1px)] [background-size:72px_72px]" />
+          </div>
+
+          <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+            <div className="min-w-0">
+              <div className="mb-4 flex flex-wrap items-center gap-2">
+                <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-cyan-200">
+                  <span className="h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_18px_rgba(103,232,249,0.95)]" />
+                  Admin Events
+                </div>
+
+                <div className="inline-flex items-center rounded-full border border-[#FF6B35]/20 bg-[#FF6B35]/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-[#FFB199]">
+                  {rangeLabel}
+                </div>
               </div>
 
-              <div className="flex gap-2">
+              <h1 className="text-3xl font-black uppercase leading-[0.95] tracking-[-0.04em] text-white sm:text-5xl">
+                Manage{" "}
+                <span className="bg-[linear-gradient(90deg,#19E3FF_0%,#7CF4FF_35%,#FF7849_100%)] bg-clip-text text-transparent">
+                  Events
+                </span>
+              </h1>
+
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
+                Search, edit, delete, and create jet ski racing events for the
+                Corner League platform.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="inline-flex items-center justify-center rounded-full border border-cyan-300/15 bg-cyan-300/10 px-4 py-3 text-xs font-black uppercase tracking-[0.16em] text-cyan-100">
+                Total: {totalCount || events.length}
+              </div>
+
+              <Link href="/events/create">
+                <Button
+                  className="h-12 w-full rounded-full bg-cyan-300 px-6 text-xs font-black uppercase tracking-[0.16em] text-[#06111d] shadow-[0_0_28px_rgba(34,211,238,0.25)] hover:bg-cyan-200 sm:w-auto"
+                  size="sm"
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  New Event
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        <Card className="overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/90 p-0 shadow-[0_28px_80px_rgba(0,0,0,0.32)]">
+          <div className="border-b border-white/10 p-4 sm:p-5">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <div className="text-xs font-black uppercase tracking-[0.22em] text-cyan-300/80">
+                  Event Search
+                </div>
+                <p className="mt-1 text-sm text-white/50">
+                  Filter by event name, sport, or location.
+                </p>
+              </div>
+
+              <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto">
+                <div className="flex h-12 w-full items-center gap-2 rounded-[16px] border border-white/10 bg-white/[0.05] px-3 lg:w-[380px]">
+                  <Search className="h-4 w-4 shrink-0 text-white/45" />
+                  <input
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        setPage(1);
+                        setSearch(searchInput);
+                      }
+                    }}
+                    placeholder="Search events..."
+                    className="h-full w-full bg-transparent text-sm text-white outline-none placeholder:text-white/35"
+                  />
+                </div>
+
                 <Button
                   variant="outline"
-                  className="border-zinc-700 bg-zinc-900 text-white hover:bg-zinc-800"
+                  className="h-12 rounded-full border-cyan-300/15 bg-cyan-300/10 px-5 text-xs font-black uppercase tracking-[0.14em] text-cyan-100 hover:bg-cyan-300/15 hover:text-white"
                   onClick={() => {
                     setPage(1);
                     setSearch(searchInput);
@@ -227,140 +276,172 @@ export default function EventListPage() {
 
                 <Button
                   variant="ghost"
-                  className="text-zinc-300 hover:bg-zinc-800"
+                  className="h-12 rounded-full border border-white/10 px-5 text-xs font-black uppercase tracking-[0.14em] text-white/65 hover:bg-white/10 hover:text-white"
                   onClick={() => {
                     setSearchInput("");
                     setSearch("");
                     setPage(1);
                   }}
                 >
+                  <X className="mr-2 h-4 w-4" />
                   Clear
                 </Button>
               </div>
             </div>
-            {events.map((e) => {
-              const dateRange = `${fmtDate(e.startDate)} → ${fmtDate(e.endDate)}`;
-
-              return (
-                <Card
-                  key={e.id}
-                  className="border border-zinc-700/70 bg-zinc-900/70 p-4 transition-colors hover:border-zinc-600"
-                >
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="min-w-0">
-                      <div className="break-words text-base font-semibold text-white sm:text-lg">
-                        {e.name}
-                      </div>
-
-                      {e.location ? (
-                        <div className="mt-1 break-words text-xs text-zinc-400">
-                          {e.location}
-                        </div>
-                      ) : null}
-
-                      <div className="mt-1 text-xs text-zinc-500">
-                        {dateRange} • {e.sport}
-                      </div>
-
-                      {e.description ? (
-                        <p className="mt-2 line-clamp-2 text-sm text-zinc-300">
-                          {e.description}
-                        </p>
-                      ) : null}
-                    </div>
-
-                    <div className="flex gap-2 sm:self-start">
-                      <Link href={`/organization/events/${e.id}`}>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="border-zinc-700 bg-zinc-800 text-white hover:bg-zinc-700"
-                        >
-                          Edit
-                        </Button>
-                      </Link>
-
-                      <AlertDialog
-                        open={pendingDelete === e.id}
-                        onOpenChange={(open) => {
-                          if (!open) setPendingDelete(null);
-                        }}
-                      >
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-red-400 hover:bg-red-950/30 hover:text-red-300"
-                            onClick={() => setPendingDelete(e.id)}
-                          >
-                            Delete
-                          </Button>
-                        </AlertDialogTrigger>
-
-                        <AlertDialogContent className="border-zinc-700 bg-zinc-950 text-white">
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>
-                              Delete this event?
-                            </AlertDialogTitle>
-                            <AlertDialogDescription className="text-zinc-400">
-                              “{e.name}” will be permanently removed. This
-                              action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-
-                          <AlertDialogFooter>
-                            <AlertDialogCancel className="border border-zinc-700 bg-zinc-800 text-white hover:bg-zinc-700">
-                              Cancel
-                            </AlertDialogCancel>
-                            <AlertDialogAction
-                              className="bg-red-500 text-white hover:bg-red-600"
-                              onClick={() => doDelete(e.id)}
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </div>
-                </Card>
-              );
-            })}
           </div>
 
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="text-sm text-zinc-400">
-              Page {page} of {Math.max(totalPages, page)}
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-zinc-700 bg-zinc-900 text-white hover:bg-zinc-800"
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1 || loading}
-              >
-                Previous
-              </Button>
-
-              <div className="rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-300">
-                {page}
+          <div className="p-4 sm:p-5">
+            {loading ? (
+              <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-6 text-sm text-white/60">
+                Loading events…
               </div>
+            ) : events.length === 0 ? (
+              <Card className="rounded-[24px] border border-white/10 bg-white/[0.04] p-6 text-white/60">
+                No events yet.
+              </Card>
+            ) : (
+              <>
+                <div className="grid gap-4">
+                  {events.map((e) => {
+                    const dateRange = `${fmtDate(e.startDate)} → ${fmtDate(e.endDate)}`;
 
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-zinc-700 bg-zinc-900 text-white hover:bg-zinc-800"
-                onClick={() => setPage((p) => p + 1)}
-                disabled={loading || (!hasNextPage && page >= totalPages)}
-              >
-                Next
-              </Button>
-            </div>
+                    return (
+                      <Card
+                        key={e.id}
+                        className="group overflow-hidden rounded-[24px] border border-white/10 bg-white/[0.045] p-0 transition hover:border-cyan-300/25 hover:bg-white/[0.06]"
+                      >
+                        <div className="flex flex-col gap-4 p-4 sm:p-5 lg:flex-row lg:items-start lg:justify-between">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/15 bg-cyan-300/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200">
+                                <CalendarDays className="h-3.5 w-3.5" />
+                                {e.sport || "Sport"}
+                              </div>
+
+                              {e.location ? (
+                                <div className="inline-flex items-center gap-2 rounded-full border border-[#FF6B35]/15 bg-[#FF6B35]/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-[#FFB199]">
+                                  <MapPin className="h-3.5 w-3.5" />
+                                  <span className="max-w-[210px] truncate">
+                                    {e.location}
+                                  </span>
+                                </div>
+                              ) : null}
+                            </div>
+
+                            <div className="mt-3 break-words text-lg font-black uppercase tracking-[-0.02em] text-white sm:text-xl">
+                              {e.name}
+                            </div>
+
+                            <div className="mt-2 text-xs font-semibold uppercase tracking-[0.16em] text-white/45">
+                              {dateRange}
+                            </div>
+
+                            {e.description ? (
+                              <p className="mt-3 line-clamp-3 text-sm leading-7 text-slate-300">
+                                {e.description}
+                              </p>
+                            ) : null}
+                          </div>
+
+                          <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto lg:flex-col">
+                            <Link href={`/organization/events/${e.id}`}>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-11 w-full rounded-full border-cyan-300/15 bg-cyan-300/10 px-5 text-xs font-black uppercase tracking-[0.14em] text-cyan-100 hover:bg-cyan-300/15 hover:text-white lg:w-[120px]"
+                              >
+                                <Pencil className="mr-2 h-4 w-4" />
+                                Edit
+                              </Button>
+                            </Link>
+
+                            <AlertDialog
+                              open={pendingDelete === e.id}
+                              onOpenChange={(open) => {
+                                if (!open) setPendingDelete(null);
+                              }}
+                            >
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-11 w-full rounded-full border border-red-400/15 bg-red-500/10 px-5 text-xs font-black uppercase tracking-[0.14em] text-red-200 hover:bg-red-500/20 hover:text-red-100 lg:w-[120px]"
+                                  onClick={() => setPendingDelete(e.id)}
+                                >
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Delete
+                                </Button>
+                              </AlertDialogTrigger>
+
+                              <AlertDialogContent className="rounded-[28px] border border-cyan-300/10 bg-[#07111F] text-white shadow-[0_30px_90px_rgba(0,0,0,0.52)]">
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle className="text-xl font-black uppercase tracking-[-0.02em] text-white">
+                                    Delete this event?
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription className="text-slate-300">
+                                    “{e.name}” will be permanently removed. This
+                                    action cannot be undone.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel className="rounded-full border border-white/10 bg-white/[0.05] px-5 text-white hover:bg-white/10">
+                                    Cancel
+                                  </AlertDialogCancel>
+                                  <AlertDialogAction
+                                    className="rounded-full bg-red-500 px-5 text-white hover:bg-red-600"
+                                    onClick={() => doDelete(e.id)}
+                                  >
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </div>
+                      </Card>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-6 flex flex-col gap-3 border-t border-white/10 pt-5 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="text-sm text-white/55">
+                    Page {page} of {Math.max(totalPages, page)}
+                  </div>
+
+                  <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:flex">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-11 rounded-full border-white/10 bg-white/[0.05] px-4 text-white hover:bg-white/10"
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      disabled={page === 1 || loading}
+                    >
+                      <ChevronLeft className="mr-1 h-4 w-4" />
+                      Previous
+                    </Button>
+
+                    <div className="grid h-11 min-w-11 place-items-center rounded-full border border-cyan-300/15 bg-cyan-300/10 px-4 text-sm font-black text-cyan-100">
+                      {page}
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-11 rounded-full border-white/10 bg-white/[0.05] px-4 text-white hover:bg-white/10"
+                      onClick={() => setPage((p) => p + 1)}
+                      disabled={loading || (!hasNextPage && page >= totalPages)}
+                    >
+                      Next
+                      <ChevronRight className="ml-1 h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
-        </>
-      )}
+        </Card>
+      </main>
     </div>
   );
 }

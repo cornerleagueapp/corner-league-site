@@ -159,7 +159,6 @@ function PrivateRouter() {
           <Route path="/explore" component={ExploreFeedPage} />
           <Route path="/messages" component={MessagesPage} />
           <Route path="/notifications" component={NotificationsPage} />
-          <Route path="/welcome" component={WelcomeSplash} />
           <Route path="/settings" component={Settings} />
 
           <Route path="/clubs" component={Clubs} />
@@ -219,6 +218,7 @@ function Router() {
       <Route path="/contact" component={ContactPage} />
       <Route path="/terms" component={TermsPage} />
       <Route path="/auth" component={AuthPage} />
+      <Route path="/welcome" component={WelcomeSplash} />
 
       <Route path="/scores">
         {() => (
