@@ -4,768 +4,67 @@ import { apiRequest } from "@/lib/apiClient";
 import { getAccessToken } from "@/lib/token";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import stockAvatar from "@/assets/stockprofilepicture.jpeg";
 import {
   X as XIcon,
   Search as SearchIcon,
-  PencilLine,
-  Trophy,
-  MapPin,
-  Waves,
   Sparkles,
-  Share2,
-  ShieldCheck,
+  Image as ImageIcon,
+  Play,
+  ExternalLink,
+  Globe2,
+  Instagram,
+  Youtube,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
 import RacerSearchModal from "@/components/RacerSearchModal";
 import { generateRacerAnalysis } from "@/lib/geminiRacerAnalysis";
-import { motion, animate } from "framer-motion";
-
 import { trackEvent } from "@/lib/analytics";
 import { AnalyticsEvents } from "@/lib/analytics-events";
 import {
   getRacerProfileViewCount,
   trackRacerProfileViewToBackend,
 } from "@/lib/profileViewApi";
-
-type Racer = {
-  id: string | number;
-  athleteId?: string;
-  racerName: string;
-  racerAge?: number;
-  bio?: string | null;
-  racerImage?: string | null;
-  location?: string | null;
-  boatManufacturers?: string | null;
-  careerWins?: number;
-  seasonWins?: number;
-  seasonPodiums?: number;
-  careerWorldFinalsWins?: number;
-  height?: number | null;
-  weight?: number | null;
-  claimedByUserId?: string | null;
-  claimedByUsername?: string | null;
-  isClaimed?: boolean;
-};
-
-type AthleteHistoryItem = {
-  resultId: string;
-  athleteId: string;
-  eventId?: string | null;
-  eventName?: string | null;
-  eventStartDate?: string | null;
-  divisionId?: string | null;
-  divisionName?: string | null;
-  matchId: string;
-  matchName?: string | null;
-  motoId?: string | null;
-  motoSequence?: number | null;
-  position?: number | null;
-  score?: number | null;
-  status?: string | null;
-};
-
-type RacerRatingCard = {
-  id: string;
-  athleteId: string;
-  athleteName: string;
-  athleteImage?: string | null;
-  stateCode?: string | null;
-  countryCode?: string | null;
-  classGroupCode?: string | null;
-  classGroupName?: string | null;
-  rankingPeriodName?: string | null;
-  seasonYear?: number | null;
-  overallRating?: number | null;
-  speedRating?: number | null;
-  consistencyRating?: number | null;
-  strengthRating?: number | null;
-  momentumRating?: number | null;
-  versatilityRating?: number | null;
-  activityRating?: number | null;
-  confidenceScore?: number | null;
-  racesCount?: number | null;
-  winsCount?: number | null;
-  podiumsCount?: number | null;
-  computedAt?: string | null;
-
-  nationalRankingPosition?: number | null;
-  nationalRankingScore?: number | null;
-
-  organizationRankingPosition?: number | null;
-  organizationRankingScore?: number | null;
-  organizationId?: string | null;
-  organizationName?: string | null;
-  organizationAbbreviation?: string | null;
-};
-
-function inchesToMeters(inches: number) {
-  return inches * 0.0254;
-}
-function metersToFeetInches(m?: number | null) {
-  if (!m && m !== 0) return null;
-  const totalIn = Math.round(m / 0.0254);
-  const ft = Math.floor(totalIn / 12);
-  const inch = totalIn % 12;
-  return `${ft}′${inch}″`;
-}
-function logRequestError(ctx: string, err: any, endpoint?: string, body?: any) {
-  try {
-    console.groupCollapsed(`%c${ctx} failed`, "color:#f7768e;font-weight:bold");
-    if (endpoint) console.log("endpoint:", endpoint);
-    if (body) console.log("request body (sent):", body);
-    console.log("err.status:", err?.status);
-    console.log("err.message:", err?.message);
-    console.log("err.body (raw):", err?.body);
-    if (err?.body && typeof err.body === "object") {
-      console.log("err.body (json):", JSON.stringify(err.body, null, 2));
-    }
-    console.groupEnd();
-  } catch {}
-}
-function humanizeValidationError(err: any): string | undefined {
-  const d = err?.body ?? err?.data;
-  if (typeof d === "string" && d.trim()) return d;
-  if (d && Array.isArray(d.message)) {
-    const lines: string[] = [];
-    for (const m of d.message) {
-      if (typeof m === "string") lines.push(m);
-      else if (m && typeof m === "object") {
-        const prop = m.property ? `${m.property}: ` : "";
-        const constraints = m.constraints
-          ? Object.values(m.constraints).join("; ")
-          : JSON.stringify(m);
-        lines.push(`${prop}${constraints}`);
-      }
-    }
-    if (lines.length) return lines.join(" • ");
-  }
-  if (d?.error && typeof d.error === "string") return d.error;
-  if (d?.message && typeof d.message === "string") return d.message;
-  return undefined;
-}
-function isProbablyId(s: string) {
-  if (!s) return false;
-  if (/^[0-9a-fA-F-]{32,}$/.test(s) && s.includes("-")) return true;
-  if (/^[0-9A-Za-z]{20,}$/.test(s)) return true;
-  return false;
-}
-function slugify(s: string) {
-  return s
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
-function humanizeClassGroupLabel(value?: string | null) {
-  if (!value) return "";
-
-  return String(value)
-    .replace(/_/g, " ")
-    .toLowerCase()
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
-function mapDetail(rec: any): Racer {
-  const a = rec?.athlete ?? {};
-  const claimedByUser = a?.claimedByUser ?? rec?.claimedByUser ?? null;
-
-  return {
-    id: rec?.id ?? a?.id,
-    athleteId: a.id,
-    racerName: a.name ?? rec.name ?? "",
-    racerAge: a.age ?? rec.age ?? undefined,
-    bio: a.bio ?? rec.bio ?? null,
-    racerImage: a.image ?? rec.image ?? null,
-    location: a.origin ?? rec.origin ?? null,
-    boatManufacturers: rec.boatManufacturers ?? rec.team?.name ?? null,
-    careerWins: rec.careerWins ?? 0,
-    seasonWins: rec.seasonWins ?? 0,
-    seasonPodiums: rec.seasonPodiums ?? 0,
-    careerWorldFinalsWins:
-      rec.careerWorldFinalsWins ?? rec.careerWordFinalsWins ?? 0,
-    height: rec.height ?? a.height ?? null,
-    weight: a.weight ?? rec.weight ?? null,
-    claimedByUserId: claimedByUser?.id ?? null,
-    claimedByUsername: claimedByUser?.username ?? null,
-    isClaimed: !!claimedByUser?.id,
-  };
-}
-
-function mapAthlete(a: any): Racer {
-  return {
-    id: a?.id ?? a?._id ?? a?.uuid ?? "",
-    athleteId: a?.id ?? a?._id ?? a?.uuid ?? "",
-    racerName: a?.name ?? a?.fullName ?? a?.displayName ?? "",
-    racerAge: a?.age ?? undefined,
-    bio: a?.bio ?? null,
-    racerImage: a?.image ?? a?.avatar ?? a?.photo ?? null,
-    location: a?.origin ?? a?.country ?? a?.city ?? null,
-    boatManufacturers: null,
-    careerWins: 0,
-    seasonWins: 0,
-    seasonPodiums: 0,
-    careerWorldFinalsWins: 0,
-    height: a?.height ?? null,
-    weight: a?.weight ?? null,
-    claimedByUserId: a?.claimedByUser?.id ?? null,
-    claimedByUsername: a?.claimedByUser?.username ?? null,
-    isClaimed: !!a?.claimedByUser?.id,
-  };
-}
-
-function PercentStatBox({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="rounded-[22px] border border-cyan-400/10 bg-cyan-400/[0.04] px-4 py-4">
-      <div className="text-2xl font-semibold text-white">
-        {value.toFixed(1)}%
-      </div>
-      <div className="mt-1 text-xs uppercase tracking-[0.16em] text-white/50">
-        {label}
-      </div>
-    </div>
-  );
-}
-
-function StatBox({
-  label,
-  value,
-  trophy,
-}: {
-  label: string;
-  value: number;
-  trophy?: boolean;
-}) {
-  return (
-    <div className="rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-4">
-      <div className="flex items-center gap-2 text-2xl font-semibold text-white">
-        {value}
-        {trophy ? <Trophy className="h-5 w-5 text-amber-400" /> : null}
-      </div>
-      <div className="mt-1 text-xs uppercase tracking-[0.16em] text-white/50">
-        {label}
-      </div>
-    </div>
-  );
-}
-
-function MiniStat({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="rounded-[20px] border border-white/10 bg-white/[0.03] px-4 py-3">
-      <div className="text-lg font-semibold text-white">{value}</div>
-      <div className="mt-1 text-xs uppercase tracking-[0.16em] text-white/50">
-        {label}
-      </div>
-    </div>
-  );
-}
-
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <label className="block">
-      <div className="mb-1 text-xs text-white/60">{label}</div>
-      {children}
-    </label>
-  );
-}
-
-type EditValues = {
-  age?: number | string;
-  bio?: string;
-  heightInches?: number | string;
-  origin?: string;
-  boatManufacturers?: string;
-  imageFile?: File | null;
-};
-
-function toNumOrUndefined(v: any): number | undefined {
-  if (v === null || v === undefined || v === "") return undefined;
-  const n = Number(v);
-  return Number.isFinite(n) ? n : undefined;
-}
-
-async function uploadAthleteImage(
-  athleteId: string,
-  userId: string,
-  file: File,
-) {
-  const form = new FormData();
-  form.append("userId", userId);
-  form.append("media", file);
-
-  const res = await apiRequest<any>(
-    "PATCH",
-    `/athletes/${encodeURIComponent(athleteId)}/profile-image`,
-    form as any,
-  );
-
-  const url = res?.mediaUrl ?? res?.data?.mediaUrl ?? res?.url ?? null;
-  if (!url) throw new Error("Upload succeeded but no mediaUrl returned");
-  return String(url);
-}
-
-async function pollUploadProgress(
-  fileName: string,
-  onTick: (pct: number) => void,
-) {
-  const started = Date.now();
-  while (Date.now() - started < 60_000) {
-    try {
-      const data = await apiRequest<{ progress: number }>(
-        "GET",
-        `/athletes/upload-progress/${encodeURIComponent(fileName)}`,
-      );
-      const pct = Math.max(0, Math.min(100, Number(data?.progress ?? 0)));
-      onTick(pct);
-      if (pct >= 100) break;
-    } catch {}
-    await new Promise((r) => setTimeout(r, 700));
-  }
-}
-
-function EditRacerModal({
-  initial,
-  onClose,
-  onSave,
-  uploadPct,
-}: {
-  initial: EditValues;
-  onClose: () => void;
-  onSave: (v: EditValues) => Promise<void> | void;
-  uploadPct?: number | null;
-}) {
-  const [vals, setVals] = useState<EditValues>(initial);
-  const [saving, setSaving] = useState(false);
-  const set =
-    (k: keyof EditValues) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-      setVals((p) => ({ ...p, [k]: e.target.value }));
-
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-
-  React.useEffect(() => {
-    return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-    };
-  }, [previewUrl]);
-
-  return (
-    <div
-      className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70"
-      onClick={onClose}
-    >
-      <div
-        className="h-full w-full overflow-y-auto border border-cyan-300/10 bg-[#07111F] p-4 shadow-[0_24px_70px_rgba(0,0,0,0.45)] md:h-auto md:max-w-xl md:rounded-[30px] md:p-6"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="mb-2 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-white">Edit Profile</h2>
-          <button
-            aria-label="Close"
-            className="grid h-9 w-9 place-items-center rounded-full border border-white/10 bg-white/10 hover:bg-white/15"
-            onClick={onClose}
-            disabled={saving}
-          >
-            <XIcon size={16} />
-          </button>
-        </div>
-
-        <div className="space-y-3">
-          <Field label="Age">
-            <input
-              inputMode="numeric"
-              value={vals.age ?? ""}
-              onChange={set("age")}
-              className="h-10 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm text-white outline-none placeholder:text-white/40"
-              placeholder="e.g., 25"
-            />
-          </Field>
-
-          <Field label="Bio">
-            <textarea
-              value={vals.bio ?? ""}
-              onChange={set("bio")}
-              rows={4}
-              className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none placeholder:text-white/40"
-              placeholder="Tell people about you…"
-            />
-          </Field>
-
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <Field label="Height (inches)">
-              <input
-                type="number"
-                inputMode="numeric"
-                min={36}
-                max={96}
-                step={1}
-                value={vals.heightInches ?? ""}
-                onChange={set("heightInches")}
-                className="h-10 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm text-white outline-none placeholder:text-white/40"
-                placeholder="e.g., 70"
-              />
-            </Field>
-
-            <Field label="Origin">
-              <input
-                value={vals.origin ?? ""}
-                onChange={set("origin")}
-                className="h-10 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm text-white outline-none placeholder:text-white/40"
-                placeholder="e.g., USA"
-              />
-            </Field>
-          </div>
-
-          <Field label="Boat Manufacturer">
-            <input
-              value={vals.boatManufacturers ?? ""}
-              onChange={set("boatManufacturers")}
-              className="h-10 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm text-white outline-none placeholder:text-white/40"
-              placeholder="e.g., Yamaha"
-            />
-          </Field>
-
-          <Field label="Racer Photo (Please use clear headshot)">
-            <input
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              onChange={(e) => {
-                const file = e.currentTarget.files?.[0] || null;
-                if (file && !/^image\/(jpeg|png|webp)$/.test(file.type)) {
-                  alert(
-                    "Please upload a JPG, PNG, or WEBP image (no RAW / DNG).",
-                  );
-                  return;
-                }
-                setVals((p) => ({ ...p, imageFile: file }));
-                if (previewUrl) URL.revokeObjectURL(previewUrl);
-                setPreviewUrl(file ? URL.createObjectURL(file) : null);
-              }}
-              className="h-10 w-full rounded-md border border-white/10 bg-white/5 px-3 py-1 text-sm text-white outline-none"
-            />
-          </Field>
-
-          {vals.imageFile && previewUrl && (
-            <img
-              src={previewUrl}
-              alt="Selected profile preview"
-              className="h-28 w-28 rounded-full border border-white/10 object-cover"
-            />
-          )}
-        </div>
-
-        <div className="mt-4 flex justify-end gap-2">
-          <Button
-            variant="ghost"
-            onClick={onClose}
-            className="border border-white/10 bg-transparent text-white hover:bg-white/10"
-            disabled={saving}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={async () => {
-              try {
-                setSaving(true);
-                await onSave(vals);
-              } finally {
-                setSaving(false);
-              }
-            }}
-            className="bg-white text-black hover:bg-white/90"
-            disabled={saving}
-          >
-            {saving
-              ? uploadPct != null
-                ? `Uploading… ${uploadPct}%`
-                : "Saving…"
-              : "Save changes"}
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ClaimAthleteModal({
-  racerName,
-  onClose,
-  onSubmit,
-  loading,
-}: {
-  racerName: string;
-  onClose: () => void;
-  onSubmit: (v: {
-    additionalInfo?: string;
-    idCardImage: File;
-  }) => Promise<void> | void;
-  loading?: boolean;
-}) {
-  const [additionalInfo, setAdditionalInfo] = useState("");
-  const [idCardImage, setIdCardImage] = useState<File | null>(null);
-
-  return (
-    <div
-      className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70"
-      onClick={onClose}
-    >
-      <div
-        className="h-full w-full overflow-y-auto border border-cyan-300/10 bg-[#07111F] p-4 shadow-[0_24px_70px_rgba(0,0,0,0.45)] md:h-auto md:max-w-xl md:rounded-[30px] md:p-6"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="mb-2 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-white">
-            Claim Athlete Profile
-          </h2>
-          <button
-            aria-label="Close"
-            className="grid h-9 w-9 place-items-center rounded-full border border-white/10 bg-white/10 hover:bg-white/15"
-            onClick={onClose}
-            disabled={loading}
-          >
-            <XIcon size={16} />
-          </button>
-        </div>
-
-        <p className="mb-4 text-sm text-white/70">
-          Submit a claim for{" "}
-          <span className="font-medium text-white">{racerName}</span>. Upload a
-          clear ID image so an admin can verify ownership.
-        </p>
-
-        <div className="space-y-3">
-          <Field label="Additional Info (optional)">
-            <textarea
-              value={additionalInfo}
-              onChange={(e) => setAdditionalInfo(e.target.value)}
-              rows={4}
-              className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none placeholder:text-white/40"
-              placeholder="Add any details that help verify this athlete profile..."
-            />
-          </Field>
-
-          <Field label="ID Card Image">
-            <input
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              onChange={(e) => {
-                const file = e.currentTarget.files?.[0] || null;
-                if (!file) {
-                  setIdCardImage(null);
-                  return;
-                }
-                if (!/^image\/(jpeg|png|webp)$/.test(file.type)) {
-                  alert("Please upload a JPG, PNG, or WEBP image.");
-                  return;
-                }
-                setIdCardImage(file);
-              }}
-              className="h-10 w-full rounded-md border border-white/10 bg-white/5 px-3 py-1 text-sm text-white outline-none"
-            />
-          </Field>
-
-          {!idCardImage && (
-            <p className="text-xs text-red-300">
-              An ID card image is required to submit a claim.
-            </p>
-          )}
-        </div>
-
-        <div className="mt-4 flex justify-end gap-2">
-          <Button
-            variant="ghost"
-            onClick={onClose}
-            className="border border-white/10 bg-transparent text-white hover:bg-white/10"
-            disabled={loading}
-          >
-            Cancel
-          </Button>
-
-          <Button
-            onClick={async () => {
-              if (!idCardImage) return;
-              await onSubmit({ additionalInfo, idCardImage });
-            }}
-            className="bg-white text-black hover:bg-white/90"
-            disabled={loading || !idCardImage}
-          >
-            {loading ? "Submitting..." : "Submit Claim"}
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function RatingMeter({
-  label,
-  value,
-  delay = 0,
-}: {
-  label: string;
-  value?: number | null;
-  delay?: number;
-}) {
-  const safe = Math.max(0, Math.min(99, Number(value ?? 0)));
-
-  return (
-    <div className="rounded-[18px] border border-white/10 bg-white/[0.03] p-3">
-      <div className="text-[10px] uppercase tracking-[0.18em] text-white/45">
-        {label}
-      </div>
-
-      <div className="mt-1 text-sm font-semibold text-white">
-        {safe.toFixed(1)}
-      </div>
-
-      <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/[0.06]">
-        <motion.div
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: safe / 100 }}
-          transition={{ duration: 0.8, delay, ease: [0.22, 1, 0.36, 1] }}
-          style={{ originX: 0 }}
-          className="h-full w-full rounded-full bg-[linear-gradient(90deg,#67e8f9_0%,#38bdf8_55%,#2563eb_100%)]"
-        />
-      </div>
-    </div>
-  );
-}
-
-function RankingBadge({
-  label,
-  rank,
-  subtitle,
-}: {
-  label: string;
-  rank?: number | null;
-  subtitle?: string | null;
-}) {
-  if (!rank) return null;
-
-  return (
-    <div className="rounded-[18px] border border-cyan-400/15 bg-cyan-400/[0.06] px-3 py-2">
-      <div className="text-[10px] uppercase tracking-[0.18em] text-cyan-300/75">
-        {label}
-      </div>
-      <div className="mt-1 text-base font-semibold text-white">#{rank}</div>
-      {subtitle ? (
-        <div className="mt-0.5 text-[11px] text-white/50">{subtitle}</div>
-      ) : null}
-    </div>
-  );
-}
-
-function RacerRatingHero({ rating }: { rating: RacerRatingCard | null }) {
-  if (!rating) return null;
-
-  const overall = Math.max(0, Math.min(99, Number(rating.overallRating ?? 0)));
-
-  return (
-    <div className="mt-6 rounded-[26px] border border-cyan-400/15 bg-[linear-gradient(180deg,rgba(10,26,43,0.88)_0%,rgba(6,19,31,0.96)_100%)] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.22)]">
-      <div className="mb-4 flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-        <div className="min-w-0">
-          <div className="text-[10px] uppercase tracking-[0.22em] text-cyan-300/80">
-            Corner League Rating
-          </div>
-
-          {humanizeClassGroupLabel(
-            rating.classGroupName || rating.classGroupCode,
-          ) || "Season Rating"}
-
-          <div className="mt-1 text-xs text-white/50">
-            {rating.rankingPeriodName || "Current season"}
-            {rating.seasonYear ? ` · ${rating.seasonYear}` : ""}
-          </div>
-
-          <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
-            <RankingBadge
-              label="National Rank"
-              rank={rating.nationalRankingPosition}
-              subtitle={
-                humanizeClassGroupLabel(rating.classGroupCode) || "National"
-              }
-            />
-            <RankingBadge
-              label="Org Rank"
-              rank={rating.organizationRankingPosition}
-              subtitle={
-                rating.organizationAbbreviation ||
-                rating.organizationName ||
-                "Organization"
-              }
-            />
-          </div>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-            className="relative flex h-28 w-28 items-center justify-center rounded-full border border-cyan-300/20 bg-[radial-gradient(circle_at_30%_30%,rgba(103,232,249,0.18),rgba(255,255,255,0.02))] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]"
-          >
-            <motion.div
-              className="absolute inset-0 rounded-full border border-cyan-300/10"
-              animate={{ opacity: [0.18, 0.34, 0.18] }}
-              transition={{
-                duration: 2.4,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            />
-
-            <div className="relative z-10 text-center">
-              <div className="text-[10px] uppercase tracking-[0.16em] text-cyan-300/80">
-                OVR
-              </div>
-              <div className="text-4xl font-bold text-white">
-                {overall.toFixed(0)}
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
-        <RatingMeter label="Speed" value={rating.speedRating} delay={0.02} />
-        <RatingMeter
-          label="Consistency"
-          value={rating.consistencyRating}
-          delay={0.06}
-        />
-        <RatingMeter
-          label="Strength"
-          value={rating.strengthRating}
-          delay={0.1}
-        />
-        <RatingMeter
-          label="Momentum"
-          value={rating.momentumRating}
-          delay={0.14}
-        />
-        <RatingMeter
-          label="Versatility"
-          value={rating.versatilityRating}
-          delay={0.18}
-        />
-        <RatingMeter
-          label="Activity"
-          value={rating.activityRating}
-          delay={0.22}
-        />
-      </div>
-    </div>
-  );
-}
+import {
+  calculateAge,
+  ClaimAthleteModal,
+  createAthleteSponsor,
+  EditRacerModal,
+  fetchAthleteGallery,
+  fetchAthleteSponsors,
+  getGalleryThumb,
+  getSponsorLogo,
+  getSponsorWebsite,
+  humanizeClassGroupLabel,
+  humanizeValidationError,
+  inchesToMeters,
+  isProbablyId,
+  logRequestError,
+  mapAthlete,
+  mapDetail,
+  MiniStat,
+  PercentStatBox,
+  pollUploadProgress,
+  PremiumRacerHero,
+  RacerGalleryView,
+  RacerRatingHero,
+  slugify,
+  StatBox,
+  toDateInputValue,
+  toNumOrUndefined,
+  updateAthleteSocialLinks,
+  uploadAthleteGalleryMedia,
+  uploadAthleteHeaderImage,
+  uploadAthleteImage,
+} from "./racer-profile-parts";
+import type {
+  AthleteHistoryItem,
+  Racer,
+  RacerGalleryItem,
+  RacerRatingCard,
+  RacerSponsor,
+} from "./racer-profile-parts";
 
 export default function RacerProfilePage({
   idOrSlugParam,
@@ -795,6 +94,13 @@ export default function RacerProfilePage({
   const [ratingLoading, setRatingLoading] = useState(false);
 
   const [profileViewCount, setProfileViewCount] = useState<number | null>(null);
+
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [galleryItems, setGalleryItems] = useState<RacerGalleryItem[]>([]);
+  const [galleryLoading, setGalleryLoading] = useState(false);
+
+  const [sponsors, setSponsors] = useState<RacerSponsor[]>([]);
+  const [sponsorsLoading, setSponsorsLoading] = useState(false);
 
   const [claimStatus, setClaimStatus] = useState<{
     hasClaim: boolean;
@@ -835,21 +141,6 @@ export default function RacerProfilePage({
       }).length,
     [overallRows],
   );
-
-  const motoWinPct = useMemo(() => {
-    if (motoRows.length === 0) return 0;
-    return (seasonMotoWins / motoRows.length) * 100;
-  }, [seasonMotoWins, motoRows.length]);
-
-  const overallWinPct = useMemo(() => {
-    if (overallRows.length === 0) return 0;
-    return (overallWinsCount / overallRows.length) * 100;
-  }, [overallWinsCount, overallRows.length]);
-
-  const podiumPct = useMemo(() => {
-    if (overallRows.length === 0) return 0;
-    return (podiumCount / overallRows.length) * 100;
-  }, [podiumCount, overallRows.length]);
 
   const timelineMaxEvents = 4;
 
@@ -1266,6 +557,70 @@ export default function RacerProfilePage({
       });
   }, [racer?.id, currentUserId]);
 
+  useEffect(() => {
+    if (!racer?.athleteId) {
+      setGalleryItems([]);
+      return;
+    }
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        setGalleryLoading(true);
+        const list = await fetchAthleteGallery(String(racer.athleteId));
+
+        if (!cancelled) {
+          setGalleryItems(list);
+        }
+      } catch {
+        if (!cancelled) {
+          setGalleryItems([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setGalleryLoading(false);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [racer?.athleteId]);
+
+  useEffect(() => {
+    if (!racer?.athleteId) {
+      setSponsors([]);
+      return;
+    }
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        setSponsorsLoading(true);
+        const list = await fetchAthleteSponsors(String(racer.athleteId));
+
+        if (!cancelled) {
+          setSponsors(list);
+        }
+      } catch {
+        if (!cancelled) {
+          setSponsors([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setSponsorsLoading(false);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [racer?.athleteId]);
+
   if (loading || authLoading) {
     return (
       <div className="relative grid min-h-screen place-items-center overflow-hidden bg-[#030913] text-white">
@@ -1320,28 +675,54 @@ export default function RacerProfilePage({
     );
   }
 
+  const title = racer.racerName || "Racer";
+
   const stats = [
-    // { label: "Career Wins", value: racer.careerWins ?? 0, trophy: true },
     { label: "Season Moto Wins", value: seasonMotoWins, trophy: true },
-    { label: "Season Overall Wins", value: racer.seasonWins ?? 0 },
-    { label: "Season Podiums", value: racer.seasonPodiums ?? 0 },
+    { label: "Season Overall Wins", value: overallWinsCount },
+    { label: "Season Podiums", value: podiumCount },
   ];
 
-  const title = racer.racerName || "Racer";
-  const heightChip = metersToFeetInches(racer.height);
+  const motoWinPct =
+    motoRows.length > 0 ? (seasonMotoWins / motoRows.length) * 100 : 0;
 
-  const chips = [
-    racer.location && {
-      label: racer.location,
-      icon: <MapPin className="h-3.5 w-3.5" />,
+  const overallWinPct =
+    overallRows.length > 0 ? (overallWinsCount / overallRows.length) * 100 : 0;
+
+  const podiumPct =
+    overallRows.length > 0 ? (podiumCount / overallRows.length) * 100 : 0;
+
+  const socialLinks = [
+    racer.instagramUrl && {
+      label: "Instagram",
+      href: racer.instagramUrl,
+      icon: <Instagram className="h-4 w-4" />,
     },
-    typeof racer.racerAge === "number" && { label: `${racer.racerAge} yrs` },
-    heightChip && { label: heightChip },
-    racer.boatManufacturers && {
-      label: racer.boatManufacturers,
-      icon: <Waves className="h-3.5 w-3.5" />,
+    racer.youtubeUrl && {
+      label: "YouTube",
+      href: racer.youtubeUrl,
+      icon: <Youtube className="h-4 w-4" />,
     },
-  ].filter(Boolean) as { label: string; icon?: React.ReactNode }[];
+    racer.tiktokUrl && {
+      label: "TikTok",
+      href: racer.tiktokUrl,
+      icon: <Play className="h-4 w-4" />,
+    },
+    racer.facebookUrl && {
+      label: "Facebook",
+      href: racer.facebookUrl,
+      icon: <ExternalLink className="h-4 w-4" />,
+    },
+    racer.websiteUrl && {
+      label: "Website",
+      href: racer.websiteUrl,
+      icon: <Globe2 className="h-4 w-4" />,
+    },
+  ].filter(Boolean) as {
+    label: string;
+    href: string;
+    icon: React.ReactNode;
+  }[];
 
   const isOwner =
     !!currentUserId &&
@@ -1349,13 +730,13 @@ export default function RacerProfilePage({
     String(racer.claimedByUserId) === String(currentUserId);
 
   const hasPendingClaim =
-    claimStatus?.hasClaim && claimStatus?.status === "pending";
+    !!claimStatus?.hasClaim && claimStatus.status === "pending";
 
   const hasApprovedClaim =
-    claimStatus?.hasClaim && claimStatus?.status === "approved";
+    !!claimStatus?.hasClaim && claimStatus.status === "approved";
 
   const hasRejectedClaim =
-    claimStatus?.hasClaim && claimStatus?.status === "rejected";
+    !!claimStatus?.hasClaim && claimStatus.status === "rejected";
 
   const canClaim =
     !!currentUserId &&
@@ -1365,11 +746,57 @@ export default function RacerProfilePage({
 
   const canEdit = isOwner || hasApprovedClaim;
 
+  if (galleryOpen && racer) {
+    return (
+      <RacerGalleryView
+        racer={racer}
+        items={galleryItems}
+        loading={galleryLoading}
+        canUpload={canEdit}
+        onBack={() => setGalleryOpen(false)}
+        onUpload={async (drafts) => {
+          if (!racer?.athleteId || !currentUserId) return;
+
+          const uploadedItems: RacerGalleryItem[] = [];
+
+          for (const draft of drafts) {
+            if (!draft.file) continue;
+
+            const uploaded = await uploadAthleteGalleryMedia(
+              racer.athleteId,
+              currentUserId,
+              draft.file,
+              {
+                title: draft.title,
+                caption: draft.caption,
+                isFeatured: draft.isFeatured,
+              },
+            );
+
+            uploadedItems.push(uploaded as RacerGalleryItem);
+          }
+
+          if (uploadedItems.length > 0) {
+            setGalleryItems((prev) => [...uploadedItems, ...prev]);
+            toast({
+              title: "Gallery updated",
+              description: `${uploadedItems.length} media item${
+                uploadedItems.length === 1 ? "" : "s"
+              } uploaded.`,
+            });
+          }
+        }}
+      />
+    );
+  }
+
   function buildUpdateBody(
     r: Racer,
     userId: string,
     edited: {
-      age?: number;
+      nickname?: string;
+      skillLevel?: "junior" | "amateur" | "pro";
+      dateOfBirth?: string;
       bio?: string;
       heightMeters?: number;
       origin?: string;
@@ -1386,8 +813,16 @@ export default function RacerProfilePage({
       body.name = r.racerName.trim();
     }
 
-    if (typeof edited.age === "number" && Number.isFinite(edited.age)) {
-      body.age = edited.age;
+    if (edited.nickname !== undefined) {
+      body.nickname = edited.nickname;
+    }
+
+    if (edited.skillLevel !== undefined) {
+      body.skillLevel = edited.skillLevel;
+    }
+
+    if (edited.dateOfBirth !== undefined) {
+      body.dateOfBirth = edited.dateOfBirth;
     }
 
     if (edited.bio && edited.bio.trim()) {
@@ -1406,6 +841,10 @@ export default function RacerProfilePage({
       body.origin = edited.origin.trim();
     }
 
+    if (edited.boatManufacturers && edited.boatManufacturers.trim()) {
+      body.boatManufacturers = edited.boatManufacturers.trim();
+    }
+
     return body;
   }
 
@@ -1419,225 +858,176 @@ export default function RacerProfilePage({
         <div className="absolute left-1/2 top-0 h-[320px] w-[320px] -translate-x-1/2 rounded-full bg-cyan-400/8 blur-3xl" />
       </div>
 
-      <div className="relative mx-auto max-w-6xl px-3 pb-12 pt-4 sm:px-4">
-        <div className="mb-6 flex justify-end">
-          <button
-            onClick={() => setSearchOpen(true)}
-            className="inline-flex items-center gap-2 rounded-full border border-cyan-300/15 bg-cyan-300/10 px-4 py-3 text-xs font-black uppercase tracking-[0.16em] text-cyan-100 transition hover:border-cyan-300/30 hover:bg-cyan-300/15"
-            aria-label="Search racers"
-          >
-            <SearchIcon size={16} />
-            <span className="hidden sm:inline">Search Racers</span>
-          </button>
+      <div className="relative mx-auto max-w-6xl px-3 pb-12 sm:pt-10 pt-0 sm:px-4">
+        <PremiumRacerHero
+          racer={racer}
+          ratingCard={ratingCard}
+          canEdit={canEdit}
+          canClaim={canClaim}
+          hasPendingClaim={!!hasPendingClaim}
+          hasRejectedClaim={!!hasRejectedClaim}
+          socialLinks={socialLinks}
+          profileViewCount={profileViewCount}
+          onEdit={() => setEditOpen(true)}
+          onClaim={handleClaimProfileClick}
+          onGallery={() => setGalleryOpen(true)}
+          onSearch={() => setSearchOpen(true)}
+          onProfileImageClick={() => {
+            if (racer.racerImage) {
+              setLightboxUrl(racer.racerImage);
+            }
+          }}
+          onClaimedUserClick={() => {
+            if (!racer.claimedByUsername) return;
+
+            navigate(`/profile/${encodeURIComponent(racer.claimedByUsername)}`);
+          }}
+          onShare={async () => {
+            trackEvent(AnalyticsEvents.RACER_PROFILE_SHARED, {
+              racer_id: racer ? String(racer.athleteId ?? racer.id) : null,
+              racer_detail_id: racer ? String(racer.id) : null,
+              racer_name: racer?.racerName ?? null,
+              sport: "jet_ski",
+              source_page: "racer_profile",
+            });
+
+            try {
+              await navigator.clipboard.writeText(window.location.href);
+              toast({ title: "Copied to clipboard" });
+            } catch {
+              toast({
+                title: "Share link",
+                description: window.location.href,
+              });
+            }
+          }}
+        />
+
+        <div className="mt-4 grid grid-cols-2 gap-3 rounded-[24px] border border-cyan-300/10 bg-[#07111F]/80 p-4 sm:grid-cols-4">
+          <div>
+            <div className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300/70">
+              Location
+            </div>
+            <div className="mt-2 text-sm text-white/80">
+              {racer.location || "Coming soon"}
+            </div>
+          </div>
+
+          <div>
+            <div className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300/70">
+              Class
+            </div>
+            <div className="mt-2 text-sm text-white/80">
+              {humanizeClassGroupLabel(
+                ratingCard?.classGroupName || ratingCard?.classGroupCode,
+              ) || "Coming soon"}
+            </div>
+          </div>
+
+          <div>
+            <div className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300/70">
+              Ride
+            </div>
+            <div className="mt-2 text-sm text-white/80">
+              {racer.boatManufacturers || "Coming soon"}
+            </div>
+          </div>
+
+          <div>
+            <div className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300/70">
+              Sponsored By
+            </div>
+            <div className="mt-2 text-sm text-white/80">
+              {sponsors[0]?.name || "Coming soon"}
+            </div>
+          </div>
         </div>
 
-        <div className="relative overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[linear-gradient(180deg,rgba(7,17,31,0.96)_0%,rgba(4,10,19,0.98)_100%)] shadow-[0_30px_90px_rgba(0,0,0,0.42)] sm:rounded-[38px]">
-          <div className="pointer-events-none absolute inset-0">
-            <div className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-cyan-400/10 blur-3xl" />
-            <div className="absolute -right-24 bottom-0 h-96 w-96 rounded-full bg-[#FF6B35]/10 blur-3xl" />
-            <div className="absolute inset-0 opacity-[0.05] [background-image:linear-gradient(rgba(255,255,255,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.18)_1px,transparent_1px)] [background-size:72px_72px]" />
-          </div>
+        <RacerRatingHero rating={ratingCard} />
 
-          <div className="relative p-5 sm:p-7 lg:p-10">
-            <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
-              <div className="flex flex-col gap-5 sm:flex-row sm:items-center xl:flex-1">
-                <div
-                  className="mx-auto cursor-pointer self-start rounded-full bg-gradient-to-tr from-violet-500 via-fuchsia-500 to-amber-400 p-[2px] sm:mx-0"
-                  onClick={() =>
-                    setLightboxUrl(racer.racerImage || stockAvatar)
-                  }
-                >
-                  <img
-                    src={racer.racerImage || stockAvatar}
-                    onError={(e) => {
-                      const img = e.currentTarget as HTMLImageElement;
-                      if (img.src !== stockAvatar) img.src = stockAvatar;
-                    }}
-                    className="h-28 w-28 rounded-full bg-black object-cover sm:h-36 sm:w-36 lg:h-40 lg:w-40"
-                  />
-                </div>
+        <div className="mt-4 grid grid-cols-3 gap-2 sm:gap-3">
+          {stats.map((item) => (
+            <StatBox
+              key={item.label}
+              label={item.label}
+              value={item.value}
+              trophy={item.trophy}
+            />
+          ))}
+        </div>
 
-                <div className="min-w-0 flex-1 text-center sm:text-left">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/15 bg-cyan-400/8 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-cyan-300">
-                    <span className="h-2 w-2 rounded-full bg-cyan-300" />
-                    Athlete profile
-                  </div>
-
-                  <h1 className="mt-4 break-words text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl">
-                    {title}
-                  </h1>
-
-                  {racer?.isClaimed && (
-                    <div className="mt-3 flex justify-center sm:justify-start">
-                      {racer.claimedByUsername ? (
-                        <button
-                          type="button"
-                          onClick={() =>
-                            navigate(`/profile/${racer.claimedByUsername}`)
-                          }
-                          title={`Verified and claimed by @${racer.claimedByUsername}`}
-                          className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-500/15 px-3 py-1.5 text-xs text-emerald-200 transition hover:bg-emerald-500/20"
-                        >
-                          <ShieldCheck className="h-4 w-4" />
-                          Verified Athlete
-                        </button>
-                      ) : (
-                        <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-500/15 px-3 py-1.5 text-xs text-emerald-200">
-                          <ShieldCheck className="h-4 w-4" />
-                          Verified Athlete
-                        </span>
-                      )}
-                    </div>
-                  )}
-
-                  {racer?.isClaimed && racer?.claimedByUsername && (
-                    <div className="mt-2 flex justify-center sm:justify-start">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          navigate(`/profile/${racer.claimedByUsername}`)
-                        }
-                        className="text-[11px] text-white/50 underline underline-offset-2 hover:text-white/80"
-                      >
-                        Claimed by @{racer.claimedByUsername}
-                      </button>
-                    </div>
-                  )}
-
-                  {hasPendingClaim && (
-                    <div className="mt-3 flex justify-center sm:justify-start">
-                      <span className="rounded-full border border-yellow-400/20 bg-yellow-500/15 px-3 py-1.5 text-xs text-yellow-200">
-                        Claim Pending
-                      </span>
-                    </div>
-                  )}
-
-                  {hasRejectedClaim && (
-                    <div className="mt-3 flex justify-center sm:justify-start">
-                      <span className="rounded-full border border-red-400/20 bg-red-500/15 px-3 py-1.5 text-xs text-red-200">
-                        Previous Claim Rejected
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="mt-4 flex flex-wrap items-center justify-center gap-2 sm:justify-start">
-                    {chips.length === 0 ? (
-                      <p className="text-sm text-white/70">AQUA Racer</p>
-                    ) : (
-                      chips.map((c, i) => (
-                        <span
-                          key={i}
-                          className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] text-white/90"
-                        >
-                          {c.icon ? c.icon : null}
-                          {c.label}
-                        </span>
-                      ))
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap justify-center gap-2 xl:justify-end">
-                {canEdit ? (
-                  <Button
-                    onClick={() => setEditOpen(true)}
-                    className="h-11 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-5 text-xs font-black uppercase tracking-[0.14em] text-cyan-100 hover:border-cyan-200/40 hover:bg-cyan-300 hover:text-[#06111d]"
-                  >
-                    <PencilLine className="mr-2 h-4 w-4" />
-                    Edit
-                  </Button>
-                ) : hasPendingClaim ? (
-                  <Button
-                    disabled
-                    className="h-11 rounded-full border border-yellow-400/20 bg-yellow-500/20 px-5 text-xs font-black uppercase tracking-[0.14em] text-yellow-200"
-                  >
-                    Claim Pending
-                  </Button>
-                ) : !racer?.isClaimed ? (
-                  <Button
-                    onClick={() => {
-                      trackEvent(AnalyticsEvents.RACER_CLAIM_STARTED, {
-                        racer_id: racer
-                          ? String(racer.athleteId ?? racer.id)
-                          : null,
-                        racer_detail_id: racer ? String(racer.id) : null,
-                        racer_name: racer?.racerName ?? null,
-                        sport: "jet_ski",
-                      });
-
-                      handleClaimProfileClick();
-                    }}
-                    className="h-11 rounded-full border border-[#FF6B35]/20 bg-[#FF6B35]/10 px-5 text-xs font-black uppercase tracking-[0.14em] text-[#FFB199] hover:border-[#FF7849]/40 hover:bg-[#FF6B35]/20 hover:text-white"
-                  >
-                    {hasRejectedClaim ? "Submit New Claim" : "Claim Profile"}
-                  </Button>
-                ) : null}
-                <Button
-                  onClick={async () => {
-                    trackEvent(AnalyticsEvents.RACER_PROFILE_SHARED, {
-                      racer_id: racer
-                        ? String(racer.athleteId ?? racer.id)
-                        : null,
-                      racer_detail_id: racer ? String(racer.id) : null,
-                      racer_name: racer?.racerName ?? null,
-                      sport: "jet_ski",
-                      source_page: "racer_profile",
-                    });
-
-                    try {
-                      await navigator.clipboard.writeText(window.location.href);
-                      toast({ title: "Copied to clipboard" });
-                    } catch {}
-                  }}
-                  className="h-11 rounded-full bg-cyan-300 px-5 text-xs font-black uppercase tracking-[0.14em] text-[#06111d] shadow-[0_0_26px_rgba(34,211,238,0.22)] hover:bg-cyan-200"
-                >
-                  <Share2 className="mr-2 h-4 w-4" />
-                  Share
-                </Button>
-              </div>
-            </div>
-
-            {ratingLoading ? (
-              <div className="mt-6 rounded-[26px] border border-cyan-400/10 bg-white/[0.03] p-5 text-sm text-white/60">
-                Loading Corner League rating…
-              </div>
-            ) : (
-              <RacerRatingHero rating={ratingCard} />
-            )}
-
-            <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {stats.map((s) => (
-                <StatBox
-                  key={s.label}
-                  label={s.label}
-                  value={s.value}
-                  trophy={s.trophy}
-                />
-              ))}
-            </div>
-            <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <PercentStatBox label="Moto Win %" value={motoWinPct} />
-              <PercentStatBox label="Overall Win %" value={overallWinPct} />
-              <PercentStatBox label="Podium %" value={podiumPct} />
-            </div>
-          </div>
+        <div className="mt-4 grid grid-cols-3 gap-2 sm:gap-3">
+          <PercentStatBox label="Moto Win %" value={motoWinPct} />
+          <PercentStatBox label="Overall Win %" value={overallWinPct} />
+          <PercentStatBox label="Podium %" value={podiumPct} />
         </div>
 
         <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="order-2 space-y-6 lg:order-1 lg:col-span-1">
             <Card className="overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
-              {" "}
-              <div className="mb-2 text-sm font-semibold uppercase tracking-[0.16em] text-cyan-300/80">
-                About
+              <div className="mb-3 text-sm font-semibold uppercase tracking-[0.16em] text-cyan-300/80">
+                Sponsors
               </div>
-              <p className="whitespace-pre-wrap text-sm leading-7 text-white/80">
-                {racer.bio || "Bio coming soon."}
-              </p>
+
+              {sponsorsLoading ? (
+                <p className="text-sm text-white/60">Loading sponsors…</p>
+              ) : sponsors.length === 0 ? (
+                <p className="text-sm text-white/55">Sponsors coming soon.</p>
+              ) : (
+                <div className="space-y-3">
+                  {sponsors.map((sponsor) => {
+                    const logo = getSponsorLogo(sponsor);
+                    const website = getSponsorWebsite(sponsor);
+
+                    const content = (
+                      <div className="flex items-center gap-3 rounded-[20px] border border-white/10 bg-white/[0.04] p-3 transition hover:bg-white/[0.06]">
+                        {logo ? (
+                          <img
+                            src={logo}
+                            alt={sponsor.name}
+                            className="h-10 w-10 rounded-xl object-contain"
+                          />
+                        ) : (
+                          <div className="grid h-10 w-10 place-items-center rounded-xl bg-cyan-300/10 text-cyan-200">
+                            <Sparkles className="h-4 w-4" />
+                          </div>
+                        )}
+
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-sm font-semibold text-white">
+                            {sponsor.name}
+                          </div>
+                          {website ? (
+                            <div className="truncate text-xs text-white/45">
+                              {website}
+                            </div>
+                          ) : null}
+                        </div>
+
+                        {website ? (
+                          <ExternalLink className="h-4 w-4 text-white/40" />
+                        ) : null}
+                      </div>
+                    );
+
+                    return website ? (
+                      <a
+                        key={sponsor.id}
+                        href={website}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {content}
+                      </a>
+                    ) : (
+                      <div key={sponsor.id}>{content}</div>
+                    );
+                  })}
+                </div>
+              )}
             </Card>
 
             <Card className="overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
-              {" "}
               <div className="mb-3 text-sm font-semibold uppercase tracking-[0.16em] text-cyan-300/80">
                 World Finals
               </div>
@@ -1650,21 +1040,6 @@ export default function RacerProfilePage({
             </Card>
 
             <Card className="overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
-              {" "}
-              <div className="rounded-[20px] border border-cyan-300/10 bg-cyan-300/10 px-4 py-3">
-                <div className="text-lg font-semibold text-cyan-300">
-                  {typeof profileViewCount === "number"
-                    ? profileViewCount.toLocaleString()
-                    : "—"}
-                </div>
-                <div className="mt-1 text-xs uppercase tracking-[0.16em] text-white/50">
-                  Unique Profile Views
-                </div>
-              </div>
-            </Card>
-
-            <Card className="overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
-              {" "}
               <div className="mb-2 inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.16em] text-cyan-300/80">
                 <Sparkles className="h-4 w-4" />
                 AI Racer Analysis
@@ -1687,14 +1062,52 @@ export default function RacerProfilePage({
 
           <div className="order-1 space-y-4 lg:order-2 lg:col-span-2">
             <Card className="overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)] sm:p-6">
-              {" "}
-              <div className="mb-2 text-lg font-semibold text-white">
-                Race Media & Highlights
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <div className="mb-2 text-lg font-semibold text-white">
+                    Racer Gallery
+                  </div>
+                  <p className="text-sm leading-7 text-slate-300">
+                    Videos, photos, highlights, sponsor content, and race
+                    moments.
+                  </p>
+                </div>
+
+                <Button
+                  onClick={() => setGalleryOpen(true)}
+                  className="rounded-full border border-cyan-300/25 bg-cyan-300/10 px-5 py-3 text-xs font-black uppercase tracking-[0.16em] text-cyan-100 hover:bg-cyan-300 hover:text-[#06111d]"
+                >
+                  <Play className="mr-2 h-4 w-4" />
+                  View Racer Gallery
+                </Button>
               </div>
-              <p className="text-sm leading-7 text-slate-300">
-                Racer highlights, posts, media drops, reels, race recaps, and
-                sponsor content to come.
-              </p>
+
+              {galleryItems.length > 0 ? (
+                <div className="mt-5 grid grid-cols-3 gap-2">
+                  {galleryItems.slice(0, 3).map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setGalleryOpen(true)}
+                      className="relative aspect-[4/3] overflow-hidden rounded-[18px] border border-white/10 bg-black"
+                    >
+                      <img
+                        src={getGalleryThumb(item)}
+                        alt={item.title || "Racer media"}
+                        className="h-full w-full object-cover opacity-80"
+                      />
+                      <div className="absolute inset-0 bg-black/10" />
+                      <div className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-black/55">
+                        {item.type === "video" ? (
+                          <Play className="h-3.5 w-3.5 text-white" />
+                        ) : (
+                          <ImageIcon className="h-3.5 w-3.5 text-white" />
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : null}
             </Card>
 
             <Card className="overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)] sm:p-6">
@@ -1848,8 +1261,13 @@ export default function RacerProfilePage({
 
       {editOpen && racer && (
         <EditRacerModal
+          profileImageUrl={racer.racerImage}
+          headerImageUrl={racer.headerImageUrl}
+          sponsors={sponsors}
           initial={{
-            age: racer.racerAge ?? "",
+            nickname: racer.nickname ?? "",
+            skillLevel: racer.skillLevel ?? "amateur",
+            dateOfBirth: toDateInputValue(racer.dateOfBirth),
             bio: racer.bio ?? "",
             heightInches:
               typeof racer.height === "number"
@@ -1857,6 +1275,11 @@ export default function RacerProfilePage({
                 : "",
             origin: racer.location ?? "",
             boatManufacturers: racer.boatManufacturers ?? "",
+            instagramUrl: racer.instagramUrl ?? "",
+            youtubeUrl: racer.youtubeUrl ?? "",
+            tiktokUrl: racer.tiktokUrl ?? "",
+            facebookUrl: racer.facebookUrl ?? "",
+            websiteUrl: racer.websiteUrl ?? "",
           }}
           onClose={() => setEditOpen(false)}
           onSave={async (vals) => {
@@ -1871,26 +1294,34 @@ export default function RacerProfilePage({
               return;
             }
 
-            const ageNum = toNumOrUndefined(vals.age);
             const heightInchesNum = toNumOrUndefined(vals.heightInches);
 
             const edited: {
-              age?: number;
+              nickname?: string;
+              skillLevel?: "junior" | "amateur" | "pro";
+              dateOfBirth?: string;
               bio?: string;
               heightMeters?: number;
               origin?: string;
               boatManufacturers?: string;
             } = {};
 
-            if (typeof ageNum === "number" && ageNum !== racer.racerAge) {
-              if (ageNum < 9 || ageNum > 100) {
-                toast({
-                  title: "Please fix the form",
-                  description: "Age must be at least 9.",
-                });
-                return;
-              }
-              edited.age = ageNum;
+            const newNickname = (vals.nickname ?? "").trim();
+
+            if (newNickname !== (racer.nickname ?? "")) {
+              edited.nickname = newNickname;
+            }
+
+            const newSkillLevel = vals.skillLevel ?? "amateur";
+
+            if (newSkillLevel !== (racer.skillLevel ?? "amateur")) {
+              edited.skillLevel = newSkillLevel;
+            }
+
+            const newDateOfBirth = (vals.dateOfBirth ?? "").trim();
+
+            if (newDateOfBirth !== toDateInputValue(racer.dateOfBirth)) {
+              edited.dateOfBirth = newDateOfBirth;
             }
 
             const newBio = (vals.bio ?? "").trim();
@@ -1929,8 +1360,26 @@ export default function RacerProfilePage({
 
             const hasEdits = Object.keys(edited).length > 0;
             const hasImage = !!vals.imageFile && !!racer.athleteId;
+            const hasHeaderImage = !!vals.headerImageFile && !!racer.athleteId;
+            const sponsorDrafts = vals.sponsorsToCreate ?? [];
+            const hasSponsor = sponsorDrafts.some((sponsor) =>
+              sponsor.name.trim(),
+            );
 
-            if (!hasEdits && !hasImage) {
+            const hasSocialEdits =
+              (vals.instagramUrl ?? "") !== (racer.instagramUrl ?? "") ||
+              (vals.youtubeUrl ?? "") !== (racer.youtubeUrl ?? "") ||
+              (vals.tiktokUrl ?? "") !== (racer.tiktokUrl ?? "") ||
+              (vals.facebookUrl ?? "") !== (racer.facebookUrl ?? "") ||
+              (vals.websiteUrl ?? "") !== (racer.websiteUrl ?? "");
+
+            if (
+              !hasEdits &&
+              !hasImage &&
+              !hasHeaderImage &&
+              !hasSponsor &&
+              !hasSocialEdits
+            ) {
               setEditOpen(false);
               return;
             }
@@ -1967,6 +1416,23 @@ export default function RacerProfilePage({
                 toast({ title: "Photo uploaded" });
               }
 
+              if (hasHeaderImage) {
+                setUploadPct(0);
+
+                const headerUrl = await uploadAthleteHeaderImage(
+                  racer.athleteId!,
+                  currentUserId,
+                  vals.headerImageFile!,
+                );
+
+                setRacer((prev) =>
+                  prev ? { ...prev, headerImageUrl: headerUrl } : prev,
+                );
+
+                setUploadPct(100);
+                toast({ title: "Header photo uploaded" });
+              }
+
               if (hasEdits) {
                 const body = buildUpdateBody(racer, currentUserId, edited);
                 const onlyUserAndName =
@@ -1978,25 +1444,100 @@ export default function RacerProfilePage({
                   await apiRequest("PATCH", endpoint, body);
                 }
 
+                setRacer((prev): Racer | null => {
+                  if (!prev) return prev;
+
+                  const nextDateOfBirth =
+                    edited.dateOfBirth !== undefined
+                      ? edited.dateOfBirth || null
+                      : (prev.dateOfBirth ?? null);
+
+                  const nextAge =
+                    edited.dateOfBirth !== undefined
+                      ? (calculateAge(edited.dateOfBirth) ?? undefined)
+                      : prev.racerAge;
+
+                  return {
+                    ...prev,
+                    nickname:
+                      edited.nickname !== undefined
+                        ? edited.nickname || null
+                        : (prev.nickname ?? null),
+                    skillLevel:
+                      edited.skillLevel !== undefined
+                        ? edited.skillLevel
+                        : (prev.skillLevel ?? "amateur"),
+                    dateOfBirth: nextDateOfBirth,
+                    racerAge: nextAge,
+                    bio:
+                      edited.bio !== undefined
+                        ? edited.bio
+                        : (prev.bio ?? null),
+                    location:
+                      edited.origin !== undefined
+                        ? edited.origin
+                        : (prev.location ?? null),
+                    boatManufacturers:
+                      edited.boatManufacturers !== undefined
+                        ? edited.boatManufacturers
+                        : (prev.boatManufacturers ?? null),
+                    height:
+                      typeof edited.heightMeters === "number"
+                        ? edited.heightMeters
+                        : (prev.height ?? null),
+                  };
+                });
+              }
+
+              if (hasSocialEdits) {
+                await updateAthleteSocialLinks(
+                  racer.athleteId!,
+                  currentUserId,
+                  {
+                    instagramUrl: vals.instagramUrl,
+                    youtubeUrl: vals.youtubeUrl,
+                    tiktokUrl: vals.tiktokUrl,
+                    facebookUrl: vals.facebookUrl,
+                    websiteUrl: vals.websiteUrl,
+                  },
+                );
+
                 setRacer((prev) =>
                   prev
                     ? {
                         ...prev,
-                        racerAge:
-                          typeof edited.age === "number"
-                            ? edited.age
-                            : prev.racerAge,
-                        bio: edited.bio ?? prev.bio,
-                        location: edited.origin ?? prev.location,
-                        boatManufacturers:
-                          edited.boatManufacturers ?? prev.boatManufacturers,
-                        height:
-                          typeof edited.heightMeters === "number"
-                            ? edited.heightMeters
-                            : prev.height,
+                        instagramUrl: vals.instagramUrl || null,
+                        youtubeUrl: vals.youtubeUrl || null,
+                        tiktokUrl: vals.tiktokUrl || null,
+                        facebookUrl: vals.facebookUrl || null,
+                        websiteUrl: vals.websiteUrl || null,
                       }
                     : prev,
                 );
+              }
+
+              if (hasSponsor) {
+                const createdSponsors: RacerSponsor[] = [];
+
+                for (const sponsor of sponsorDrafts) {
+                  if (!sponsor.name.trim()) continue;
+
+                  const newSponsor = await createAthleteSponsor(
+                    racer.athleteId!,
+                    currentUserId,
+                    {
+                      name: sponsor.name.trim(),
+                      websiteUrl: sponsor.websiteUrl,
+                      logoFile: sponsor.logoFile,
+                    },
+                  );
+
+                  createdSponsors.push(newSponsor as RacerSponsor);
+                }
+
+                if (createdSponsors.length > 0) {
+                  setSponsors((prev) => [...createdSponsors, ...prev]);
+                }
               }
 
               setEditOpen(false);

@@ -90,7 +90,7 @@ export default function AuthPage() {
   useEffect(() => {
     if (!isAuthenticated) return;
     const next =
-      new URLSearchParams(window.location.search).get("next") || "/clubs";
+      new URLSearchParams(window.location.search).get("next") || "/scores/aqua";
     setLocation(next, { replace: true });
   }, [isAuthenticated, setLocation]);
 
@@ -133,7 +133,8 @@ export default function AuthPage() {
         description: `Hello ${user.firstName ?? user.username}!`,
       });
       const next =
-        new URLSearchParams(window.location.search).get("next") || "/clubs";
+        new URLSearchParams(window.location.search).get("next") ||
+        "/scores/aqua";
       setLocation(next, { replace: true });
     },
     onError: (err: any) => {
@@ -313,7 +314,8 @@ export default function AuthPage() {
         description: `Account created for ${user.firstName ?? user.username}!`,
       });
       const next =
-        new URLSearchParams(window.location.search).get("next") || "/clubs";
+        new URLSearchParams(window.location.search).get("next") ||
+        "/scores/aqua";
       setLocation(next, { replace: true });
     },
     onError: (err: any) => {
