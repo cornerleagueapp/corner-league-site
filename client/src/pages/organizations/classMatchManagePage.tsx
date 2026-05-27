@@ -32,12 +32,8 @@ import {
   ArrowLeft,
   CalendarDays,
   Flag,
-  Pencil,
   Plus,
   Save,
-  ShieldCheck,
-  Trophy,
-  Trash2,
   UserPlus,
   Users,
 } from "lucide-react";
@@ -204,6 +200,101 @@ function RacerChip({
   );
 }
 
+function unwrapResultsResponse(json: any): any[] {
+  const possible =
+    json?.results ??
+    json?.data?.results ??
+    json?.data?.items ??
+    json?.items ??
+    json?.data ??
+    json;
+
+  return Array.isArray(possible) ? possible : [];
+}
+
+function normalizeResultStatus(status?: string | null) {
+  if (!status) return null;
+
+  const upper = String(status).trim().toUpperCase();
+
+  if (upper === "DNF" || upper === "DID NOT FINISH") {
+    return "DID NOT FINISH";
+  }
+
+  if (upper === "DNS" || upper === "DID NOT START") {
+    return "DID NOT START";
+  }
+
+  return status;
+}
+
+function normalizeResultRow(r: any): ResultLite {
+  return {
+    ...r,
+    id: String(r?.id ?? ""),
+    athleteId:
+      r?.athleteId ??
+      r?.athlete_id ??
+      r?.athlete?.id ??
+      r?.participantId ??
+      r?.participant_id ??
+      r?.participant?.id ??
+      null,
+    motoId: r?.motoId ?? r?.moto_id ?? r?.moto?.id ?? null,
+    matchId: r?.matchId ?? r?.match_id ?? r?.match?.id ?? null,
+    teamId: r?.teamId ?? r?.team_id ?? r?.team?.id ?? null,
+    position:
+      r?.position ??
+      r?.finishPosition ??
+      r?.finish_position ??
+      r?.placement ??
+      null,
+    score: r?.score ?? r?.points ?? null,
+    status: normalizeResultStatus(r?.status),
+  };
+}
+
+function getResultDraftValue(result?: ResultLite | null) {
+  if (!result) return "";
+
+  if (result.status === "DID NOT FINISH" || result.status === "DID NOT START") {
+    return RESULT_STATUS_LABEL[
+      result.status as keyof typeof RESULT_STATUS_LABEL
+    ];
+  }
+
+  if (result.position != null) {
+    return String(result.position);
+  }
+
+  return "";
+}
+
+function getResultPointsDisplay(result?: ResultLite | null) {
+  if (!result) return "—";
+
+  if (result.status === "DID NOT FINISH" || result.status === "DID NOT START") {
+    return `0 (${
+      RESULT_STATUS_LABEL[result.status as keyof typeof RESULT_STATUS_LABEL]
+    })`;
+  }
+
+  if (result.score != null) {
+    return result.score;
+  }
+
+  if (typeof result.position === "number") {
+    return RACE_POINTS[result.position] ?? "—";
+  }
+
+  const numericPosition = Number(result.position);
+  if (Number.isFinite(numericPosition)) {
+    return RACE_POINTS[numericPosition] ?? "—";
+  }
+
+  return "—";
+}
+
 export default function ClassMatchManagePage() {
   const [, params] = useRoute(
     "/organization/events/:eventId/classes/:divisionId/manage",
@@ -345,50 +436,65 @@ export default function ClassMatchManagePage() {
 
   async function fetchResults(matchId: string) {
     setResultsLoading(true);
-    try {
-      const res = await apiFetch(
-        `/results/match/${matchId}?page=1&limit=500&sortBy=createdAt&order=ASC`,
-        { method: "GET" },
-      );
-      const j = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(j?.message || "Failed to load results");
 
-      const list = j?.results ?? j?.data?.results ?? [];
-      const parsed = Array.isArray(list)
-        ? list.map((r: any) => ({
-            ...r,
-            athleteId: r?.athleteId ?? r?.athlete?.id ?? null,
-            motoId: r?.motoId ?? r?.moto?.id ?? null,
-            matchId: r?.matchId ?? r?.match?.id ?? null,
-            teamId: r?.teamId ?? r?.team?.id ?? null,
-          }))
-        : [];
+    try {
+      const res = await apiFetch(`/results/match/${matchId}?page=1&limit=50`, {
+        method: "GET",
+      });
+
+      const j = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        console.error("[ClassMatchManagePage] fetchResults failed", {
+          status: res.status,
+          response: j,
+          matchId,
+        });
+
+        const validationMessage = Array.isArray(j?.message)
+          ? j.message.join(" • ")
+          : j?.message;
+
+        throw new Error(validationMessage || "Failed to load results");
+      }
+
+      const rawList = unwrapResultsResponse(j);
+      const parsed = rawList.map(normalizeResultRow);
 
       setResults(parsed);
 
       const nextDrafts: Record<string, string> = {};
-      parsed.forEach((r: ResultLite) => {
-        const athleteId = r?.athleteId ?? r?.athlete?.id;
-        const motoId = r?.motoId ?? r?.moto?.id;
+
+      parsed.forEach((result) => {
+        const athleteId = String(result.athleteId ?? result.athlete?.id ?? "");
+        const motoId = String(result.motoId ?? result.moto?.id ?? "");
+
         if (!athleteId || !motoId) return;
 
-        if (r.status === "DID NOT FINISH" || r.status === "DID NOT START") {
-          nextDrafts[`${athleteId}:${motoId}`] =
-            RESULT_STATUS_LABEL[r.status as keyof typeof RESULT_STATUS_LABEL];
-          return;
-        }
+        const value = getResultDraftValue(result);
 
-        if (r.position != null) {
-          nextDrafts[`${athleteId}:${motoId}`] = String(r.position);
+        if (value) {
+          nextDrafts[`${athleteId}:${motoId}`] = value;
         }
       });
+
       setDraftPositions(nextDrafts);
+
+      console.log("[ClassMatchManagePage] loaded results", {
+        matchId,
+        rawList,
+        parsed,
+        nextDrafts,
+      });
     } catch (e: any) {
       toast({
         variant: "destructive",
         title: "Error",
         description: e?.message || "Failed to load results",
       });
+
+      setResults([]);
+      setDraftPositions({});
     } finally {
       setResultsLoading(false);
     }
@@ -719,10 +825,16 @@ export default function ClassMatchManagePage() {
   }
 
   function getResultForAthleteMoto(athleteId: string, motoId: string) {
-    return results.find((r) => {
-      const rAthleteId = String(r.athleteId ?? r.athlete?.id ?? "");
-      const rMotoId = String(r.motoId ?? r.moto?.id ?? "");
-      return rAthleteId === String(athleteId) && rMotoId === String(motoId);
+    return results.find((result) => {
+      const resultAthleteId = String(
+        result.athleteId ?? result.athlete?.id ?? "",
+      );
+
+      const resultMotoId = String(result.motoId ?? result.moto?.id ?? "");
+
+      return (
+        resultAthleteId === String(athleteId) && resultMotoId === String(motoId)
+      );
     });
   }
 
@@ -1265,8 +1377,6 @@ export default function ClassMatchManagePage() {
 
                         <tbody>
                           {selectedAthletes.map((athlete) => {
-                            const final = getFinalForAthlete(athlete.id);
-
                             return (
                               <tr
                                 key={athlete.id}
@@ -1290,14 +1400,7 @@ export default function ClassMatchManagePage() {
                                           <Input
                                             value={
                                               draftPositions[cellKey] ??
-                                              (r?.status === "DID NOT FINISH" ||
-                                              r?.status === "DID NOT START"
-                                                ? RESULT_STATUS_LABEL[
-                                                    r.status as keyof typeof RESULT_STATUS_LABEL
-                                                  ]
-                                                : r?.position != null
-                                                  ? String(r.position)
-                                                  : "")
+                                              getResultDraftValue(r)
                                             }
                                             disabled={!!match?.isFinalized}
                                             className="h-10 w-24 rounded-[12px] border-white/10 bg-[#030913] text-white focus-visible:ring-cyan-300/30"
@@ -1394,18 +1497,7 @@ export default function ClassMatchManagePage() {
                                       <td className="px-3 py-3 text-white/70">
                                         {scoreSavingKey === cellKey
                                           ? "Saving..."
-                                          : r?.status === "DID NOT FINISH" ||
-                                              r?.status === "DID NOT START"
-                                            ? `0 (${
-                                                RESULT_STATUS_LABEL[
-                                                  r.status as keyof typeof RESULT_STATUS_LABEL
-                                                ]
-                                              })`
-                                            : (r?.score ??
-                                              (typeof r?.position === "number"
-                                                ? (RACE_POINTS[r.position] ??
-                                                  "—")
-                                                : "—"))}
+                                          : getResultPointsDisplay(r)}
                                       </td>
                                     </React.Fragment>
                                   );
