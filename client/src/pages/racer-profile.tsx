@@ -1337,6 +1337,11 @@ export default function RacerProfilePage({
                 ? Math.round(racer.height / 0.0254)
                 : "",
             origin: racer.location ?? "",
+            formattedAddress: racer.formattedAddress ?? "",
+            latitude: racer.latitude ?? "",
+            longitude: racer.longitude ?? "",
+            placeId: racer.placeId ?? "",
+            locationProvider: racer.locationProvider ?? "",
             boatManufacturers: racer.boatManufacturers ?? "",
             instagramUrl: racer.instagramUrl ?? "",
             youtubeUrl: racer.youtubeUrl ?? "",

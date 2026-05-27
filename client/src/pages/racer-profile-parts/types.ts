@@ -17,6 +17,13 @@ export type Racer = {
   facebookUrl?: string | null;
   websiteUrl?: string | null;
   location?: string | null;
+
+  formattedAddress?: string | null;
+  latitude?: string | null;
+  longitude?: string | null;
+  placeId?: string | null;
+  locationProvider?: string | null;
+
   boatManufacturers?: string | null;
   careerWins?: number;
   seasonWins?: number;
@@ -136,6 +143,15 @@ export type EditValues = {
   heightInches?: number | string;
   origin?: string;
   boatManufacturers?: string;
+
+  formattedAddress?: string | null;
+  latitude?: string | null;
+  longitude?: string | null;
+  placeId?: string | null;
+  locationProvider?: string | null;
+  city?: string | null;
+  stateCode?: string | null;
+  countryCode?: string | null;
 
   instagramUrl?: string;
   youtubeUrl?: string;

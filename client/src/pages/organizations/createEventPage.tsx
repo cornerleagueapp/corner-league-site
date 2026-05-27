@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/apiClient";
 import { ArrowLeft, CalendarDays, Flag, MapPin, Trophy } from "lucide-react";
+import { LocationAutocomplete } from "@/components/LocationAutocomplete";
 
 const FIXED_SPORT = "jet ski" as const;
 
@@ -28,6 +29,11 @@ export default function CreateEventPage() {
     name: "",
     description: "",
     location: "",
+    formattedAddress: "",
+    latitude: "",
+    longitude: "",
+    placeId: "",
+    locationProvider: "",
     startDate: "",
     endDate: "",
   });
@@ -124,6 +130,11 @@ export default function CreateEventPage() {
         description: draft.description.trim(),
         sport: FIXED_SPORT,
         location: draft.location.trim(),
+        formattedAddress: draft.formattedAddress || undefined,
+        latitude: draft.latitude || undefined,
+        longitude: draft.longitude || undefined,
+        placeId: draft.placeId || undefined,
+        locationProvider: draft.locationProvider || undefined,
         startDate: toIsoDate(draft.startDate, false),
         endDate: toIsoDate(draft.endDate, true),
       };
@@ -277,18 +288,33 @@ export default function CreateEventPage() {
               </div>
 
               <div className="flex flex-col gap-2">
-                <label className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">
-                  Location *
-                </label>
-                <div className="relative">
-                  <Input
-                    className="h-12 rounded-[14px] border-white/10 bg-white/[0.055] pr-11 text-white placeholder:text-white/35 focus-visible:ring-cyan-300/30"
-                    placeholder="Enter location or city/state..."
-                    value={draft.location}
-                    onChange={(e) => set("location", e.target.value)}
-                  />
-                  <MapPin className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35" />
-                </div>
+                <LocationAutocomplete
+                  label="Location *"
+                  value={draft.location}
+                  placeholder="Search city, venue, lake, or address..."
+                  onTextChange={(location) =>
+                    setDraft((prev) => ({
+                      ...prev,
+                      location,
+                      formattedAddress: "",
+                      latitude: "",
+                      longitude: "",
+                      placeId: "",
+                      locationProvider: "",
+                    }))
+                  }
+                  onSelect={(selected) =>
+                    setDraft((prev) => ({
+                      ...prev,
+                      location: selected.location,
+                      formattedAddress: selected.formattedAddress,
+                      latitude: selected.latitude,
+                      longitude: selected.longitude,
+                      placeId: selected.placeId,
+                      locationProvider: selected.locationProvider,
+                    }))
+                  }
+                />
               </div>
 
               <div className="flex flex-col gap-2 md:col-span-2">

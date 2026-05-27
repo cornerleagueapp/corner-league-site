@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import type { EditValues, RacerSponsor, SponsorDraft } from "./types";
 import { getSponsorLogo, getSponsorWebsite } from "./racerProfileUtils";
+import { LocationAutocomplete } from "@/components/LocationAutocomplete";
 
 type EditTab = "profile" | "media" | "sponsors" | "socials";
 
@@ -268,14 +269,39 @@ export function EditRacerModal({
                   />
                 </Field>
 
-                <Field label="Origin / Hometown">
-                  <input
-                    value={vals.origin ?? ""}
-                    onChange={set("origin")}
-                    className={inputClass}
-                    placeholder="e.g., Lake Havasu, AZ"
-                  />
-                </Field>
+                <LocationAutocomplete
+                  label="Location / Hometown"
+                  value={vals.origin ?? ""}
+                  placeholder="Search hometown, city, or country..."
+                  onTextChange={(origin) =>
+                    setVals((prev) => ({
+                      ...prev,
+                      origin,
+                      formattedAddress: "",
+                      latitude: "",
+                      longitude: "",
+                      placeId: "",
+                      locationProvider: "",
+                      city: "",
+                      stateCode: "",
+                      countryCode: "",
+                    }))
+                  }
+                  onSelect={(selected) =>
+                    setVals((prev) => ({
+                      ...prev,
+                      origin: selected.location,
+                      formattedAddress: selected.formattedAddress,
+                      latitude: selected.latitude,
+                      longitude: selected.longitude,
+                      placeId: selected.placeId,
+                      locationProvider: selected.locationProvider,
+                      city: selected.city ?? "",
+                      stateCode: selected.stateCode ?? "",
+                      countryCode: selected.countryCode ?? "",
+                    }))
+                  }
+                />
               </div>
 
               <Field label="Boat Manufacturer / Ride">
