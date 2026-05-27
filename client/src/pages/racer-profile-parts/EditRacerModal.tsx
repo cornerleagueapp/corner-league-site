@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
+  AlertTriangle,
   Camera,
   ExternalLink,
   Link as LinkIcon,
@@ -172,6 +173,44 @@ export function EditRacerModal({
         <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 md:px-6">
           {activeTab === "profile" && (
             <div className="space-y-4">
+              <div className="rounded-[18px] border border-yellow-300/20 bg-yellow-500/10 p-4">
+                <div className="flex gap-3">
+                  <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-yellow-200" />
+
+                  <div>
+                    <div className="text-sm font-semibold text-yellow-100">
+                      Name changes are not recommended
+                    </div>
+                    <p className="mt-1 text-xs leading-5 text-yellow-100/70">
+                      This racer name may be linked to rankings, results,
+                      analytics, profile claims, and other historical records.
+                      Only update it if the current name is incorrect or needs a
+                      real correction.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <Field label="First Name">
+                  <input
+                    value={vals.firstName ?? ""}
+                    onChange={set("firstName")}
+                    className={inputClass}
+                    placeholder="e.g., Michael"
+                  />
+                </Field>
+
+                <Field label="Last Name">
+                  <input
+                    value={vals.lastName ?? ""}
+                    onChange={set("lastName")}
+                    className={inputClass}
+                    placeholder="e.g., Peters"
+                  />
+                </Field>
+              </div>
+
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Field label="Nickname">
                   <input

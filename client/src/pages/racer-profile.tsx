@@ -166,6 +166,20 @@ export default function RacerProfilePage({
     return uniqueMatchIds.size > timelineMaxEvents;
   }, [history]);
 
+  function getFirstNameFromFullName(name?: string | null) {
+    const parts = (name ?? "").trim().split(/\s+/).filter(Boolean);
+    return parts[0] ?? "";
+  }
+
+  function getLastNameFromFullName(name?: string | null) {
+    const parts = (name ?? "").trim().split(/\s+/).filter(Boolean);
+    return parts.slice(1).join(" ");
+  }
+
+  function buildFullName(firstName?: string, lastName?: string) {
+    return [firstName?.trim(), lastName?.trim()].filter(Boolean).join(" ");
+  }
+
   useEffect(() => {
     let cancelled = false;
 
@@ -794,6 +808,7 @@ export default function RacerProfilePage({
     r: Racer,
     userId: string,
     edited: {
+      name?: string;
       nickname?: string;
       skillLevel?: "junior" | "amateur" | "pro";
       dateOfBirth?: string;
@@ -809,7 +824,9 @@ export default function RacerProfilePage({
       userId,
     };
 
-    if (r.racerName && r.racerName.trim()) {
+    if (edited.name !== undefined) {
+      body.name = edited.name;
+    } else if (r.racerName && r.racerName.trim()) {
       body.name = r.racerName.trim();
     }
 
@@ -1265,6 +1282,8 @@ export default function RacerProfilePage({
           headerImageUrl={racer.headerImageUrl}
           sponsors={sponsors}
           initial={{
+            firstName: getFirstNameFromFullName(racer.racerName),
+            lastName: getLastNameFromFullName(racer.racerName),
             nickname: racer.nickname ?? "",
             skillLevel: racer.skillLevel ?? "amateur",
             dateOfBirth: toDateInputValue(racer.dateOfBirth),
@@ -1297,6 +1316,7 @@ export default function RacerProfilePage({
             const heightInchesNum = toNumOrUndefined(vals.heightInches);
 
             const edited: {
+              name?: string;
               nickname?: string;
               skillLevel?: "junior" | "amateur" | "pro";
               dateOfBirth?: string;
@@ -1305,6 +1325,22 @@ export default function RacerProfilePage({
               origin?: string;
               boatManufacturers?: string;
             } = {};
+
+            const newFullName = buildFullName(vals.firstName, vals.lastName);
+
+            if (newFullName && newFullName !== racer.racerName) {
+              edited.name = newFullName;
+            }
+
+            if (!newFullName) {
+              toast({
+                title: "Name required",
+                description:
+                  "Please enter at least a first name or keep the existing name.",
+                variant: "destructive",
+              });
+              return;
+            }
 
             const newNickname = (vals.nickname ?? "").trim();
 
@@ -1459,6 +1495,8 @@ export default function RacerProfilePage({
 
                   return {
                     ...prev,
+                    racerName:
+                      edited.name !== undefined ? edited.name : prev.racerName,
                     nickname:
                       edited.nickname !== undefined
                         ? edited.nickname || null

@@ -127,6 +127,8 @@ export type GalleryUploadDraft = {
 };
 
 export type EditValues = {
+  firstName?: string;
+  lastName?: string;
   nickname?: string;
   skillLevel?: RacerSkillLevel;
   dateOfBirth?: string;
