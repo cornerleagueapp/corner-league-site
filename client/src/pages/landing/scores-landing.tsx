@@ -122,7 +122,7 @@ export default function ScoresLandingPage() {
                     type="button"
                     className="w-full rounded-full bg-cyan-300 px-6 py-4 text-xs font-black uppercase tracking-[0.16em] text-[#06111d] shadow-[0_0_28px_rgba(34,211,238,0.25)] transition duration-200 hover:-translate-y-0.5 hover:bg-cyan-200 sm:w-auto sm:tracking-[0.18em]"
                   >
-                    Live Results
+                    Go to Hub
                   </button>
                 </Link>
 
