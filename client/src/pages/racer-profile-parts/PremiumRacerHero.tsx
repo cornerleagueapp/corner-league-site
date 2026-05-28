@@ -1,13 +1,16 @@
-import type { ReactNode } from "react";
+import { useState, type CSSProperties, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import stockAvatar from "@/assets/stockprofilepicture.jpeg";
 import {
+  ExternalLink,
+  Link as LinkIcon,
   PencilLine,
   Play,
   Search as SearchIcon,
   Share2,
   ShieldCheck,
   Sparkles,
+  X,
 } from "lucide-react";
 import type { Racer, RacerRatingCard } from "./types";
 import { humanizeClassGroupLabel } from "./racerProfileUtils";
@@ -18,7 +21,7 @@ function getSkillLevelLabel(skillLevel?: string | null) {
   return "Amateur";
 }
 
-function getResponsiveNameStyle(name?: string | null): React.CSSProperties {
+function getResponsiveNameStyle(name?: string | null): CSSProperties {
   const length = (name ?? "").trim().length;
 
   if (length >= 28) {
@@ -94,6 +97,8 @@ export function PremiumRacerHero({
   onProfileImageClick: () => void;
   onClaimedUserClick?: () => void;
 }) {
+  const [isLinksOpen, setIsLinksOpen] = useState(false);
+
   const overall = Math.max(
     0,
     Math.min(99, Number(ratingCard?.overallRating ?? 0)),
@@ -225,7 +230,6 @@ export function PremiumRacerHero({
             </div>
 
             <div className="col-start-2 mt-2 w-full justify-self-start sm:col-start-auto sm:mt-0 lg:ml-auto lg:w-[260px]">
-              {/* Mobile only: Season Ranking + OVR side-by-side */}
               <div className="grid grid-cols-2 gap-2 sm:hidden">
                 <div className="rounded-[16px] border border-cyan-300/15 bg-[#06111f]/85 p-3 shadow-[0_0_28px_rgba(34,211,238,0.14)] backdrop-blur-md">
                   <div className="text-[8px] font-black uppercase tracking-[0.16em] text-white/70">
@@ -258,7 +262,6 @@ export function PremiumRacerHero({
                 </div>
               </div>
 
-              {/* Tablet/Desktop keeps the exact original single ranking card */}
               <div className="hidden rounded-[22px] border border-cyan-300/15 bg-[linear-gradient(135deg,rgba(34,211,238,0.10)_0%,rgba(7,17,31,0.92)_44%,rgba(255,107,53,0.08)_100%)] p-3 shadow-[0_24px_70px_rgba(0,0,0,0.34),0_0_34px_rgba(34,211,238,0.12)] backdrop-blur-md sm:block sm:max-w-none sm:p-4">
                 <div className="text-[9px] font-black uppercase tracking-[0.18em] text-white/70 sm:text-[10px]">
                   {seasonYear} Season Ranking
@@ -306,20 +309,15 @@ export function PremiumRacerHero({
             )}
 
             {hasSocialLinks ? (
-              <div className="flex h-16 shrink-0 items-center justify-end gap-2">
-                {socialLinks!.slice(0, 5).map((link) => (
-                  <a
-                    key={link.label}
-                    href={link.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="grid h-10 w-10 place-items-center rounded-full border border-white/10 bg-black/35 text-white/80 backdrop-blur-md transition hover:border-[#FF6B35]/35 hover:bg-[#FF6B35]/10 hover:text-[#FFB199]"
-                    aria-label={link.label}
-                  >
-                    {link.icon}
-                  </a>
-                ))}
-              </div>
+              <button
+                type="button"
+                onClick={() => setIsLinksOpen(true)}
+                className="inline-flex h-16 shrink-0 items-center justify-center gap-2 rounded-[16px] border border-white/10 bg-black/35 px-4 text-xs font-black uppercase tracking-[0.12em] text-white/80 shadow-[0_16px_45px_rgba(0,0,0,0.28)] backdrop-blur-md transition hover:border-[#FF6B35]/35 hover:bg-[#FF6B35]/10 hover:text-[#FFB199]"
+                aria-label="View racer links"
+              >
+                <LinkIcon className="h-5 w-5" />
+                <span className="hidden sm:inline">Links</span>
+              </button>
             ) : (
               <div className="hidden lg:block" />
             )}
@@ -400,6 +398,66 @@ export function PremiumRacerHero({
           </div>
         </div>
       </div>
+
+      {isLinksOpen && hasSocialLinks ? (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/70 px-4 backdrop-blur-sm">
+          <button
+            type="button"
+            className="absolute inset-0 cursor-default"
+            aria-label="Close racer links"
+            onClick={() => setIsLinksOpen(false)}
+          />
+
+          <div className="relative w-full max-w-sm overflow-hidden rounded-[28px] border border-cyan-300/20 bg-[#07111F] shadow-[0_30px_90px_rgba(0,0,0,0.65)]">
+            <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
+              <div>
+                <div className="text-xs font-black uppercase tracking-[0.18em] text-cyan-200">
+                  Racer Links
+                </div>
+                <div className="mt-1 text-sm text-white/45">
+                  Socials, videos, and official pages
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsLinksOpen(false)}
+                className="grid h-9 w-9 place-items-center rounded-full border border-white/10 bg-white/10 text-white/80 transition hover:bg-white/15"
+                aria-label="Close links modal"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="space-y-2 p-4">
+              {socialLinks!.map((link) => (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-3 rounded-[18px] border border-white/10 bg-white/[0.04] p-3 text-white transition hover:border-cyan-300/25 hover:bg-cyan-300/10"
+                >
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-cyan-300/15 bg-black/30 text-cyan-100">
+                    {link.icon}
+                  </span>
+
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-bold">
+                      {link.label}
+                    </span>
+                    <span className="block truncate text-xs text-white/45">
+                      {link.href}
+                    </span>
+                  </span>
+
+                  <ExternalLink className="h-4 w-4 shrink-0 text-white/35" />
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }
