@@ -65,6 +65,7 @@ import type {
   RacerRatingCard,
   RacerSponsor,
 } from "./racer-profile-parts";
+import RacerProfileShareModal from "./racer-profile-parts/RacerProfileShareModal";
 
 export default function RacerProfilePage({
   idOrSlugParam,
@@ -101,6 +102,8 @@ export default function RacerProfilePage({
 
   const [sponsors, setSponsors] = useState<RacerSponsor[]>([]);
   const [sponsorsLoading, setSponsorsLoading] = useState(false);
+
+  const [shareOpen, setShareOpen] = useState(false);
 
   const [claimStatus, setClaimStatus] = useState<{
     hasClaim: boolean;
@@ -945,7 +948,7 @@ export default function RacerProfilePage({
 
             navigate(`/profile/${encodeURIComponent(racer.claimedByUsername)}`);
           }}
-          onShare={async () => {
+          onShare={() => {
             trackEvent(AnalyticsEvents.RACER_PROFILE_SHARED, {
               racer_id: racer ? String(racer.athleteId ?? racer.id) : null,
               racer_detail_id: racer ? String(racer.id) : null,
@@ -954,15 +957,7 @@ export default function RacerProfilePage({
               source_page: "racer_profile",
             });
 
-            try {
-              await navigator.clipboard.writeText(window.location.href);
-              toast({ title: "Copied to clipboard" });
-            } catch {
-              toast({
-                title: "Share link",
-                description: window.location.href,
-              });
-            }
+            setShareOpen(true);
           }}
         />
 
@@ -1711,6 +1706,15 @@ export default function RacerProfilePage({
           const idStr = encodeURIComponent(String(r.id));
           navigate(`/racer/${idStr}`);
         }}
+      />
+
+      <RacerProfileShareModal
+        open={shareOpen}
+        onClose={() => setShareOpen(false)}
+        racer={racer}
+        ratingCard={ratingCard}
+        profileViewCount={profileViewCount}
+        sponsors={sponsors}
       />
     </div>
   );
