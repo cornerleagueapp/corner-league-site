@@ -323,11 +323,12 @@ export default function ClassMatchManagePage() {
   const [finalStandings, setFinalStandings] = useState<FinalStanding[]>([]);
   const [motosLoading, setMotosLoading] = useState(false);
   const [resultsLoading, setResultsLoading] = useState(false);
-  const [scoreSavingKey, setScoreSavingKey] = useState<string | null>(null);
   const [newMotoSequence, setNewMotoSequence] = useState("");
   const [draftPositions, setDraftPositions] = useState<Record<string, string>>(
     {},
   );
+
+  const [resultsSaving, setResultsSaving] = useState(false);
 
   const athleteIds = useMemo(
     () => selectedAthletes.map((a) => String(a.id)),
@@ -662,6 +663,12 @@ export default function ClassMatchManagePage() {
   async function handleFinalize() {
     if (!match) return;
 
+    const saved = await handleSaveAllResults({ silent: true });
+
+    if (!saved) {
+      return;
+    }
+
     const finalizeRes = await apiFetch(`/match/finalize/${match.id}`, {
       method: "POST",
     });
@@ -844,69 +851,148 @@ export default function ClassMatchManagePage() {
     );
   }
 
-  async function saveAthleteMotoResult(args: {
-    athleteId: string;
-    motoId: string;
-    position?: number | null;
-    status?: "DNF" | "DNS" | null;
-  }) {
-    if (!match?.id) return;
+  function parseDraftResultValue(rawValue: string) {
+    const raw = rawValue.trim().toUpperCase();
 
-    const key = `${args.athleteId}:${args.motoId}`;
-    setScoreSavingKey(key);
+    if (!raw) {
+      return null;
+    }
 
-    try {
-      const existing = getResultForAthleteMoto(args.athleteId, args.motoId);
-
-      const mappedStatus = args.status ? RESULT_STATUS_API[args.status] : null;
-
-      const createPayload = {
-        matchId: match.id,
-        motoId: args.motoId,
-        athleteId: args.athleteId,
-        position: mappedStatus ? null : (args.position ?? null),
-        status: mappedStatus,
+    if (raw === "DNF" || raw === "DNS") {
+      return {
+        position: null,
+        status: RESULT_STATUS_API[raw],
       };
+    }
 
-      const updatePayload = {
-        athleteId: args.athleteId,
-        position: mappedStatus ? null : (args.position ?? null),
-        status: mappedStatus,
-      };
+    const position = Number(raw);
 
-      let res: Response;
+    if (!Number.isFinite(position) || position < 1) {
+      return null;
+    }
 
-      if (existing?.id) {
-        res = await apiFetch(`/results/${existing.id}`, {
-          method: "PUT",
-          body: updatePayload,
+    return {
+      position,
+      status: null,
+    };
+  }
+
+  function getDraftPointsDisplay(
+    cellKey: string,
+    savedResult?: ResultLite | null,
+  ) {
+    const draftValue = draftPositions[cellKey];
+
+    if (draftValue !== undefined) {
+      const parsed = parseDraftResultValue(draftValue);
+
+      if (!parsed) return "—";
+
+      if (parsed.status === "DID NOT FINISH") return "0 (DNF)";
+      if (parsed.status === "DID NOT START") return "0 (DNS)";
+
+      if (typeof parsed.position === "number") {
+        return RACE_POINTS[parsed.position] ?? "—";
+      }
+
+      return "—";
+    }
+
+    return getResultPointsDisplay(savedResult);
+  }
+
+  function buildBulkResultsPayload() {
+    if (!match?.id) return [];
+
+    const payload: Array<{
+      motoId: string;
+      athleteId: string;
+      position: number | null;
+      status: string | null;
+    }> = [];
+
+    selectedAthletes.forEach((athlete) => {
+      motos.forEach((moto) => {
+        const cellKey = `${athlete.id}:${moto.id}`;
+        const raw =
+          draftPositions[cellKey] ??
+          getResultDraftValue(getResultForAthleteMoto(athlete.id, moto.id));
+
+        const parsed = parseDraftResultValue(raw);
+
+        if (!parsed) return;
+
+        payload.push({
+          motoId: moto.id,
+          athleteId: athlete.id,
+          position: parsed.position,
+          status: parsed.status,
         });
-      } else {
-        res = await apiFetch(`/results`, {
-          method: "POST",
-          body: createPayload,
+      });
+    });
+
+    return payload;
+  }
+
+  async function handleSaveAllResults(options?: { silent?: boolean }) {
+    if (!match?.id) return false;
+
+    const payload = buildBulkResultsPayload();
+
+    if (!payload.length) {
+      if (!options?.silent) {
+        toast({
+          variant: "destructive",
+          title: "No results to save",
+          description: "Enter at least one moto result before saving.",
         });
       }
+
+      return false;
+    }
+
+    setResultsSaving(true);
+
+    try {
+      const res = await apiFetch(`/results/match/${match.id}/bulk`, {
+        method: "POST",
+        body: {
+          results: payload,
+          computeStandings: true,
+        },
+      });
 
       const j = await res.json().catch(() => ({}));
 
       if (!res.ok) {
         const msg = Array.isArray(j?.message)
           ? j.message.join(" • ")
-          : j?.message || "Failed to save result";
+          : j?.message || "Failed to save results";
+
         throw new Error(msg);
+      }
+
+      if (!options?.silent) {
+        toast({
+          title: "Results saved",
+          description: `${payload.length} moto results saved successfully.`,
+        });
       }
 
       await fetchResults(match.id);
       await fetchFinalStandings(match.id);
+
+      return true;
     } catch (e: any) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: e?.message || "Failed to save result",
+        description: e?.message || "Failed to save results",
       });
+
+      return false;
     } finally {
-      setScoreSavingKey(null);
+      setResultsSaving(false);
     }
   }
 
@@ -1270,6 +1356,20 @@ export default function ClassMatchManagePage() {
               </div>
             </Card>
 
+            {!match?.isFinalized ? (
+              <Button
+                type="button"
+                onClick={() => handleSaveAllResults()}
+                disabled={
+                  resultsSaving || !motos.length || !selectedAthletes.length
+                }
+                className="rounded-full bg-cyan-300 px-5 py-2 text-xs font-black uppercase tracking-[0.14em] text-[#06111d] hover:bg-cyan-200"
+              >
+                <Save className="mr-2 h-4 w-4" />
+                {resultsSaving ? "Saving Results..." : "Save Results"}
+              </Button>
+            ) : null}
+
             <Card className="overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/90 p-0 shadow-[0_28px_80px_rgba(0,0,0,0.32)]">
               <div className="border-b border-white/10 p-5 sm:p-6">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -1402,7 +1502,10 @@ export default function ClassMatchManagePage() {
                                               draftPositions[cellKey] ??
                                               getResultDraftValue(r)
                                             }
-                                            disabled={!!match?.isFinalized}
+                                            disabled={
+                                              !!match?.isFinalized ||
+                                              resultsSaving
+                                            }
                                             className="h-10 w-24 rounded-[12px] border-white/10 bg-[#030913] text-white focus-visible:ring-cyan-300/30"
                                             placeholder="1 / DNF / DNS"
                                             onChange={(e) =>
@@ -1412,39 +1515,6 @@ export default function ClassMatchManagePage() {
                                                   e.target.value.toUpperCase(),
                                               }))
                                             }
-                                            onBlur={(e) => {
-                                              const raw = e.target.value
-                                                .trim()
-                                                .toUpperCase();
-                                              if (!raw) return;
-
-                                              if (
-                                                raw === "DNF" ||
-                                                raw === "DNS"
-                                              ) {
-                                                saveAthleteMotoResult({
-                                                  athleteId: athlete.id,
-                                                  motoId: moto.id,
-                                                  status: raw,
-                                                  position: null,
-                                                });
-                                                return;
-                                              }
-
-                                              const pos = Number(raw);
-                                              if (
-                                                !Number.isFinite(pos) ||
-                                                pos < 1
-                                              )
-                                                return;
-
-                                              saveAthleteMotoResult({
-                                                athleteId: athlete.id,
-                                                motoId: moto.id,
-                                                position: pos,
-                                                status: null,
-                                              });
-                                            }}
                                           />
 
                                           {!match?.isFinalized && (
@@ -1462,13 +1532,6 @@ export default function ClassMatchManagePage() {
                                                   ...prev,
                                                   [cellKey]: value,
                                                 }));
-
-                                                saveAthleteMotoResult({
-                                                  athleteId: athlete.id,
-                                                  motoId: moto.id,
-                                                  status: value,
-                                                  position: null,
-                                                });
                                               }}
                                             >
                                               <option
@@ -1495,9 +1558,9 @@ export default function ClassMatchManagePage() {
                                       </td>
 
                                       <td className="px-3 py-3 text-white/70">
-                                        {scoreSavingKey === cellKey
+                                        {resultsSaving
                                           ? "Saving..."
-                                          : getResultPointsDisplay(r)}
+                                          : getDraftPointsDisplay(cellKey, r)}
                                       </td>
                                     </React.Fragment>
                                   );

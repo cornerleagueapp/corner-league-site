@@ -8,13 +8,16 @@ import { useLocation } from "wouter";
 import { getAccessToken, getRefreshToken, setTokens } from "@/lib/token";
 import { apiFetch } from "@/lib/apiClient";
 import {
-  ArrowLeft,
   LockKeyhole,
   Search,
   ShieldCheck,
   Sparkles,
   UserPlus,
 } from "lucide-react";
+import {
+  LocationAutocomplete,
+  type LocationSelection,
+} from "@/components/LocationAutocomplete";
 
 const ADMIN_PIN = "1234";
 const AUTH_KEY = "__admin_authed_v1";
@@ -104,6 +107,16 @@ type CreateBody = {
   boatManufacturers: string;
   origin?: string;
   height?: number;
+
+  formattedAddress?: string | null;
+  latitude?: string | null;
+  longitude?: string | null;
+  placeId?: string | null;
+  locationProvider?: string | null;
+  city?: string | null;
+  stateCode?: string | null;
+  countryCode?: string | null;
+
   careerWins: number;
   seasonWins: number;
   careerWordFinalsWins: number;
@@ -192,6 +205,14 @@ function CreateRacerForm() {
     age: "",
     heightInches: "",
     origin: "",
+    formattedAddress: "",
+    latitude: "",
+    longitude: "",
+    placeId: "",
+    locationProvider: "",
+    city: "",
+    stateCode: "",
+    countryCode: "",
     boatManufacturers: "",
     bio: "",
   });
@@ -211,6 +232,21 @@ function CreateRacerForm() {
     () => vals.name.trim().length > 0 && !exactExists,
     [vals.name, exactExists],
   );
+
+  function handleOriginSelect(location: LocationSelection) {
+    setVals((p) => ({
+      ...p,
+      origin: location.location || location.formattedAddress || "",
+      formattedAddress: location.formattedAddress || location.location || "",
+      latitude: location.latitude || "",
+      longitude: location.longitude || "",
+      placeId: location.placeId || "",
+      locationProvider: location.locationProvider || "mapbox",
+      city: location.city || "",
+      stateCode: location.stateCode || "",
+      countryCode: location.countryCode || "",
+    }));
+  }
 
   useEffect(() => {
     let cancel = false;
@@ -424,6 +460,14 @@ function CreateRacerForm() {
         age: ageNum,
         bio: vals.bio.trim(),
         origin: vals.origin.trim(),
+        formattedAddress: vals.formattedAddress || null,
+        latitude: vals.latitude || null,
+        longitude: vals.longitude || null,
+        placeId: vals.placeId || null,
+        locationProvider: vals.locationProvider || null,
+        city: vals.city || null,
+        stateCode: vals.stateCode || null,
+        countryCode: vals.countryCode || null,
         height: heightNum,
         boatManufacturers: vals.boatManufacturers.trim(),
         careerWins: 0,
@@ -647,13 +691,39 @@ function CreateRacerForm() {
               />
             </Field>
 
-            <Field label="Origin">
-              <input
-                className="fld"
+            <div className="md:col-span-2">
+              <LocationAutocomplete
+                label="Origin / Hometown"
                 value={vals.origin}
-                onChange={set("origin")}
+                placeholder="Search city, state, country, venue, or full address..."
+                onTextChange={(value) =>
+                  setVals((p) => ({
+                    ...p,
+                    origin: value,
+                    formattedAddress: "",
+                    latitude: "",
+                    longitude: "",
+                    placeId: "",
+                    locationProvider: "",
+                    city: "",
+                    stateCode: "",
+                    countryCode: "",
+                  }))
+                }
+                onSelect={handleOriginSelect}
               />
-            </Field>
+
+              {vals.latitude && vals.longitude ? (
+                <div className="mt-2 rounded-[14px] border border-cyan-300/10 bg-cyan-300/[0.04] px-3 py-2 text-xs leading-5 text-cyan-100/70">
+                  Coordinates attached: {Number(vals.latitude).toFixed(5)},{" "}
+                  {Number(vals.longitude).toFixed(5)}
+                </div>
+              ) : (
+                <div className="mt-2 text-xs leading-5 text-white/40">
+                  Select a location from the dropdown to attach map coordinates.
+                </div>
+              )}
+            </div>
 
             <Field label="Boat Manufacturer">
               <input
