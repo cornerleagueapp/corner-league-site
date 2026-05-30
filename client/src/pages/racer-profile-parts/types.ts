@@ -18,6 +18,9 @@ export type Racer = {
   websiteUrl?: string | null;
   location?: string | null;
 
+  city?: string | null;
+  stateCode?: string | null;
+  countryCode?: string | null;
   formattedAddress?: string | null;
   latitude?: string | null;
   longitude?: string | null;
@@ -141,7 +144,7 @@ export type EditValues = {
   dateOfBirth?: string;
   bio?: string;
   heightInches?: number | string;
-  origin?: string;
+  origin?: string | null;
   boatManufacturers?: string;
 
   formattedAddress?: string | null;

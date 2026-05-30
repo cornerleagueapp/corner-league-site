@@ -863,7 +863,15 @@ export default function RacerProfilePage({
       dateOfBirth?: string;
       bio?: string;
       heightMeters?: number;
-      origin?: string;
+      origin?: string | null;
+      formattedAddress?: string | null;
+      latitude?: string | null;
+      longitude?: string | null;
+      placeId?: string | null;
+      locationProvider?: string | null;
+      city?: string | null;
+      stateCode?: string | null;
+      countryCode?: string | null;
       boatManufacturers?: string;
     },
   ) {
@@ -905,6 +913,38 @@ export default function RacerProfilePage({
 
     if (edited.origin && edited.origin.trim()) {
       body.origin = edited.origin.trim();
+    }
+
+    if (edited.formattedAddress !== undefined) {
+      body.formattedAddress = edited.formattedAddress;
+    }
+
+    if (edited.latitude !== undefined) {
+      body.latitude = edited.latitude;
+    }
+
+    if (edited.longitude !== undefined) {
+      body.longitude = edited.longitude;
+    }
+
+    if (edited.placeId !== undefined) {
+      body.placeId = edited.placeId;
+    }
+
+    if (edited.locationProvider !== undefined) {
+      body.locationProvider = edited.locationProvider;
+    }
+
+    if (edited.city !== undefined) {
+      body.city = edited.city;
+    }
+
+    if (edited.stateCode !== undefined) {
+      body.stateCode = edited.stateCode;
+    }
+
+    if (edited.countryCode !== undefined) {
+      body.countryCode = edited.countryCode;
     }
 
     if (edited.boatManufacturers && edited.boatManufacturers.trim()) {
@@ -1337,6 +1377,9 @@ export default function RacerProfilePage({
             longitude: racer.longitude ?? "",
             placeId: racer.placeId ?? "",
             locationProvider: racer.locationProvider ?? "",
+            city: racer.city ?? "",
+            stateCode: racer.stateCode ?? "",
+            countryCode: racer.countryCode ?? "",
             boatManufacturers: racer.boatManufacturers ?? "",
             instagramUrl: racer.instagramUrl ?? "",
             youtubeUrl: racer.youtubeUrl ?? "",
@@ -1366,7 +1409,15 @@ export default function RacerProfilePage({
               dateOfBirth?: string;
               bio?: string;
               heightMeters?: number;
-              origin?: string;
+              origin?: string | null;
+              formattedAddress?: string | null;
+              latitude?: string | null;
+              longitude?: string | null;
+              placeId?: string | null;
+              locationProvider?: string | null;
+              city?: string | null;
+              stateCode?: string | null;
+              countryCode?: string | null;
               boatManufacturers?: string;
             } = {};
 
@@ -1429,8 +1480,36 @@ export default function RacerProfilePage({
             }
 
             const newOrigin = (vals.origin ?? "").trim();
-            if (newOrigin !== (racer.location ?? "")) {
-              if (newOrigin) edited.origin = newOrigin;
+            const newFormattedAddress = (vals.formattedAddress ?? "").trim();
+            const newLatitude = (vals.latitude ?? "").trim();
+            const newLongitude = (vals.longitude ?? "").trim();
+            const newPlaceId = (vals.placeId ?? "").trim();
+            const newLocationProvider = (vals.locationProvider ?? "").trim();
+            const newCity = (vals.city ?? "").trim();
+            const newStateCode = (vals.stateCode ?? "").trim();
+            const newCountryCode = (vals.countryCode ?? "").trim();
+
+            const locationChanged =
+              newOrigin !== (racer.location ?? "") ||
+              newFormattedAddress !== (racer.formattedAddress ?? "") ||
+              newLatitude !== String(racer.latitude ?? "") ||
+              newLongitude !== String(racer.longitude ?? "") ||
+              newPlaceId !== (racer.placeId ?? "") ||
+              newLocationProvider !== (racer.locationProvider ?? "") ||
+              newCity !== (racer.city ?? "") ||
+              newStateCode !== (racer.stateCode ?? "") ||
+              newCountryCode !== (racer.countryCode ?? "");
+
+            if (locationChanged) {
+              edited.origin = newOrigin || null;
+              edited.formattedAddress = newFormattedAddress || null;
+              edited.latitude = newLatitude || null;
+              edited.longitude = newLongitude || null;
+              edited.placeId = newPlaceId || null;
+              edited.locationProvider = newLocationProvider || null;
+              edited.city = newCity || null;
+              edited.stateCode = newStateCode || null;
+              edited.countryCode = newCountryCode || null;
             }
 
             const newBoat = (vals.boatManufacturers ?? "").trim();
@@ -1553,6 +1632,46 @@ export default function RacerProfilePage({
                       edited.origin !== undefined
                         ? edited.origin
                         : (prev.location ?? null),
+
+                    formattedAddress:
+                      edited.formattedAddress !== undefined
+                        ? edited.formattedAddress
+                        : (prev.formattedAddress ?? null),
+
+                    latitude:
+                      edited.latitude !== undefined
+                        ? edited.latitude
+                        : (prev.latitude ?? null),
+
+                    longitude:
+                      edited.longitude !== undefined
+                        ? edited.longitude
+                        : (prev.longitude ?? null),
+
+                    placeId:
+                      edited.placeId !== undefined
+                        ? edited.placeId
+                        : (prev.placeId ?? null),
+
+                    locationProvider:
+                      edited.locationProvider !== undefined
+                        ? edited.locationProvider
+                        : (prev.locationProvider ?? null),
+
+                    city:
+                      edited.city !== undefined
+                        ? edited.city
+                        : (prev.city ?? null),
+
+                    stateCode:
+                      edited.stateCode !== undefined
+                        ? edited.stateCode
+                        : (prev.stateCode ?? null),
+
+                    countryCode:
+                      edited.countryCode !== undefined
+                        ? edited.countryCode
+                        : (prev.countryCode ?? null),
                     boatManufacturers:
                       edited.boatManufacturers !== undefined
                         ? edited.boatManufacturers
