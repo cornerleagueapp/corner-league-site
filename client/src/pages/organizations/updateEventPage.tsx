@@ -10,10 +10,14 @@ import {
   ArrowLeft,
   CalendarDays,
   ClipboardList,
-  MapPin,
   Save,
   Trophy,
 } from "lucide-react";
+
+import {
+  LocationAutocomplete,
+  type LocationSelection,
+} from "@/components/LocationAutocomplete";
 
 type SportEnum = "jet ski";
 
@@ -33,12 +37,37 @@ export default function UpdateEventPage() {
     description: "",
     sport: "jet ski" as SportEnum,
     location: "",
+
+    formattedAddress: "",
+    latitude: "",
+    longitude: "",
+    placeId: "",
+    locationProvider: "",
+    city: "",
+    stateCode: "",
+    countryCode: "",
+
     startDate: "", // yyyy-mm-dd
     endDate: "", // yyyy-mm-dd
   });
 
   const set = <K extends keyof typeof draft>(k: K, v: (typeof draft)[K]) =>
     setDraft((d) => ({ ...d, [k]: v }));
+
+  function handleLocationSelect(location: LocationSelection) {
+    setDraft((d) => ({
+      ...d,
+      location: location.location || location.formattedAddress || "",
+      formattedAddress: location.formattedAddress || location.location || "",
+      latitude: location.latitude || "",
+      longitude: location.longitude || "",
+      placeId: location.placeId || "",
+      locationProvider: location.locationProvider || "mapbox",
+      city: location.city || "",
+      stateCode: location.stateCode || "",
+      countryCode: location.countryCode || "",
+    }));
+  }
 
   const toDateInput = (iso?: string) => {
     if (!iso) return "";
@@ -66,6 +95,22 @@ export default function UpdateEventPage() {
         description: ev.description ?? "",
         sport: (ev.sport ?? "jet ski") as SportEnum,
         location: ev.location ?? "",
+
+        formattedAddress: ev.formattedAddress ?? ev.formatted_address ?? "",
+        latitude:
+          ev.latitude !== null && ev.latitude !== undefined
+            ? String(ev.latitude)
+            : "",
+        longitude:
+          ev.longitude !== null && ev.longitude !== undefined
+            ? String(ev.longitude)
+            : "",
+        placeId: ev.placeId ?? ev.place_id ?? "",
+        locationProvider: ev.locationProvider ?? ev.location_provider ?? "",
+        city: ev.city ?? "",
+        stateCode: ev.stateCode ?? ev.state_code ?? "",
+        countryCode: ev.countryCode ?? ev.country_code ?? "",
+
         startDate: toDateInput(ev.startDate),
         endDate: toDateInput(ev.endDate),
       });
@@ -89,6 +134,16 @@ export default function UpdateEventPage() {
         description: draft.description.trim(),
         sport: draft.sport,
         location: draft.location.trim(),
+
+        formattedAddress: draft.formattedAddress || null,
+        latitude: draft.latitude || null,
+        longitude: draft.longitude || null,
+        placeId: draft.placeId || null,
+        locationProvider: draft.locationProvider || null,
+        city: draft.city || null,
+        stateCode: draft.stateCode || null,
+        countryCode: draft.countryCode || null,
+
         startDate: draft.startDate ? `${draft.startDate}T00:00:00Z` : undefined,
         endDate: draft.endDate ? `${draft.endDate}T00:00:00Z` : undefined,
       };
@@ -225,19 +280,39 @@ export default function UpdateEventPage() {
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <label className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">
-                      Location *
-                    </label>
+                    <LocationAutocomplete
+                      label="Location *"
+                      value={draft.location}
+                      placeholder="Search city, venue, lake, or full address..."
+                      onTextChange={(value) =>
+                        setDraft((d) => ({
+                          ...d,
+                          location: value,
+                          formattedAddress: "",
+                          latitude: "",
+                          longitude: "",
+                          placeId: "",
+                          locationProvider: "",
+                          city: "",
+                          stateCode: "",
+                          countryCode: "",
+                        }))
+                      }
+                      onSelect={handleLocationSelect}
+                    />
 
-                    <div className="relative">
-                      <Input
-                        className="h-12 rounded-[14px] border-white/10 bg-white/[0.055] pr-11 text-white placeholder:text-white/35 focus-visible:ring-cyan-300/30"
-                        value={draft.location}
-                        onChange={(e) => set("location", e.target.value)}
-                      />
-
-                      <MapPin className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35" />
-                    </div>
+                    {draft.latitude && draft.longitude ? (
+                      <div className="rounded-[14px] border border-cyan-300/10 bg-cyan-300/[0.04] px-3 py-2 text-xs leading-5 text-cyan-100/70">
+                        Coordinates attached:{" "}
+                        {Number(draft.latitude).toFixed(5)},{" "}
+                        {Number(draft.longitude).toFixed(5)}
+                      </div>
+                    ) : (
+                      <div className="text-xs leading-5 text-white/40">
+                        Select a location from the dropdown to attach map
+                        coordinates.
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex flex-col gap-2 md:col-span-2">
