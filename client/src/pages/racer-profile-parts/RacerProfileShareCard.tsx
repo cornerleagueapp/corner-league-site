@@ -225,7 +225,7 @@ export default function RacerProfileShareCard({
           <div className="mt-8 grid grid-cols-3 gap-5">
             <div className="rounded-[24px] border border-cyan-300/10 bg-white/[0.04] p-5">
               <div className="text-[14px] font-black uppercase tracking-[0.18em] text-cyan-300/70">
-                Moto Wins
+                Overall Event Wins
               </div>
               <div className="mt-3 text-[46px] font-black text-white">
                 {toDisplayNumber(racer.seasonWins)}

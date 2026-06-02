@@ -145,29 +145,7 @@ export default function RacerProfilePage({
     [overallRows],
   );
 
-  const timelineMaxEvents = 4;
-
-  const visibleTimelineRows = useMemo(() => {
-    const seenMatchIds = new Set<string>();
-    const allowedMatchIds = new Set<string>();
-
-    for (const item of history) {
-      if (!seenMatchIds.has(item.matchId)) {
-        seenMatchIds.add(item.matchId);
-
-        if (allowedMatchIds.size < timelineMaxEvents) {
-          allowedMatchIds.add(item.matchId);
-        }
-      }
-    }
-
-    return history.filter((item) => allowedMatchIds.has(item.matchId));
-  }, [history]);
-
-  const hasTimelineOverflow = useMemo(() => {
-    const uniqueMatchIds = new Set(history.map((item) => item.matchId));
-    return uniqueMatchIds.size > timelineMaxEvents;
-  }, [history]);
+  const hasTimelineOverflow = history.length > 8;
 
   function getFirstNameFromFullName(name?: string | null) {
     const parts = (name ?? "").trim().split(/\s+/).filter(Boolean);
@@ -1249,7 +1227,7 @@ export default function RacerProfilePage({
                       </tr>
                     </thead>
                     <tbody>
-                      {visibleTimelineRows.map((item) => {
+                      {history.map((item) => {
                         const isOverall = item.motoSequence == null;
 
                         return (

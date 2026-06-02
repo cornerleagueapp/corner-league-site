@@ -40,31 +40,46 @@ function logRequestError(ctx: string, err: any, endpoint?: string, body?: any) {
 
 function humanizeValidationError(err: any): string | undefined {
   const d = err?.data;
+
   if (typeof d === "string" && d.trim()) return d;
+
   if (d && Array.isArray(d.message)) {
     const lines: string[] = [];
+
     for (const m of d.message) {
-      if (typeof m === "string") lines.push(m);
-      else if (m && typeof m === "object") {
+      if (typeof m === "string") {
+        lines.push(m);
+      } else if (m && typeof m === "object") {
         const prop = m.property ? `${m.property}: ` : "";
         const constraints = m.constraints
           ? Object.values(m.constraints).join("; ")
           : JSON.stringify(m);
+
         lines.push(`${prop}${constraints}`);
       }
     }
+
     if (lines.length) return lines.join(" • ");
   }
+
   if (d?.error && typeof d.error === "string") return d.error;
   if (d?.message && typeof d.message === "string") return d.message;
+
   return undefined;
+}
+
+function cleanNullable(value?: string | null) {
+  const trimmed = String(value ?? "").trim();
+  return trimmed.length > 0 ? trimmed : null;
 }
 
 /* ---- auth helpers ---- */
 
 function parseJwtExp(t: string | null) {
   if (!t) return 0;
+
   const [, payload] = t.split(".");
+
   try {
     const { exp } = JSON.parse(atob(payload));
     return (exp ?? 0) * 1000;
@@ -86,26 +101,30 @@ async function getValidAccessToken(): Promise<string | null> {
       body: { refreshToken: rt },
       skipAuth: true,
     });
+
     if (!resp.ok) return null;
 
     const json = await resp.json();
     const newAT = json?.accessToken ?? json?.data?.accessToken;
     const newRT = json?.refreshToken ?? json?.data?.refreshToken;
+
     if (!newAT) return null;
 
     setTokens(newAT, newRT);
     at = newAT;
   }
+
   return at;
 }
 
 /* ---------------- types ---------------- */
+
 type CreateBody = {
   name: string;
   age: number;
   bio: string;
   boatManufacturers: string;
-  origin?: string;
+  origin?: string | null;
   height?: number;
 
   formattedAddress?: string | null;
@@ -228,10 +247,23 @@ function CreateRacerForm() {
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
       setVals((p) => ({ ...p, [k]: e.target.value }));
 
-  const canSubmit = useMemo(
-    () => vals.name.trim().length > 0 && !exactExists,
-    [vals.name, exactExists],
-  );
+  const canSubmit = useMemo(() => {
+    return (
+      vals.name.trim().length > 0 &&
+      vals.age.trim().length > 0 &&
+      vals.bio.trim().length > 0 &&
+      vals.boatManufacturers.trim().length > 0 &&
+      !exactExists &&
+      !submitting
+    );
+  }, [
+    vals.name,
+    vals.age,
+    vals.bio,
+    vals.boatManufacturers,
+    exactExists,
+    submitting,
+  ]);
 
   function handleOriginSelect(location: LocationSelection) {
     setVals((p) => ({
@@ -262,11 +294,10 @@ function CreateRacerForm() {
       try {
         if (cancel) return;
 
-        const LIMIT = 50; // backend validation cap
-        const MAX_PAGES = 20; // safety: don't hammer forever
-        const MAX_TOTAL = 1000; // safety: we don't need EVERYONE in memory
+        const LIMIT = 50;
+        const MAX_PAGES = 20;
+        const MAX_TOTAL = 1000;
 
-        // fetch ONE page from backend using real pagination
         async function fetchPage(pageNum: number) {
           const params = new URLSearchParams();
           params.set("page", String(pageNum));
@@ -290,7 +321,6 @@ function CreateRacerForm() {
 
           const j = await resp.json();
 
-          // pull the raw racers array out of whatever shape we got
           const buckets = [
             j?.racers,
             j?.data?.racers,
@@ -301,7 +331,6 @@ function CreateRacerForm() {
 
           const rawList = (buckets.find(Array.isArray) as any[]) ?? [];
 
-          // normalize -> { id, name }
           const normalized = rawList.map((rec: any) => ({
             id: String(
               rec?.id ??
@@ -348,9 +377,9 @@ function CreateRacerForm() {
           pageNum += 1;
         }
 
-        // dedupe by lowercase name
         const seen = new Set<string>();
         const deduped: Array<{ id: string; name: string }> = [];
+
         for (const x of collected) {
           const key = x.name.toLowerCase();
           if (!seen.has(key)) {
@@ -361,12 +390,10 @@ function CreateRacerForm() {
 
         const qlc = q.toLowerCase();
 
-        // partial match list for dropdown
         const filtered = deduped
           .filter((x) => x.name.toLowerCase().includes(qlc))
           .slice(0, 8);
 
-        // true if there's an exact (case-insensitive) name match
         const exact = deduped.some((x) => x.name.toLowerCase() === qlc);
 
         if (!cancel) {
@@ -376,6 +403,7 @@ function CreateRacerForm() {
         }
       } catch (err) {
         console.error("[CreateRacer] suggestion load error", err);
+
         if (!cancel) {
           setSuggestions([]);
           setExactExists(false);
@@ -402,13 +430,15 @@ function CreateRacerForm() {
     }
 
     setSubmitting(true);
+
     try {
-      // basic validation
-      const ageNum = Number(vals.age);
-      if (Number.isNaN(ageNum)) {
+      const ageTrimmed = vals.age.trim();
+      const ageNum = Number(ageTrimmed);
+
+      if (!ageTrimmed || Number.isNaN(ageNum) || ageNum <= 0) {
         toast({
           title: "Please fix the form",
-          description: "Age must be a number.",
+          description: "Age is required and must be a valid number.",
         });
         setSubmitting(false);
         return;
@@ -432,10 +462,14 @@ function CreateRacerForm() {
         return;
       }
 
-      const heightNum = vals.heightInches
+      const heightNum = vals.heightInches.trim()
         ? Number(vals.heightInches)
         : undefined;
-      if (heightNum !== undefined && (heightNum < 36 || heightNum > 96)) {
+
+      if (
+        heightNum !== undefined &&
+        (Number.isNaN(heightNum) || heightNum < 36 || heightNum > 96)
+      ) {
         toast({
           title: "Please fix the form",
           description: "Height must be between 36 and 96 inches (3′0″–8′0″).",
@@ -444,8 +478,8 @@ function CreateRacerForm() {
         return;
       }
 
-      // keep access token fresh
       const at = await getValidAccessToken();
+
       if (!at) {
         toast({
           title: "Sign in required",
@@ -459,15 +493,15 @@ function CreateRacerForm() {
         name: vals.name.trim(),
         age: ageNum,
         bio: vals.bio.trim(),
-        origin: vals.origin.trim(),
-        formattedAddress: vals.formattedAddress || null,
-        latitude: vals.latitude || null,
-        longitude: vals.longitude || null,
-        placeId: vals.placeId || null,
-        locationProvider: vals.locationProvider || null,
-        city: vals.city || null,
-        stateCode: vals.stateCode || null,
-        countryCode: vals.countryCode || null,
+        origin: cleanNullable(vals.origin),
+        formattedAddress: cleanNullable(vals.formattedAddress),
+        latitude: cleanNullable(vals.latitude),
+        longitude: cleanNullable(vals.longitude),
+        placeId: cleanNullable(vals.placeId),
+        locationProvider: cleanNullable(vals.locationProvider) || "mapbox",
+        city: cleanNullable(vals.city),
+        stateCode: cleanNullable(vals.stateCode),
+        countryCode: cleanNullable(vals.countryCode),
         height: heightNum,
         boatManufacturers: vals.boatManufacturers.trim(),
         careerWins: 0,
@@ -485,6 +519,7 @@ function CreateRacerForm() {
 
       if (!res.ok) {
         let msg = rawText;
+
         try {
           const j = JSON.parse(rawText);
           msg = j?.message || j?.error || rawText;
@@ -498,6 +533,7 @@ function CreateRacerForm() {
       }
 
       let parsed: any = {};
+
       try {
         parsed = JSON.parse(rawText);
       } catch (err) {
@@ -530,12 +566,12 @@ function CreateRacerForm() {
         return;
       }
 
-      // fallback
       toast({
         title: "Racer created",
         description:
           "We saved the racer but couldn't open their profile yet. Try searching for them.",
       });
+
       setSubmitting(false);
     } catch (e: any) {
       console.error("[CreateRacer] catch block error:", e);
@@ -552,6 +588,7 @@ function CreateRacerForm() {
         e?.data?.error ||
         e?.message ||
         "Validation error";
+
       toast({ title: "Error", description: String(nice) });
     } finally {
       setSubmitting(false);
@@ -604,10 +641,12 @@ function CreateRacerForm() {
           <div className="mb-5 rounded-[20px] border border-cyan-300/10 bg-cyan-300/[0.04] px-4 py-3">
             <div className="flex items-start gap-3">
               <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-cyan-200" />
+
               <div>
                 <div className="text-sm font-semibold text-white">
                   Duplicate protection is active
                 </div>
+
                 <p className="mt-1 text-xs leading-5 text-white/55">
                   Start typing a racer name and existing athletes will be
                   checked before creation.
@@ -668,12 +707,13 @@ function CreateRacerForm() {
               </div>
             </Field>
 
-            <Field label="Age">
+            <Field label="Age *">
               <input
                 className="fld"
                 inputMode="numeric"
                 value={vals.age}
                 onChange={set("age")}
+                placeholder="e.g., 28"
               />
             </Field>
 
@@ -718,6 +758,11 @@ function CreateRacerForm() {
                   Coordinates attached: {Number(vals.latitude).toFixed(5)},{" "}
                   {Number(vals.longitude).toFixed(5)}
                 </div>
+              ) : vals.origin.trim() ? (
+                <div className="mt-2 rounded-[14px] border border-[#FF6B35]/20 bg-[#FF6B35]/10 px-3 py-2 text-xs leading-5 text-[#FFB199]">
+                  Select a location from the dropdown to attach map coordinates.
+                  Typed text alone will not attach latitude/longitude.
+                </div>
               ) : (
                 <div className="mt-2 text-xs leading-5 text-white/40">
                   Select a location from the dropdown to attach map coordinates.
@@ -725,20 +770,22 @@ function CreateRacerForm() {
               )}
             </div>
 
-            <Field label="Boat Manufacturer">
+            <Field label="Boat Manufacturer *">
               <input
                 className="fld"
                 value={vals.boatManufacturers}
                 onChange={set("boatManufacturers")}
+                placeholder="e.g., Yamaha GP1800R SVHO"
               />
             </Field>
 
             <div className="md:col-span-2">
-              <Field label="Bio">
+              <Field label="Bio *">
                 <textarea
                   className="fld h-32"
                   value={vals.bio}
                   onChange={set("bio")}
+                  placeholder="Add a short racer bio…"
                 />
               </Field>
             </div>
@@ -751,7 +798,7 @@ function CreateRacerForm() {
 
             <Button
               onClick={handleSubmit}
-              disabled={!canSubmit || submitting}
+              disabled={!canSubmit}
               className="h-12 rounded-full bg-cyan-300 px-6 text-xs font-black uppercase tracking-[0.16em] text-[#06111d] shadow-[0_0_28px_rgba(34,211,238,0.25)] hover:bg-cyan-200 disabled:opacity-50"
             >
               {submitting ? "Creating…" : "Create Racer"}
