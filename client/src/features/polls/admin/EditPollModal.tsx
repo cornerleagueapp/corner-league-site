@@ -11,6 +11,8 @@ import type {
   PollVotingMode,
   UpdatePollInput,
 } from "../types/poll.types";
+import { trackEvent } from "@/lib/analytics";
+import { AnalyticsEvents } from "@/lib/analytics-events";
 
 interface EditPollModalProps {
   poll: AdminPollListItem | null;
@@ -233,6 +235,18 @@ export function EditPollModal({ poll, open, onClose }: EditPollModalProps) {
       await updatePoll.mutateAsync({
         pollId: currentPoll.id,
         payload,
+      });
+
+      trackEvent(AnalyticsEvents.POLL_UPDATED, {
+        pollId: currentPoll.id,
+        pollTitle: payload.title,
+        pollCategory: payload.category,
+        votingMode: payload.votingMode,
+        status: payload.status,
+        isFeatured: payload.isFeatured,
+        isPublic: payload.isPublic,
+        optionCount: payload.options?.length ?? 0,
+        sourcePage: "admin_polls",
       });
 
       onClose();

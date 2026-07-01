@@ -6,6 +6,9 @@ import {
 } from "@/features/polls/hooks/usePolls";
 import { PollCard } from "@/features/polls/components/PollCard";
 import type { Poll } from "@/features/polls/types/poll.types";
+import { useEffect } from "react";
+import { trackEvent } from "@/lib/analytics";
+import { AnalyticsEvents } from "@/lib/analytics-events";
 
 function labelize(value: string) {
   return value.replace(/_/g, " ");
@@ -29,6 +32,12 @@ export default function PollsPage() {
 
   const activePolls = polls.filter((poll) => poll.status === "active");
   const closedPolls = polls.filter((poll) => poll.status === "closed");
+
+  useEffect(() => {
+    trackEvent(AnalyticsEvents.POLLS_PAGE_VIEWED, {
+      sourcePage: "polls_page",
+    });
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#030913] text-white">

@@ -13,6 +13,8 @@ import { apiFetch } from "@/lib/apiClient";
 import AquaScoresSection from "@/components/AquaScoresSection";
 import AccordionSection from "@/components/AccordionSection";
 import { markHahn300 } from "@/data/markHanRace";
+import { trackEvent } from "@/lib/analytics";
+import { AnalyticsEvents } from "@/lib/analytics-events";
 
 type AquaOrgEvent = {
   id: string;
@@ -649,7 +651,16 @@ function AquaHubSection({
         </div>
       </div>
 
-      <VoteAwardsBanner onClick={() => navigate("/polls")} />
+      <VoteAwardsBanner
+        onClick={() => {
+          trackEvent(AnalyticsEvents.POLL_AWARDS_BANNER_CLICKED, {
+            sourcePage: "aqua_hub",
+            destination: "/polls",
+          });
+
+          navigate("/polls");
+        }}
+      />
 
       <div>
         <div className="mb-5 flex items-end justify-between gap-4">

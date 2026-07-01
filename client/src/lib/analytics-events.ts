@@ -38,5 +38,17 @@ export const AnalyticsEvents = {
   POLL_RESULTS_VIEWED: "Poll Results Viewed",
   POLL_VOTE_FAILED: "Poll Vote Failed",
 
+  POLLS_PAGE_VIEWED: "Polls Page Viewed",
+  POLL_DETAIL_VIEWED: "Poll Detail Viewed",
+  POLL_AWARDS_BANNER_CLICKED: "Poll Awards Banner Clicked",
+
+  POLL_CREATED: "Poll Created",
+  POLL_UPDATED: "Poll Updated",
+  POLL_DELETED: "Poll Deleted",
+  POLL_FEATURED_SET: "Poll Featured Set",
+
+  POLL_RACER_SEARCH_OPENED: "Poll Racer Search Opened",
+  POLL_RACER_SELECTED: "Poll Racer Selected",
+
   SEARCH_USED: "Search Used",
 } as const;

@@ -147,6 +147,8 @@ export function PollCard({ poll, sourcePage, userId }: PollCardProps) {
         pollId: poll.id,
         pollTitle: poll.title,
         pollCategory: poll.category,
+        votingMode: poll.votingMode,
+        status: poll.status,
         optionId: selectedOptionId,
         optionLabel:
           poll.votingMode === "racer_search"
@@ -156,6 +158,8 @@ export function PollCard({ poll, sourcePage, userId }: PollCardProps) {
           poll.votingMode === "racer_search"
             ? String(selectedRacer?.id)
             : undefined,
+        racerName:
+          poll.votingMode === "racer_search" ? selectedRacer?.name : undefined,
         organizationId: poll.organizationId,
         eventId: poll.eventId,
         sourcePage,
@@ -291,7 +295,16 @@ export function PollCard({ poll, sourcePage, userId }: PollCardProps) {
               ) : (
                 <button
                   type="button"
-                  onClick={() => setAthleteModalOpen(true)}
+                  onClick={() => {
+                    trackEvent(AnalyticsEvents.POLL_RACER_SEARCH_OPENED, {
+                      pollId: poll.id,
+                      pollTitle: poll.title,
+                      votingMode: poll.votingMode,
+                      sourcePage,
+                    });
+
+                    setAthleteModalOpen(true);
+                  }}
                   disabled={hasVoted || isClosed}
                   className="mt-4 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-5 py-3 text-xs font-black uppercase tracking-[0.18em] text-cyan-100 transition hover:bg-cyan-300/20 disabled:opacity-50"
                 >
@@ -438,6 +451,14 @@ export function PollCard({ poll, sourcePage, userId }: PollCardProps) {
         open={athleteModalOpen}
         onClose={() => setAthleteModalOpen(false)}
         onPick={(athlete) => {
+          trackEvent(AnalyticsEvents.POLL_RACER_SELECTED, {
+            pollId: poll.id,
+            pollTitle: poll.title,
+            racerId: String(athlete.id),
+            racerName: athlete.name,
+            sourcePage,
+          });
+
           setSelectedRacer(athlete);
           setAthleteModalOpen(false);
         }}

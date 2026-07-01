@@ -10,6 +10,8 @@ import type {
 import AthleteSearchModal, {
   type AthleteLite,
 } from "@/components/AthleteSearchModal";
+import { trackEvent } from "@/lib/analytics";
+import { AnalyticsEvents } from "@/lib/analytics-events";
 
 interface CreatePollModalProps {
   open: boolean;
@@ -122,6 +124,18 @@ export function CreatePollModal({ open, onClose }: CreatePollModalProps) {
       };
 
       await createPoll.mutateAsync(payload);
+
+      trackEvent(AnalyticsEvents.POLL_CREATED, {
+        pollTitle: payload.title,
+        pollCategory: payload.category,
+        votingMode: payload.votingMode,
+        status: payload.status,
+        isFeatured: payload.isFeatured,
+        isPublic: payload.isPublic,
+        optionCount: payload.options.length,
+        sourcePage: "admin_polls",
+      });
+
       onClose();
     } catch (e: any) {
       setError(e?.message || "Failed to create poll.");

@@ -2,6 +2,9 @@ import { Link } from "wouter";
 import { ArrowLeft, Vote } from "lucide-react";
 import { usePollById } from "@/features/polls/hooks/usePolls";
 import { PollCard } from "@/features/polls/components/PollCard";
+import { useEffect } from "react";
+import { trackEvent } from "@/lib/analytics";
+import { AnalyticsEvents } from "@/lib/analytics-events";
 
 interface PollDetailsPageProps {
   params: {
@@ -12,6 +15,19 @@ interface PollDetailsPageProps {
 export default function PollDetailsPage({ params }: PollDetailsPageProps) {
   const pollId = params?.id;
   const { data: poll, isLoading, isError, error } = usePollById(pollId);
+
+  useEffect(() => {
+    if (!poll?.id) return;
+
+    trackEvent(AnalyticsEvents.POLL_DETAIL_VIEWED, {
+      pollId: poll.id,
+      pollTitle: poll.title,
+      pollCategory: poll.category,
+      votingMode: poll.votingMode,
+      status: poll.status,
+      sourcePage: "poll_detail_page",
+    });
+  }, [poll?.id]);
 
   return (
     <div className="min-h-screen bg-[#030913] text-white">
