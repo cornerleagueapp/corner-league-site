@@ -2,6 +2,8 @@ import stockAvatar from "@/assets/stockprofilepicture.jpeg";
 import type { Racer, RacerRatingCard, RacerSponsor } from "./types";
 import { humanizeClassGroupLabel } from "./racerProfileUtils";
 
+export type ShareHighlightStat = "worldFinals" | "pageViews";
+
 function getSkillLevelLabel(skillLevel?: string | null) {
   if (skillLevel === "junior") return "Junior";
   if (skillLevel === "pro") return "Pro";
@@ -58,11 +60,13 @@ export default function RacerProfileShareCard({
   ratingCard,
   profileViewCount,
   sponsors = [],
+  highlightStatMode = "worldFinals",
 }: {
   racer: Racer;
   ratingCard: RacerRatingCard | null;
   profileViewCount?: number | null;
   sponsors?: RacerSponsor[];
+  highlightStatMode?: ShareHighlightStat;
 }) {
   const heroImage = racer.headerImageUrl || racer.racerImage || stockAvatar;
   const profileImage = racer.racerImage || stockAvatar;
@@ -86,6 +90,20 @@ export default function RacerProfileShareCard({
     ) || "Ski GP";
 
   const seasonYear = ratingCard?.seasonYear || new Date().getFullYear();
+
+  const highlightStat =
+    highlightStatMode === "pageViews"
+      ? {
+          label: "Page Views",
+          value:
+            typeof profileViewCount === "number"
+              ? profileViewCount.toLocaleString()
+              : "—",
+        }
+      : {
+          label: "World Finals Wins",
+          value: toDisplayNumber(racer.careerWorldFinalsWins),
+        };
 
   return (
     <div
@@ -192,14 +210,26 @@ export default function RacerProfileShareCard({
 
         <div>
           <div className="grid grid-cols-3 gap-5">
-            <div className="rounded-[24px] border border-cyan-300/10 bg-white/[0.04] p-5">
-              <div className="text-[14px] font-black uppercase tracking-[0.18em] text-cyan-300/70">
-                Page Views
+            <div
+              className={[
+                "rounded-[24px] border p-5 transition",
+                highlightStatMode === "worldFinals"
+                  ? "border-amber-300/20 bg-[linear-gradient(135deg,rgba(251,191,36,0.13)_0%,rgba(255,255,255,0.04)_55%,rgba(34,211,238,0.08)_100%)]"
+                  : "border-cyan-300/10 bg-white/[0.04]",
+              ].join(" ")}
+            >
+              <div
+                className={[
+                  "text-[14px] font-black uppercase tracking-[0.18em]",
+                  highlightStatMode === "worldFinals"
+                    ? "text-amber-200/80"
+                    : "text-cyan-300/70",
+                ].join(" ")}
+              >
+                {highlightStat.label}
               </div>
               <div className="mt-3 text-[46px] font-black text-white">
-                {typeof profileViewCount === "number"
-                  ? profileViewCount.toLocaleString()
-                  : "—"}
+                {highlightStat.value}
               </div>
             </div>
 

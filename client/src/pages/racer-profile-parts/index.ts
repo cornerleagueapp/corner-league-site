@@ -8,3 +8,4 @@ export * from "./EditRacerModal";
 export * from "./ClaimAthleteModal";
 export * from "./RacerRatingHero";
 export * from "./RacerProfileStats";
+export * from "./EditWorldFinalsModal";

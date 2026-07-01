@@ -9,6 +9,8 @@ import RacerProfileShareCard from "./RacerProfileShareCard";
 const CARD_WIDTH = 1080;
 const CARD_HEIGHT = 1350;
 
+export type ShareHighlightStat = "worldFinals" | "pageViews";
+
 export default function RacerProfileShareModal({
   open,
   onClose,
@@ -28,6 +30,8 @@ export default function RacerProfileShareModal({
   const exportRef = useRef<HTMLDivElement | null>(null);
   const [saving, setSaving] = useState(false);
   const [copying, setCopying] = useState(false);
+  const [highlightStatMode, setHighlightStatMode] =
+    useState<ShareHighlightStat>("worldFinals");
 
   if (!open) return null;
 
@@ -79,6 +83,17 @@ export default function RacerProfileShareModal({
     }
   }
 
+  function getToggleClass(mode: ShareHighlightStat) {
+    const isActive = highlightStatMode === mode;
+
+    return [
+      "h-12 flex-1 rounded-[14px] border px-3 text-xs font-black uppercase tracking-[0.08em] transition",
+      isActive
+        ? "border-cyan-300 bg-cyan-300 text-[#06111d] shadow-[0_0_24px_rgba(34,211,238,0.20)]"
+        : "border-white/10 bg-white/[0.04] text-white/60 hover:border-cyan-300/25 hover:bg-cyan-300/10 hover:text-cyan-100",
+    ].join(" ");
+  }
+
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/75 p-3 backdrop-blur-md sm:p-4">
       <button
@@ -126,6 +141,7 @@ export default function RacerProfileShareModal({
                     ratingCard={ratingCard}
                     profileViewCount={profileViewCount}
                     sponsors={sponsors}
+                    highlightStatMode={highlightStatMode}
                   />
                 </div>
               </div>
@@ -171,6 +187,34 @@ export default function RacerProfileShareModal({
                 This exports a clean, branded racer profile image without edit
                 buttons or extra page UI.
               </p>
+            </div>
+
+            <div className="rounded-[24px] border border-cyan-300/10 bg-cyan-300/[0.04] p-4">
+              <div className="text-xs font-black uppercase tracking-[0.16em] text-cyan-200">
+                Highlight Stat
+              </div>
+
+              <p className="mt-2 text-xs leading-5 text-white/45">
+                Choose which stat appears in the share card highlight box.
+              </p>
+
+              <div className="mt-3 flex gap-2 rounded-[18px] border border-white/10 bg-black/20 p-1.5">
+                <button
+                  type="button"
+                  onClick={() => setHighlightStatMode("worldFinals")}
+                  className={getToggleClass("worldFinals")}
+                >
+                  World Finals
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setHighlightStatMode("pageViews")}
+                  className={getToggleClass("pageViews")}
+                >
+                  Page Views
+                </button>
+              </div>
             </div>
 
             <Button

@@ -32,6 +32,7 @@ import {
   ClaimAthleteModal,
   createAthleteSponsor,
   EditRacerModal,
+  EditWorldFinalsModal,
   fetchAthleteGallery,
   fetchAthleteSponsors,
   getGalleryThumb,
@@ -87,6 +88,7 @@ export default function RacerProfilePage({
   const [claimOpen, setClaimOpen] = useState(false);
   const [claimLoading, setClaimLoading] = useState(false);
   const [uploadPct, setUploadPct] = useState<number | null>(null);
+  const [worldFinalsOpen, setWorldFinalsOpen] = useState(false);
 
   const [history, setHistory] = useState<AthleteHistoryItem[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -936,13 +938,15 @@ export default function RacerProfilePage({
     <div className="relative min-h-screen overflow-x-hidden bg-[#030913] text-white">
       <PageSEO title={`${title} • Corner League`} />
 
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.12),transparent_28%),radial-gradient(circle_at_82%_18%,rgba(255,107,53,0.08),transparent_24%),linear-gradient(180deg,#030913_0%,#07111F_48%,#02050A_100%)]" />
-        <div className="absolute inset-0 opacity-[0.04] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:72px_72px]" />
+      <div className="pointer-events-none fixed inset-0 z-0">
+        <div className="absolute inset-0 bg-[#030913]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.12),transparent_30%),radial-gradient(circle_at_82%_18%,rgba(255,107,53,0.08),transparent_28%),radial-gradient(circle_at_50%_55%,rgba(7,17,31,0.82),transparent_58%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(3,9,19,0.25)_0%,rgba(3,9,19,0.72)_52%,rgba(3,9,19,0.95)_100%)]" />
+        <div className="absolute inset-0 opacity-[0.035] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:72px_72px]" />
         <div className="absolute left-1/2 top-0 h-[320px] w-[320px] -translate-x-1/2 rounded-full bg-cyan-400/8 blur-3xl" />
       </div>
 
-      <div className="relative mx-auto max-w-6xl px-3 pb-12 sm:pt-10 pt-0 sm:px-4">
+      <div className="relative z-10 mx-auto max-w-6xl px-3 pb-12 pt-0 sm:px-4 sm:pt-10">
         <PremiumRacerHero
           racer={racer}
           ratingCard={ratingCard}
@@ -1102,9 +1106,22 @@ export default function RacerProfilePage({
             </Card>
 
             <Card className="overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
-              <div className="mb-3 text-sm font-semibold uppercase tracking-[0.16em] text-cyan-300/80">
-                World Finals
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <div className="text-sm font-semibold uppercase tracking-[0.16em] text-cyan-300/80">
+                  World Finals
+                </div>
+
+                {canEdit ? (
+                  <Button
+                    type="button"
+                    onClick={() => setWorldFinalsOpen(true)}
+                    className="rounded-full border border-cyan-300/25 bg-cyan-300/10 px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-cyan-100 hover:bg-cyan-300 hover:text-[#06111d]"
+                  >
+                    Edit
+                  </Button>
+                ) : null}
               </div>
+
               <div className="grid grid-cols-2 gap-3 text-white/80">
                 <MiniStat
                   label="Career WF Wins"
@@ -1732,6 +1749,80 @@ export default function RacerProfilePage({
         />
       )}
 
+      {worldFinalsOpen && racer && (
+        <EditWorldFinalsModal
+          initial={{
+            careerWorldFinalsWins: racer.careerWorldFinalsWins ?? 0,
+          }}
+          onClose={() => setWorldFinalsOpen(false)}
+          onSave={async (values) => {
+            if (!racer?.id || !racer?.athleteId) return;
+
+            if (!currentUserId) {
+              toast({
+                title: "Please log in",
+                description:
+                  "You need to be signed in to update World Finals wins.",
+              });
+              return;
+            }
+
+            if (!canEdit) {
+              toast({
+                title: "Not allowed",
+                description:
+                  "Only the verified athlete owner can edit this profile.",
+              });
+              return;
+            }
+
+            const endpoint = `/jet-ski-racer-details/${encodeURIComponent(
+              String(racer.id),
+            )}/world-finals`;
+
+            try {
+              await apiRequest("PATCH", endpoint, {
+                userId: currentUserId,
+                careerWordFinalsWins: values.careerWorldFinalsWins,
+              });
+
+              setRacer((prev) =>
+                prev
+                  ? {
+                      ...prev,
+                      careerWorldFinalsWins: values.careerWorldFinalsWins,
+                    }
+                  : prev,
+              );
+
+              setWorldFinalsOpen(false);
+
+              toast({
+                title: "World Finals updated",
+                description: "Your World Finals wins have been saved.",
+              });
+            } catch (err: any) {
+              logRequestError("[WorldFinals] save", err, endpoint, {
+                userId: currentUserId,
+                careerWordFinalsWins: values.careerWorldFinalsWins,
+              });
+
+              const nice =
+                humanizeValidationError(err) ||
+                err?.data?.message ||
+                err?.data?.error ||
+                err?.message ||
+                "Could not update World Finals wins.";
+
+              toast({
+                title: "World Finals update failed",
+                description: String(nice),
+                variant: "destructive",
+              });
+            }
+          }}
+        />
+      )}
       {claimOpen &&
         racer?.athleteId &&
         isAuthenticated &&
