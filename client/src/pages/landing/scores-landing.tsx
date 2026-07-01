@@ -11,6 +11,7 @@ import { PageSEO } from "@/seo/usePageSEO";
 import PublicTopNav from "@/components/navigation/PublicTopNav";
 import SpotifyPodcastSection from "@/components/SpotifyPodcastSection";
 import CLLogo from "@assets/corner-league-aqua.png";
+import { FeaturedPollSection } from "@/features/polls/components/FeaturedPollSection";
 
 function scrollToSection(targetId: string) {
   const el = document.getElementById(targetId);
@@ -202,6 +203,8 @@ export default function ScoresLandingPage() {
             </div>
           </div>
         </section>
+
+        <FeaturedPollSection sourcePage="landing_page" />
 
         <NationwideMap events={allEvents} />
 

@@ -31,5 +31,12 @@ export const AnalyticsEvents = {
 
   SPONSOR_LINK_CLICKED: "Sponsor Link Clicked",
 
+  POLL_VIEWED: "Poll Viewed",
+  POLL_OPTION_SELECTED: "Poll Option Selected",
+  POLL_VOTED: "Poll Voted",
+  POLL_VOTE_DUPLICATE_ATTEMPTED: "Poll Vote Duplicate Attempted",
+  POLL_RESULTS_VIEWED: "Poll Results Viewed",
+  POLL_VOTE_FAILED: "Poll Vote Failed",
+
   SEARCH_USED: "Search Used",
 } as const;

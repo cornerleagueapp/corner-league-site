@@ -555,6 +555,50 @@ function AllAquaEventsModal({
   );
 }
 
+function VoteAwardsBanner({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="group relative w-full overflow-hidden rounded-[28px] border border-[#FF6B35]/20 bg-[linear-gradient(135deg,rgba(255,107,53,0.16)_0%,rgba(7,17,31,0.94)_42%,rgba(25,227,255,0.10)_100%)] p-4 text-left shadow-[0_20px_60px_rgba(0,0,0,0.28)] transition hover:-translate-y-0.5 hover:border-[#FF6B35]/35 hover:bg-[#FF6B35]/[0.08] sm:p-5"
+    >
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -right-16 top-1/2 h-40 w-40 -translate-y-1/2 rounded-full bg-[#FF6B35]/12 blur-3xl" />
+        <div className="absolute -left-20 bottom-0 h-44 w-44 rounded-full bg-cyan-300/10 blur-3xl" />
+        <div className="absolute inset-0 opacity-[0.04] [background-image:linear-gradient(rgba(255,255,255,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.18)_1px,transparent_1px)] [background-size:46px_46px]" />
+      </div>
+
+      <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-start gap-4">
+          <div className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-[#FF6B35]/25 bg-[#FF6B35]/15 text-[#FFB199] shadow-[0_0_28px_rgba(255,107,53,0.12)]">
+            <Trophy className="h-5 w-5" />
+          </div>
+
+          <div className="min-w-0">
+            <div className="mb-1 inline-flex items-center gap-2 rounded-full border border-cyan-300/15 bg-cyan-300/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-cyan-200">
+              Live Fan Voting
+            </div>
+
+            <h3 className="text-xl font-black uppercase leading-tight tracking-[-0.02em] text-white sm:text-2xl">
+              Vote for Awards Now
+            </h3>
+
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
+              Help pick fan favorites, MVPs, and community awards across AQUA
+              racing.
+            </p>
+          </div>
+        </div>
+
+        <div className="inline-flex shrink-0 items-center gap-2 self-start rounded-full border border-[#FF6B35]/25 bg-[#FF6B35]/10 px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-[#FFB199] transition group-hover:bg-[#FF6B35]/20 sm:self-center">
+          Vote Now
+          <ChevronRight className="h-4 w-4 transition group-hover:translate-x-1" />
+        </div>
+      </div>
+    </button>
+  );
+}
+
 function AquaHubSection({
   onOpenResults,
   onOpenRacerSearch,
@@ -604,6 +648,8 @@ function AquaHubSection({
           </p>
         </div>
       </div>
+
+      <VoteAwardsBanner onClick={() => navigate("/polls")} />
 
       <div>
         <div className="mb-5 flex items-end justify-between gap-4">

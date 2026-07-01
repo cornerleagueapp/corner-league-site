@@ -52,6 +52,9 @@ import EventListPage from "./pages/organizations/eventListPage";
 import RaceClassEditor from "./pages/organizations/raceClassEditor";
 import ClassMatchManagePage from "./pages/organizations/classMatchManagePage";
 import { AnalyticsIdentity } from "@/components/analytics/AnalyticsIdentity";
+import PollsPage from "@/pages/pollsPage";
+import PollsDetailsPage from "@/pages/pollsDetailsPage";
+import AdminPollsPage from "@/pages/admin/admin-polls-page";
 
 function ProtectedRoute({
   component: Comp,
@@ -186,6 +189,10 @@ function PrivateRouter() {
             {() => <SuperAdminRoute component={AdminRankingsPage} />}
           </Route>
 
+          <Route path="/admin/polls">
+            {() => <SuperAdminRoute component={AdminPollsPage} />}
+          </Route>
+
           <Route path="/events/create">
             {() => <SuperAdminRoute component={CreateEventPage} />}
           </Route>
@@ -305,6 +312,26 @@ function Router() {
           <AppShell guestMode>
             <ErrorBoundary>
               <PodcastEpisodesPage />
+            </ErrorBoundary>
+          </AppShell>
+        )}
+      </Route>
+
+      <Route path="/polls">
+        {() => (
+          <AppShell guestMode>
+            <ErrorBoundary>
+              <PollsPage />
+            </ErrorBoundary>
+          </AppShell>
+        )}
+      </Route>
+
+      <Route path="/polls/:id">
+        {(params) => (
+          <AppShell guestMode>
+            <ErrorBoundary>
+              <PollsDetailsPage params={{ id: params.id }} />
             </ErrorBoundary>
           </AppShell>
         )}

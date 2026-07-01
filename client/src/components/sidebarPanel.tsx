@@ -82,6 +82,13 @@ export function useAppSidebarSections(opts?: {
                   matchPaths: ["/admin/rankings"],
                   onSelect: () => navigate("/admin/rankings"),
                 },
+                {
+                  key: "admin-polls",
+                  label: "Polls Console",
+                  selectable: false,
+                  matchPaths: ["/admin/polls"],
+                  onSelect: () => navigate("/admin/polls"),
+                },
               ],
             },
           ]
@@ -140,6 +147,13 @@ export function useAppSidebarSections(opts?: {
             selectable: false,
             matchPaths: ["/top-trends"],
             onSelect: () => navigate("/top-trends"),
+          },
+          {
+            key: "polls",
+            label: "Polls",
+            selectable: false,
+            matchPaths: ["/polls", "/polls/*"],
+            onSelect: () => navigate("/polls"),
           },
         ],
       },
