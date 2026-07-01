@@ -1,4 +1,18 @@
 User-agent: *
 Allow: /
+
 Disallow: /auth
+Disallow: /welcome
+Disallow: /settings
+Disallow: /messages
+Disallow: /notifications
+Disallow: /profile
+Disallow: /feed
+Disallow: /explore
+Disallow: /create-club
+Disallow: /club-settings
+Disallow: /admin
+Disallow: /organization
+Disallow: /events/create
+
 Sitemap: https://www.cornerleague.com/sitemap.xml

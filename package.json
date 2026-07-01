@@ -5,7 +5,8 @@
   "license": "MIT",
   "scripts": {
     "dev": "vite",
-    "prebuild": "tsx scripts/make-sitemap.mjs",
+    "sitemap": "node scripts/make-sitemap.mjs",
+    "prebuild": "node scripts/make-sitemap.mjs",
     "build": "cross-env ROLLUP_SKIP_NODEJS_NATIVE=1 tsc --noEmit && vite build",
     "preview": "vite preview --host --port 3000",
     "type-check": "tsc"
@@ -79,7 +80,7 @@
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.15",
-    "@types/node": "20.16.11",
+    "@types/node": "^20.16.11",
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.2",
