@@ -12,6 +12,7 @@ import PublicTopNav from "@/components/navigation/PublicTopNav";
 import SpotifyPodcastSection from "@/components/SpotifyPodcastSection";
 import CLLogo from "@assets/corner-league-aqua.png";
 import { FeaturedPollSection } from "@/features/polls/components/FeaturedPollSection";
+import RacePodSection from "@/components/landing/RacePodSection";
 
 function scrollToSection(targetId: string) {
   const el = document.getElementById(targetId);
@@ -204,11 +205,13 @@ export default function ScoresLandingPage() {
           </div>
         </section>
 
+        <LeagueTopPerformersSection />
+
+        <RacePodSection />
+
         <FeaturedPollSection sourcePage="landing_page" />
 
         <NationwideMap events={allEvents} />
-
-        <LeagueTopPerformersSection />
 
         <SpotifyPodcastSection
           title="Wally's World WaterX Podcast"
