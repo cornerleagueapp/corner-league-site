@@ -46,6 +46,7 @@ import EventMapPage from "@/pages/event-map";
 import TopTrendsPage from "@/pages/top-trends";
 import PodcastEpisodesPage from "@/pages/podcast-episodes";
 
+import AdminRacePodsPage from "./pages/admin/admin-racepods";
 import UpdateEventPage from "./pages/organizations/updateEventPage";
 import CreateEventPage from "./pages/organizations/createEventPage";
 import EventListPage from "./pages/organizations/eventListPage";
@@ -55,6 +56,8 @@ import { AnalyticsIdentity } from "@/components/analytics/AnalyticsIdentity";
 import PollsPage from "@/pages/pollsPage";
 import PollsDetailsPage from "@/pages/pollsDetailsPage";
 import AdminPollsPage from "@/pages/admin/admin-polls-page";
+import RacePodPage from "./pages/profile/racepod";
+import RacePodSessionPage from "@/pages/racepod-session";
 
 function ProtectedRoute({
   component: Comp,
@@ -163,6 +166,7 @@ function PrivateRouter() {
           <Route path="/messages" component={MessagesPage} />
           <Route path="/notifications" component={NotificationsPage} />
           <Route path="/settings" component={Settings} />
+          <Route path="/racepod" component={RacePodPage} />
 
           <Route path="/clubs" component={Clubs} />
           <Route path="/create-club" component={CreateClub} />
@@ -183,6 +187,10 @@ function PrivateRouter() {
 
           <Route path="/organization/event-list">
             {() => <SuperAdminRoute component={EventListPage} />}
+          </Route>
+
+          <Route path="/admin/racepods">
+            {() => <SuperAdminRoute component={AdminRacePodsPage} />}
           </Route>
 
           <Route path="/admin/rankings">
@@ -226,6 +234,16 @@ function Router() {
       <Route path="/terms" component={TermsPage} />
       <Route path="/auth" component={AuthPage} />
       <Route path="/welcome" component={WelcomeSplash} />
+
+      <Route path="/racepod/sessions/:sessionId">
+        {() => (
+          <AppShell guestMode>
+            <ErrorBoundary>
+              <RacePodSessionPage />
+            </ErrorBoundary>
+          </AppShell>
+        )}
+      </Route>
 
       <Route path="/scores">
         {() => (

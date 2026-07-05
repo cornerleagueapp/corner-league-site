@@ -89,6 +89,13 @@ export function useAppSidebarSections(opts?: {
                   matchPaths: ["/admin/polls"],
                   onSelect: () => navigate("/admin/polls"),
                 },
+                {
+                  key: "admin-racepods",
+                  label: "RacePods",
+                  selectable: false,
+                  matchPaths: ["/admin/racepods"],
+                  onSelect: () => navigate("/admin/racepods"),
+                },
               ],
             },
           ]
@@ -190,6 +197,13 @@ export function useAppSidebarSections(opts?: {
                 selectable: false,
                 matchPaths: ["/profile", "/profile/*"],
                 onSelect: () => navigate("/profile"),
+              },
+              {
+                key: "racepod",
+                label: "RacePod",
+                selectable: false,
+                matchPaths: ["/racepod", "/racepod/*"],
+                onSelect: () => navigate("/racepod"),
               },
               {
                 key: "account",
