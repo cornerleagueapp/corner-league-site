@@ -23,6 +23,8 @@ type GalleryAthlete = {
 type GalleryItem = {
   id: string;
   athleteId?: string | null;
+  racerProfileId?: string | null;
+  jetSkiRacerDetailsId?: string | null;
   type?: "image" | "video" | string | null;
   url?: string | null;
   mediaUrl?: string | null;
@@ -31,6 +33,11 @@ type GalleryItem = {
   caption?: string | null;
   createdAt?: string | null;
   athlete?: GalleryAthlete | null;
+  racerProfile?: {
+    id?: string | null;
+    athleteId?: string | null;
+    name?: string | null;
+  } | null;
 };
 
 function getMediaUrl(item: GalleryItem) {
@@ -59,6 +66,15 @@ function formatDate(value?: string | null) {
     day: "numeric",
     year: "numeric",
   });
+}
+
+function getRacerProfileId(item: GalleryItem) {
+  return (
+    item.racerProfileId ||
+    item.jetSkiRacerDetailsId ||
+    item.racerProfile?.id ||
+    ""
+  );
 }
 
 async function fetchFeaturedGallery(limit: number) {
@@ -416,12 +432,12 @@ export default function AquaFeaturedGalleryPage() {
                   </p>
                 ) : null}
 
-                {selectedItem.athleteId ? (
+                {getRacerProfileId(selectedItem) ? (
                   <button
                     type="button"
                     onClick={() =>
                       navigate(
-                        `/racer/${encodeURIComponent(String(selectedItem.athleteId))}?kind=athlete`,
+                        `/racer/${encodeURIComponent(String(getRacerProfileId(selectedItem)))}`,
                       )
                     }
                     className="mt-6 inline-flex h-11 w-full items-center justify-center rounded-full bg-cyan-300 px-5 text-xs font-black uppercase tracking-[0.14em] text-[#06111d] transition hover:bg-cyan-200"

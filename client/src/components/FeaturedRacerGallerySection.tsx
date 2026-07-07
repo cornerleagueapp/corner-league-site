@@ -21,6 +21,8 @@ export type FeaturedGalleryAthlete = {
 export type FeaturedGalleryItem = {
   id: string;
   athleteId?: string | null;
+  racerProfileId?: string | null;
+  jetSkiRacerDetailsId?: string | null;
   type?: "image" | "video" | string | null;
   url?: string | null;
   mediaUrl?: string | null;
@@ -30,6 +32,11 @@ export type FeaturedGalleryItem = {
   isFeatured?: boolean | null;
   createdAt?: string | null;
   athlete?: FeaturedGalleryAthlete | null;
+  racerProfile?: {
+    id?: string | null;
+    athleteId?: string | null;
+    name?: string | null;
+  } | null;
 };
 
 function getMediaUrl(item: FeaturedGalleryItem) {
