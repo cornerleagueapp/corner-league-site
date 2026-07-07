@@ -59,6 +59,7 @@ import AdminPollsPage from "@/pages/admin/admin-polls-page";
 import RacePodPage from "./pages/profile/racepod";
 import RacePodSessionPage from "@/pages/racepod-session";
 import RacePodLandingPage from "@/pages/racepod-landing";
+import RacePodPublishedSessionsPage from "@/pages/racePods/racePodPublishedSessions";
 
 function ProtectedRoute({
   component: Comp,
@@ -261,6 +262,16 @@ function Router() {
           <AppShell guestMode>
             <ErrorBoundary>
               <ScoresPage />
+            </ErrorBoundary>
+          </AppShell>
+        )}
+      </Route>
+
+      <Route path="/scores/aqua/racepod">
+        {() => (
+          <AppShell guestMode>
+            <ErrorBoundary>
+              <RacePodPublishedSessionsPage />
             </ErrorBoundary>
           </AppShell>
         )}

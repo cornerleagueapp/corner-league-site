@@ -8,6 +8,10 @@ import {
   Search,
   ChevronRight,
   Sparkles,
+  Radio,
+  Route,
+  Share2,
+  Zap,
 } from "lucide-react";
 import { apiFetch } from "@/lib/apiClient";
 import AquaScoresSection from "@/components/AquaScoresSection";
@@ -601,6 +605,67 @@ function VoteAwardsBanner({ onClick }: { onClick: () => void }) {
   );
 }
 
+function RacePodSessionsBanner({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="group relative w-full overflow-hidden rounded-[28px] border border-cyan-300/20 bg-[linear-gradient(135deg,rgba(34,211,238,0.16)_0%,rgba(7,17,31,0.96)_42%,rgba(255,107,53,0.12)_100%)] p-4 text-left shadow-[0_20px_60px_rgba(0,0,0,0.28)] transition hover:-translate-y-0.5 hover:border-cyan-300/35 hover:bg-cyan-300/[0.08] sm:p-5"
+    >
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -right-16 top-1/2 h-44 w-44 -translate-y-1/2 rounded-full bg-cyan-300/12 blur-3xl" />
+        <div className="absolute -left-20 bottom-0 h-44 w-44 rounded-full bg-[#FF6B35]/10 blur-3xl" />
+        <div className="absolute inset-0 opacity-[0.04] [background-image:linear-gradient(rgba(255,255,255,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.18)_1px,transparent_1px)] [background-size:46px_46px]" />
+      </div>
+
+      <div className="relative flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex min-w-0 items-start gap-4">
+          <div className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-cyan-300/25 bg-cyan-300/15 text-cyan-100 shadow-[0_0_28px_rgba(34,211,238,0.12)]">
+            <Radio className="h-5 w-5" />
+          </div>
+
+          <div className="min-w-0">
+            <div className="mb-1 inline-flex items-center gap-2 rounded-full border border-[#FF6B35]/15 bg-[#FF6B35]/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[#FFB199]">
+              RacePod Community
+            </div>
+
+            <h3 className="text-xl font-black uppercase leading-tight tracking-[-0.02em] text-white sm:text-2xl">
+              View Shared RacePod Sessions
+            </h3>
+
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-300">
+              Explore published AQUA replays from racers, including GPS routes,
+              speed data, shared cards, users, and claimed athlete profiles.
+            </p>
+
+            <div className="mt-4 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] font-bold text-white/60">
+                <Route className="h-3.5 w-3.5 text-cyan-200" />
+                Route replays
+              </span>
+
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] font-bold text-white/60">
+                <Zap className="h-3.5 w-3.5 text-cyan-200" />
+                Speed stats
+              </span>
+
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] font-bold text-white/60">
+                <Share2 className="h-3.5 w-3.5 text-cyan-200" />
+                Share cards
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="inline-flex shrink-0 items-center gap-2 self-start rounded-full border border-cyan-300/25 bg-cyan-300/10 px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-cyan-100 transition group-hover:bg-cyan-300 group-hover:text-[#06111d] lg:self-center">
+          Open Replays
+          <ChevronRight className="h-4 w-4 transition group-hover:translate-x-1" />
+        </div>
+      </div>
+    </button>
+  );
+}
+
 function AquaHubSection({
   onOpenResults,
   onOpenRacerSearch,
@@ -726,6 +791,12 @@ function AquaHubSection({
           />
         </div>
       </div>
+
+      <RacePodSessionsBanner
+        onClick={() => {
+          navigate("/scores/aqua/racepod");
+        }}
+      />
 
       <div className="pt-2">
         <FeaturedRaceSection />

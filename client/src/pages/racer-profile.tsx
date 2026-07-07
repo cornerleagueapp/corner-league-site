@@ -15,6 +15,8 @@ import {
   Music2,
   Instagram,
   Youtube,
+  Radio,
+  ChevronRight,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -68,6 +70,325 @@ import type {
 } from "./racer-profile-parts";
 import RacerProfileShareModal from "./racer-profile-parts/RacerProfileShareModal";
 
+type RacerRacePodSession = {
+  id?: string;
+  sessionId?: string;
+  name?: string | null;
+  title?: string | null;
+  description?: string | null;
+  type?: string | null;
+  status?: string | null;
+  visibility?: string | null;
+  publishedAt?: string | null;
+  startedAt?: string | null;
+  endedAt?: string | null;
+  pointCount?: number | null;
+  durationSeconds?: number | null;
+  distanceMiles?: number | null;
+  maxSpeedMph?: number | null;
+  avgSpeedMph?: number | null;
+};
+
+function getRacePodSessionId(session: RacerRacePodSession) {
+  return String(session.sessionId || session.id || "");
+}
+
+function getRacePodSessionTitle(session: RacerRacePodSession) {
+  return session.title || session.name || "RacePod Replay";
+}
+
+function formatRacePodDate(value?: string | null) {
+  if (!value) return "—";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+
+  return date.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function formatRacePodDuration(seconds?: number | null) {
+  const total = Math.max(0, Math.round(Number(seconds || 0)));
+  const mins = Math.floor(total / 60);
+  const secs = total % 60;
+
+  if (mins <= 0) return `${secs}s`;
+  return `${mins}m ${String(secs).padStart(2, "0")}s`;
+}
+
+function formatRacePodNumber(value?: number | null, suffix = "") {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) {
+    return "—";
+  }
+
+  return `${Number(value).toLocaleString(undefined, {
+    maximumFractionDigits: 2,
+  })}${suffix}`;
+}
+
+function RacePodReplayStatCard({
+  loading,
+  count,
+  latestSession,
+  onClick,
+}: {
+  loading: boolean;
+  count: number;
+  latestSession?: RacerRacePodSession | null;
+  onClick: () => void;
+}) {
+  return (
+    <Card className="overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={loading || count === 0}
+        className="group w-full text-left disabled:cursor-not-allowed disabled:opacity-70"
+      >
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <div className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.16em] text-cyan-300/80">
+            <Radio className="h-4 w-4" />
+            RacePod Replays
+          </div>
+
+          <div className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-cyan-300/15 bg-cyan-300/10 text-cyan-100 transition group-hover:bg-cyan-300 group-hover:text-[#06111d]">
+            <ChevronRight className="h-4 w-4" />
+          </div>
+        </div>
+
+        {loading ? (
+          <p className="text-sm text-white/60">Loading RacePod sessions…</p>
+        ) : count === 0 ? (
+          <div>
+            <div className="text-3xl font-black text-white">0</div>
+            <p className="mt-2 text-sm leading-6 text-white/55">
+              No published RacePod replay sessions yet.
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 gap-3">
+              <MiniStat label="Published Replays" value={count} />
+
+              <div className="rounded-[20px] border border-white/10 bg-white/[0.04] p-3">
+                <div className="text-[10px] font-black uppercase tracking-[0.14em] text-white/35">
+                  Top Speed
+                </div>
+
+                <div className="mt-1 text-lg font-black text-white">
+                  {latestSession?.maxSpeedMph
+                    ? `${latestSession.maxSpeedMph} mph`
+                    : "—"}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4 rounded-[20px] border border-white/10 bg-white/[0.04] p-3">
+              <div className="text-[10px] font-black uppercase tracking-[0.16em] text-white/35">
+                Latest Replay
+              </div>
+
+              <div className="mt-1 truncate text-sm font-semibold text-white">
+                {latestSession
+                  ? getRacePodSessionTitle(latestSession)
+                  : "RacePod Replay"}
+              </div>
+
+              <div className="mt-1 text-xs text-white/45">
+                {latestSession
+                  ? formatRacePodDate(
+                      latestSession.publishedAt || latestSession.startedAt,
+                    )
+                  : "Tap to view sessions"}
+              </div>
+            </div>
+
+            <div className="mt-4 inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-cyan-200">
+              View replay sessions
+              <ChevronRight className="h-4 w-4 transition group-hover:translate-x-1" />
+            </div>
+          </>
+        )}
+      </button>
+    </Card>
+  );
+}
+
+function RacePodSessionsModal({
+  open,
+  racerName,
+  sessions,
+  loading,
+  onClose,
+  onOpenSession,
+}: {
+  open: boolean;
+  racerName: string;
+  sessions: RacerRacePodSession[];
+  loading: boolean;
+  onClose: () => void;
+  onOpenSession: (sessionId: string) => void;
+}) {
+  useEffect(() => {
+    if (!open) return;
+
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previous || "";
+    };
+  }, [open]);
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-[80] flex items-center justify-center px-4">
+      <button
+        type="button"
+        aria-label="Close RacePod replay sessions"
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+        onClick={onClose}
+      />
+
+      <div className="relative z-10 flex max-h-[88vh] w-full max-w-3xl flex-col overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F] shadow-[0_30px_90px_rgba(0,0,0,0.5)]">
+        <div className="border-b border-white/10 bg-[linear-gradient(180deg,rgba(7,17,31,0.98)_0%,rgba(4,10,19,0.98)_100%)] px-5 py-5">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-cyan-300/15 bg-cyan-300/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-cyan-200">
+                <Radio className="h-3.5 w-3.5" />
+                RacePod Replays
+              </div>
+
+              <h2 className="text-2xl font-black text-white">
+                {racerName} RacePod Sessions
+              </h2>
+
+              <p className="mt-1 text-sm text-white/55">
+                Scroll and select a published replay to view the full session.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white hover:bg-white/10"
+              aria-label="Close RacePod sessions modal"
+            >
+              <XIcon className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+
+        <div className="overflow-y-auto px-5 py-5">
+          {loading ? (
+            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6 text-white/70">
+              Loading RacePod replay sessions…
+            </div>
+          ) : sessions.length === 0 ? (
+            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6 text-center">
+              <div className="mx-auto grid h-12 w-12 place-items-center rounded-full border border-cyan-300/20 bg-cyan-300/10">
+                <Radio className="h-5 w-5 text-cyan-100" />
+              </div>
+
+              <div className="mt-4 text-lg font-black text-white">
+                No published replays yet
+              </div>
+
+              <p className="mt-2 text-sm leading-6 text-white/50">
+                When this racer publishes RacePod sessions, they will show here.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {sessions.map((session) => {
+                const sessionId = getRacePodSessionId(session);
+
+                return (
+                  <button
+                    key={sessionId}
+                    type="button"
+                    onClick={() => onOpenSession(sessionId)}
+                    className="group w-full rounded-[24px] border border-white/10 bg-white/[0.04] p-4 text-left transition hover:border-cyan-300/25 hover:bg-cyan-300/[0.055]"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-cyan-200">
+                            Published Replay
+                          </span>
+
+                          <span className="text-xs text-white/40">
+                            {formatRacePodDate(
+                              session.publishedAt || session.startedAt,
+                            )}
+                          </span>
+                        </div>
+
+                        <div className="mt-3 truncate text-lg font-black text-white">
+                          {getRacePodSessionTitle(session)}
+                        </div>
+
+                        <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                          <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+                            <div className="text-[10px] font-black uppercase tracking-[0.12em] text-white/35">
+                              Distance
+                            </div>
+                            <div className="mt-1 text-sm font-black text-white">
+                              {formatRacePodNumber(
+                                session.distanceMiles,
+                                " mi",
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+                            <div className="text-[10px] font-black uppercase tracking-[0.12em] text-white/35">
+                              Max Speed
+                            </div>
+                            <div className="mt-1 text-sm font-black text-white">
+                              {formatRacePodNumber(session.maxSpeedMph, " mph")}
+                            </div>
+                          </div>
+
+                          <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+                            <div className="text-[10px] font-black uppercase tracking-[0.12em] text-white/35">
+                              Duration
+                            </div>
+                            <div className="mt-1 text-sm font-black text-white">
+                              {formatRacePodDuration(session.durationSeconds)}
+                            </div>
+                          </div>
+
+                          <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+                            <div className="text-[10px] font-black uppercase tracking-[0.12em] text-white/35">
+                              Points
+                            </div>
+                            <div className="mt-1 text-sm font-black text-white">
+                              {session.pointCount ?? 0}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-1 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-cyan-300/15 bg-cyan-300/10 text-cyan-100 transition group-hover:bg-cyan-300 group-hover:text-[#06111d]">
+                        <ChevronRight className="h-4 w-4" />
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function RacerProfilePage({
   idOrSlugParam,
 }: {
@@ -106,6 +427,11 @@ export default function RacerProfilePage({
   const [sponsorsLoading, setSponsorsLoading] = useState(false);
 
   const [shareOpen, setShareOpen] = useState(false);
+  const [racePodSessionsOpen, setRacePodSessionsOpen] = useState(false);
+  const [racePodSessions, setRacePodSessions] = useState<RacerRacePodSession[]>(
+    [],
+  );
+  const [racePodSessionsLoading, setRacePodSessionsLoading] = useState(false);
 
   const [claimStatus, setClaimStatus] = useState<{
     hasClaim: boolean;
@@ -618,6 +944,52 @@ export default function RacerProfilePage({
     };
   }, [racer?.athleteId]);
 
+  useEffect(() => {
+    if (!racer?.athleteId) {
+      setRacePodSessions([]);
+      return;
+    }
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        setRacePodSessionsLoading(true);
+
+        const res = await apiRequest<any>(
+          "GET",
+          `/telemetry/public/racers/${encodeURIComponent(
+            String(racer.athleteId),
+          )}/sessions?limit=24`,
+        );
+
+        const list =
+          res?.sessions ??
+          res?.data?.sessions ??
+          res?.items ??
+          res?.data?.items ??
+          res?.data ??
+          (Array.isArray(res) ? res : []);
+
+        if (!cancelled) {
+          setRacePodSessions(Array.isArray(list) ? list : []);
+        }
+      } catch {
+        if (!cancelled) {
+          setRacePodSessions([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setRacePodSessionsLoading(false);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [racer?.athleteId]);
+
   if (loading || authLoading) {
     return (
       <div className="relative grid min-h-screen place-items-center overflow-hidden bg-[#030913] text-white">
@@ -688,6 +1060,8 @@ export default function RacerProfilePage({
 
   const podiumPct =
     overallRows.length > 0 ? (podiumCount / overallRows.length) * 100 : 0;
+
+  const latestRacePodSession = racePodSessions[0] ?? null;
 
   const socialLinks = [
     racer.instagramUrl && {
@@ -1129,6 +1503,13 @@ export default function RacerProfilePage({
                 />
               </div>
             </Card>
+
+            <RacePodReplayStatCard
+              loading={racePodSessionsLoading}
+              count={racePodSessions.length}
+              latestSession={latestRacePodSession}
+              onClick={() => setRacePodSessionsOpen(true)}
+            />
 
             <Card className="overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
               <div className="mb-2 inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.16em] text-cyan-300/80">
@@ -1893,6 +2274,18 @@ export default function RacerProfilePage({
           setSearchOpen(false);
           const idStr = encodeURIComponent(String(r.id));
           navigate(`/racer/${idStr}`);
+        }}
+      />
+
+      <RacePodSessionsModal
+        open={racePodSessionsOpen}
+        racerName={racer.racerName}
+        sessions={racePodSessions}
+        loading={racePodSessionsLoading}
+        onClose={() => setRacePodSessionsOpen(false)}
+        onOpenSession={(sessionId) => {
+          setRacePodSessionsOpen(false);
+          navigate(`/racepod/sessions/${encodeURIComponent(sessionId)}`);
         }}
       />
 

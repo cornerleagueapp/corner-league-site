@@ -2,15 +2,20 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Activity,
   Battery,
+  CheckCircle2,
   Cpu,
   Database,
   MapPinned,
+  Pencil,
   Play,
+  Plus,
   Radio,
   RefreshCw,
   Route,
   Share2,
   Square,
+  Trash2,
+  X,
   Zap,
 } from "lucide-react";
 import { apiFetch } from "@/lib/apiClient";
@@ -18,11 +23,23 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 
+type RacePodDevice = {
+  id: string;
+  nickname?: string | null;
+  displayName?: string | null;
+  externalDeviceId?: string | null;
+  lastSeenAt?: string | null;
+  athleteId?: string | null;
+  status?: string | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+};
+
 type RacePodOverview = {
   userId: string;
   hasDevice: boolean;
-  primaryDevice?: any | null;
-  devices: any[];
+  primaryDevice?: RacePodDevice | null;
+  devices: RacePodDevice[];
   latestLivePosition?: any | null;
   activeSession?: any | null;
   sessions: {
@@ -51,6 +68,11 @@ function formatDate(value?: string | null) {
 function valueOrDash(value: any, suffix = "") {
   if (value === null || value === undefined || value === "") return "—";
   return `${value}${suffix}`;
+}
+
+function getDeviceName(device?: RacePodDevice | null) {
+  if (!device) return "RacePod";
+  return device.nickname || device.displayName || "RacePod";
 }
 
 function StatCard({
@@ -106,9 +128,28 @@ export default function RacePodPage() {
   const [sessionName, setSessionName] = useState("RacePod Practice Session");
   const [error, setError] = useState<string | null>(null);
 
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string>("");
+  const [showActivationPanel, setShowActivationPanel] = useState(false);
+  const [editingDeviceId, setEditingDeviceId] = useState<string | null>(null);
+  const [editingDeviceName, setEditingDeviceName] = useState("");
+
+  const devices = useMemo(() => overview?.devices ?? [], [overview]);
   const primaryDevice = overview?.primaryDevice;
+  const selectedDevice =
+    devices.find((device) => device.id === selectedDeviceId) ||
+    primaryDevice ||
+    devices[0] ||
+    null;
+
   const latest = overview?.latestLivePosition;
   const activeSession = overview?.activeSession;
+
+  const connected = devices.length > 0 || !!overview?.hasDevice;
+
+  const recentSessions = useMemo(
+    () => overview?.sessions?.recent ?? [],
+    [overview],
+  );
 
   const loadOverview = async (silent = false) => {
     if (!userId) return;
@@ -166,8 +207,19 @@ export default function RacePodPage() {
 
     if (code) {
       setActivationCode(code);
+      setShowActivationPanel(true);
     }
   }, []);
+
+  useEffect(() => {
+    if (selectedDeviceId) return;
+
+    const firstDeviceId = primaryDevice?.id || devices[0]?.id;
+
+    if (firstDeviceId) {
+      setSelectedDeviceId(firstDeviceId);
+    }
+  }, [devices, primaryDevice?.id, selectedDeviceId]);
 
   const handleActivate = async () => {
     if (!activationCode.trim()) {
@@ -204,12 +256,22 @@ export default function RacePodPage() {
         throw new Error(json?.message || "Could not activate RacePod.");
       }
 
+      const json = await res.json().catch(() => ({}));
+      const data = json?.data ?? json;
+      const activatedDevice = data?.device ?? data?.racePod ?? data;
+
       toast({
         title: "RacePod activated",
         description: "Your RacePod is now linked to your account.",
       });
 
       setActivationCode("");
+      setShowActivationPanel(false);
+
+      if (activatedDevice?.id) {
+        setSelectedDeviceId(activatedDevice.id);
+      }
+
       await loadOverview();
     } catch (e: any) {
       toast({
@@ -222,13 +284,121 @@ export default function RacePodPage() {
     }
   };
 
+  const startEditingDevice = (device: RacePodDevice) => {
+    setEditingDeviceId(device.id);
+    setEditingDeviceName(getDeviceName(device));
+  };
+
+  const cancelEditingDevice = () => {
+    setEditingDeviceId(null);
+    setEditingDeviceName("");
+  };
+
+  const handleRenameDevice = async (device: RacePodDevice) => {
+    const nickname = editingDeviceName.trim();
+
+    if (!nickname) {
+      toast({
+        title: "Device name required",
+        description: "Enter a name for this RacePod.",
+      });
+      return;
+    }
+
+    try {
+      setActionLoading(true);
+
+      const res = await apiFetch(`/telemetry/my/devices/${device.id}`, {
+        method: "PATCH",
+        noRefresh: true,
+        body: JSON.stringify({
+          userId,
+          nickname,
+        }),
+      });
+
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        throw new Error(json?.message || "Could not rename RacePod.");
+      }
+
+      toast({
+        title: "RacePod renamed",
+        description: "Your device name has been updated.",
+      });
+
+      cancelEditingDevice();
+      await loadOverview(true);
+    } catch (e: any) {
+      toast({
+        title: "Rename failed",
+        description: e?.message || "Could not rename RacePod.",
+        variant: "destructive",
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDeleteDevice = async (device: RacePodDevice) => {
+    const confirmed = window.confirm(
+      `Remove ${getDeviceName(
+        device,
+      )} from your account? You can activate it again later with an activation code.`,
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setActionLoading(true);
+
+      const res = await apiFetch(`/telemetry/my/devices/${device.id}`, {
+        method: "DELETE",
+        noRefresh: true,
+        body: JSON.stringify({
+          userId,
+        }),
+      });
+
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        throw new Error(json?.message || "Could not remove RacePod.");
+      }
+
+      toast({
+        title: "RacePod removed",
+        description: "The device has been removed from your account.",
+      });
+
+      if (selectedDeviceId === device.id) {
+        setSelectedDeviceId("");
+      }
+
+      await loadOverview(true);
+    } catch (e: any) {
+      toast({
+        title: "Remove failed",
+        description: e?.message || "Could not remove RacePod.",
+        variant: "destructive",
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const handleStartSession = async () => {
-    if (!primaryDevice?.id) return;
+    if (!selectedDevice?.id) {
+      toast({
+        title: "Select a RacePod",
+        description: "Choose which device should record this session.",
+      });
+      return;
+    }
 
     try {
       console.log("[RacePod start payload]", {
         userId,
-        deviceId: primaryDevice?.id,
+        deviceId: selectedDevice?.id,
         sessionName,
         user,
       });
@@ -240,10 +410,10 @@ export default function RacePodPage() {
         noRefresh: true,
         body: JSON.stringify({
           userId,
-          deviceId: primaryDevice.id,
+          deviceId: selectedDevice.id,
           name: sessionName || "RacePod Practice Session",
           type: "practice",
-          athleteId: primaryDevice.athleteId || undefined,
+          athleteId: selectedDevice.athleteId || undefined,
         }),
       });
 
@@ -273,7 +443,9 @@ export default function RacePodPage() {
       } else {
         toast({
           title: "RacePod session started",
-          description: "Your RacePod is recording live telemetry.",
+          description: `${getDeviceName(
+            selectedDevice,
+          )} is recording live telemetry.`,
         });
       }
 
@@ -290,13 +462,13 @@ export default function RacePodPage() {
   };
 
   const handleEmergencyStopDevice = async () => {
-    if (!primaryDevice?.id) return;
+    if (!selectedDevice?.id) return;
 
     try {
       setActionLoading(true);
 
       const res = await apiFetch(
-        `/telemetry/my/devices/${primaryDevice.id}/stop-race-mode`,
+        `/telemetry/my/devices/${selectedDevice.id}/stop-race-mode`,
         {
           method: "POST",
           noRefresh: true,
@@ -311,7 +483,9 @@ export default function RacePodPage() {
 
       toast({
         title: "RacePod stopped",
-        description: "The physical RacePod was told to stop recording.",
+        description: `${getDeviceName(
+          selectedDevice,
+        )} was told to stop recording.`,
       });
 
       await loadOverview(true);
@@ -367,13 +541,6 @@ export default function RacePodPage() {
     }
   };
 
-  const connected = !!overview?.hasDevice;
-
-  const recentSessions = useMemo(
-    () => overview?.sessions?.recent ?? [],
-    [overview],
-  );
-
   if (authLoading || loading) {
     return (
       <div className="relative grid min-h-screen place-items-center overflow-hidden bg-[#030913] text-white">
@@ -427,6 +594,11 @@ export default function RacePodPage() {
                 </span>
 
                 <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5">
+                  Devices:{" "}
+                  <span className="font-bold text-white">{devices.length}</span>
+                </span>
+
+                <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5">
                   Sessions:{" "}
                   <span className="font-bold text-white">
                     {overview?.sessions?.total ?? 0}
@@ -442,14 +614,29 @@ export default function RacePodPage() {
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => loadOverview()}
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-cyan-300/20 bg-cyan-300/10 px-5 text-sm font-black uppercase tracking-[0.14em] text-cyan-100 transition hover:bg-cyan-300 hover:text-[#06111d]"
-            >
-              <RefreshCw className="h-4 w-4" />
-              Refresh
-            </button>
+            <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
+              <button
+                type="button"
+                onClick={() => setShowActivationPanel((value) => !value)}
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-[#FF6B35]/25 bg-[#FF6B35]/10 px-5 text-sm font-black uppercase tracking-[0.14em] text-[#FFB199] transition hover:bg-[#FF6B35] hover:text-white"
+              >
+                {showActivationPanel ? (
+                  <X className="h-4 w-4" />
+                ) : (
+                  <Plus className="h-4 w-4" />
+                )}
+                {showActivationPanel ? "Close Add Device" : "Add RacePod"}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => loadOverview()}
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-cyan-300/20 bg-cyan-300/10 px-5 text-sm font-black uppercase tracking-[0.14em] text-cyan-100 transition hover:bg-cyan-300 hover:text-[#06111d]"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Refresh
+              </button>
+            </div>
           </div>
         </section>
 
@@ -459,7 +646,7 @@ export default function RacePodPage() {
           </div>
         ) : null}
 
-        {!connected ? (
+        {showActivationPanel || !connected ? (
           <section className="mt-6 rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
             <div className="grid gap-8 lg:grid-cols-[1fr_380px] lg:items-center">
               <div>
@@ -468,14 +655,13 @@ export default function RacePodPage() {
                 </div>
 
                 <h2 className="mt-3 text-3xl font-black text-white">
-                  Connect your RacePod
+                  {connected ? "Add another RacePod" : "Connect your RacePod"}
                 </h2>
 
                 <p className="mt-3 max-w-2xl text-sm leading-7 text-white/60">
-                  Enter the activation code from your RacePod package. Once
-                  linked, this tracker can record sessions to your account and,
-                  later, publish selected sessions to your verified athlete
-                  profile.
+                  Enter the activation code from your RacePod package. You can
+                  add multiple devices, rename them, and choose which RacePod
+                  records each session.
                 </p>
               </div>
 
@@ -502,7 +688,9 @@ export default function RacePodPage() {
               </div>
             </div>
           </section>
-        ) : (
+        ) : null}
+
+        {connected ? (
           <>
             <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
               <StatCard
@@ -534,6 +722,166 @@ export default function RacePodPage() {
               />
             </div>
 
+            <section className="mt-6 rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
+              <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <div className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-300/70">
+                    My Devices
+                  </div>
+                  <h2 className="mt-2 text-2xl font-black text-white">
+                    RacePod Garage
+                  </h2>
+                  <p className="mt-2 text-sm text-white/45">
+                    Select the device you want to use, rename it, or remove old
+                    RacePods from your account.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowActivationPanel(true)}
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-cyan-300/20 bg-cyan-300/10 px-4 text-xs font-black uppercase tracking-[0.14em] text-cyan-100 transition hover:bg-cyan-300 hover:text-[#06111d]"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Device
+                </button>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-2">
+                {devices.map((device) => {
+                  const isSelected = selectedDevice?.id === device.id;
+                  const isEditing = editingDeviceId === device.id;
+
+                  return (
+                    <div
+                      key={device.id}
+                      className={cn(
+                        "rounded-[24px] border p-4 transition",
+                        isSelected
+                          ? "border-cyan-300/35 bg-cyan-300/10"
+                          : "border-white/10 bg-white/[0.035] hover:border-cyan-300/20",
+                      )}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          {isEditing ? (
+                            <input
+                              value={editingDeviceName}
+                              onChange={(e) =>
+                                setEditingDeviceName(e.target.value)
+                              }
+                              className="h-11 w-full rounded-2xl border border-white/10 bg-black/25 px-4 text-sm font-bold text-white outline-none placeholder:text-white/25 focus:border-cyan-300/30"
+                              placeholder="RacePod name"
+                              autoFocus
+                            />
+                          ) : (
+                            <>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <h3 className="truncate text-lg font-black text-white">
+                                  {getDeviceName(device)}
+                                </h3>
+
+                                {isSelected ? (
+                                  <span className="inline-flex items-center gap-1 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-2 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-cyan-100">
+                                    <CheckCircle2 className="h-3 w-3" />
+                                    Selected
+                                  </span>
+                                ) : null}
+                              </div>
+
+                              <div className="mt-1 font-mono text-[11px] text-white/35">
+                                {device.id}
+                              </div>
+                            </>
+                          )}
+                        </div>
+
+                        {!isEditing ? (
+                          <button
+                            type="button"
+                            onClick={() => setSelectedDeviceId(device.id)}
+                            className={cn(
+                              "shrink-0 rounded-full px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] transition",
+                              isSelected
+                                ? "border border-cyan-300/20 bg-cyan-300 text-[#06111d]"
+                                : "border border-cyan-300/20 bg-cyan-300/10 text-cyan-100 hover:bg-cyan-300 hover:text-[#06111d]",
+                            )}
+                          >
+                            {isSelected ? "Active" : "Use"}
+                          </button>
+                        ) : null}
+                      </div>
+
+                      <div className="mt-4 grid gap-2 text-sm text-white/55">
+                        <div className="flex items-center gap-2">
+                          <Radio className="h-4 w-4 text-cyan-200" />
+                          External: {device.externalDeviceId || "—"}
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <MapPinned className="h-4 w-4 text-cyan-200" />
+                          Last seen: {formatDate(device.lastSeenAt)}
+                        </div>
+                      </div>
+
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {isEditing ? (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => handleRenameDevice(device)}
+                              disabled={actionLoading}
+                              className="inline-flex h-10 items-center justify-center rounded-2xl bg-cyan-300 px-4 text-xs font-black uppercase tracking-[0.12em] text-[#06111d] transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                              Save Name
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={cancelEditingDevice}
+                              disabled={actionLoading}
+                              className="inline-flex h-10 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-xs font-black uppercase tracking-[0.12em] text-white/65 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                              Cancel
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => startEditingDevice(device)}
+                              disabled={actionLoading}
+                              className="inline-flex h-10 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-xs font-black uppercase tracking-[0.12em] text-white/65 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                              <Pencil className="h-4 w-4" />
+                              Rename
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteDevice(device)}
+                              disabled={actionLoading || activeSession?.id}
+                              className="inline-flex h-10 items-center justify-center gap-2 rounded-2xl border border-red-400/20 bg-red-500/10 px-4 text-xs font-black uppercase tracking-[0.12em] text-red-200 transition hover:bg-red-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              Remove
+                            </button>
+                          </>
+                        )}
+                      </div>
+
+                      {activeSession?.id ? (
+                        <div className="mt-3 rounded-2xl border border-white/10 bg-black/20 px-3 py-2 text-xs text-white/40">
+                          Device removal is disabled while a RacePod session is
+                          active.
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+
             <section className="mt-6 grid gap-4 lg:grid-cols-[1fr_380px]">
               <div className="rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
                 <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -553,6 +901,18 @@ export default function RacePodPage() {
                   ) : null}
                 </div>
 
+                <div className="mb-4 rounded-2xl border border-white/10 bg-black/25 p-4">
+                  <div className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-300/70">
+                    Selected RacePod
+                  </div>
+                  <div className="mt-2 text-lg font-black text-white">
+                    {selectedDevice ? getDeviceName(selectedDevice) : "—"}
+                  </div>
+                  <div className="mt-1 font-mono text-[11px] text-white/35">
+                    {selectedDevice?.id || "No device selected"}
+                  </div>
+                </div>
+
                 {!activeSession ? (
                   <>
                     <input
@@ -565,7 +925,7 @@ export default function RacePodPage() {
                     <button
                       type="button"
                       onClick={handleStartSession}
-                      disabled={actionLoading}
+                      disabled={actionLoading || !selectedDevice?.id}
                       className="mt-4 inline-flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-cyan-300 px-5 text-sm font-black uppercase tracking-[0.14em] text-[#06111d] transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       <Play className="h-5 w-5" />
@@ -607,30 +967,28 @@ export default function RacePodPage() {
                 </div>
 
                 <h2 className="mt-2 text-2xl font-black text-white">
-                  {primaryDevice?.nickname ||
-                    primaryDevice?.displayName ||
-                    "RacePod"}
+                  {getDeviceName(selectedDevice)}
                 </h2>
 
                 <div className="mt-4 space-y-3 text-sm text-white/55">
                   <div className="flex items-center gap-2">
                     <Cpu className="h-4 w-4 text-cyan-200" />
-                    Device ID: {primaryDevice?.id}
+                    Device ID: {selectedDevice?.id || "—"}
                   </div>
                   <div className="flex items-center gap-2">
                     <Radio className="h-4 w-4 text-cyan-200" />
-                    External: {primaryDevice?.externalDeviceId}
+                    External: {selectedDevice?.externalDeviceId || "—"}
                   </div>
                   <div className="flex items-center gap-2">
                     <MapPinned className="h-4 w-4 text-cyan-200" />
-                    Last seen: {formatDate(primaryDevice?.lastSeenAt)}
+                    Last seen: {formatDate(selectedDevice?.lastSeenAt)}
                   </div>
                 </div>
 
                 <button
                   type="button"
                   onClick={handleEmergencyStopDevice}
-                  disabled={actionLoading}
+                  disabled={actionLoading || !selectedDevice?.id}
                   className="mt-5 inline-flex h-11 w-full items-center justify-center rounded-2xl border border-[#FF6B35]/25 bg-[#FF6B35]/10 px-4 text-xs font-black uppercase tracking-[0.14em] text-[#FFB199] transition hover:bg-[#FF6B35] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   Emergency Stop RacePod
@@ -700,7 +1058,7 @@ export default function RacePodPage() {
               </div>
             </section>
           </>
-        )}
+        ) : null}
       </div>
     </div>
   );

@@ -1,8 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { toPng } from "html-to-image";
 import { useLocation, useParams } from "wouter";
 import {
   Activity,
   ArrowLeft,
+  Download,
   Gauge,
   MapPinned,
   Radio,
@@ -96,6 +98,11 @@ function formatDuration(seconds?: number | null) {
 function valueOrDash(value: any, suffix = "") {
   if (value === null || value === undefined || value === "") return "—";
   return `${value}${suffix}`;
+}
+
+function isPublicSession(visibility?: string | null) {
+  const value = String(visibility || "private").toLowerCase();
+  return value === "public" || value === "unlisted";
 }
 
 function StatCard({
@@ -220,6 +227,182 @@ function MiniRoutePreview({
   );
 }
 
+function RacePodShareCard({
+  summary,
+  routePoints,
+  shareUrl,
+}: {
+  summary: SessionSummary;
+  routePoints: Array<{ latitude: number; longitude: number }>;
+  shareUrl: string;
+}) {
+  const session = summary.session;
+
+  const path = useMemo(() => {
+    if (routePoints.length < 2) return "";
+
+    const lats = routePoints.map((p) => p.latitude);
+    const lngs = routePoints.map((p) => p.longitude);
+
+    const minLat = Math.min(...lats);
+    const maxLat = Math.max(...lats);
+    const minLng = Math.min(...lngs);
+    const maxLng = Math.max(...lngs);
+
+    const latRange = maxLat - minLat || 0.000001;
+    const lngRange = maxLng - minLng || 0.000001;
+
+    return routePoints
+      .map((point, index) => {
+        const x = 48 + ((point.longitude - minLng) / lngRange) * 984;
+        const y = 660 - ((point.latitude - minLat) / latRange) * 430;
+
+        return `${index === 0 ? "M" : "L"} ${x.toFixed(1)} ${y.toFixed(1)}`;
+      })
+      .join(" ");
+  }, [routePoints]);
+
+  return (
+    <div className="w-[1080px] overflow-hidden rounded-[44px] border border-cyan-300/20 bg-[#030913] text-white shadow-[0_40px_120px_rgba(0,0,0,0.55)]">
+      <div className="relative min-h-[1350px] overflow-hidden p-16">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.22),transparent_34%),radial-gradient(circle_at_82%_18%,rgba(255,107,53,0.18),transparent_28%),linear-gradient(180deg,#030913_0%,#07111F_52%,#02050A_100%)]" />
+        <div className="pointer-events-none absolute inset-0 opacity-[0.05] [background-image:linear-gradient(rgba(255,255,255,0.22)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.22)_1px,transparent_1px)] [background-size:72px_72px]" />
+
+        <div className="relative z-10">
+          <div className="flex items-center justify-between gap-8">
+            <div>
+              <div className="inline-flex rounded-full border border-cyan-300/25 bg-cyan-300/10 px-5 py-2 text-[18px] font-black uppercase tracking-[0.22em] text-cyan-100">
+                Corner League RacePod
+              </div>
+
+              <h2 className="mt-8 max-w-[760px] text-[64px] font-black uppercase italic leading-[0.95] tracking-[0.02em] text-white">
+                {session.title || session.name || "RacePod Session"}
+              </h2>
+
+              <div className="mt-5 text-[24px] font-bold text-white/55">
+                {formatDate(session.startedAt)}
+              </div>
+            </div>
+
+            <div className="grid h-28 w-28 place-items-center rounded-[32px] border border-cyan-300/20 bg-cyan-300/10">
+              <Route className="h-14 w-14 text-cyan-100" />
+            </div>
+          </div>
+
+          <div className="mt-12 grid grid-cols-2 gap-5">
+            <div className="rounded-[28px] border border-white/10 bg-white/[0.055] p-6">
+              <div className="text-[16px] font-black uppercase tracking-[0.18em] text-cyan-200/70">
+                Distance
+              </div>
+              <div className="mt-3 text-[54px] font-black text-white">
+                {summary.distanceMiles}
+                <span className="ml-2 text-[24px] text-white/45">mi</span>
+              </div>
+            </div>
+
+            <div className="rounded-[28px] border border-white/10 bg-white/[0.055] p-6">
+              <div className="text-[16px] font-black uppercase tracking-[0.18em] text-cyan-200/70">
+                Max Speed
+              </div>
+              <div className="mt-3 text-[54px] font-black text-white">
+                {summary.maxSpeedMph}
+                <span className="ml-2 text-[24px] text-white/45">mph</span>
+              </div>
+            </div>
+
+            <div className="rounded-[28px] border border-white/10 bg-white/[0.055] p-6">
+              <div className="text-[16px] font-black uppercase tracking-[0.18em] text-cyan-200/70">
+                Avg Speed
+              </div>
+              <div className="mt-3 text-[54px] font-black text-white">
+                {summary.avgSpeedMph}
+                <span className="ml-2 text-[24px] text-white/45">mph</span>
+              </div>
+            </div>
+
+            <div className="rounded-[28px] border border-white/10 bg-white/[0.055] p-6">
+              <div className="text-[16px] font-black uppercase tracking-[0.18em] text-cyan-200/70">
+                Duration
+              </div>
+              <div className="mt-3 text-[54px] font-black text-white">
+                {formatDuration(summary.durationSeconds)}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-10 overflow-hidden rounded-[36px] border border-cyan-300/15 bg-[radial-gradient(circle_at_center,rgba(34,211,238,0.12),transparent_38%),linear-gradient(135deg,rgba(7,17,31,0.96),rgba(3,9,19,0.98))] p-8">
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <div className="text-[16px] font-black uppercase tracking-[0.22em] text-cyan-300/70">
+                  Route Replay
+                </div>
+                <div className="mt-2 text-[20px] text-white/45">
+                  {summary.pointCount} telemetry points recorded
+                </div>
+              </div>
+
+              <MapPinned className="h-9 w-9 text-cyan-100" />
+            </div>
+
+            {path ? (
+              <svg
+                viewBox="0 0 1080 720"
+                className="h-[520px] w-full"
+                role="img"
+                aria-label="RacePod route share preview"
+              >
+                <path
+                  d={path}
+                  fill="none"
+                  stroke="rgba(124,244,255,0.95)"
+                  strokeWidth="14"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d={path}
+                  fill="none"
+                  stroke="rgba(255,107,53,0.7)"
+                  strokeWidth="5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            ) : (
+              <div className="grid h-[520px] place-items-center rounded-[28px] border border-white/10 bg-black/20 text-center">
+                <div>
+                  <Route className="mx-auto h-16 w-16 text-cyan-100" />
+                  <div className="mt-5 text-[28px] font-black text-white">
+                    Route Preview Pending
+                  </div>
+                  <div className="mt-2 text-[20px] text-white/45">
+                    More GPS points are needed to draw this replay.
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="mt-10 flex items-end justify-between gap-8">
+            <div>
+              <div className="text-[24px] font-black uppercase italic text-white">
+                Race your data.
+              </div>
+              <div className="mt-2 text-[20px] text-white/45">
+                cornerleague.com
+              </div>
+            </div>
+
+            <div className="max-w-[420px] text-right text-[18px] leading-7 text-white/40">
+              {shareUrl}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function RacePodSessionPage() {
   const params = useParams<{ sessionId: string }>();
   const [, navigate] = useLocation();
@@ -231,6 +414,9 @@ export default function RacePodSessionPage() {
   const [points, setPoints] = useState<TelemetryPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const shareCardRef = useRef<HTMLDivElement | null>(null);
+  const [shareCardLoading, setShareCardLoading] = useState(false);
 
   const { user } = useAuth();
 
@@ -324,6 +510,8 @@ export default function RacePodSessionPage() {
       ? `${window.location.origin}/racepod/sessions/${sessionId}`
       : `/racepod/sessions/${sessionId}`;
 
+  const sessionIsPublic = isPublicSession(summary?.session?.visibility);
+
   const handlePublishSession = async () => {
     if (!sessionId || !userId) {
       toast({
@@ -377,6 +565,45 @@ export default function RacePodSessionPage() {
         title: "Could not copy link",
         description: publicShareUrl,
       });
+    }
+  };
+
+  const handleDownloadShareCard = async () => {
+    if (!shareCardRef.current || !summary) return;
+
+    try {
+      setShareCardLoading(true);
+
+      const dataUrl = await toPng(shareCardRef.current, {
+        cacheBust: true,
+        pixelRatio: 2,
+        backgroundColor: "#030913",
+      });
+
+      const safeName = String(
+        summary.session.title || summary.session.name || "racepod-session",
+      )
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
+
+      const link = document.createElement("a");
+      link.download = `${safeName || "racepod-session"}-share-card.png`;
+      link.href = dataUrl;
+      link.click();
+
+      toast({
+        title: "Share card downloaded",
+        description: "Your RacePod activity card is ready to post.",
+      });
+    } catch (e: any) {
+      toast({
+        title: "Download failed",
+        description: e?.message || "Could not create the RacePod share card.",
+        variant: "destructive",
+      });
+    } finally {
+      setShareCardLoading(false);
     }
   };
 
@@ -470,10 +697,7 @@ export default function RacePodSessionPage() {
             </div>
 
             <div className="flex flex-col gap-2 sm:flex-row">
-              {String(session.visibility || "private").toLowerCase() ===
-                "public" ||
-              String(session.visibility || "private").toLowerCase() ===
-                "unlisted" ? (
+              {sessionIsPublic ? (
                 <button
                   type="button"
                   onClick={handleCopyShareLink}
@@ -492,6 +716,82 @@ export default function RacePodSessionPage() {
                   Publish Replay
                 </button>
               )}
+
+              <button
+                type="button"
+                onClick={handleDownloadShareCard}
+                disabled={shareCardLoading}
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-5 text-sm font-black uppercase tracking-[0.14em] text-white/70 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <Download className="h-4 w-4" />
+                {shareCardLoading ? "Creating..." : "Save Card"}
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section className="mt-6 rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <div className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-300/70">
+                Public Activity
+              </div>
+
+              <h2 className="mt-2 text-2xl font-black text-white">
+                {sessionIsPublic
+                  ? "Published RacePod Replay"
+                  : "Private RacePod Replay"}
+              </h2>
+
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-white/50">
+                {sessionIsPublic
+                  ? "This session is live as a public activity. Share the link or save the card for Instagram, sponsors, or your racer profile."
+                  : "Publish this replay when you are ready to make it visible as a public RacePod activity."}
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-black/25 p-4 lg:w-[420px]">
+              <div className="text-[10px] font-black uppercase tracking-[0.2em] text-white/35">
+                Share Link
+              </div>
+
+              <div className="mt-2 truncate font-mono text-xs text-white/55">
+                {sessionIsPublic
+                  ? publicShareUrl
+                  : "Publish this replay to unlock the public link"}
+              </div>
+
+              <div className="mt-4 flex gap-2">
+                {sessionIsPublic ? (
+                  <button
+                    type="button"
+                    onClick={handleCopyShareLink}
+                    className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-2xl bg-cyan-300 px-4 text-xs font-black uppercase tracking-[0.12em] text-[#06111d] transition hover:bg-cyan-200"
+                  >
+                    <Share2 className="h-4 w-4" />
+                    Copy
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handlePublishSession}
+                    className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-2xl bg-cyan-300 px-4 text-xs font-black uppercase tracking-[0.12em] text-[#06111d] transition hover:bg-cyan-200"
+                  >
+                    <Share2 className="h-4 w-4" />
+                    Publish
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={handleDownloadShareCard}
+                  disabled={shareCardLoading}
+                  className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-xs font-black uppercase tracking-[0.12em] text-white/70 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <Download className="h-4 w-4" />
+                  Card
+                </button>
+              </div>
             </div>
           </div>
         </section>
@@ -614,6 +914,16 @@ export default function RacePodSessionPage() {
             </div>
           )}
         </section>
+
+        <div className="pointer-events-none fixed -left-[9999px] top-0 opacity-100">
+          <div ref={shareCardRef}>
+            <RacePodShareCard
+              summary={summary}
+              routePoints={routePoints}
+              shareUrl={publicShareUrl}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
