@@ -366,7 +366,7 @@ export default function RacerSearchModal({
                   Find a Racer
                 </h2>
                 <p className="mt-1 text-sm text-white/55">
-                  Search by racer name, location, or manufacturer.
+                  Search by racer name.
                 </p>
               </div>
 

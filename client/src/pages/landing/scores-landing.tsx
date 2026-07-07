@@ -13,6 +13,7 @@ import SpotifyPodcastSection from "@/components/SpotifyPodcastSection";
 import CLLogo from "@assets/corner-league-aqua.png";
 import { FeaturedPollSection } from "@/features/polls/components/FeaturedPollSection";
 import RacePodSection from "@/components/landing/RacePodSection";
+import FeaturedRacerGallerySection from "@/components/FeaturedRacerGallerySection";
 
 function scrollToSection(targetId: string) {
   const el = document.getElementById(targetId);
@@ -206,6 +207,8 @@ export default function ScoresLandingPage() {
         </section>
 
         <LeagueTopPerformersSection />
+
+        <FeaturedRacerGallerySection sourcePage="landing_page" limit={7} />
 
         <RacePodSection />
 

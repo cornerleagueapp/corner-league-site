@@ -19,6 +19,7 @@ import AccordionSection from "@/components/AccordionSection";
 import { markHahn300 } from "@/data/markHanRace";
 import { trackEvent } from "@/lib/analytics";
 import { AnalyticsEvents } from "@/lib/analytics-events";
+import FeaturedRacerGallerySection from "../FeaturedRacerGallerySection";
 
 type AquaOrgEvent = {
   id: string;
@@ -791,6 +792,8 @@ function AquaHubSection({
           />
         </div>
       </div>
+
+      <FeaturedRacerGallerySection sourcePage="aqua_hub" limit={7} compact />
 
       <RacePodSessionsBanner
         onClick={() => {
