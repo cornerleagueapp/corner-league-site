@@ -9,10 +9,11 @@ function stripBearer(s?: string | null): string | null {
   return s.startsWith("Bearer ") ? s.slice(7) : s;
 }
 
-/** Save tokens to storage (raw JWTs only). */
+/** Save tokens to storage, raw JWTs only. */
 export function setTokens(accessToken: string, refreshToken?: string) {
   const at = stripBearer(accessToken) ?? "";
   localStorage.setItem(AT_KEY, at);
+
   if (refreshToken) {
     const rt = stripBearer(refreshToken) ?? "";
     if (rt) localStorage.setItem(RT_KEY, rt);
@@ -29,6 +30,7 @@ export function clearTokens() {
 export function getAccessToken(): string | null {
   return stripBearer(localStorage.getItem(AT_KEY));
 }
+
 export function getRefreshToken(): string | null {
   return stripBearer(localStorage.getItem(RT_KEY));
 }
@@ -36,6 +38,7 @@ export function getRefreshToken(): string | null {
 export function setUsername(username: string) {
   localStorage.setItem(UN_KEY, username);
 }
+
 export function getUsername(): string | null {
   return localStorage.getItem(UN_KEY);
 }
@@ -45,6 +48,7 @@ export function saveUser(u: any) {
     localStorage.setItem(USER_KEY, JSON.stringify(u));
   } catch {}
 }
+
 export function loadUser(): any | null {
   try {
     const s = localStorage.getItem(USER_KEY);
@@ -53,6 +57,7 @@ export function loadUser(): any | null {
     return null;
   }
 }
+
 export function clearUser() {
   localStorage.removeItem(USER_KEY);
 }
@@ -61,4 +66,48 @@ export function clearUser() {
 export function getAuthHeaders(): HeadersInit {
   const at = getAccessToken();
   return at ? { Authorization: `Bearer ${at}` } : {};
+}
+
+export function decodeJwtPayload(token?: string | null): any | null {
+  if (!token) return null;
+
+  try {
+    const [, payload] = token.split(".");
+    if (!payload) return null;
+
+    const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = normalized.padEnd(
+      normalized.length + ((4 - (normalized.length % 4)) % 4),
+      "=",
+    );
+
+    return JSON.parse(atob(padded));
+  } catch {
+    return null;
+  }
+}
+
+export function getAccessTokenExpiresAt(): number | null {
+  const token = getAccessToken();
+  const payload = decodeJwtPayload(token);
+
+  if (!payload?.exp) return null;
+
+  return Number(payload.exp) * 1000;
+}
+
+export function getAccessTokenTimeLeftMs(): number | null {
+  const expiresAt = getAccessTokenExpiresAt();
+
+  if (!expiresAt) return null;
+
+  return expiresAt - Date.now();
+}
+
+export function isAccessTokenExpired(bufferMs = 0) {
+  const timeLeft = getAccessTokenTimeLeftMs();
+
+  if (timeLeft === null) return false;
+
+  return timeLeft <= bufferMs;
 }

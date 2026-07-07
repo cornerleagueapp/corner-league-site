@@ -9,7 +9,6 @@ import {
   saveUser,
 } from "@/lib/token";
 
-// Try several common "me" endpoints; replace with your real one if known.
 const ME_ATTEMPTS = [
   "/auth/me",
   "/users/me",
@@ -21,14 +20,17 @@ const ME_ATTEMPTS = [
 let bootRefreshScheduled = false;
 
 export function useAuth() {
-  // Run if we have either token (apiFetch can mint a new AT from RT)
   const hasCreds = !!(getAccessToken() || getRefreshToken());
   const cachedUser = loadUser();
 
   if (hasCreds && !bootRefreshScheduled) {
     const at = getAccessToken();
     const rt = getRefreshToken();
-    if (at && rt) scheduleProactiveRefresh(at);
+
+    if (at && rt) {
+      scheduleProactiveRefresh(at);
+    }
+
     bootRefreshScheduled = true;
   }
 
@@ -38,7 +40,7 @@ export function useAuth() {
     initialData: hasCreds ? (cachedUser ?? null) : null,
     placeholderData: (prev) => (hasCreds ? (prev ?? cachedUser) : null),
     retry: false,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 60 * 1000,
     queryFn: async () => {
       for (const path of ME_ATTEMPTS) {
         try {
@@ -46,22 +48,28 @@ export function useAuth() {
             refreshOn401: true,
             logoutOn401: true,
           });
+
           saveUser(u);
+
           const at = getAccessToken();
-          if (at) scheduleProactiveRefresh(at);
+          if (at) {
+            scheduleProactiveRefresh(at);
+          }
+
           return u;
         } catch (e: any) {
           if (e?.status === 404) continue;
           if (e?.status === 401) return null;
         }
       }
+
       return loadUser();
     },
   });
 
   return {
-    user: data ?? null,
+    user: hasCreds ? (data ?? null) : null,
     isLoading: hasCreds && isLoading,
-    isAuthenticated: !!data,
+    isAuthenticated: hasCreds && !!data,
   };
 }

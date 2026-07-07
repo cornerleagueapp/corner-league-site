@@ -14,6 +14,18 @@ const REFRESH_PATH =
 const AUTH_SENSITIVE_RE =
   /\/(auth\/me|users\/me|auth\/profile|users\/profile)\b/i;
 
+function notifyAuthExpired(reason = "expired") {
+  window.dispatchEvent(
+    new CustomEvent("auth:expired", {
+      detail: { reason },
+    }),
+  );
+
+  try {
+    localStorage.setItem("auth:expired", String(Date.now()));
+  } catch {}
+}
+
 type FetchOpts = Omit<RequestInit, "body"> & {
   body?: any;
   skipAuth?: boolean;
@@ -97,10 +109,7 @@ export async function apiFetch(path: string, opts: FetchOpts = {}) {
       // Only clear session for identity-sensitive endpoints.
       if (shouldHardLogout(path, opts)) {
         clearTokens();
-        window.dispatchEvent(new Event("auth:logout"));
-        try {
-          localStorage.setItem("auth:logout", String(Date.now()));
-        } catch {}
+        notifyAuthExpired("refresh_failed");
       }
     }
   }
@@ -178,6 +187,19 @@ async function tryRefresh(): Promise<boolean> {
   return refreshInFlight;
 }
 
+export async function ensureFreshAuthSession() {
+  const at = getAccessToken();
+  const rt = getRefreshToken();
+
+  if (!at && !rt) return false;
+
+  if (!rt || refreshUnsupported) {
+    return false;
+  }
+
+  return tryRefresh();
+}
+
 type RequestBehavior = { refreshOn401?: boolean; logoutOn401?: boolean };
 
 export async function apiRequest<T = any>(
@@ -214,10 +236,7 @@ export async function apiRequest<T = any>(
 
     if (res.status === 401 && logoutOn401) {
       clearTokens();
-      window.dispatchEvent(new Event("auth:logout"));
-      try {
-        localStorage.setItem("auth:logout", String(Date.now()));
-      } catch {}
+      notifyAuthExpired("unauthorized");
     }
 
     throw new ApiError(res.status, msg, bodyJson);
@@ -246,8 +265,13 @@ export function scheduleProactiveRefresh(accessToken: string) {
     const lead = Math.max(30_000, Math.min(90_000, msToExp * 0.1));
     const due = Math.max(5_000, msToExp - lead);
 
-    refreshTimer = window.setTimeout(() => {
-      void tryRefresh();
+    refreshTimer = window.setTimeout(async () => {
+      const ok = await tryRefresh();
+
+      if (!ok) {
+        clearTokens();
+        notifyAuthExpired("refresh_failed");
+      }
     }, due) as any;
   } catch {
     //

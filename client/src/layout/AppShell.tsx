@@ -84,20 +84,23 @@ export default function AppShell({
       clearTokens();
       queryClient.setQueryData(["/auth/me"], null);
       queryClient.cancelQueries();
-      goAuth();
     };
 
     const onLogout = () => hardLogout();
 
     const onStorage = (e: StorageEvent) => {
-      if (e.key === "auth:logout") hardLogout();
+      if (e.key === "auth:logout" || e.key === "auth:expired") {
+        hardLogout();
+      }
     };
 
     window.addEventListener("auth:logout", onLogout);
+    window.addEventListener("auth:expired", onLogout);
     window.addEventListener("storage", onStorage);
 
     return () => {
       window.removeEventListener("auth:logout", onLogout);
+      window.removeEventListener("auth:expired", onLogout);
       window.removeEventListener("storage", onStorage);
     };
   }, [location, navigate]);
