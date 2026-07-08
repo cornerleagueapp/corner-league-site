@@ -39,6 +39,8 @@ type RacePodOverview = {
   userId: string;
   hasDevice: boolean;
   primaryDevice?: RacePodDevice | null;
+  primaryDeviceStatus?: RacePodDeviceStatus | null;
+  deviceStatuses?: Record<string, RacePodDeviceStatus | null>;
   devices: RacePodDevice[];
   latestLivePosition?: any | null;
   activeSession?: any | null;
@@ -52,6 +54,14 @@ type RacePodOverview = {
     total: number;
   };
   generatedAt: string;
+};
+
+type RacePodDeviceStatus = {
+  status?: "started" | "stopped" | "no_location" | "unknown" | string;
+  sessionId?: string | null;
+  message?: string | null;
+  severity?: "ready" | "recording" | "warning" | "error" | "idle" | string;
+  receivedAt?: string | null;
 };
 
 function cn(...classes: Array<string | false | null | undefined>) {
@@ -108,6 +118,50 @@ function StatCard({
   );
 }
 
+function RacePodStatusAlert({
+  status,
+}: {
+  status?: RacePodDeviceStatus | null;
+}) {
+  if (!status?.message) return null;
+
+  const severity = String(status.severity || "").toLowerCase();
+
+  const styles =
+    severity === "recording"
+      ? "border-emerald-300/20 bg-emerald-400/10 text-emerald-100"
+      : severity === "warning"
+        ? "border-amber-300/20 bg-amber-400/10 text-amber-100"
+        : severity === "error"
+          ? "border-red-300/20 bg-red-500/10 text-red-100"
+          : "border-cyan-300/15 bg-cyan-300/10 text-cyan-100";
+
+  const label =
+    status.status === "no_location"
+      ? "Waiting for GPS"
+      : status.status === "started"
+        ? "RacePod Recording"
+        : status.status === "stopped"
+          ? "RacePod Stopped"
+          : "RacePod Status";
+
+  return (
+    <div className={cn("mt-4 rounded-2xl border p-4", styles)}>
+      <div className="text-[10px] font-black uppercase tracking-[0.18em]">
+        {label}
+      </div>
+
+      <p className="mt-2 text-sm leading-6 text-white/75">{status.message}</p>
+
+      {status.receivedAt ? (
+        <div className="mt-2 text-xs text-white/45">
+          Last status: {formatDate(status.receivedAt)}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export default function RacePodPage() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
@@ -141,6 +195,12 @@ export default function RacePodPage() {
     devices[0] ||
     null;
 
+  const selectedDeviceStatus = selectedDevice?.id
+    ? overview?.deviceStatuses?.[selectedDevice.id] ||
+      overview?.primaryDeviceStatus ||
+      null
+    : overview?.primaryDeviceStatus || null;
+
   const latest = overview?.latestLivePosition;
   const activeSession = overview?.activeSession;
 
@@ -165,7 +225,6 @@ export default function RacePodPage() {
         `/telemetry/my/overview?userId=${encodeURIComponent(userId)}`,
         {
           method: "GET",
-          noRefresh: true,
         },
       );
 
@@ -244,7 +303,6 @@ export default function RacePodPage() {
 
       const res = await apiFetch("/telemetry/devices/activate", {
         method: "POST",
-        noRefresh: true,
         body: JSON.stringify({
           userId,
           activationCode: activationCode.trim(),
@@ -310,7 +368,6 @@ export default function RacePodPage() {
 
       const res = await apiFetch(`/telemetry/my/devices/${device.id}`, {
         method: "PATCH",
-        noRefresh: true,
         body: JSON.stringify({
           userId,
           nickname,
@@ -352,9 +409,8 @@ export default function RacePodPage() {
     try {
       setActionLoading(true);
 
-      const res = await apiFetch(`/telemetry/my/devices/${device.id}`, {
-        method: "DELETE",
-        noRefresh: true,
+      const res = await apiFetch(`/telemetry/my/devices/${device.id}/unlink`, {
+        method: "POST",
         body: JSON.stringify({
           userId,
         }),
@@ -387,6 +443,15 @@ export default function RacePodPage() {
   };
 
   const handleStartSession = async () => {
+    if (!userId) {
+      toast({
+        title: "Please log in again",
+        description: "We could not find your user ID for RacePod recording.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!selectedDevice?.id) {
       toast({
         title: "Select a RacePod",
@@ -398,7 +463,8 @@ export default function RacePodPage() {
     try {
       console.log("[RacePod start payload]", {
         userId,
-        deviceId: selectedDevice?.id,
+        deviceId: selectedDevice.id,
+        externalDeviceId: selectedDevice.externalDeviceId,
         sessionName,
         user,
       });
@@ -407,7 +473,6 @@ export default function RacePodPage() {
 
       const res = await apiFetch("/telemetry/my/sessions/start", {
         method: "POST",
-        noRefresh: true,
         body: JSON.stringify({
           userId,
           deviceId: selectedDevice.id,
@@ -417,28 +482,34 @@ export default function RacePodPage() {
         }),
       });
 
-      if (!res.ok) {
-        const json = await res.json().catch(() => ({}));
+      const json = await res.json().catch(() => ({}));
+      const data = json?.data ?? json;
 
+      if (!res.ok) {
         console.error("[RacePod start failed]", json);
 
         const particleMessage =
-          json?.result?.particleResponse?.error ||
-          json?.result?.particleResponse?.message ||
-          json?.result?.message ||
+          data?.particleResponse?.error ||
+          data?.particleResponse?.message ||
+          data?.result?.particleResponse?.error ||
+          data?.result?.particleResponse?.message ||
+          data?.result?.message ||
+          data?.message ||
           json?.message;
 
-        throw new Error(particleMessage || "Could not start RacePod session.");
+        throw new Error(
+          particleMessage ||
+            "Could not start RacePod session. Check the RacePod signal, light, and battery, then try again.",
+        );
       }
 
-      const json = await res.json().catch(() => ({}));
-      const data = json?.data ?? json;
+      const sessionId = data?.session?.id || data?.sessionId;
 
       if (data?.pendingStart) {
         toast({
           title: "RacePod is waking up",
           description:
-            "The start command timed out, but your session was created. Waiting for telemetry.",
+            "The command timed out, but your session was created. Keep the RacePod powered on and wait for telemetry.",
         });
       } else {
         toast({
@@ -450,17 +521,22 @@ export default function RacePodPage() {
       }
 
       await loadOverview();
+
+      if (sessionId) {
+        navigate(`/racepod/sessions/${encodeURIComponent(String(sessionId))}`);
+      }
     } catch (e: any) {
       toast({
-        title: "Start failed",
-        description: e?.message || "Could not start RacePod session.",
+        title: "RacePod could not start",
+        description:
+          e?.message ||
+          "Could not start RacePod session. Check signal, battery, and device light, then try again.",
         variant: "destructive",
       });
     } finally {
       setActionLoading(false);
     }
   };
-
   const handleEmergencyStopDevice = async () => {
     if (!selectedDevice?.id) return;
 
@@ -471,7 +547,6 @@ export default function RacePodPage() {
         `/telemetry/my/devices/${selectedDevice.id}/stop-race-mode`,
         {
           method: "POST",
-          noRefresh: true,
           body: JSON.stringify({ userId }),
         },
       );
@@ -510,7 +585,6 @@ export default function RacePodPage() {
         `/telemetry/sessions/${activeSession.id}/stop`,
         {
           method: "POST",
-          noRefresh: true,
         },
       );
 
@@ -912,6 +986,8 @@ export default function RacePodPage() {
                     {selectedDevice?.id || "No device selected"}
                   </div>
                 </div>
+
+                <RacePodStatusAlert status={selectedDeviceStatus} />
 
                 {!activeSession ? (
                   <>
