@@ -11,7 +11,6 @@ import {
   Plus,
   Radio,
   RefreshCw,
-  Route,
   Share2,
   Square,
   Trash2,
@@ -78,6 +77,30 @@ function formatDate(value?: string | null) {
 function valueOrDash(value: any, suffix = "") {
   if (value === null || value === undefined || value === "") return "—";
   return `${value}${suffix}`;
+}
+
+function formatElapsedTime(startedAt?: string | null) {
+  if (!startedAt) return "00:00";
+
+  const start = new Date(startedAt).getTime();
+
+  if (Number.isNaN(start)) return "00:00";
+
+  const totalSeconds = Math.max(0, Math.floor((Date.now() - start) / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  if (hours > 0) {
+    return `${hours}:${String(minutes).padStart(2, "0")}:${String(
+      seconds,
+    ).padStart(2, "0")}`;
+  }
+
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(
+    2,
+    "0",
+  )}`;
 }
 
 function getDeviceName(device?: RacePodDevice | null) {
@@ -181,6 +204,10 @@ export default function RacePodPage() {
   const [activationCode, setActivationCode] = useState("");
   const [sessionName, setSessionName] = useState("RacePod Practice Session");
   const [error, setError] = useState<string | null>(null);
+  const [timerTick, setTimerTick] = useState(0);
+  const [lastCompletedSessionId, setLastCompletedSessionId] = useState<
+    string | null
+  >(null);
 
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>("");
   const [showActivationPanel, setShowActivationPanel] = useState(false);
@@ -210,6 +237,12 @@ export default function RacePodPage() {
     () => overview?.sessions?.recent ?? [],
     [overview],
   );
+
+  const activeElapsedTime = activeSession?.startedAt
+    ? formatElapsedTime(activeSession.startedAt)
+    : "00:00";
+
+  void timerTick;
 
   const loadOverview = async (silent = false) => {
     if (!userId) return;
@@ -279,6 +312,16 @@ export default function RacePodPage() {
       setSelectedDeviceId(firstDeviceId);
     }
   }, [devices, primaryDevice?.id, selectedDeviceId]);
+
+  useEffect(() => {
+    if (!activeSession?.id) return;
+
+    const interval = window.setInterval(() => {
+      setTimerTick((value) => value + 1);
+    }, 1000);
+
+    return () => window.clearInterval(interval);
+  }, [activeSession?.id]);
 
   const handleActivate = async () => {
     if (!activationCode.trim()) {
@@ -460,6 +503,15 @@ export default function RacePodPage() {
       return;
     }
 
+    if (activeSession?.id) {
+      toast({
+        title: "Session already recording",
+        description:
+          "Stop the current RacePod session before starting another one.",
+      });
+      return;
+    }
+
     try {
       console.log("[RacePod start payload]", {
         userId,
@@ -471,12 +523,14 @@ export default function RacePodPage() {
 
       setActionLoading(true);
 
+      const cleanSessionName = sessionName.trim() || "RacePod Practice Session";
+
       const res = await apiFetch("/telemetry/my/sessions/start", {
         method: "POST",
         body: JSON.stringify({
           userId,
           deviceId: selectedDevice.id,
-          name: sessionName || "RacePod Practice Session",
+          name: cleanSessionName,
           type: "practice",
           athleteId: selectedDevice.athleteId || undefined,
         }),
@@ -503,28 +557,33 @@ export default function RacePodPage() {
         );
       }
 
-      const sessionId = data?.session?.id || data?.sessionId;
+      if (data?.alreadyActive) {
+        toast({
+          title: "RacePod already recording",
+          description:
+            "This RacePod already has an active session. Stop it before starting another one.",
+        });
+
+        await loadOverview(true);
+        return;
+      }
 
       if (data?.pendingStart) {
         toast({
           title: "RacePod is waking up",
           description:
-            "The command timed out, but your session was created. Keep the RacePod powered on and wait for telemetry.",
+            "The command timed out, but your session was created. Stay on this page and stop it when you are done.",
         });
       } else {
         toast({
           title: "RacePod session started",
           description: `${getDeviceName(
             selectedDevice,
-          )} is recording live telemetry.`,
+          )} is recording. Stay on this page to stop when finished.`,
         });
       }
 
-      await loadOverview();
-
-      if (sessionId) {
-        navigate(`/racepod/sessions/${encodeURIComponent(String(sessionId))}`);
-      }
+      await loadOverview(true);
     } catch (e: any) {
       toast({
         title: "RacePod could not start",
@@ -604,6 +663,16 @@ export default function RacePodPage() {
       });
 
       await loadOverview(true);
+
+      if (activeSession?.id) {
+        toast({
+          title: "Replay ready",
+          description:
+            "You can now view, publish, or share this RacePod replay.",
+        });
+      }
+
+      setLastCompletedSessionId(activeSession.id);
     } catch (e: any) {
       toast({
         title: "Stop failed",
@@ -1012,15 +1081,64 @@ export default function RacePodPage() {
                   </>
                 ) : (
                   <>
-                    <div className="rounded-2xl border border-white/10 bg-black/25 p-4">
-                      <div className="text-sm font-bold text-white">
-                        {activeSession.name || "RacePod Session"}
+                    <div className="rounded-2xl border border-emerald-300/15 bg-emerald-400/10 p-4">
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="min-w-0">
+                          <div className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-200/70">
+                            Active Recording
+                          </div>
+
+                          <div className="mt-2 text-lg font-black text-white">
+                            {activeSession.name ||
+                              activeSession.title ||
+                              "RacePod Session"}
+                          </div>
+
+                          <div className="mt-1 break-all font-mono text-xs text-white/35">
+                            {activeSession.id}
+                          </div>
+
+                          <div className="mt-3 text-sm text-white/50">
+                            Started {formatDate(activeSession.startedAt)}
+                          </div>
+                        </div>
+
+                        <div className="shrink-0 rounded-2xl border border-emerald-300/20 bg-black/25 px-4 py-3 text-left sm:text-right">
+                          <div className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-200/70">
+                            Timer
+                          </div>
+                          <div className="mt-1 font-mono text-3xl font-black text-emerald-100">
+                            {activeElapsedTime}
+                          </div>
+                        </div>
                       </div>
-                      <div className="mt-1 font-mono text-xs text-white/35">
-                        {activeSession.id}
+
+                      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                        <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+                          <div className="text-[10px] font-black uppercase tracking-[0.16em] text-white/35">
+                            Points Collected
+                          </div>
+                          <div className="mt-1 text-xl font-black text-white">
+                            {activeSession.pointCount ??
+                              latest?.pointCount ??
+                              0}
+                          </div>
+                        </div>
+
+                        <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+                          <div className="text-[10px] font-black uppercase tracking-[0.16em] text-white/35">
+                            Latest Speed
+                          </div>
+                          <div className="mt-1 text-xl font-black text-white">
+                            {valueOrDash(latest?.speedMph, " mph")}
+                          </div>
+                        </div>
                       </div>
-                      <div className="mt-3 text-sm text-white/45">
-                        Started {formatDate(activeSession.startedAt)}
+
+                      <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-3 text-xs leading-6 text-white/60">
+                        Keep this page open while recording. Stop the session
+                        here when you are finished so the replay can be
+                        finalized.
                       </div>
                     </div>
 
@@ -1072,6 +1190,20 @@ export default function RacePodPage() {
               </div>
             </section>
 
+            {lastCompletedSessionId ? (
+              <button
+                type="button"
+                onClick={() =>
+                  navigate(
+                    `/racepod/sessions/${encodeURIComponent(lastCompletedSessionId)}`,
+                  )
+                }
+                className="mt-4 inline-flex h-12 w-full items-center justify-center rounded-2xl border border-cyan-300/20 bg-cyan-300/10 px-5 text-sm font-black uppercase tracking-[0.14em] text-cyan-100 transition hover:bg-cyan-300 hover:text-[#06111d]"
+              >
+                View Completed Replay
+              </button>
+            ) : null}
+
             <section className="mt-6 rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
               <div className="mb-4 flex items-center justify-between">
                 <div>
@@ -1084,7 +1216,7 @@ export default function RacePodPage() {
                 </div>
               </div>
 
-              <div className="space-y-3">
+              <div className="max-h-[520px] space-y-3 overflow-y-auto pr-2">
                 {recentSessions.length ? (
                   recentSessions.map((session) => (
                     <div
