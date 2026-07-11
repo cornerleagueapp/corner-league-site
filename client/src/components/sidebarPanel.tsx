@@ -162,6 +162,13 @@ export function useAppSidebarSections(opts?: {
             matchPaths: ["/polls", "/polls/*"],
             onSelect: () => navigate("/polls"),
           },
+          {
+            key: "arcade",
+            label: "Arcade",
+            selectable: false,
+            matchPaths: ["/arcade"],
+            onSelect: () => navigate("/arcade"),
+          },
         ],
       },
 
