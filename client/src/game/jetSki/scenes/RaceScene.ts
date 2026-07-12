@@ -1,6 +1,11 @@
 import Phaser from "phaser";
 import type { ArcadeGameData } from "../../core/types";
-import { PLAYER_STATS, cpuStatsFromRacer } from "../systems/PhysicsTuning";
+import {
+  PLAYER_STATS,
+  cpuStatsFromRacer,
+  DIFFICULTY_PROFILES,
+  type RaceDifficulty,
+} from "../systems/PhysicsTuning";
 
 type Checkpoint = {
   id: number;
@@ -9,12 +14,18 @@ type Checkpoint = {
   side: "left" | "right";
 };
 
+type RaceSettings = {
+  laps: number;
+  difficulty: RaceDifficulty;
+};
+
 type RacerSprite = Phaser.Physics.Arcade.Sprite & {
   racerName?: string;
   targetCheckpointIndex?: number;
   lap?: number;
   penalties?: number;
   finished?: boolean;
+  finishTimeMs?: number;
   stats?: typeof PLAYER_STATS;
   collisionCooldown?: number;
   lastWakeAt?: number;
@@ -29,6 +40,7 @@ type RaceStanding = {
   checkpointIndex: number;
   progress: number;
   finished?: boolean;
+  timeMs?: number;
 };
 
 export default class RaceScene extends Phaser.Scene {
@@ -55,6 +67,13 @@ export default class RaceScene extends Phaser.Scene {
   private raceStartTime = 0;
   private collisionPenaltyCooldown = 0;
   private isRacePaused = false;
+
+  private raceFinished = false;
+
+  private raceSettings: RaceSettings = {
+    laps: 3,
+    difficulty: "pro",
+  };
 
   private raceTimeText!: Phaser.GameObjects.Text;
   private lapText!: Phaser.GameObjects.Text;
@@ -138,6 +157,21 @@ export default class RaceScene extends Phaser.Scene {
 
     this.arcadeData = initData || registryData!;
 
+    const registrySettings = this.game.registry.get("raceSettings") as
+      | Partial<RaceSettings>
+      | undefined;
+
+    this.raceSettings = {
+      laps: Phaser.Math.Clamp(Number(registrySettings?.laps || 3), 1, 10),
+
+      difficulty:
+        registrySettings?.difficulty === "junior" ||
+        registrySettings?.difficulty === "amateur" ||
+        registrySettings?.difficulty === "pro"
+          ? registrySettings.difficulty
+          : "pro",
+    };
+
     this.cpuRacers = [];
     this.checkpointMarkers = [];
     this.playerCheckpointIndex = 0;
@@ -147,6 +181,7 @@ export default class RaceScene extends Phaser.Scene {
     this.raceStartTime = 0;
     this.collisionPenaltyCooldown = 0;
     this.isRacePaused = false;
+    this.raceFinished = false;
     this.waterTile = undefined;
 
     if (!this.arcadeData?.course?.mapJson?.checkpoints?.length) {
@@ -196,7 +231,9 @@ export default class RaceScene extends Phaser.Scene {
     this.updateWaterMotion(delta);
     this.updateNextBuoyArrow();
 
-    if (!this.raceStarted || this.isRacePaused) return;
+    if (!this.raceStarted || this.isRacePaused || this.raceFinished) {
+      return;
+    }
 
     this.collisionPenaltyCooldown = Math.max(
       0,
@@ -436,6 +473,7 @@ export default class RaceScene extends Phaser.Scene {
       sprite.lap = 1;
       sprite.penalties = 0;
       sprite.finished = false;
+      sprite.finishTimeMs = undefined;
       sprite.collisionCooldown = 0;
       sprite.lastWakeAt = 0;
 
@@ -452,7 +490,14 @@ export default class RaceScene extends Phaser.Scene {
   }
 
   private createCpuRaceStats(cpu: any, index: number) {
-    const base = cpuStatsFromRacer(cpu);
+    const base = cpuStatsFromRacer(cpu, this.raceSettings.difficulty);
+
+    const difficultyScale =
+      this.raceSettings.difficulty === "junior"
+        ? 0.76
+        : this.raceSettings.difficulty === "amateur"
+          ? 0.89
+          : 1;
 
     const profiles = [
       {
@@ -465,18 +510,18 @@ export default class RaceScene extends Phaser.Scene {
         speed: 0.97,
         acceleration: 0.95,
         turn: 0.98,
-        dragBoost: 1.0,
+        dragBoost: 1,
       },
       {
         speed: Phaser.Math.FloatBetween(1.07, 1.16),
         acceleration: Phaser.Math.FloatBetween(1.04, 1.13),
-        turn: Phaser.Math.FloatBetween(1.0, 1.09),
+        turn: Phaser.Math.FloatBetween(1, 1.09),
         dragBoost: Phaser.Math.FloatBetween(1.002, 1.008),
       },
       {
         speed: Phaser.Math.FloatBetween(1.08, 1.18),
         acceleration: Phaser.Math.FloatBetween(1.05, 1.14),
-        turn: Phaser.Math.FloatBetween(1.0, 1.1),
+        turn: Phaser.Math.FloatBetween(1, 1.1),
         dragBoost: Phaser.Math.FloatBetween(1.002, 1.008),
       },
     ];
@@ -485,10 +530,16 @@ export default class RaceScene extends Phaser.Scene {
 
     return {
       ...base,
-      maxSpeed: base.maxSpeed * profile.speed * 1.08,
-      acceleration: base.acceleration * profile.acceleration * 1.08,
+
+      maxSpeed: base.maxSpeed * profile.speed * 1.08 * difficultyScale,
+
+      acceleration:
+        base.acceleration * profile.acceleration * 1.08 * difficultyScale,
+
       turnSpeed: base.turnSpeed * profile.turn,
+
       drag: Math.min(0.992, base.drag * profile.dragBoost),
+
       slideFactor: base.slideFactor,
       mistakeChance: base.mistakeChance,
     };
@@ -565,14 +616,19 @@ export default class RaceScene extends Phaser.Scene {
       padding: { x: 12, y: 7 },
     });
 
-    this.lapText = this.add.text(leftX, topY + 54, "LAP 1/3", {
-      color: "#ffdf2e",
-      fontSize: "21px",
-      fontFamily: "monospace",
-      fontStyle: "bold",
-      backgroundColor: "#031225",
-      padding: { x: 12, y: 7 },
-    });
+    this.lapText = this.add.text(
+      leftX,
+      topY + 54,
+      `LAP 1/${this.raceSettings.laps}`,
+      {
+        color: "#ffdf2e",
+        fontSize: "21px",
+        fontFamily: "monospace",
+        fontStyle: "bold",
+        backgroundColor: "#031225",
+        padding: { x: 12, y: 7 },
+      },
+    );
 
     this.penaltyText = this.add.text(leftX, topY + 100, "MISSED BUOYS 0", {
       color: "#ff6969",
@@ -854,7 +910,12 @@ export default class RaceScene extends Phaser.Scene {
         stats.turnSpeed * dt,
       );
 
-      const slowDownNearBuoy = distance < 140 ? 0.82 : 1;
+      const difficultyProfile =
+        DIFFICULTY_PROFILES[this.raceSettings.difficulty];
+
+      const slowDownNearBuoy =
+        distance < 140 ? difficultyProfile.nearBuoySpeedMultiplier : 1;
+
       const force = new Phaser.Math.Vector2();
 
       this.physics.velocityFromRotation(
@@ -881,8 +942,15 @@ export default class RaceScene extends Phaser.Scene {
           cpu.targetCheckpointIndex = 0;
           cpu.lap = (cpu.lap || 1) + 1;
 
-          if ((cpu.lap || 1) > this.arcadeData.course.mapJson.laps) {
+          if ((cpu.lap || 1) > this.raceSettings.laps) {
             cpu.finished = true;
+
+            cpu.finishTimeMs = Math.max(
+              0,
+              Math.floor(this.time.now - this.raceStartTime),
+            );
+
+            body.setVelocity(0, 0);
           }
         }
       }
@@ -916,7 +984,7 @@ export default class RaceScene extends Phaser.Scene {
           this.checkpointMarkers[0].setAlpha(1);
         }
 
-        if (this.playerLap > this.arcadeData.course.mapJson.laps) {
+        if (this.playerLap > this.raceSettings.laps) {
           this.finishRace();
         }
       }
@@ -931,23 +999,45 @@ export default class RaceScene extends Phaser.Scene {
         lap: this.playerLap,
         checkpointIndex: this.playerCheckpointIndex,
         progress: this.playerLap * 1000 + this.playerCheckpointIndex,
+        finished: this.raceFinished,
       },
+
       ...this.cpuRacers.map((cpu, index) => {
         const lap = cpu.lap || 1;
         const checkpointIndex = cpu.targetCheckpointIndex || 0;
 
         return {
           name: cpu.racerName || `CPU ${index + 1}`,
+
           isPlayer: false,
           lap,
           checkpointIndex,
           finished: cpu.finished,
-          progress: lap * 1000 + checkpointIndex,
+          timeMs: cpu.finishTimeMs,
+
+          progress: cpu.finished
+            ? (this.raceSettings.laps + 1) * 1000
+            : lap * 1000 + checkpointIndex,
         };
       }),
     ];
 
-    return racers.sort((a, b) => b.progress - a.progress);
+    return racers.sort((a, b) => {
+      if (a.finished && b.finished) {
+        const aTime =
+          typeof a.timeMs === "number" ? a.timeMs : Number.MAX_SAFE_INTEGER;
+
+        const bTime =
+          typeof b.timeMs === "number" ? b.timeMs : Number.MAX_SAFE_INTEGER;
+
+        return aTime - bTime;
+      }
+
+      if (a.finished) return -1;
+      if (b.finished) return 1;
+
+      return b.progress - a.progress;
+    });
   }
 
   private getOrdinal(value: number) {
@@ -968,8 +1058,8 @@ export default class RaceScene extends Phaser.Scene {
     this.lapText.setText(
       `LAP ${Math.min(
         this.playerLap,
-        this.arcadeData.course.mapJson.laps,
-      )}/${this.arcadeData.course.mapJson.laps}`,
+        this.raceSettings.laps,
+      )}/${this.raceSettings.laps}`,
     );
 
     this.penaltyText.setText(`MISSED BUOYS ${this.playerPenalties}`);
@@ -983,7 +1073,7 @@ export default class RaceScene extends Phaser.Scene {
     const leaderboardLines = standings.slice(0, 5).map((standing, index) => {
       const rank = index + 1;
       const name = standing.isPlayer ? "YOU" : standing.name.toUpperCase();
-      const lap = Math.min(standing.lap, this.arcadeData.course.mapJson.laps);
+      const lap = Math.min(standing.lap, this.raceSettings.laps);
 
       return `${rank} ${name.padEnd(12, " ").slice(0, 12)} L${lap}`;
     });
@@ -994,15 +1084,68 @@ export default class RaceScene extends Phaser.Scene {
   }
 
   private finishRace() {
-    const timeMs = Math.floor(this.time.now - this.raceStartTime);
+    if (this.raceFinished) {
+      return;
+    }
+
+    const timeMs = Math.max(0, Math.floor(this.time.now - this.raceStartTime));
+
+    this.raceFinished = true;
+    this.raceStarted = false;
+    this.isRacePaused = true;
+
+    const standings = this.getRaceStandings();
+
+    const playerPosition = Math.max(
+      1,
+      standings.findIndex((standing) => standing.isPlayer) + 1,
+    );
+
+    const finishers = standings.map((standing, index) => ({
+      position: index + 1,
+
+      name: standing.isPlayer ? "YOU" : standing.name,
+
+      isPlayer: standing.isPlayer,
+
+      finished: standing.isPlayer || Boolean(standing.finished),
+
+      lap: Math.min(standing.lap, this.raceSettings.laps),
+
+      checkpointIndex: standing.checkpointIndex,
+
+      timeMs: standing.isPlayer ? timeMs : standing.timeMs,
+    }));
+
+    const playerBody = this.player.body as Phaser.Physics.Arcade.Body;
+
+    playerBody.setVelocity(0, 0);
+
+    this.cpuRacers.forEach((cpu) => {
+      const body = cpu.body as Phaser.Physics.Arcade.Body;
+
+      body.setVelocity(0, 0);
+    });
+
+    this.physics.pause();
 
     this.scene.start("ResultsScene", {
       courseId: this.arcadeData.course.id,
+
+      courseName:
+        (this.arcadeData.course as any).name ||
+        (this.arcadeData.course as any).title ||
+        "Lake Havasu Circuit",
+
       displayName: "YOU",
       timeMs,
       penalties: this.playerPenalties,
-      lapsCompleted: this.arcadeData.course.mapJson.laps,
+      lapsCompleted: this.raceSettings.laps,
+      difficulty: this.raceSettings.difficulty,
       completed: true,
+      position: playerPosition,
+      totalRacers: standings.length,
+      finishers,
     });
   }
 
