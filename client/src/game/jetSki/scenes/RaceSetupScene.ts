@@ -203,7 +203,7 @@ export default class RaceSetupScene extends Phaser.Scene {
 
   private createDifficultySection() {
     this.add
-      .text(260, 375, "DIFFICULTY", {
+      .text(260, 365, "DIFFICULTY", {
         color: "#ffffff",
         fontFamily: "monospace",
         fontSize: "20px",

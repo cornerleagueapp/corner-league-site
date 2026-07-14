@@ -20,8 +20,10 @@ export function createArcadeConfig(
   return {
     type: Phaser.AUTO,
     parent: input.parent,
+
     width: 1280,
     height: 720,
+
     backgroundColor: "#0794dc",
 
     physics: {
@@ -37,13 +39,10 @@ export function createArcadeConfig(
       autoCenter: Phaser.Scale.CENTER_BOTH,
     },
 
-    // Do not automatically start a scene.
-    // We need to save the game data first.
     scene: [],
 
     callbacks: {
       postBoot: (game) => {
-        // Save all shared game data before any scene starts.
         game.registry.set("arcadeData", arcadeData);
 
         game.registry.set("raceSettings", {
@@ -51,14 +50,12 @@ export function createArcadeConfig(
           difficulty: "pro",
         });
 
-        // Register the scenes after the registry is ready.
         game.scene.add("RaceSetupScene", RaceSetupScene, false);
 
         game.scene.add("RaceScene", RaceScene, false);
 
         game.scene.add("ResultsScene", ResultsScene, false);
 
-        // Start the setup modal and also pass arcadeData directly.
         game.scene.start("RaceSetupScene", arcadeData);
       },
     },
