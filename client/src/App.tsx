@@ -72,6 +72,9 @@ import RacePodLandingPage from "@/pages/racepod-landing";
 import RacePodPublishedSessionsPage from "@/pages/racePods/racePodPublishedSessions";
 import AquaFeaturedGalleryPage from "@/pages/organizations/aqua-featured-gallery";
 import ArcadePage from "@/pages/arcadePage";
+import RegistrationHomePage from "@/features/registration/pages/RegistrationHomePage";
+import RegistrationEventsPage from "@/features/registration/pages/RegistrationEventsPage";
+import RegistrationEventPage from "@/features/registration/pages/RegistrationEventPage";
 
 function ProtectedRoute({
   component: Comp,
@@ -248,6 +251,36 @@ function Router() {
       <Route path="/terms" component={TermsPage} />
       <Route path="/auth" component={AuthPage} />
       <Route path="/welcome" component={WelcomeSplash} />
+
+      <Route path="/registration">
+        {() => (
+          <AppShell guestMode>
+            <ErrorBoundary>
+              <RegistrationHomePage />
+            </ErrorBoundary>
+          </AppShell>
+        )}
+      </Route>
+
+      <Route path="/registration/events">
+        {() => (
+          <AppShell guestMode>
+            <ErrorBoundary>
+              <RegistrationEventsPage />
+            </ErrorBoundary>
+          </AppShell>
+        )}
+      </Route>
+
+      <Route path="/registration/events/:eventSlug">
+        {(params) => (
+          <AppShell guestMode>
+            <ErrorBoundary>
+              <RegistrationEventPage eventSlug={params.eventSlug} />
+            </ErrorBoundary>
+          </AppShell>
+        )}
+      </Route>
 
       <Route path="/racepod/sessions/:sessionId">
         {() => (
