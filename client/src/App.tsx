@@ -75,6 +75,10 @@ import ArcadePage from "@/pages/arcadePage";
 import RegistrationHomePage from "@/features/registration/pages/RegistrationHomePage";
 import RegistrationEventsPage from "@/features/registration/pages/RegistrationEventsPage";
 import RegistrationEventPage from "@/features/registration/pages/RegistrationEventPage";
+import RegistrationFlowPage from "@/features/registration/pages/RegistrationFlowPage";
+import RegistrationSuccessPage from "@/features/registration/pages/RegistrationSuccessPage";
+import PublicRegisteredRacersPage from "@/features/registration/pages/PublicRegisteredRacersPage";
+import MyRegistrationsPage from "@/features/registration/pages/MyRegistrationsPage";
 
 function ProtectedRoute({
   component: Comp,
@@ -234,6 +238,21 @@ function PrivateRouter() {
             {() => <SuperAdminRoute component={ClassMatchManagePage} />}
           </Route>
 
+          <Route path="/registration/events/:eventSlug/register">
+            {(params) => <RegistrationFlowPage eventSlug={params.eventSlug} />}
+          </Route>
+
+          <Route path="/registration/success/:registrationId">
+            {(params) => (
+              <RegistrationSuccessPage registrationId={params.registrationId} />
+            )}
+          </Route>
+
+          <Route
+            path="/registration/my-registrations"
+            component={MyRegistrationsPage}
+          />
+
           <Route component={NotFound} />
         </Switch>
       </ErrorBoundary>
@@ -267,6 +286,16 @@ function Router() {
           <AppShell guestMode>
             <ErrorBoundary>
               <RegistrationEventsPage />
+            </ErrorBoundary>
+          </AppShell>
+        )}
+      </Route>
+
+      <Route path="/registration/events/:eventSlug/racers">
+        {(params) => (
+          <AppShell guestMode>
+            <ErrorBoundary>
+              <PublicRegisteredRacersPage eventSlug={params.eventSlug} />
             </ErrorBoundary>
           </AppShell>
         )}

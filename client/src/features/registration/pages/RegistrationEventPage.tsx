@@ -25,6 +25,8 @@ import type {
   PublicRegisteredRacer,
   RegistrationEvent,
 } from "../types/registration.types";
+import EventRegistrationProgress from "../components/EventRegistrationProgress";
+import RecentRegistrations from "../components/RecentRegistrations";
 
 type RegistrationEventPageProps = {
   eventSlug: string;
@@ -232,6 +234,8 @@ export default function RegistrationEventPage({
           </div>
         </section>
 
+        <EventRegistrationProgress event={event} registrations={racers} />
+
         <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_330px]">
           <div className="min-w-0 space-y-4">
             <div>
@@ -263,6 +267,7 @@ export default function RegistrationEventPage({
           </div>
 
           <aside className="space-y-4">
+            <RecentRegistrations registrations={racers} />
             <div className="rounded-[26px] border border-cyan-300/15 bg-[#07111F]/92 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
               <div className="flex items-center gap-3">
                 <div className="grid h-11 w-11 place-items-center rounded-2xl border border-cyan-300/15 bg-cyan-300/10 text-cyan-200">

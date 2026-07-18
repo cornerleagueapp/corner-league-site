@@ -297,3 +297,15 @@ export async function getDemoRegistrationsForUser(
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     );
 }
+
+export async function getDemoRegistrationById(
+  registrationId: string,
+): Promise<DemoRegistration | null> {
+  await wait();
+
+  return (
+    loadDemoRegistrations().find(
+      (registration) => registration.id === registrationId,
+    ) ?? null
+  );
+}
