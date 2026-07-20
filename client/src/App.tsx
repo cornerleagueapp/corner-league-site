@@ -263,7 +263,15 @@ function PrivateRouter() {
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={ScoresLandingPage} />
+      <Route path="/">
+        {() => (
+          <AppShell guestMode>
+            <ErrorBoundary>
+              <ScoresLandingPage />
+            </ErrorBoundary>
+          </AppShell>
+        )}
+      </Route>
       <Route path="/home" component={Home} />
       <Route path="/about" component={Home} />
       <Route path="/contact" component={ContactPage} />

@@ -131,6 +131,13 @@ export function useAppSidebarSections(opts?: {
         title: "Explore",
         items: [
           {
+            key: "home",
+            label: "Home",
+            selectable: false,
+            matchPaths: ["/"],
+            onSelect: () => navigate("/"),
+          },
+          {
             key: "racing-hub",
             label: "Racing Hub",
             selectable: false,
@@ -198,63 +205,6 @@ export function useAppSidebarSections(opts?: {
           },
         ],
       },
-
-      {
-        title: guest ? "Access" : "Account",
-        items: guest
-          ? [
-              {
-                key: "signin",
-                label: "Sign in to access",
-                selectable: false,
-                badge: "Required",
-                onSelect: goToAuth,
-              },
-              {
-                key: "your-profile",
-                label: "Your profile",
-                selectable: false,
-                disabled: true,
-                helper: "Sign in required",
-              },
-            ]
-          : [
-              {
-                key: "signed-in",
-                label: "Signed in ✓",
-                selectable: false,
-                helper: "Account active",
-              },
-              {
-                key: "your-profile",
-                label: "Your profile",
-                selectable: false,
-                matchPaths: ["/profile", "/profile/*"],
-                onSelect: () => navigate("/profile"),
-              },
-              {
-                key: "racepod",
-                label: "RacePod",
-                selectable: false,
-                matchPaths: ["/racepod", "/racepod/*"],
-                onSelect: () => navigate("/racepod"),
-              },
-              {
-                key: "account",
-                label: "Account Settings",
-                selectable: false,
-                matchPaths: ["/settings"],
-                onSelect: () => navigate("/settings"),
-              },
-              {
-                key: "logout",
-                label: "Logout",
-                selectable: false,
-                onSelect: () =>
-                  opts?.onLogout ? opts.onLogout() : void logout("/auth"),
-              },
-            ],
-      },
     ];
 
     return opts?.extra?.length ? [...base, ...opts.extra] : base;
@@ -310,6 +260,9 @@ function Chevron({ open }: { open: boolean }) {
 
 function getSidebarItemIcon(key: string) {
   switch (key) {
+    case "home":
+      return Home;
+
     case "racing-hub":
       return Trophy;
 
@@ -348,23 +301,9 @@ function getSidebarItemIcon(key: string) {
       return UserPlus;
 
     case "admin-racepods":
+
     case "racepod":
       return Wifi;
-
-    case "signin":
-      return LogIn;
-
-    case "signed-in":
-      return ShieldCheck;
-
-    case "your-profile":
-      return CircleUserRound;
-
-    case "account":
-      return Settings;
-
-    case "logout":
-      return LogOut;
 
     case "messages":
       return MessageSquare;
@@ -563,13 +502,13 @@ export default function SidebarPanel({
         <button
           type="button"
           aria-label="Close navigation"
-          className="fixed inset-0 z-30 bg-black/70 backdrop-blur-sm md:hidden"
+          className="fixed inset-0 z-[990] bg-black/70 backdrop-blur-sm md:hidden"
           onClick={onClose}
         />
       ) : null}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex h-dvh flex-col border-r border-cyan-300/10 bg-[#030913] shadow-[0_30px_90px_rgba(0,0,0,0.55)] transition-[width,transform] duration-150 ease-out ${
+        className={`fixed inset-y-0 left-0 z-[1000] flex h-dvh flex-col border-r border-cyan-300/10 bg-[#030913] shadow-[0_30px_90px_rgba(0,0,0,0.55)] transition-[width,transform] duration-150 ease-out ${
           effectiveCollapsed ? "md:w-[88px]" : "md:w-72"
         } w-[86vw] max-w-[330px] ${
           isOpen ? "translate-x-0" : "-translate-x-full"
@@ -592,7 +531,7 @@ export default function SidebarPanel({
             className={`flex items-center ${
               renderCollapsed
                 ? "flex-col justify-center gap-3"
-                : "justify-between gap-3"
+                : "justify-between gap-3 pl-16 md:pl-0"
             }`}
           >
             <Link href={backHref}>
@@ -639,15 +578,6 @@ export default function SidebarPanel({
               ) : (
                 <PanelLeftClose className="h-4 w-4" />
               )}
-            </button>
-
-            <button
-              type="button"
-              onClick={onClose}
-              className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/10 bg-white/[0.05] text-xl leading-none text-white/65 transition hover:border-[#FF6B35]/25 hover:bg-[#FF6B35]/10 hover:text-white md:hidden"
-              aria-label="Close menu"
-            >
-              ×
             </button>
           </div>
         </header>

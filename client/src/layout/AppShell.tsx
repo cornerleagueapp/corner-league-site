@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 import { clearTokens } from "@/lib/token";
+import PublicTopNav from "@/components/navigation/PublicTopNav";
 
 const keyToPath: Record<string, string> = {
   account: "/settings",
@@ -26,6 +27,10 @@ function activeKeyFromPath(pathnameWithQuery: string): string {
   const params = new URLSearchParams(queryString);
 
   void params;
+
+  if (pathname === "/") {
+    return "home";
+  }
 
   if (pathname === "/profile") {
     return "your-profile";
@@ -266,7 +271,7 @@ export default function AppShell({
       <button
         type="button"
         onClick={() => setIsSidebarOpen((value) => !value)}
-        className="fixed left-4 top-4 z-50 rounded-2xl border border-cyan-300/15 bg-[#07111F]/90 p-2 text-white shadow-[0_18px_45px_rgba(0,0,0,0.35)] backdrop-blur transition hover:border-cyan-300/30 hover:bg-cyan-300/10 md:hidden"
+        className="fixed left-4 top-3 z-[1010] rounded-2xl border border-cyan-300/15 bg-[#07111F]/95 p-2 text-white shadow-[0_18px_45px_rgba(0,0,0,0.35)] backdrop-blur transition hover:border-cyan-300/30 hover:bg-cyan-300/10 md:hidden"
         aria-label={isSidebarOpen ? "Close main menu" : "Open main menu"}
       >
         <svg
@@ -380,11 +385,26 @@ export default function AppShell({
       />
 
       <div
-        className={`flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto overflow-x-hidden transition-[margin] duration-150 ${
+        className={`flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden transition-[margin] duration-150 ${
           isSidebarCollapsed ? "md:ml-[88px]" : "md:ml-72"
         }`}
       >
-        {children}
+        <PublicTopNav
+          sticky={false}
+          selectedSportKey="jet-ski"
+          sports={[
+            {
+              key: "jet-ski",
+              label: "Jet Ski",
+              href: "/scores/aqua",
+              enabled: true,
+            },
+          ]}
+        />
+
+        <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden">
+          {children}
+        </div>
       </div>
 
       <RacerSearchModal
