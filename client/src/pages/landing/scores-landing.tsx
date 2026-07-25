@@ -8,7 +8,6 @@ import UpcomingEventsSection from "@/components/landing/UpcomingEventsSection";
 import NationwideMap from "@/components/landing/NationwideMap";
 import { Link } from "wouter";
 import { PageSEO } from "@/seo/usePageSEO";
-import PublicTopNav from "@/components/navigation/PublicTopNav";
 import SpotifyPodcastSection from "@/components/SpotifyPodcastSection";
 import CLLogo from "@assets/corner-league-aqua.png";
 import { FeaturedPollSection } from "@/features/polls/components/FeaturedPollSection";
@@ -60,25 +59,12 @@ export default function ScoresLandingPage() {
         canonicalPath="/"
       />
 
-      <PublicTopNav
-        activeTab="home"
-        selectedSportKey="jet-ski"
-        sports={[
-          {
-            key: "jet-ski",
-            label: "Jet Ski",
-            href: "/scores/aqua",
-            enabled: true,
-          },
-        ]}
-      />
-
       <div className="pointer-events-none fixed inset-0 -z-10">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.11),transparent_26%),radial-gradient(circle_at_78%_10%,rgba(255,107,53,0.09),transparent_22%),linear-gradient(180deg,#030913_0%,#07111F_48%,#02050A_100%)]" />
         <div className="absolute inset-0 opacity-[0.035] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:72px_72px]" />
       </div>
 
-      <main className="mx-auto max-w-7xl px-3 pb-20 pt-8 sm:px-6 sm:pt-10 lg:px-8">
+      <main className="mx-auto max-w-7xl px-3 pb-20 pt-20 sm:px-6 md:pt-10 lg:px-8">
         <section
           id="home-section"
           className="relative min-w-0 overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[linear-gradient(180deg,rgba(7,17,31,0.94)_0%,rgba(4,10,19,0.98)_100%)] px-4 py-8 shadow-[0_30px_90px_rgba(0,0,0,0.42)] sm:rounded-[38px] sm:px-8 sm:py-12 lg:px-10"
@@ -120,12 +106,13 @@ export default function ScoresLandingPage() {
               </p>
 
               <div className="mt-7 grid grid-cols-1 gap-3 sm:flex sm:flex-wrap">
-                <Link href="/welcome">
+                <Link href="/scores/aqua">
+                  {/* <Link href="/welcome"> */}
                   <button
                     type="button"
                     className="w-full rounded-full bg-cyan-300 px-6 py-4 text-xs font-black uppercase tracking-[0.16em] text-[#06111d] shadow-[0_0_28px_rgba(34,211,238,0.25)] transition duration-200 hover:-translate-y-0.5 hover:bg-cyan-200 sm:w-auto sm:tracking-[0.18em]"
                   >
-                    Go to Hub
+                    View Racing Hub
                   </button>
                 </Link>
 
