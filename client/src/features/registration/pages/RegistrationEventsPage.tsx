@@ -112,17 +112,17 @@ export default function RegistrationEventsPage() {
       backHref="/registration"
       backLabel="Registration Home"
     >
-      <div className="space-y-5">
-        <section className="rounded-[26px] border border-cyan-300/10 bg-[#07111F]/82 p-4 shadow-[0_20px_60px_rgba(0,0,0,0.22)] sm:p-5">
+      <div className="space-y-6">
+        <section className="rounded-[26px] border border-cyan-200/[0.13] bg-[#071321] p-4 shadow-[0_24px_70px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.03)] sm:p-5">
           <div className="flex flex-col gap-3 lg:flex-row">
             <label className="relative min-w-0 flex-1">
-              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35" />
+              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
 
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Search event, organization, location, or class..."
-                className="h-13 w-full rounded-[18px] border border-white/10 bg-white/[0.045] py-3.5 pl-11 pr-11 text-sm text-white outline-none placeholder:text-white/30 transition focus:border-cyan-300/30 focus:bg-cyan-300/[0.055] focus:ring-2 focus:ring-cyan-300/10"
+                className="h-13 w-full rounded-[18px] border border-white/[0.12] bg-[#0B1929] py-3.5 pl-11 pr-11 text-sm text-white shadow-inner outline-none placeholder:text-white/30 transition focus:border-cyan-300/35 focus:bg-[#0D2033] focus:ring-2 focus:ring-cyan-300/10"
               />
 
               {query ? (
@@ -138,7 +138,7 @@ export default function RegistrationEventsPage() {
             </label>
 
             <div className="flex items-center gap-2 overflow-x-auto pb-1 lg:pb-0">
-              <span className="hidden h-11 w-11 shrink-0 place-items-center rounded-2xl border border-white/10 bg-white/[0.04] text-white/40 sm:grid">
+              <span className="hidden h-11 w-11 shrink-0 place-items-center rounded-2xl border border-white/[0.1] bg-[#0B1929] text-white/45 shadow-sm sm:grid">
                 <SlidersHorizontal className="h-4 w-4" />
               </span>
 
@@ -150,10 +150,10 @@ export default function RegistrationEventsPage() {
                     key={filter.value}
                     type="button"
                     onClick={() => setStatusFilter(filter.value)}
-                    className={`shrink-0 rounded-full border px-4 py-3 text-[9px] font-black uppercase tracking-[0.13em] transition ${
+                    className={`shrink-0 rounded-full border px-4 py-3 text-[9px] font-black uppercase tracking-[0.13em] shadow-sm transition ${
                       active
-                        ? "border-cyan-300/25 bg-cyan-300 text-[#06111d]"
-                        : "border-white/10 bg-white/[0.04] text-white/55 hover:border-cyan-300/20 hover:bg-cyan-300/10 hover:text-white"
+                        ? "border-cyan-300/30 bg-cyan-300 text-[#06111d]"
+                        : "border-white/[0.1] bg-[#0B1929] text-white/60 hover:border-cyan-300/25 hover:bg-[#102438] hover:text-white"
                     }`}
                   >
                     {filter.label}
@@ -164,9 +164,9 @@ export default function RegistrationEventsPage() {
           </div>
         </section>
 
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center justify-between gap-3 rounded-[22px] border border-white/[0.07] bg-[#06101C] px-4 py-3">
           <div>
-            <div className="text-[9px] font-black uppercase tracking-[0.16em] text-cyan-200/55">
+            <div className="text-[9px] font-black uppercase tracking-[0.16em] text-cyan-200/60">
               Event results
             </div>
 
@@ -180,7 +180,7 @@ export default function RegistrationEventsPage() {
             <button
               type="button"
               onClick={clearFilters}
-              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2.5 text-[9px] font-black uppercase tracking-[0.13em] text-white/55 transition hover:bg-white/10 hover:text-white"
+              className="inline-flex items-center gap-2 rounded-full border border-white/[0.1] bg-[#0B1929] px-4 py-2.5 text-[9px] font-black uppercase tracking-[0.13em] text-white/60 transition hover:bg-[#102438] hover:text-white"
             >
               <X className="h-3.5 w-3.5" />
               Clear filters
@@ -189,18 +189,19 @@ export default function RegistrationEventsPage() {
         </div>
 
         {loading ? (
-          <div className="grid min-h-[360px] place-items-center rounded-[26px] border border-cyan-300/10 bg-[#07111F]/75">
+          <div className="grid min-h-[360px] place-items-center rounded-[26px] border border-cyan-200/[0.12] bg-[#071321] shadow-[0_24px_70px_rgba(0,0,0,0.38)]">
             <div className="text-center">
               <Loader2 className="mx-auto h-7 w-7 animate-spin text-cyan-200" />
+
               <p className="mt-3 text-sm text-white/50">Loading events...</p>
             </div>
           </div>
         ) : error ? (
-          <div className="rounded-[26px] border border-red-300/15 bg-red-950/20 p-6 text-center">
+          <div className="rounded-[26px] border border-red-300/20 bg-[#251015] p-6 text-center shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
             <p className="text-sm text-red-100/75">{error}</p>
           </div>
         ) : filteredEvents.length === 0 ? (
-          <div className="rounded-[26px] border border-dashed border-white/10 bg-[#07111F]/65 px-5 py-14 text-center">
+          <div className="rounded-[26px] border border-dashed border-white/[0.13] bg-[#071321] px-5 py-14 text-center shadow-[0_24px_70px_rgba(0,0,0,0.35)]">
             <CalendarDays className="mx-auto h-8 w-8 text-white/25" />
 
             <h2 className="mt-4 text-xl font-black uppercase text-white">
@@ -213,7 +214,7 @@ export default function RegistrationEventsPage() {
             </p>
           </div>
         ) : (
-          <div className="grid gap-4 xl:grid-cols-2">
+          <div className="grid gap-5 xl:grid-cols-2">
             {filteredEvents.map((event) => (
               <RegistrationEventCard key={event.id} event={event} />
             ))}

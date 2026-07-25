@@ -107,10 +107,10 @@ export default function RegistrationEventCard({
 
   return (
     <article
-      className={`group relative min-w-0 overflow-hidden rounded-[28px] border shadow-[0_24px_70px_rgba(0,0,0,0.25)] transition duration-300 hover:-translate-y-1 ${
+      className={`group relative min-w-0 overflow-hidden rounded-[28px] border transition duration-300 hover:-translate-y-1 ${
         featured
-          ? "border-cyan-300/25 bg-[linear-gradient(135deg,rgba(34,211,238,0.14)_0%,rgba(7,17,31,0.98)_46%,rgba(255,107,53,0.12)_100%)]"
-          : "border-cyan-300/10 bg-[#07111F]/88 hover:border-cyan-300/25"
+          ? "border-cyan-300/20 bg-[linear-gradient(135deg,#0B2330_0%,#081625_48%,#1A151D_100%)] shadow-[0_28px_85px_rgba(0,0,0,0.48),inset_0_1px_0_rgba(255,255,255,0.04)]"
+          : "border-cyan-200/[0.14] bg-[#081625] shadow-[0_26px_80px_rgba(0,0,0,0.44),inset_0_1px_0_rgba(255,255,255,0.03)] hover:border-cyan-300/30 hover:bg-[#0A192A]"
       }`}
     >
       <div className="pointer-events-none absolute inset-0">

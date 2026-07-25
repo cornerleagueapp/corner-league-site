@@ -192,43 +192,59 @@ export default function RegistrationEventPage({
       }
     >
       <div className="space-y-6">
-        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-[22px] border border-cyan-300/10 bg-[#07111F]/78 p-4">
-            <CalendarDays className="h-5 w-5 text-cyan-200" />
-            <p className="mt-3 text-xs font-black uppercase tracking-[0.12em] text-white/35">
+        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="rounded-[22px] border border-cyan-200/[0.14] bg-[#0A1828] p-5 shadow-[0_18px_48px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.035)]">
+            <div className="grid h-10 w-10 place-items-center rounded-2xl border border-cyan-300/15 bg-[#0D2633]">
+              <CalendarDays className="h-5 w-5 text-cyan-200" />
+            </div>
+
+            <p className="mt-4 text-xs font-black uppercase tracking-[0.12em] text-white/50">
               Race dates
             </p>
+
             <p className="mt-2 text-sm font-bold leading-6 text-white">
               {formatDateRange(event.startDate, event.endDate)}
             </p>
           </div>
 
-          <div className="rounded-[22px] border border-cyan-300/10 bg-[#07111F]/78 p-4">
-            <MapPin className="h-5 w-5 text-[#FFB199]" />
-            <p className="mt-3 text-xs font-black uppercase tracking-[0.12em] text-white/35">
+          <div className="rounded-[22px] border border-[#FF6B35]/15 bg-[#17151D] p-5 shadow-[0_18px_48px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.035)]">
+            <div className="grid h-10 w-10 place-items-center rounded-2xl border border-[#FF6B35]/15 bg-[#2B1B1B]">
+              <MapPin className="h-5 w-5 text-[#FFB199]" />
+            </div>
+
+            <p className="mt-4 text-xs font-black uppercase tracking-[0.12em] text-white/50">
               Location
             </p>
+
             <p className="mt-2 text-sm font-bold leading-6 text-white">
               {event.formattedLocation}
             </p>
           </div>
 
-          <div className="rounded-[22px] border border-cyan-300/10 bg-[#07111F]/78 p-4">
-            <Clock3 className="h-5 w-5 text-cyan-200" />
-            <p className="mt-3 text-xs font-black uppercase tracking-[0.12em] text-white/35">
+          <div className="rounded-[22px] border border-cyan-200/[0.14] bg-[#0A1828] p-5 shadow-[0_18px_48px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.035)]">
+            <div className="grid h-10 w-10 place-items-center rounded-2xl border border-cyan-300/15 bg-[#0D2633]">
+              <Clock3 className="h-5 w-5 text-cyan-200" />
+            </div>
+
+            <p className="mt-4 text-xs font-black uppercase tracking-[0.12em] text-white/50">
               Registration closes
             </p>
+
             <p className="mt-2 text-sm font-bold leading-6 text-white">
               {formatDeadline(event.registrationCloseDate)}
             </p>
           </div>
 
-          <div className="rounded-[22px] border border-cyan-300/10 bg-[#07111F]/78 p-4">
-            <Users className="h-5 w-5 text-[#FFB199]" />
-            <p className="mt-3 text-xs font-black uppercase tracking-[0.12em] text-white/35">
+          <div className="rounded-[22px] border border-[#FF6B35]/15 bg-[#17151D] p-5 shadow-[0_18px_48px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.035)]">
+            <div className="grid h-10 w-10 place-items-center rounded-2xl border border-[#FF6B35]/15 bg-[#2B1B1B]">
+              <Users className="h-5 w-5 text-[#FFB199]" />
+            </div>
+
+            <p className="mt-4 text-xs font-black uppercase tracking-[0.12em] text-white/50">
               Confirmed racers
             </p>
-            <p className="mt-2 text-2xl font-black text-white">
+
+            <p className="mt-2 text-3xl font-black text-white">
               {racers.length}
             </p>
           </div>

@@ -149,7 +149,7 @@ export default function RegistrationHomePage() {
       ) : (
         <div className="space-y-6">
           <section className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-            <div className="rounded-[22px] border border-cyan-300/10 bg-[#07111F]/78 p-4 sm:p-5">
+            <div className="rounded-[22px] border border-[#FF6B35]/15 bg-[#17151D] p-4 shadow-[0_18px_48px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.035)] sm:p-5">
               <CalendarDays className="h-5 w-5 text-cyan-200" />
 
               <div className="mt-4 text-2xl font-black text-white">
@@ -161,7 +161,7 @@ export default function RegistrationHomePage() {
               </div>
             </div>
 
-            <div className="rounded-[22px] border border-cyan-300/10 bg-[#07111F]/78 p-4 sm:p-5">
+            <div className="rounded-[22px] border border-[#FF6B35]/15 bg-[#17151D] p-4 shadow-[0_18px_48px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.035)] sm:p-5">
               <Flag className="h-5 w-5 text-[#FFB199]" />
 
               <div className="mt-4 text-2xl font-black text-white">
@@ -173,7 +173,7 @@ export default function RegistrationHomePage() {
               </div>
             </div>
 
-            <div className="rounded-[22px] border border-cyan-300/10 bg-[#07111F]/78 p-4 sm:p-5">
+            <div className="rounded-[22px] border border-[#FF6B35]/15 bg-[#17151D] p-4 shadow-[0_18px_48px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.035)] sm:p-5">
               <Users className="h-5 w-5 text-cyan-200" />
 
               <div className="mt-4 text-2xl font-black text-white">
@@ -185,7 +185,7 @@ export default function RegistrationHomePage() {
               </div>
             </div>
 
-            <div className="rounded-[22px] border border-cyan-300/10 bg-[#07111F]/78 p-4 sm:p-5">
+            <div className="rounded-[22px] border border-[#FF6B35]/15 bg-[#17151D] p-4 shadow-[0_18px_48px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.035)] sm:p-5">
               <Building2 className="h-5 w-5 text-[#FFB199]" />
 
               <div className="mt-4 text-2xl font-black text-white">
