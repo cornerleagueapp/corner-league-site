@@ -201,7 +201,7 @@ export function useAppSidebarSections(opts?: {
                       {
                         key: "org-admin-overview",
                         label: "Overview",
-                        helper: "Organization administration overview.",
+                        helper: "Organization admin overview.",
                         selectable: false,
                         matchPaths: [
                           `/organizations/${activeOrganizationId}/admin`,
@@ -215,8 +215,7 @@ export function useAppSidebarSections(opts?: {
                       {
                         key: "org-admin-events",
                         label: "Events",
-                        helper:
-                          "Create and manage events for this organization.",
+                        helper: "Create and manage events.",
                         selectable: false,
                         matchPaths: [
                           `/organizations/${activeOrganizationId}/admin/events`,
@@ -231,8 +230,7 @@ export function useAppSidebarSections(opts?: {
                       {
                         key: "org-admin-registrations",
                         label: "Registrations",
-                        helper:
-                          "Manage racers, entries, registration status, and roster.",
+                        helper: "Manage racers and registration.",
                         selectable: false,
                         matchPaths: [
                           `/organizations/${activeOrganizationId}/admin/registrations`,
@@ -247,8 +245,7 @@ export function useAppSidebarSections(opts?: {
                       {
                         key: "org-admin-race-days",
                         label: "Race Days",
-                        helper:
-                          "Configure race days, classes, rounds, and event setup.",
+                        helper: "Classes and event setup.",
                         selectable: false,
                         matchPaths: [
                           `/organizations/${activeOrganizationId}/admin/race-days`,
@@ -263,8 +260,7 @@ export function useAppSidebarSections(opts?: {
                       {
                         key: "org-admin-race-schedule",
                         label: "Race Schedule",
-                        helper:
-                          "Generate, edit, validate, and publish race orders.",
+                        helper: "Edit and publish race lists.",
                         selectable: false,
                         matchPaths: [
                           `/organizations/${activeOrganizationId}/admin/race-schedule`,
@@ -279,8 +275,7 @@ export function useAppSidebarSections(opts?: {
                       {
                         key: "org-admin-payments",
                         label: "Payments",
-                        helper:
-                          "Review registration payments, refunds, and Stripe status.",
+                        helper: "Review payment processes.",
                         selectable: false,
                         matchPaths: [
                           `/organizations/${activeOrganizationId}/admin/payments`,
@@ -295,7 +290,7 @@ export function useAppSidebarSections(opts?: {
                       {
                         key: "org-admin-results",
                         label: "Results",
-                        helper: "Manage registration-to-results enrollment.",
+                        helper: "Manage registration-to-results.",
                         selectable: false,
                         matchPaths: [
                           `/organizations/${activeOrganizationId}/admin/results`,
@@ -310,8 +305,7 @@ export function useAppSidebarSections(opts?: {
                       {
                         key: "org-admin-members",
                         label: "Members",
-                        helper:
-                          "Manage organization administrators and permissions.",
+                        helper: "Manage members and permissions.",
                         selectable: false,
                         matchPaths: [
                           `/organizations/${activeOrganizationId}/admin/members`,
@@ -327,7 +321,7 @@ export function useAppSidebarSections(opts?: {
                         key: "org-admin-settings",
                         label: "Settings",
                         helper:
-                          "Manage organization event, pricing, and registration settings.",
+                          "Manage event, pricing, and registration settings.",
                         selectable: false,
                         matchPaths: [
                           `/organizations/${activeOrganizationId}/admin/settings`,
