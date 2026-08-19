@@ -1,7 +1,9 @@
 import { apiRequest } from "@/lib/apiClient";
-
 import type {
+  CreateRegistrationClassInput,
+  CreateRegistrationDayInput,
   RegistrationAdminEventConfiguration,
+  RegistrationDivisionOption,
   UpdateRegistrationClassInput,
   UpdateRegistrationDayInput,
 } from "../types/organizationRaceDay";
@@ -52,6 +54,61 @@ export async function getRegistrationEventConfiguration(
       refreshOn401: true,
 
       logoutOn401: true,
+    },
+  );
+
+  return unwrap(response);
+}
+
+export async function getRegistrationEventDivisions(
+  eventId: string,
+): Promise<RegistrationDivisionOption[]> {
+  const response = await apiRequest(
+    "GET",
+    `/sport-event/division/event/${encodeURIComponent(eventId)}?page=1&limit=100`,
+    undefined,
+    {
+      refreshOn401: true,
+      logoutOn401: false,
+    },
+  );
+
+  const body: any = unwrap(response);
+
+  const divisions =
+    body?.divisions ?? body?.data?.divisions ?? body?.data ?? body;
+
+  return Array.isArray(divisions) ? divisions : [];
+}
+
+export async function createRegistrationEventDay(
+  eventId: string,
+  input: CreateRegistrationDayInput,
+) {
+  const response = await apiRequest(
+    "POST",
+    `/registration/admin/events/${encodeURIComponent(eventId)}/days`,
+    input,
+    {
+      refreshOn401: true,
+      logoutOn401: false,
+    },
+  );
+
+  return unwrap(response);
+}
+
+export async function createRegistrationEventClass(
+  eventId: string,
+  input: CreateRegistrationClassInput,
+) {
+  const response = await apiRequest(
+    "POST",
+    `/registration/admin/events/${encodeURIComponent(eventId)}/classes`,
+    input,
+    {
+      refreshOn401: true,
+      logoutOn401: false,
     },
   );
 

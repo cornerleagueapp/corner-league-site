@@ -23,11 +23,37 @@ type SportEnum = "jet ski";
 
 const SPORT_OPTIONS: SportEnum[] = ["jet ski"];
 
-export default function UpdateEventPage() {
+type UpdateEventPageProps = {
+  organizationId?: string;
+  eventId?: string;
+};
+
+export default function UpdateEventPage({
+  organizationId,
+  eventId: eventIdProp,
+}: UpdateEventPageProps = {}) {
   const { toast } = useToast();
   const [, navigate] = useLocation();
-  const [, params] = useRoute("/organization/events/:id");
-  const eventId = params?.id || "";
+
+  // Legacy Super Admin route:
+  // /organization/events/:id
+  const [, legacyParams] = useRoute("/organization/events/:id");
+
+  // Organization admins receive the event id directly from App.tsx.
+  const eventId = eventIdProp || legacyParams?.id || "";
+
+  const isOrganizationScoped = Boolean(organizationId);
+
+  const eventListPath = organizationId
+    ? `/organizations/${encodeURIComponent(organizationId)}/admin/events`
+    : "/organization/event-list";
+
+  const classesPath =
+    organizationId && eventId
+      ? `/organizations/${encodeURIComponent(
+          organizationId,
+        )}/admin/events/${encodeURIComponent(eventId)}/classes`
+      : `/organization/events/${encodeURIComponent(eventId)}/classes`;
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -191,7 +217,7 @@ export default function UpdateEventPage() {
             <div className="min-w-0">
               <button
                 type="button"
-                onClick={() => navigate("/organization/event-list")}
+                onClick={() => navigate(eventListPath)}
                 className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-white/70 transition hover:bg-white/10 hover:text-white"
               >
                 <ArrowLeft className="h-4 w-4" />
@@ -225,7 +251,7 @@ export default function UpdateEventPage() {
               <Button
                 variant="outline"
                 className="h-12 rounded-full border-white/10 bg-white/[0.04] px-6 text-xs font-black uppercase tracking-[0.16em] text-white/70 hover:bg-white/10 hover:text-white"
-                onClick={() => navigate("/organization/event-list")}
+                onClick={() => navigate(eventListPath)}
               >
                 Back
               </Button>
@@ -403,7 +429,7 @@ export default function UpdateEventPage() {
                     <Button
                       variant="ghost"
                       className="h-12 rounded-full border border-white/10 px-6 text-xs font-black uppercase tracking-[0.16em] text-white/70 hover:bg-white/10 hover:text-white"
-                      onClick={() => navigate("/organization/event-list")}
+                      onClick={() => navigate(eventListPath)}
                     >
                       Cancel
                     </Button>

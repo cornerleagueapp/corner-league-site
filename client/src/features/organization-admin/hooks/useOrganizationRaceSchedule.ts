@@ -22,11 +22,14 @@ import type {
   UpdateRaceScheduleSettingsInput,
 } from "../types/organizationRaceSchedule";
 
-export function useRaceScheduleSettings(eventId: string | null | undefined) {
+export function useRaceScheduleSettings(
+  eventId: string | null | undefined,
+  enabled = true,
+) {
   return useQuery({
     queryKey: ["race-schedule-settings", eventId],
 
-    enabled: !!eventId,
+    enabled: enabled && !!eventId,
 
     queryFn: async () => {
       if (!eventId) {

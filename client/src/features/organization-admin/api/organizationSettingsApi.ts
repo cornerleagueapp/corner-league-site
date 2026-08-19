@@ -1,5 +1,4 @@
 import { apiRequest } from "@/lib/apiClient";
-
 import type {
   RaceScheduleSettings,
   RegistrationEventSettings,
@@ -29,6 +28,53 @@ function unwrap<T>(response: T | ApiEnvelope<T>): T {
   }
 
   return response as T;
+}
+
+export type CreateRegistrationEventSettingsInput = {
+  publicSlug: string;
+
+  isRegistrationEnabled?: boolean;
+
+  registrationOpensAt?: string | null;
+  registrationClosesAt?: string | null;
+
+  allowOnlinePayment?: boolean;
+  allowCashPayment?: boolean;
+  allowManualPayment?: boolean;
+
+  allowCoupons?: boolean;
+  allowWaitlist?: boolean;
+
+  showPublicEntryList?: boolean;
+  showPendingCashEntries?: boolean;
+
+  requireAccount?: boolean;
+
+  maxClassesPerRegistration?: number;
+
+  platformFeeFixedCents?: number;
+  platformFeeBasisPoints?: number;
+
+  currency?: string;
+
+  termsText?: string | null;
+  refundPolicyText?: string | null;
+  confirmationMessage?: string | null;
+};
+
+export function createRegistrationEventSettings(
+  eventId: string,
+  input: CreateRegistrationEventSettingsInput,
+) {
+  return apiRequest(
+    "POST",
+    `/registration/admin/events/${encodeURIComponent(eventId)}/settings`,
+    input,
+    {
+      refreshOn401: true,
+      logoutOn401: false,
+    },
+  );
 }
 
 export async function getRegistrationEventConfiguration(eventId: string) {

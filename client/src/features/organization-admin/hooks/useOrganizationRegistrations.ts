@@ -36,11 +36,12 @@ export function useOrganizationEvents(
 
 export function useOrganizationEventRegistrations(
   eventId: string | null | undefined,
+  enabled = true,
 ) {
   return useQuery({
-    queryKey: ["organization-admin-registrations", eventId],
+    queryKey: ["organization-event-registrations", eventId],
 
-    enabled: !!eventId,
+    enabled: enabled && !!eventId,
 
     queryFn: async () => {
       if (!eventId) {
@@ -49,10 +50,6 @@ export function useOrganizationEventRegistrations(
 
       return getAdminEventRegistrations(eventId);
     },
-
-    staleTime: 20 * 1000,
-
-    retry: false,
   });
 }
 

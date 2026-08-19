@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-
 import {
   AlertTriangle,
   CalendarClock,
@@ -10,18 +9,15 @@ import {
   Settings2,
   ShieldCheck,
 } from "lucide-react";
-
 import { OrganizationAdminLayout } from "../components/OrganizationAdminLayout";
-
 import { useOrganizationEvents } from "../hooks/useOrganizationRegistrations";
-
 import {
+  useCreateRegistrationEventSettings,
   useRaceScheduleSettings,
   useRegistrationEventConfiguration,
   useUpdateRaceScheduleSettings,
   useUpdateRegistrationEventSettings,
 } from "../hooks/useOrganizationSettings";
-
 import type {
   RaceScheduleSettings,
   RegistrationEventSettings,
@@ -79,12 +75,24 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
+function slugify(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 160);
+}
+
 export default function OrganizationSettingsPage({ organizationId }: Props) {
   const eventsQuery = useOrganizationEvents(organizationId);
 
   const events = eventsQuery.data ?? [];
 
   const [selectedEventId, setSelectedEventId] = useState("");
+
+  const selectedEvent =
+    events.find((event) => event.id === selectedEventId) ?? null;
 
   const [registrationForm, setRegistrationForm] =
     useState<RegistrationEventSettings | null>(null);
@@ -107,19 +115,30 @@ export default function OrganizationSettingsPage({ organizationId }: Props) {
 
   const scheduleQuery = useRaceScheduleSettings(selectedEventId);
 
+  const createRegistrationMutation =
+    useCreateRegistrationEventSettings(selectedEventId);
+
   const updateRegistrationMutation =
     useUpdateRegistrationEventSettings(selectedEventId);
 
   const updateScheduleMutation = useUpdateRaceScheduleSettings(selectedEventId);
 
+  const hasRegistrationSettings = !!registrationQuery.data?.settings;
+
   useEffect(() => {
     const data = registrationQuery.data;
 
     if (!data) {
+      setRegistrationForm(null);
       return;
     }
 
-    const settings = data.settings ?? data.registrationSettings ?? data;
+    const settings = data.settings ?? data.registrationSettings ?? null;
+
+    if (!settings) {
+      setRegistrationForm(null);
+      return;
+    }
 
     setRegistrationForm({
       publicSlug: settings.publicSlug ?? "",
@@ -193,6 +212,47 @@ export default function OrganizationSettingsPage({ organizationId }: Props) {
     });
   }, [scheduleQuery.data]);
 
+  const setupRegistration = async () => {
+    if (!selectedEventId || !selectedEvent) {
+      return;
+    }
+
+    const publicSlug =
+      slugify(selectedEvent.name) || `event-${selectedEventId.slice(0, 8)}`;
+
+    await createRegistrationMutation.mutateAsync({
+      publicSlug,
+
+      isRegistrationEnabled: false,
+
+      registrationOpensAt: null,
+      registrationClosesAt: null,
+
+      allowOnlinePayment: true,
+      allowCashPayment: false,
+      allowManualPayment: true,
+
+      allowCoupons: true,
+      allowWaitlist: false,
+
+      showPublicEntryList: true,
+      showPendingCashEntries: false,
+
+      requireAccount: true,
+
+      maxClassesPerRegistration: 10,
+
+      platformFeeFixedCents: 0,
+      platformFeeBasisPoints: 0,
+
+      currency: "USD",
+
+      termsText: null,
+      refundPolicyText: null,
+      confirmationMessage: null,
+    });
+  };
+
   const saveRegistration = async () => {
     if (!registrationForm) {
       return;
@@ -221,10 +281,7 @@ export default function OrganizationSettingsPage({ organizationId }: Props) {
     setScheduleSaved(true);
   };
 
-  const loading =
-    eventsQuery.isLoading ||
-    registrationQuery.isLoading ||
-    scheduleQuery.isLoading;
+  const loading = eventsQuery.isLoading || registrationQuery.isLoading;
 
   return (
     <OrganizationAdminLayout organizationId={organizationId}>
@@ -278,6 +335,57 @@ export default function OrganizationSettingsPage({ organizationId }: Props) {
             <Settings2 className="mx-auto h-7 w-7 text-slate-600" />
 
             <h3 className="mt-4 font-black text-white">No event available</h3>
+          </div>
+        ) : !hasRegistrationSettings ? (
+          <div className="mt-8 overflow-hidden rounded-[28px] border border-cyan-300/15 bg-cyan-300/[0.035]">
+            <div className="p-6 sm:p-7">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-cyan-300/15 bg-cyan-300/10">
+                <CreditCard className="h-5 w-5 text-cyan-200" />
+              </div>
+
+              <div className="mt-5 text-[9px] font-black uppercase tracking-[0.18em] text-cyan-200">
+                Registration Setup
+              </div>
+
+              <h3 className="mt-2 text-2xl font-black uppercase tracking-[-0.03em] text-white">
+                Registration not configured
+              </h3>
+
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-400">
+                {selectedEvent?.name ?? "This event"} exists as an organization
+                event, but race registration has not been configured yet. Create
+                the registration setup before adding race days, classes, opening
+                public registration, or generating a race schedule.
+              </p>
+
+              {createRegistrationMutation.isError ? (
+                <div className="mt-5 rounded-2xl border border-red-300/15 bg-red-300/[0.05] p-4">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-200" />
+
+                    <p className="text-xs leading-5 text-red-100/70">
+                      {createRegistrationMutation.error instanceof Error
+                        ? createRegistrationMutation.error.message
+                        : "Unable to create registration settings."}
+                    </p>
+                  </div>
+                </div>
+              ) : null}
+
+              <button
+                type="button"
+                onClick={setupRegistration}
+                disabled={createRegistrationMutation.isPending}
+                className="mt-6 inline-flex h-12 items-center justify-center gap-2 rounded-full bg-cyan-300 px-6 text-[10px] font-black uppercase tracking-[0.14em] text-[#04101C] transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {createRegistrationMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="h-4 w-4" />
+                )}
+                Set Up Registration
+              </button>
+            </div>
           </div>
         ) : (
           <div className="mt-8 space-y-8">

@@ -1,12 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
 import {
+  createRegistrationEventSettings,
   getRaceScheduleSettings,
   getRegistrationEventConfiguration,
   updateRaceScheduleSettings,
   updateRegistrationEventSettings,
+  type CreateRegistrationEventSettingsInput,
 } from "../api/organizationSettingsApi";
-
 import type {
   UpdateRaceScheduleSettingsInput,
   UpdateRegistrationEventSettingsInput,
@@ -26,6 +26,28 @@ export function useRegistrationEventConfiguration(
       }
 
       return getRegistrationEventConfiguration(eventId);
+    },
+  });
+}
+
+export function useCreateRegistrationEventSettings(
+  eventId: string | null | undefined,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: CreateRegistrationEventSettingsInput) => {
+      if (!eventId) {
+        throw new Error("Event ID is required.");
+      }
+
+      return createRegistrationEventSettings(eventId, input);
+    },
+
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["organization-registration-configuration", eventId],
+      });
     },
   });
 }

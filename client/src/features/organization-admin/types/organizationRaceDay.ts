@@ -119,3 +119,53 @@ export type UpdateRegistrationClassInput = {
 
   displayOrder?: number;
 };
+
+export type RegistrationDivisionOption = {
+  id: string;
+
+  name: string;
+
+  isWorldFinal?: boolean;
+};
+
+export type CreateRegistrationDayInput = {
+  dayKey: string;
+
+  label: string;
+
+  eventDate: string;
+
+  startsAt?: string | null;
+
+  endsAt?: string | null;
+
+  isRegistrationEnabled?: boolean;
+
+  displayOrder?: number;
+};
+
+export type CreateRegistrationClassInput = {
+  divisionId: string;
+
+  displayName?: string | null;
+
+  description?: string | null;
+
+  pricingModel?: string;
+
+  basePriceCents?: number;
+
+  currency?: string;
+
+  capacity?: number | null;
+
+  allowWaitlist?: boolean;
+
+  minimumSelectedDays?: number;
+
+  maximumSelectedDays?: number | null;
+
+  isRegistrationOpen?: boolean;
+
+  displayOrder?: number;
+};

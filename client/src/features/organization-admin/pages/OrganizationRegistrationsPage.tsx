@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-
 import {
   CalendarDays,
   CheckCircle2,
@@ -11,15 +10,13 @@ import {
   Users,
   XCircle,
 } from "lucide-react";
-
 import { OrganizationAdminLayout } from "../components/OrganizationAdminLayout";
-
 import {
   useOrganizationEventRegistrations,
   useOrganizationEvents,
   useRegistrationDashboardMetrics,
 } from "../hooks/useOrganizationRegistrations";
-
+import { useRegistrationEventConfiguration } from "../hooks/useOrganizationSettings";
 import type { RegistrationAdminEntry } from "../types/organizationRegistration";
 
 type Props = {
@@ -185,7 +182,15 @@ export default function OrganizationRegistrationsPage({
     setSelectedEventId(nextUpcoming?.id ?? events[0].id);
   }, [events, selectedEventId]);
 
-  const registrationsQuery = useOrganizationEventRegistrations(selectedEventId);
+  const configurationQuery = useRegistrationEventConfiguration(selectedEventId);
+
+  const hasRegistrationConfiguration =
+    configurationQuery.isSuccess && !!configurationQuery.data;
+
+  const registrationsQuery = useOrganizationEventRegistrations(
+    selectedEventId,
+    hasRegistrationConfiguration,
+  );
 
   const registrations = registrationsQuery.data?.registrations ?? [];
 
@@ -322,7 +327,33 @@ export default function OrganizationRegistrationsPage({
               </div>
             ) : null}
 
-            {registrationsQuery.isLoading ? (
+            {configurationQuery.isLoading ? (
+              <div className="mt-10 flex min-h-[320px] items-center justify-center">
+                <Loader2 className="h-7 w-7 animate-spin text-cyan-200" />
+              </div>
+            ) : configurationQuery.isError ? (
+              <div className="mt-8 rounded-[26px] border border-dashed border-cyan-300/15 bg-cyan-300/[0.025] px-6 py-12 text-center">
+                <CalendarDays className="mx-auto h-8 w-8 text-cyan-200/50" />
+
+                <h3 className="mt-5 text-lg font-black uppercase text-white">
+                  Registration Not Set Up
+                </h3>
+
+                <p className="mx-auto mt-3 max-w-lg text-sm leading-6 text-slate-500">
+                  Registration has not been configured for this event yet. Set
+                  up registration before accepting racer entries.
+                </p>
+
+                <a
+                  href={`/organizations/${encodeURIComponent(
+                    organizationId,
+                  )}/admin/settings?eventId=${encodeURIComponent(selectedEventId)}`}
+                  className="mt-6 inline-flex h-11 items-center justify-center rounded-full bg-cyan-300 px-6 text-[10px] font-black uppercase tracking-[0.14em] text-[#06111d] transition hover:bg-cyan-200"
+                >
+                  Set Up Registration
+                </a>
+              </div>
+            ) : registrationsQuery.isLoading ? (
               <div className="mt-10 flex min-h-[320px] items-center justify-center">
                 <Loader2 className="h-7 w-7 animate-spin text-cyan-200" />
               </div>

@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-
 import {
   AlertTriangle,
   CalendarDays,
@@ -315,13 +314,21 @@ export default function OrganizationRaceSchedulePage({
 
   const configurationQuery = useRegistrationEventConfiguration(selectedEventId);
 
-  const registrationDays = configurationQuery.data?.settings?.eventDays ?? [];
+  const registrationSettings = configurationQuery.data?.settings ?? null;
+
+  const hasRegistrationConfiguration =
+    configurationQuery.isSuccess && !!registrationSettings;
+
+  const registrationDays = registrationSettings?.eventDays ?? [];
 
   useEffect(() => {
     setSelectedDayId(registrationDays[0]?.id ?? "");
   }, [selectedEventId, registrationDays[0]?.id]);
 
-  const settingsQuery = useRaceScheduleSettings(selectedEventId);
+  const settingsQuery = useRaceScheduleSettings(
+    selectedEventId,
+    hasRegistrationConfiguration,
+  );
 
   const dayQuery = useRaceScheduleDay(selectedDayId);
 
@@ -423,17 +430,58 @@ export default function OrganizationRaceSchedulePage({
           <div className="flex min-h-[420px] items-center justify-center">
             <Loader2 className="h-7 w-7 animate-spin text-cyan-200" />
           </div>
+        ) : !hasRegistrationConfiguration ? (
+          <div className="mt-8 rounded-[28px] border border-cyan-300/15 bg-cyan-300/[0.035] p-7">
+            <ShieldCheck className="h-7 w-7 text-cyan-200" />
+
+            <div className="mt-4 text-[9px] font-black uppercase tracking-[0.17em] text-cyan-200">
+              Registration Setup Required
+            </div>
+
+            <h3 className="mt-2 text-xl font-black uppercase text-white">
+              Race scheduling is not ready
+            </h3>
+
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-400">
+              This event has not been configured for registration yet.
+              Registration settings, race days, and classes must exist before
+              the race schedule can be initialized.
+            </p>
+
+            <a
+              href={`/organizations/${encodeURIComponent(
+                organizationId,
+              )}/admin/settings?eventId=${encodeURIComponent(selectedEventId)}`}
+              className="mt-6 inline-flex h-11 items-center justify-center rounded-full bg-cyan-300 px-5 text-[10px] font-black uppercase tracking-[0.14em] text-[#04101C] transition hover:bg-cyan-200"
+            >
+              Set Up Registration
+            </a>
+          </div>
         ) : !selectedDayId ? (
           <div className="mt-8 rounded-[26px] border border-dashed border-white/10 p-10 text-center">
             <CalendarDays className="mx-auto h-7 w-7 text-slate-700" />
 
-            <h3 className="mt-4 font-black text-white">
+            <div className="mt-4 text-[9px] font-black uppercase tracking-[0.16em] text-[#FFB199]">
+              Race Days Required
+            </div>
+
+            <h3 className="mt-2 font-black text-white">
               No race days configured
             </h3>
 
             <p className="mt-2 text-sm text-slate-500">
-              Add registration race days before creating a race schedule.
+              Registration exists for this event, but race days have not been
+              created yet.
             </p>
+
+            <a
+              href={`/organizations/${encodeURIComponent(
+                organizationId,
+              )}/admin/race-days`}
+              className="mt-5 inline-flex h-11 items-center justify-center rounded-full border border-cyan-300/20 bg-cyan-300/10 px-5 text-[10px] font-black uppercase tracking-[0.14em] text-cyan-100 transition hover:bg-cyan-300 hover:text-[#04101C]"
+            >
+              Configure Race Days
+            </a>
           </div>
         ) : dayNotInitialized ? (
           <div className="mt-8 rounded-[28px] border border-cyan-300/15 bg-cyan-300/[0.04] p-7">

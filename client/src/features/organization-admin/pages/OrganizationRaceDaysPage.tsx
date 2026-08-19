@@ -1,30 +1,30 @@
 import { useEffect, useMemo, useState } from "react";
-
 import {
   CalendarDays,
   Check,
   CircleDollarSign,
   Clock3,
   Loader2,
+  Plus,
   Power,
   ShieldCheck,
   Trophy,
   Users,
+  X,
 } from "lucide-react";
-
 import { OrganizationAdminLayout } from "../components/OrganizationAdminLayout";
-
 import {
   useOrganizationEventRegistrations,
   useOrganizationEvents,
 } from "../hooks/useOrganizationRegistrations";
-
 import {
+  useCreateRegistrationClass,
+  useCreateRegistrationDay,
   useRegistrationEventConfiguration,
+  useRegistrationEventDivisions,
   useUpdateRegistrationClass,
   useUpdateRegistrationDay,
 } from "../hooks/useOrganizationRaceDays";
-
 import type {
   RegistrationEventClass,
   RegistrationEventDay,
@@ -80,6 +80,23 @@ function formatMoney(cents: number | undefined, currency = "USD") {
 
     currency: currency.toUpperCase(),
   }).format(Number(cents ?? 0) / 100);
+}
+
+function combineDateAndTime(
+  dateValue: string,
+  timeValue: string,
+): string | null {
+  if (!dateValue || !timeValue) {
+    return null;
+  }
+
+  const date = new Date(`${dateValue}T${timeValue}:00`);
+
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return date.toISOString();
 }
 
 function getClassName(eventClass: RegistrationEventClass) {
@@ -322,6 +339,26 @@ export default function OrganizationRaceDaysPage({ organizationId }: Props) {
 
   const [selectedEventId, setSelectedEventId] = useState("");
 
+  const [dayModalOpen, setDayModalOpen] = useState(false);
+
+  const [classModalOpen, setClassModalOpen] = useState(false);
+
+  const [dayForm, setDayForm] = useState({
+    label: "",
+    eventDate: "",
+    startsAt: "",
+    endsAt: "",
+  });
+
+  const [classForm, setClassForm] = useState({
+    divisionId: "",
+    displayName: "",
+    description: "",
+    basePrice: "",
+    capacity: "",
+    allowWaitlist: false,
+  });
+
   useEffect(() => {
     if (selectedEventId || !events.length) {
       return;
@@ -346,11 +383,26 @@ export default function OrganizationRaceDaysPage({ organizationId }: Props) {
 
   const configurationQuery = useRegistrationEventConfiguration(selectedEventId);
 
-  const registrationsQuery = useOrganizationEventRegistrations(selectedEventId);
-
   const configuration = configurationQuery.data;
 
   const settings = configuration?.settings ?? null;
+
+  const hasRegistrationConfiguration =
+    configurationQuery.isSuccess && !!settings;
+
+  const registrationsQuery = useOrganizationEventRegistrations(
+    selectedEventId,
+    hasRegistrationConfiguration,
+  );
+
+  const divisionsQuery = useRegistrationEventDivisions(
+    selectedEventId,
+    hasRegistrationConfiguration,
+  );
+
+  const createDayMutation = useCreateRegistrationDay(selectedEventId);
+
+  const createClassMutation = useCreateRegistrationClass(selectedEventId);
 
   const classRacerCounts = useMemo(() => {
     const result = new Map<string, Set<string>>();
@@ -390,6 +442,102 @@ export default function OrganizationRaceDaysPage({ organizationId }: Props) {
       [...result.entries()].map(([classId, racers]) => [classId, racers.size]),
     );
   }, [registrationsQuery.data]);
+
+  const createRaceDay = async () => {
+    if (!dayForm.label.trim() || !dayForm.eventDate) {
+      return;
+    }
+
+    const dayKey =
+      dayForm.label
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "") ||
+      `day-${settings?.eventDays.length ?? 0 + 1}`;
+
+    await createDayMutation.mutateAsync({
+      dayKey,
+
+      label: dayForm.label.trim(),
+
+      eventDate: dayForm.eventDate,
+
+      startsAt: combineDateAndTime(dayForm.eventDate, dayForm.startsAt),
+
+      endsAt: combineDateAndTime(dayForm.eventDate, dayForm.endsAt),
+
+      isRegistrationEnabled: true,
+
+      displayOrder: settings?.eventDays.length ?? 0,
+    });
+
+    setDayForm({
+      label: "",
+      eventDate: "",
+      startsAt: "",
+      endsAt: "",
+    });
+
+    setDayModalOpen(false);
+  };
+
+  const createRegistrationClass = async () => {
+    if (!classForm.divisionId) {
+      return;
+    }
+
+    const parsedPrice = Number(classForm.basePrice);
+
+    const parsedCapacity = classForm.capacity
+      ? Number(classForm.capacity)
+      : null;
+
+    await createClassMutation.mutateAsync({
+      divisionId: classForm.divisionId,
+
+      displayName: classForm.displayName.trim() || null,
+
+      description: classForm.description.trim() || null,
+
+      pricingModel: "flat",
+
+      basePriceCents:
+        Number.isFinite(parsedPrice) && parsedPrice >= 0
+          ? Math.round(parsedPrice * 100)
+          : 0,
+
+      currency: "USD",
+
+      capacity:
+        parsedCapacity !== null &&
+        Number.isFinite(parsedCapacity) &&
+        parsedCapacity > 0
+          ? parsedCapacity
+          : null,
+
+      allowWaitlist: classForm.allowWaitlist,
+
+      minimumSelectedDays: 1,
+
+      maximumSelectedDays: null,
+
+      isRegistrationOpen: true,
+
+      displayOrder: settings?.eventClasses.length ?? 0,
+    });
+
+    setClassForm({
+      divisionId: "",
+      displayName: "",
+      description: "",
+      basePrice: "",
+      capacity: "",
+      allowWaitlist: false,
+    });
+
+    setClassModalOpen(false);
+  };
 
   return (
     <OrganizationAdminLayout organizationId={organizationId}>
@@ -466,17 +614,31 @@ export default function OrganizationRaceDaysPage({ organizationId }: Props) {
             </p>
           </div>
         ) : !settings ? (
-          <div className="mt-8 rounded-[26px] border border-amber-300/15 bg-amber-300/[0.045] p-6">
-            <ShieldCheck className="h-6 w-6 text-amber-200" />
+          <div className="mt-8 rounded-[26px] border border-cyan-300/15 bg-cyan-300/[0.035] p-6 sm:p-7">
+            <ShieldCheck className="h-6 w-6 text-cyan-200" />
 
-            <h3 className="mt-4 text-lg font-black text-white">
-              Registration configuration has not been created
+            <div className="mt-4 text-[9px] font-black uppercase tracking-[0.16em] text-cyan-200">
+              Registration Setup Required
+            </div>
+
+            <h3 className="mt-2 text-xl font-black uppercase text-white">
+              Race days are not ready yet
             </h3>
 
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
-              This event exists, but registration settings must be initialized
-              before race days and registration classes can be managed here.
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-400">
+              This event exists, but registration has not been configured yet.
+              Set up registration first, then return here to create race days
+              and registration classes.
             </p>
+
+            <a
+              href={`/organizations/${encodeURIComponent(
+                organizationId,
+              )}/admin/settings?eventId=${encodeURIComponent(selectedEventId)}`}
+              className="mt-6 inline-flex h-11 items-center justify-center rounded-full bg-cyan-300 px-5 text-[10px] font-black uppercase tracking-[0.14em] text-[#04101C] transition hover:bg-cyan-200"
+            >
+              Set Up Registration
+            </a>
           </div>
         ) : (
           <>
@@ -519,19 +681,30 @@ export default function OrganizationRaceDaysPage({ organizationId }: Props) {
             </div>
 
             <section className="mt-8">
-              <div>
-                <div className="text-[9px] font-black uppercase tracking-[0.18em] text-cyan-200/60">
-                  Schedule Foundation
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <div className="text-[9px] font-black uppercase tracking-[0.18em] text-cyan-200/60">
+                    Schedule Foundation
+                  </div>
+
+                  <h3 className="mt-2 text-xl font-black uppercase text-white">
+                    Race Days
+                  </h3>
+
+                  <p className="mt-2 text-sm text-slate-500">
+                    These days become the foundation for independent race
+                    schedules.
+                  </p>
                 </div>
 
-                <h3 className="mt-2 text-xl font-black uppercase text-white">
-                  Race Days
-                </h3>
-
-                <p className="mt-2 text-sm text-slate-500">
-                  These days become the foundation for independent race
-                  schedules.
-                </p>
+                <button
+                  type="button"
+                  onClick={() => setDayModalOpen(true)}
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-cyan-300 px-5 text-[10px] font-black uppercase tracking-[0.14em] text-[#04101C] transition hover:bg-cyan-200"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Race Day
+                </button>
               </div>
 
               {!settings.eventDays.length ? (
@@ -548,20 +721,32 @@ export default function OrganizationRaceDaysPage({ organizationId }: Props) {
             </section>
 
             <section className="mt-10">
-              <div>
-                <div className="text-[9px] font-black uppercase tracking-[0.18em] text-[#FFB199]">
-                  Competition Setup
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <div className="text-[9px] font-black uppercase tracking-[0.18em] text-[#FFB199]">
+                    Competition Setup
+                  </div>
+
+                  <h3 className="mt-2 text-xl font-black uppercase text-white">
+                    Event Classes
+                  </h3>
+
+                  <p className="mt-2 max-w-3xl text-sm text-slate-500">
+                    These classes will feed the race-scheduling engine. Racer
+                    counts are shown to help promoters identify classes that may
+                    need to be combined later.
+                  </p>
                 </div>
 
-                <h3 className="mt-2 text-xl font-black uppercase text-white">
-                  Event Classes
-                </h3>
-
-                <p className="mt-2 max-w-3xl text-sm text-slate-500">
-                  These classes will feed the race-scheduling engine. Racer
-                  counts are shown to help promoters identify classes that may
-                  need to be combined later.
-                </p>
+                <button
+                  type="button"
+                  disabled={!divisionsQuery.data?.length}
+                  onClick={() => setClassModalOpen(true)}
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-[#FF6B35]/25 bg-[#FF6B35]/10 px-5 text-[10px] font-black uppercase tracking-[0.14em] text-[#FFB199] transition hover:bg-[#FF6B35] hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Class
+                </button>
               </div>
 
               {!settings.eventClasses.length ? (
@@ -583,6 +768,327 @@ export default function OrganizationRaceDaysPage({ organizationId }: Props) {
             </section>
           </>
         )}
+
+        {dayModalOpen ? (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+            <div className="w-full max-w-xl rounded-[28px] border border-white/10 bg-[#07111F] p-5 shadow-[0_30px_100px_rgba(0,0,0,0.55)] sm:p-6">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="text-[9px] font-black uppercase tracking-[0.18em] text-cyan-200">
+                    Event Setup
+                  </div>
+
+                  <h3 className="mt-2 text-xl font-black uppercase text-white">
+                    Add Race Day
+                  </h3>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setDayModalOpen(false)}
+                  className="grid h-10 w-10 place-items-center rounded-full border border-white/10 bg-white/[0.04] text-slate-400 hover:text-white"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="mt-6 space-y-4">
+                <label className="block">
+                  <span className="mb-2 block text-[9px] font-black uppercase tracking-[0.14em] text-slate-500">
+                    Day Name *
+                  </span>
+
+                  <input
+                    value={dayForm.label}
+                    onChange={(event) =>
+                      setDayForm((current) => ({
+                        ...current,
+                        label: event.target.value,
+                      }))
+                    }
+                    placeholder="Saturday"
+                    className="h-12 w-full rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-white outline-none focus:border-cyan-300/30"
+                  />
+                </label>
+
+                <label className="block">
+                  <span className="mb-2 block text-[9px] font-black uppercase tracking-[0.14em] text-slate-500">
+                    Event Date *
+                  </span>
+
+                  <input
+                    type="date"
+                    value={dayForm.eventDate}
+                    onChange={(event) =>
+                      setDayForm((current) => ({
+                        ...current,
+                        eventDate: event.target.value,
+                      }))
+                    }
+                    className="h-12 w-full rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-white outline-none focus:border-cyan-300/30"
+                  />
+                </label>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <label>
+                    <span className="mb-2 block text-[9px] font-black uppercase tracking-[0.14em] text-slate-500">
+                      Start Time
+                    </span>
+
+                    <input
+                      type="time"
+                      value={dayForm.startsAt}
+                      onChange={(event) =>
+                        setDayForm((current) => ({
+                          ...current,
+                          startsAt: event.target.value,
+                        }))
+                      }
+                      className="h-12 w-full rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-white outline-none focus:border-cyan-300/30"
+                    />
+                  </label>
+
+                  <label>
+                    <span className="mb-2 block text-[9px] font-black uppercase tracking-[0.14em] text-slate-500">
+                      End Time
+                    </span>
+
+                    <input
+                      type="time"
+                      value={dayForm.endsAt}
+                      onChange={(event) =>
+                        setDayForm((current) => ({
+                          ...current,
+                          endsAt: event.target.value,
+                        }))
+                      }
+                      className="h-12 w-full rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-white outline-none focus:border-cyan-300/30"
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setDayModalOpen(false)}
+                  className="h-11 rounded-full border border-white/10 px-5 text-[10px] font-black uppercase tracking-[0.13em] text-slate-400"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  disabled={
+                    !dayForm.label.trim() ||
+                    !dayForm.eventDate ||
+                    createDayMutation.isPending
+                  }
+                  onClick={createRaceDay}
+                  className="inline-flex h-11 items-center gap-2 rounded-full bg-cyan-300 px-5 text-[10px] font-black uppercase tracking-[0.13em] text-[#04101C] disabled:opacity-40"
+                >
+                  {createDayMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Plus className="h-4 w-4" />
+                  )}
+                  Create Day
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        {classModalOpen ? (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+            <div className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-[28px] border border-white/10 bg-[#07111F] p-5 shadow-[0_30px_100px_rgba(0,0,0,0.55)] sm:p-6">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="text-[9px] font-black uppercase tracking-[0.18em] text-[#FFB199]">
+                    Competition Setup
+                  </div>
+
+                  <h3 className="mt-2 text-xl font-black uppercase text-white">
+                    Add Registration Class
+                  </h3>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setClassModalOpen(false)}
+                  className="grid h-10 w-10 place-items-center rounded-full border border-white/10 bg-white/[0.04] text-slate-400 hover:text-white"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="mt-6 space-y-4">
+                <label className="block">
+                  <span className="mb-2 block text-[9px] font-black uppercase tracking-[0.14em] text-slate-500">
+                    Division *
+                  </span>
+
+                  <select
+                    value={classForm.divisionId}
+                    onChange={(event) =>
+                      setClassForm((current) => ({
+                        ...current,
+                        divisionId: event.target.value,
+                      }))
+                    }
+                    className="h-12 w-full rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-white outline-none focus:border-cyan-300/30"
+                  >
+                    <option value="">Select division</option>
+
+                    {(divisionsQuery.data ?? []).map((division) => (
+                      <option key={division.id} value={division.id}>
+                        {division.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="block">
+                  <span className="mb-2 block text-[9px] font-black uppercase tracking-[0.14em] text-slate-500">
+                    Display Name
+                  </span>
+
+                  <input
+                    value={classForm.displayName}
+                    onChange={(event) =>
+                      setClassForm((current) => ({
+                        ...current,
+                        displayName: event.target.value,
+                      }))
+                    }
+                    placeholder="Optional custom class name"
+                    className="h-12 w-full rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-white outline-none focus:border-cyan-300/30"
+                  />
+                </label>
+
+                <label className="block">
+                  <span className="mb-2 block text-[9px] font-black uppercase tracking-[0.14em] text-slate-500">
+                    Description
+                  </span>
+
+                  <textarea
+                    value={classForm.description}
+                    onChange={(event) =>
+                      setClassForm((current) => ({
+                        ...current,
+                        description: event.target.value,
+                      }))
+                    }
+                    rows={3}
+                    className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none focus:border-cyan-300/30"
+                  />
+                </label>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <label>
+                    <span className="mb-2 block text-[9px] font-black uppercase tracking-[0.14em] text-slate-500">
+                      Base Price
+                    </span>
+
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={classForm.basePrice}
+                      onChange={(event) =>
+                        setClassForm((current) => ({
+                          ...current,
+                          basePrice: event.target.value,
+                        }))
+                      }
+                      placeholder="150.00"
+                      className="h-12 w-full rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-white outline-none focus:border-cyan-300/30"
+                    />
+                  </label>
+
+                  <label>
+                    <span className="mb-2 block text-[9px] font-black uppercase tracking-[0.14em] text-slate-500">
+                      Capacity
+                    </span>
+
+                    <input
+                      type="number"
+                      min="1"
+                      value={classForm.capacity}
+                      onChange={(event) =>
+                        setClassForm((current) => ({
+                          ...current,
+                          capacity: event.target.value,
+                        }))
+                      }
+                      placeholder="Unlimited"
+                      className="h-12 w-full rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-white outline-none focus:border-cyan-300/30"
+                    />
+                  </label>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setClassForm((current) => ({
+                      ...current,
+                      allowWaitlist: !current.allowWaitlist,
+                    }))
+                  }
+                  className="flex w-full items-center justify-between rounded-2xl border border-white/10 bg-white/[0.03] p-4"
+                >
+                  <div className="text-left">
+                    <div className="text-sm font-black text-white">
+                      Allow Waitlist
+                    </div>
+
+                    <div className="mt-1 text-xs text-slate-500">
+                      Allow racers to join a waitlist when capacity is reached.
+                    </div>
+                  </div>
+
+                  <div
+                    className={`relative h-6 w-11 rounded-full ${
+                      classForm.allowWaitlist ? "bg-cyan-300" : "bg-white/10"
+                    }`}
+                  >
+                    <div
+                      className={`absolute top-1 h-4 w-4 rounded-full bg-[#04101C] transition ${
+                        classForm.allowWaitlist ? "left-6" : "left-1"
+                      }`}
+                    />
+                  </div>
+                </button>
+              </div>
+
+              <div className="mt-6 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setClassModalOpen(false)}
+                  className="h-11 rounded-full border border-white/10 px-5 text-[10px] font-black uppercase tracking-[0.13em] text-slate-400"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  disabled={
+                    !classForm.divisionId || createClassMutation.isPending
+                  }
+                  onClick={createRegistrationClass}
+                  className="inline-flex h-11 items-center gap-2 rounded-full bg-[#FF6B35] px-5 text-[10px] font-black uppercase tracking-[0.13em] text-white disabled:opacity-40"
+                >
+                  {createClassMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Plus className="h-4 w-4" />
+                  )}
+                  Create Class
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
       </section>
     </OrganizationAdminLayout>
   );
