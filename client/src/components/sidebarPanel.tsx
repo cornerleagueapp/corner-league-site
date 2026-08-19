@@ -1,6 +1,7 @@
 // src/components/sidebarPanel.tsx
 import { Link, useLocation } from "wouter";
 import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
+import { useMyOrganizationAdminOrganizations } from "@/features/organization-admin/hooks/useMyOrganizationAdminOrganizations";
 import { logout } from "@/lib/logout";
 import {
   Bell,
@@ -54,13 +55,26 @@ export function useAppSidebarSections(opts?: {
 }) {
   const [location, navigate] = useLocation();
 
+  const guest = !!opts?.guestMode;
+
+  const myOrganizationsQuery = useMyOrganizationAdminOrganizations(!guest);
+
+  const myAdminOrganizations = myOrganizationsQuery.data?.organizations ?? [];
+
   const organizationAdminMatch = location.match(
     /^\/organizations\/([^/]+)\/admin(?:\/|$)/,
   );
 
-  const activeOrganizationId = organizationAdminMatch?.[1]
+  const routeOrganizationId = organizationAdminMatch?.[1]
     ? decodeURIComponent(organizationAdminMatch[1])
     : null;
+
+  const defaultOrganizationId =
+    !opts?.isSuperAdmin && myAdminOrganizations.length === 1
+      ? myAdminOrganizations[0].organizationId
+      : null;
+
+  const activeOrganizationId = routeOrganizationId ?? defaultOrganizationId;
 
   const goToAuth = () => {
     const next = encodeURIComponent(
@@ -137,23 +151,50 @@ export function useAppSidebarSections(opts?: {
           ]
         : []),
 
-      ...(opts?.isSuperAdmin && !guest
+      ...(!guest && (opts?.isSuperAdmin || myAdminOrganizations.length > 0)
         ? [
             {
               title: "Org Admin",
               items: [
-                {
-                  key: "org-admin-select",
-                  label: activeOrganizationId
-                    ? "Change Organization"
-                    : "Select Organization",
-                  selectable: false,
-                  helper: activeOrganizationId
-                    ? "Switch to another organization admin console."
-                    : "Choose an organization to administer.",
-                  matchPaths: [],
-                  onSelect: () => navigate("/aqua-organizations?adminSelect=1"),
-                },
+                ...(opts?.isSuperAdmin
+                  ? [
+                      {
+                        key: "org-admin-select",
+                        label: activeOrganizationId
+                          ? "Change Organization"
+                          : "Select Organization",
+                        selectable: false,
+                        helper: activeOrganizationId
+                          ? "Switch to another organization admin console."
+                          : "Choose an organization to administer.",
+                        matchPaths: [],
+                        onSelect: () =>
+                          navigate("/aqua-organizations?adminSelect=1"),
+                      },
+                    ]
+                  : myAdminOrganizations.length > 1
+                    ? myAdminOrganizations.map((organization) => ({
+                        key: `org-admin-org-${organization.organizationId}`,
+
+                        label:
+                          organization.organizationAbbreviation ||
+                          organization.organizationName,
+
+                        helper: `${organization.role.replace(/_/g, " ")} access`,
+
+                        selectable: false,
+
+                        matchPaths: [
+                          `/organizations/${organization.organizationId}/admin`,
+                          `/organizations/${organization.organizationId}/admin/*`,
+                        ],
+
+                        onSelect: () =>
+                          navigate(
+                            `/organizations/${organization.organizationId}/admin`,
+                          ),
+                      }))
+                    : []),
 
                 ...(activeOrganizationId
                   ? [
