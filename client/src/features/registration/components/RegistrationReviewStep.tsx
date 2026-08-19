@@ -11,7 +11,6 @@ import {
 import type {
   RegistrationDraft,
   RegistrationEvent,
-  RegistrationRaceDay,
 } from "../types/registration.types";
 
 type RegistrationReviewStepProps = {
@@ -20,19 +19,13 @@ type RegistrationReviewStepProps = {
   onEditStep: (step: number) => void;
 };
 
-function formatCurrency(value: number) {
+function formatCurrency(cents: number, currency = "USD") {
   return new Intl.NumberFormat(undefined, {
     style: "currency",
-    currency: "USD",
+    currency,
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(value);
-}
-
-function formatRaceDays(days: RegistrationRaceDay[]) {
-  return days
-    .map((day) => day.charAt(0).toUpperCase() + day.slice(1))
-    .join(" & ");
+  }).format(Number(cents || 0) / 100);
 }
 
 function ReviewSection({
@@ -193,12 +186,14 @@ export default function RegistrationReviewStep({
                 </p>
 
                 <p className="mt-1 text-xs text-white/40">
-                  {formatRaceDays(selection.raceDays)}
+                  {selection.selectedEventDays
+                    .map((day) => day.label)
+                    .join(" & ")}
                 </p>
               </div>
 
               <p className="text-sm font-black text-white">
-                {formatCurrency(selection.price)}
+                {formatCurrency(selection.estimatedPriceCents, event.currency)}
               </p>
             </div>
           ))}
@@ -237,7 +232,7 @@ export default function RegistrationReviewStep({
 
         <p className="mt-2 text-sm leading-6 text-white/45">
           {draft.paymentMethod === "online"
-            ? "The demo will simulate a successful card payment and confirm the registration."
+            ? "After submitting, you will continue to secure Stripe Checkout to complete payment."
             : "The registration will remain pending until the organization confirms the cash payment."}
         </p>
       </ReviewSection>
@@ -250,16 +245,36 @@ export default function RegistrationReviewStep({
             </p>
 
             <p className="mt-2 text-3xl font-black text-white">
-              {formatCurrency(draft.pricing.total)}
+              {formatCurrency(draft.pricing.totalCents, draft.pricing.currency)}
             </p>
 
             <p className="mt-2 text-xs text-white/40">{event.name}</p>
           </div>
 
           <div className="text-left text-xs leading-6 text-white/45 sm:text-right">
-            <p>Class subtotal: {formatCurrency(draft.pricing.classSubtotal)}</p>
-            <p>Platform fee: {formatCurrency(draft.pricing.platformFee)}</p>
-            <p>Processing fee: {formatCurrency(draft.pricing.processingFee)}</p>
+            <p>
+              Class subtotal:{" "}
+              {formatCurrency(
+                draft.pricing.classSubtotalCents,
+                draft.pricing.currency,
+              )}
+            </p>
+
+            <p>
+              Platform fee:{" "}
+              {formatCurrency(
+                draft.pricing.platformFeeCents,
+                draft.pricing.currency,
+              )}
+            </p>
+
+            <p>
+              Processing fee:{" "}
+              {formatCurrency(
+                draft.pricing.processingFeeCents,
+                draft.pricing.currency,
+              )}
+            </p>
           </div>
         </div>
       </section>

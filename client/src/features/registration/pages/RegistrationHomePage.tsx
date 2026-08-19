@@ -11,26 +11,21 @@ import {
   Trophy,
   Users,
 } from "lucide-react";
+
 import RegistrationLayout from "../components/RegistrationLayout";
 import RegistrationEventCard from "../components/RegistrationEventCard";
-import {
-  getRegistrationEvents,
-  getRegistrationOrganizations,
-} from "../services/registrationDemoService";
-import type {
-  RegistrationEvent,
-  RegistrationOrganization,
-} from "../types/registration.types";
+
+import { getRegistrationEvents } from "../services/registrationService";
+
+import type { RegistrationEvent } from "../types/registration.types";
 
 export default function RegistrationHomePage() {
   const [, navigate] = useLocation();
 
   const [events, setEvents] = useState<RegistrationEvent[]>([]);
-  const [organizations, setOrganizations] = useState<
-    RegistrationOrganization[]
-  >([]);
 
   const [loading, setLoading] = useState(true);
+
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -41,17 +36,16 @@ export default function RegistrationHomePage() {
         setLoading(true);
         setError(null);
 
-        const [eventData, organizationData] = await Promise.all([
-          getRegistrationEvents(),
-          getRegistrationOrganizations(),
-        ]);
+        const response = await getRegistrationEvents({
+          page: 1,
+          limit: 100,
+        });
 
         if (cancelled) {
           return;
         }
 
-        setEvents(eventData);
-        setOrganizations(organizationData);
+        setEvents(response.items);
       } catch (err: any) {
         if (!cancelled) {
           setError(
@@ -92,14 +86,26 @@ export default function RegistrationHomePage() {
     .slice(0, 3);
 
   const totalConfirmedRacers = events.reduce(
-    (total, event) => total + event.confirmedRacerCount,
+    (total, event) => total + Number(event.confirmedRacerCount || 0),
     0,
   );
 
   const totalClasses = events.reduce(
-    (total, event) => total + event.classes.length,
+    (total, event) => total + Number(event.classCount || 0),
     0,
   );
+
+  /**
+   * Public event summaries already contain organization information.
+   *
+   * We can calculate the organization count from the real event data instead
+   * of continuing to depend on the demo organization service.
+   */
+  const organizationCount = useMemo(() => {
+    return new Set(
+      events.map((event) => event.organization?.id).filter(Boolean),
+    ).size;
+  }, [events]);
 
   return (
     <RegistrationLayout
@@ -139,12 +145,55 @@ export default function RegistrationHomePage() {
           </div>
         </div>
       ) : error ? (
-        <div className="rounded-[28px] border border-red-300/15 bg-red-950/20 p-6 text-center">
-          <h2 className="text-xl font-black uppercase text-white">
-            Registration unavailable
+        <div className="rounded-[28px] border border-amber-300/15 bg-amber-950/10 p-6 text-center sm:p-8">
+          <CalendarDays className="mx-auto h-8 w-8 text-amber-200/70" />
+
+          <h2 className="mt-4 text-xl font-black uppercase text-white">
+            Registration is temporarily unavailable
           </h2>
 
-          <p className="mt-2 text-sm text-red-100/70">{error}</p>
+          <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-white/50">
+            We couldn&apos;t load race registration information right now.
+            Please try again shortly.
+          </p>
+
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="mt-5 inline-flex min-h-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] px-5 text-[10px] font-black uppercase tracking-[0.14em] text-white/70 transition hover:border-cyan-300/20 hover:bg-cyan-300/10 hover:text-white"
+          >
+            Try Again
+          </button>
+        </div>
+      ) : openEvents.length === 0 ? (
+        <div className="rounded-[28px] border border-cyan-300/10 bg-[#07111F]/75 px-6 py-12 text-center sm:px-8 sm:py-16">
+          <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl border border-cyan-300/15 bg-cyan-300/10 text-cyan-200">
+            <CalendarDays className="h-6 w-6" />
+          </div>
+
+          <div className="mt-5 text-[9px] font-black uppercase tracking-[0.18em] text-cyan-200/60">
+            Race Registration
+          </div>
+
+          <h2 className="mt-2 text-2xl font-black uppercase tracking-[-0.035em] text-white sm:text-3xl">
+            No registrations currently open
+          </h2>
+
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-slate-400">
+            There are no upcoming race events currently accepting registration.
+            Check back soon as organizations publish new events.
+          </p>
+
+          <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+            <button
+              type="button"
+              onClick={() => navigate("/registration/organizations")}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-5 text-[10px] font-black uppercase tracking-[0.14em] text-white/70 transition hover:border-cyan-300/20 hover:bg-cyan-300/10 hover:text-white"
+            >
+              <Building2 className="h-4 w-4" />
+              Browse Organizations
+            </button>
+          </div>
         </div>
       ) : (
         <div className="space-y-6">
@@ -189,7 +238,7 @@ export default function RegistrationHomePage() {
               <Building2 className="h-5 w-5 text-[#FFB199]" />
 
               <div className="mt-4 text-2xl font-black text-white">
-                {organizations.length}
+                {organizationCount}
               </div>
 
               <div className="mt-1 text-[9px] font-black uppercase tracking-[0.14em] text-white/40">

@@ -1,8 +1,6 @@
 import { CalendarDays, CheckCircle2, MapPin, ShipWheel } from "lucide-react";
-import type {
-  PublicRegisteredRacer,
-  RegistrationRaceDay,
-} from "../types/registration.types";
+
+import type { PublicRegisteredRacer } from "../types/registration.types";
 
 type PublicRegisteredRacerCardProps = {
   registration: PublicRegisteredRacer;
@@ -18,10 +16,10 @@ function getInitials(name: string) {
     .toUpperCase();
 }
 
-function formatRaceDays(days: RegistrationRaceDay[]) {
-  return days
-    .map((day) => day.charAt(0).toUpperCase() + day.slice(1))
-    .join(" & ");
+function getStatusLabel(status: string) {
+  return status
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (value) => value.toUpperCase());
 }
 
 export default function PublicRegisteredRacerCard({
@@ -30,9 +28,9 @@ export default function PublicRegisteredRacerCard({
   const { racer, selectedClasses } = registration;
 
   return (
-    <article className="rounded-[24px] border border-cyan-300/10 bg-[#07111F]/82 p-4 shadow-[0_18px_55px_rgba(0,0,0,0.2)] transition hover:border-cyan-300/22 sm:p-5">
+    <article className="overflow-hidden rounded-[24px] border border-white/10 bg-[#07111F]/82 p-4 sm:p-5">
       <div className="flex items-start gap-4">
-        <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full border border-cyan-300/15 bg-cyan-300/10">
+        <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full border border-cyan-300/15 bg-cyan-300/10">
           {racer.imageUrl ? (
             <img
               src={racer.imageUrl}
@@ -54,7 +52,8 @@ export default function PublicRegisteredRacerCard({
 
             <span className="inline-flex items-center gap-1 rounded-full border border-emerald-300/20 bg-emerald-300/10 px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.1em] text-emerald-200">
               <CheckCircle2 className="h-3 w-3" />
-              Confirmed
+
+              {getStatusLabel(registration.status)}
             </span>
           </div>
 
@@ -96,9 +95,16 @@ export default function PublicRegisteredRacerCard({
               {selection.className}
             </p>
 
-            <div className="mt-2 flex items-center gap-1.5 text-[10px] text-white/40">
-              <CalendarDays className="h-3.5 w-3.5 text-cyan-200" />
-              {formatRaceDays(selection.raceDays)}
+            <div className="mt-2 flex items-start gap-1.5 text-[10px] text-white/40">
+              <CalendarDays className="mt-0.5 h-3.5 w-3.5 shrink-0 text-cyan-200" />
+
+              <span>
+                {selection.selectedEventDays.length
+                  ? selection.selectedEventDays
+                      .map((day) => day.label)
+                      .join(" & ")
+                  : "Event day not listed"}
+              </span>
             </div>
           </div>
         ))}
@@ -107,6 +113,7 @@ export default function PublicRegisteredRacerCard({
       {racer.teamName ? (
         <div className="mt-4 flex items-center gap-2 text-xs text-white/40">
           <ShipWheel className="h-3.5 w-3.5 text-[#FFB199]" />
+
           <span className="truncate">{racer.teamName}</span>
         </div>
       ) : null}

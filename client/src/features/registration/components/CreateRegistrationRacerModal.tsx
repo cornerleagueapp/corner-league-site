@@ -1,15 +1,21 @@
 import { useEffect, useMemo, useState } from "react";
+
 import { Loader2, MapPin, UserPlus, X } from "lucide-react";
+
 import { useToast } from "@/hooks/use-toast";
-import { createDemoRegistrationRacer } from "../services/registrationDemoService";
+
+import { createRegistrationRacer } from "../services/registrationRacerService";
+
 import type {
   NewRegistrationRacerInput,
   RegistrationRacer,
 } from "../types/registration.types";
 
-type CreateDemoRacerModalProps = {
+type CreateRegistrationRacerModalProps = {
   open: boolean;
+
   onClose: () => void;
+
   onCreated: (racer: RegistrationRacer) => void;
 };
 
@@ -21,19 +27,25 @@ const labelClassName =
 
 const EMPTY_FORM: NewRegistrationRacerInput = {
   firstName: "",
+
   lastName: "",
+
   nickname: "",
+
   city: "",
+
   stateCode: "",
+
   countryCode: "US",
+
   raceNumber: "",
 };
 
-export default function CreateDemoRacerModal({
+export default function CreateRegistrationRacerModal({
   open,
   onClose,
   onCreated,
-}: CreateDemoRacerModalProps) {
+}: CreateRegistrationRacerModalProps) {
   const { toast } = useToast();
 
   const [form, setForm] = useState<NewRegistrationRacerInput>(EMPTY_FORM);
@@ -48,6 +60,7 @@ export default function CreateDemoRacerModal({
     setForm(EMPTY_FORM);
 
     const previousOverflow = document.body.style.overflow;
+
     document.body.style.overflow = "hidden";
 
     return () => {
@@ -78,14 +91,19 @@ export default function CreateDemoRacerModal({
       form.firstName.trim().length > 0 &&
       form.lastName.trim().length > 0 &&
       form.city.trim().length > 0 &&
-      form.countryCode.trim().length > 0 &&
+      form.countryCode.trim().length === 2 &&
       !submitting
     );
   }, [form.firstName, form.lastName, form.city, form.countryCode, submitting]);
 
-  function updateField(field: keyof NewRegistrationRacerInput, value: string) {
+  function updateField(
+    field: keyof NewRegistrationRacerInput,
+
+    value: string,
+  ) {
     setForm((current) => ({
       ...current,
+
       [field]: value,
     }));
   }
@@ -96,7 +114,10 @@ export default function CreateDemoRacerModal({
     if (!canSubmit) {
       toast({
         title: "Missing racer information",
-        description: "First name, last name, city, and country are required.",
+
+        description:
+          "First name, last name, city, and a two-letter country code are required.",
+
         variant: "destructive",
       });
 
@@ -106,20 +127,35 @@ export default function CreateDemoRacerModal({
     try {
       setSubmitting(true);
 
-      const racer = await createDemoRegistrationRacer(form);
+      const racer = await createRegistrationRacer({
+        firstName: form.firstName,
+
+        lastName: form.lastName,
+
+        nickname: form.nickname,
+
+        city: form.city,
+
+        stateCode: form.stateCode,
+
+        countryCode: form.countryCode,
+      });
 
       onCreated(racer);
 
       toast({
         title: "Racer created",
-        description: `${racer.name} has been selected for this demo registration.`,
+
+        description: `${racer.name} has been created in Corner League and selected for this registration.`,
       });
 
       onClose();
     } catch (error: any) {
       toast({
         title: "Unable to create racer",
+
         description: error?.message || "Please review the racer information.",
+
         variant: "destructive",
       });
     } finally {
@@ -154,16 +190,16 @@ export default function CreateDemoRacerModal({
 
               <div>
                 <div className="text-[9px] font-black uppercase tracking-[0.18em] text-cyan-200/60">
-                  Demo Racer Record
+                  Corner League Racer
                 </div>
 
                 <h2 className="mt-1 text-xl font-black uppercase tracking-[-0.025em] text-white sm:text-2xl">
                   Create New Racer
                 </h2>
 
-                <p className="mt-2 text-xs leading-5 text-white/45">
-                  This creates a local demo record and does not update the
-                  production database.
+                <p className="mt-2 max-w-lg text-xs leading-5 text-white/45">
+                  Create a real Corner League racer profile and immediately
+                  select it for this registration.
                 </p>
               </div>
             </div>
@@ -172,7 +208,7 @@ export default function CreateDemoRacerModal({
               type="button"
               disabled={submitting}
               onClick={onClose}
-              className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/10 bg-white/[0.05] text-white/60 transition hover:bg-white/10 hover:text-white"
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/10 bg-white/[0.05] text-white/60 transition hover:bg-white/10 hover:text-white disabled:cursor-wait disabled:opacity-50"
               aria-label="Close"
             >
               <X className="h-4 w-4" />
@@ -211,34 +247,16 @@ export default function CreateDemoRacerModal({
             </label>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label>
-              <span className={labelClassName}>Nickname</span>
+          <label>
+            <span className={labelClassName}>Nickname</span>
 
-              <input
-                value={form.nickname || ""}
-                onChange={(event) =>
-                  updateField("nickname", event.target.value)
-                }
-                className={inputClassName}
-                placeholder="Optional"
-              />
-            </label>
-
-            <label>
-              <span className={labelClassName}>Race number</span>
-
-              <input
-                value={form.raceNumber || ""}
-                onChange={(event) =>
-                  updateField("raceNumber", event.target.value)
-                }
-                inputMode="numeric"
-                className={inputClassName}
-                placeholder="Optional"
-              />
-            </label>
-          </div>
+            <input
+              value={form.nickname || ""}
+              onChange={(event) => updateField("nickname", event.target.value)}
+              className={inputClassName}
+              placeholder="Optional"
+            />
+          </label>
 
           <div className="rounded-[22px] border border-white/10 bg-white/[0.025] p-4 sm:p-5">
             <div className="mb-4 flex items-center gap-2">
@@ -284,7 +302,10 @@ export default function CreateDemoRacerModal({
                   onChange={(event) =>
                     updateField(
                       "countryCode",
-                      event.target.value.toUpperCase().slice(0, 3),
+                      event.target.value
+                        .toUpperCase()
+                        .replace(/[^A-Z]/g, "")
+                        .slice(0, 2),
                     )
                   }
                   autoComplete="country"
@@ -293,10 +314,19 @@ export default function CreateDemoRacerModal({
                 />
 
                 <p className="mt-2 text-[11px] leading-5 text-white/35">
-                  Use a two-letter country code such as US, CA, GB, AU, or JP.
+                  Use the standard two-letter country code, such as US, CA, GB,
+                  AU, or JP.
                 </p>
               </label>
             </div>
+          </div>
+
+          <div className="rounded-[18px] border border-cyan-300/10 bg-cyan-300/[0.04] p-4">
+            <p className="text-xs leading-5 text-white/45">
+              Racer identity information is stored on the Corner League athlete
+              profile. Race-specific information such as watercraft and class
+              selections is collected separately during this registration.
+            </p>
           </div>
 
           <div className="sticky bottom-0 -mx-5 -mb-5 border-t border-white/10 bg-[#07111F]/95 p-4 backdrop-blur-xl sm:-mx-6 sm:-mb-6 sm:flex sm:justify-end sm:gap-3 sm:p-5">
@@ -304,7 +334,7 @@ export default function CreateDemoRacerModal({
               type="button"
               disabled={submitting}
               onClick={onClose}
-              className="hidden min-h-12 rounded-full border border-white/10 bg-white/[0.05] px-5 text-[10px] font-black uppercase tracking-[0.14em] text-white/65 transition hover:bg-white/10 hover:text-white sm:inline-flex sm:items-center sm:justify-center"
+              className="hidden min-h-12 rounded-full border border-white/10 bg-white/[0.05] px-5 text-[10px] font-black uppercase tracking-[0.14em] text-white/65 transition hover:bg-white/10 hover:text-white disabled:opacity-50 sm:inline-flex sm:items-center sm:justify-center"
             >
               Cancel
             </button>

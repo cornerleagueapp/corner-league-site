@@ -25,7 +25,6 @@ import {
 import Home from "@/pages/landing/home";
 import ScoresPage from "@/pages/scores";
 import ScoresLandingPage from "@/pages/landing/scores-landing";
-
 import Clubs from "@/pages/clubs/clubs";
 import CreateClub from "@/pages/clubs/create-club";
 import ClubSettings from "./pages/clubs/clubSettings";
@@ -49,6 +48,15 @@ import AdminCreateRacerPage from "./pages/admin/admin-create-racer";
 import AquaOrganizationsPage from "./pages/organizations/aqua-organizations";
 import AdminCreateOrganizationPage from "./pages/organizations/admin-create-organization";
 import AquaOrganizationDetailsPage from "./pages/organizations/aqua-organization-details";
+import OrganizationAdminOverviewPage from "@/features/organization-admin/pages/OrganizationAdminOverviewPage";
+import OrganizationRegistrationsPage from "@/features/organization-admin/pages/OrganizationRegistrationsPage";
+import OrganizationRaceDaysPage from "@/features/organization-admin/pages/OrganizationRaceDaysPage";
+import OrganizationRaceSchedulePage from "@/features/organization-admin/pages/OrganizationRaceSchedulePage";
+import PublicRaceSchedulePage from "@/features/race-schedule-public/pages/PublicRaceSchedulePage";
+import OrganizationPaymentsPage from "@/features/organization-admin/pages/OrganizationPaymentsPage";
+import OrganizationResultsPage from "@/features/organization-admin/pages/OrganizationResultsPage";
+import { OrganizationMembersPage } from "@/features/organization-admin/pages/OrganizationMembersPage";
+import OrganizationSettingsPage from "@/features/organization-admin/pages/OrganizationSettingsPage";
 import AdminRankingsPage from "./pages/admin/admin-rankings";
 import AdminAthleteClaimsPage from "./pages/admin/admin-athlete-claims";
 import OrgEventDetailsPage from "./pages/organizations/org-event-details";
@@ -238,6 +246,78 @@ function PrivateRouter() {
             {() => <SuperAdminRoute component={ClassMatchManagePage} />}
           </Route>
 
+          <Route path="/organizations/:organizationId/admin/events/create">
+            {(params) => (
+              <CreateEventPage organizationId={params.organizationId} />
+            )}
+          </Route>
+
+          <Route path="/organizations/:organizationId/admin/events">
+            {(params) => (
+              <EventListPage organizationId={params.organizationId} />
+            )}
+          </Route>
+
+          <Route path="/organizations/:organizationId/admin/registrations">
+            {(params) => (
+              <OrganizationRegistrationsPage
+                organizationId={params.organizationId}
+              />
+            )}
+          </Route>
+
+          <Route path="/organizations/:organizationId/admin/race-days">
+            {(params) => (
+              <OrganizationRaceDaysPage
+                organizationId={params.organizationId}
+              />
+            )}
+          </Route>
+
+          <Route path="/organizations/:organizationId/admin/race-schedule">
+            {(params) => (
+              <OrganizationRaceSchedulePage
+                organizationId={params.organizationId}
+              />
+            )}
+          </Route>
+
+          <Route path="/organizations/:organizationId/admin/payments">
+            {(params) => (
+              <OrganizationPaymentsPage
+                organizationId={params.organizationId}
+              />
+            )}
+          </Route>
+
+          <Route path="/organizations/:organizationId/admin/results">
+            {(params) => (
+              <OrganizationResultsPage organizationId={params.organizationId} />
+            )}
+          </Route>
+
+          <Route path="/organizations/:organizationId/admin/members">
+            {(params) => (
+              <OrganizationMembersPage organizationId={params.organizationId} />
+            )}
+          </Route>
+
+          <Route path="/organizations/:organizationId/admin/settings">
+            {(params) => (
+              <OrganizationSettingsPage
+                organizationId={params.organizationId}
+              />
+            )}
+          </Route>
+
+          <Route path="/organizations/:organizationId/admin">
+            {(params) => (
+              <OrganizationAdminOverviewPage
+                organizationId={params.organizationId}
+              />
+            )}
+          </Route>
+
           <Route path="/registration/events/:eventSlug/register">
             {(params) => <RegistrationFlowPage eventSlug={params.eventSlug} />}
           </Route>
@@ -314,6 +394,16 @@ function Router() {
           <AppShell guestMode>
             <ErrorBoundary>
               <RegistrationEventPage eventSlug={params.eventSlug} />
+            </ErrorBoundary>
+          </AppShell>
+        )}
+      </Route>
+
+      <Route path="/race-schedule/day/:dayId">
+        {(params) => (
+          <AppShell guestMode>
+            <ErrorBoundary>
+              <PublicRaceSchedulePage dayId={params.dayId} />
             </ErrorBoundary>
           </AppShell>
         )}

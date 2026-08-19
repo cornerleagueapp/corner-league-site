@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import RegistrationLayout from "../components/RegistrationLayout";
 import RegistrationEventCard from "../components/RegistrationEventCard";
-import { getRegistrationEvents } from "../services/registrationDemoService";
+import { getRegistrationEvents } from "../services/registrationService";
 import type {
   RegistrationEvent,
   RegistrationEventStatus,
@@ -35,13 +35,11 @@ function includesSearch(event: RegistrationEvent, query: string) {
 
   return [
     event.name,
-    event.organizationName,
-    event.organizationAbbreviation,
-    event.city,
-    event.stateCode,
-    event.countryCode,
+    event.organization?.name,
+    event.organization?.abbreviation,
+    event.location,
     event.formattedLocation,
-    ...event.classes.map((eventClass) => eventClass.name),
+    event.sport,
   ].some((value) =>
     String(value ?? "")
       .toLowerCase()
@@ -65,10 +63,13 @@ export default function RegistrationEventsPage() {
         setLoading(true);
         setError(null);
 
-        const result = await getRegistrationEvents();
+        const result = await getRegistrationEvents({
+          page: 1,
+          limit: 100,
+        });
 
         if (!cancelled) {
-          setEvents(result);
+          setEvents(result.items);
         }
       } catch (err: any) {
         if (!cancelled) {

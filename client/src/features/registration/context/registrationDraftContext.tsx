@@ -7,7 +7,6 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { calculateRegistrationPricing } from "../services/registrationDemoService";
 import {
   clearRegistrationDraft,
   loadRegistrationDraft,
@@ -39,6 +38,28 @@ const EMPTY_WATERCRAFT: RegistrationWatercraft = {
   useForAllClasses: true,
 };
 
+function calculateEstimatedPricing(
+  event: RegistrationEvent,
+  selectedClasses: RegistrationClassSelection[],
+) {
+  const classSubtotalCents = selectedClasses.reduce(
+    (total, selection) => total + Number(selection.estimatedPriceCents || 0),
+    0,
+  );
+
+  return {
+    classSubtotalCents,
+
+    platformFeeCents: 0,
+
+    processingFeeCents: 0,
+
+    totalCents: classSubtotalCents,
+
+    currency: event.currency || "USD",
+  };
+}
+
 type RegistrationDraftContextValue = {
   event: RegistrationEvent;
   draft: RegistrationDraft;
@@ -60,6 +81,10 @@ type RegistrationDraftContextValue = {
   setRegisteredByUserId: (userId: string | null) => void;
 
   resetDraft: () => void;
+
+  setTermsAccepted: (accepted: boolean) => void;
+
+  setCouponCode: (couponCode: string) => void;
 
   hasSelectedClass: (classId: string) => boolean;
 };
@@ -89,7 +114,11 @@ function createEmptyDraft(event: RegistrationEvent): RegistrationDraft {
 
     paymentMethod: null,
 
-    pricing: calculateRegistrationPricing(event, []),
+    pricing: calculateEstimatedPricing(event, []),
+
+    termsAccepted: false,
+
+    couponCode: "",
 
     currentStep: 1,
 
@@ -124,10 +153,7 @@ function normalizeLoadedDraft(
       ...(draft.watercraft ?? {}),
     },
 
-    pricing: calculateRegistrationPricing(
-      event,
-      selectedClasses.map((selection) => selection.price),
-    ),
+    pricing: calculateEstimatedPricing(event, selectedClasses),
 
     updatedAt: new Date().toISOString(),
   };
@@ -223,10 +249,7 @@ export function RegistrationDraftProvider({
       updateDraft((current) => ({
         ...current,
         selectedClasses: selections,
-        pricing: calculateRegistrationPricing(
-          event,
-          selections.map((selection) => selection.price),
-        ),
+        pricing: calculateEstimatedPricing(event, selections),
       }));
     },
     [event, updateDraft],
@@ -248,10 +271,7 @@ export function RegistrationDraftProvider({
         return {
           ...current,
           selectedClasses,
-          pricing: calculateRegistrationPricing(
-            event,
-            selectedClasses.map((item) => item.price),
-          ),
+          pricing: calculateEstimatedPricing(event, selectedClasses),
         };
       });
     },
@@ -276,6 +296,26 @@ export function RegistrationDraftProvider({
       updateDraft((current) => ({
         ...current,
         paymentMethod,
+      }));
+    },
+    [updateDraft],
+  );
+
+  const setTermsAccepted = useCallback(
+    (termsAccepted: boolean) => {
+      updateDraft((current) => ({
+        ...current,
+        termsAccepted,
+      }));
+    },
+    [updateDraft],
+  );
+
+  const setCouponCode = useCallback(
+    (couponCode: string) => {
+      updateDraft((current) => ({
+        ...current,
+        couponCode,
       }));
     },
     [updateDraft],
@@ -310,7 +350,6 @@ export function RegistrationDraftProvider({
     () => ({
       event,
       draft,
-
       setCurrentStep,
       setRacer,
       updateContact,
@@ -321,6 +360,8 @@ export function RegistrationDraftProvider({
       setRegisteredByUserId,
       resetDraft,
       hasSelectedClass,
+      setTermsAccepted,
+      setCouponCode,
     }),
     [
       event,
@@ -335,6 +376,8 @@ export function RegistrationDraftProvider({
       setRegisteredByUserId,
       resetDraft,
       hasSelectedClass,
+      setTermsAccepted,
+      setCouponCode,
     ],
   );
 

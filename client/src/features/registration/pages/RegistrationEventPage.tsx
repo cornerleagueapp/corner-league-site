@@ -17,16 +17,17 @@ import {
 import RegistrationLayout from "../components/RegistrationLayout";
 import RegistrationClassCard from "../components/RegistrationClassCard";
 import RegistrationShareButton from "../components/RegistrationShareButton";
-import {
-  getPublicRegisteredRacers,
-  getRegistrationEventBySlug,
-} from "../services/registrationDemoService";
-import type {
-  PublicRegisteredRacer,
-  RegistrationEvent,
-} from "../types/registration.types";
 import EventRegistrationProgress from "../components/EventRegistrationProgress";
 import RecentRegistrations from "../components/RecentRegistrations";
+import {
+  getPublicRegistrationEntries,
+  getRegistrationEventBySlug,
+} from "../services/registrationService";
+import type {
+  PublicRegisteredRacer,
+  RegistrationClassSelection,
+  RegistrationEvent,
+} from "../types/registration.types";
 
 type RegistrationEventPageProps = {
   eventSlug: string;
@@ -49,7 +50,11 @@ function formatDateRange(startDate: string, endDate: string) {
   })}`;
 }
 
-function formatDeadline(date: string) {
+function formatDeadline(date?: string | null) {
+  if (!date) {
+    return "No scheduled deadline";
+  }
+
   return new Date(date).toLocaleString(undefined, {
     month: "long",
     day: "numeric",
@@ -59,22 +64,17 @@ function formatDeadline(date: string) {
   });
 }
 
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat(undefined, {
-    style: "currency",
-    currency: "USD",
-  }).format(value);
-}
-
 export default function RegistrationEventPage({
   eventSlug,
 }: RegistrationEventPageProps) {
   const [, navigate] = useLocation();
 
   const [event, setEvent] = useState<RegistrationEvent | null>(null);
+
   const [racers, setRacers] = useState<PublicRegisteredRacer[]>([]);
 
   const [loading, setLoading] = useState(true);
+
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -85,20 +85,99 @@ export default function RegistrationEventPage({
         setLoading(true);
         setError(null);
 
-        const eventData = await getRegistrationEventBySlug(eventSlug);
+        const [eventData, entriesResponse] = await Promise.all([
+          getRegistrationEventBySlug(eventSlug),
 
-        if (!eventData) {
-          throw new Error("This race event could not be found.");
-        }
-
-        const racerData = await getPublicRegisteredRacers(eventData.id);
+          getPublicRegistrationEntries(eventSlug, {
+            page: 1,
+            limit: 100,
+          }),
+        ]);
 
         if (cancelled) {
           return;
         }
 
+        /**
+         * Public entries come from the backend one class-entry at a time.
+         *
+         * The existing frontend cards expect one racer registration with
+         * multiple selected classes, so group entries by registration ID.
+         */
+        const grouped = new Map<string, PublicRegisteredRacer>();
+
+        for (const entry of entriesResponse.items) {
+          const selection: RegistrationClassSelection = {
+            classId: entry.classEntry.eventClassId,
+
+            className: entry.classEntry.className,
+
+            selectedEventDayIds: entry.classEntry.selectedDays.map(
+              (day) => day.id,
+            ),
+
+            selectedEventDays: entry.classEntry.selectedDays.map(
+              (day, index) => ({
+                id: day.id,
+                key: day.key,
+                label: day.label,
+                date: day.date,
+
+                startsAt: null,
+
+                endsAt: null,
+
+                isRegistrationEnabled: true,
+
+                displayOrder: index,
+              }),
+            ),
+
+            estimatedPriceCents: 0,
+          };
+
+          const existing = grouped.get(entry.registrationId);
+
+          if (existing) {
+            existing.selectedClasses.push(selection);
+
+            continue;
+          }
+
+          grouped.set(entry.registrationId, {
+            registrationId: entry.registrationId,
+
+            racer: {
+              id: entry.racer.id,
+
+              name: entry.racer.name,
+
+              nickname: entry.racer.nickname,
+
+              imageUrl: entry.racer.imageUrl,
+
+              formattedLocation: entry.racer.formattedLocation,
+
+              city: entry.racer.city,
+
+              stateCode: entry.racer.stateCode,
+
+              countryCode: entry.racer.countryCode,
+
+              teamName: entry.racer.teamName,
+            },
+
+            selectedClasses: [selection],
+
+            status: entry.registrationStatus,
+
+            registeredAt: entry.registeredAt,
+          });
+        }
+
         setEvent(eventData);
-        setRacers(racerData);
+
+        setRacers([...grouped.values()]);
       } catch (err: any) {
         if (!cancelled) {
           setError(err?.message || "Unable to load race registration.");
@@ -163,7 +242,11 @@ export default function RegistrationEventPage({
 
   return (
     <RegistrationLayout
-      eyebrow={event.organizationAbbreviation || "Race Event"}
+      eyebrow={
+        event.organization?.abbreviation ||
+        event.organization?.name ||
+        "Race Event"
+      }
       title={event.name}
       description={event.description}
       backHref="/registration/events"
@@ -217,7 +300,7 @@ export default function RegistrationEventPage({
             </p>
 
             <p className="mt-2 text-sm font-bold leading-6 text-white">
-              {event.formattedLocation}
+              {event.formattedLocation || "Location to be announced"}
             </p>
           </div>
 
@@ -231,7 +314,7 @@ export default function RegistrationEventPage({
             </p>
 
             <p className="mt-2 text-sm font-bold leading-6 text-white">
-              {formatDeadline(event.registrationCloseDate)}
+              {formatDeadline(event.registrationClosesAt)}
             </p>
           </div>
 
@@ -245,7 +328,7 @@ export default function RegistrationEventPage({
             </p>
 
             <p className="mt-2 text-3xl font-black text-white">
-              {racers.length}
+              {event.confirmedRacerCount}
             </p>
           </div>
         </section>
@@ -265,7 +348,7 @@ export default function RegistrationEventPage({
               </h2>
 
               <p className="mt-2 text-sm leading-6 text-slate-400">
-                Final class selection and race-day choices will be completed
+                Final class selection and event-day choices will be completed
                 during registration.
               </p>
             </div>
@@ -284,6 +367,7 @@ export default function RegistrationEventPage({
 
           <aside className="space-y-4">
             <RecentRegistrations registrations={racers} />
+
             <div className="rounded-[26px] border border-cyan-300/15 bg-[#07111F]/92 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
               <div className="flex items-center gap-3">
                 <div className="grid h-11 w-11 place-items-center rounded-2xl border border-cyan-300/15 bg-cyan-300/10 text-cyan-200">
@@ -294,7 +378,10 @@ export default function RegistrationEventPage({
                   <h3 className="font-black uppercase text-white">
                     Registration payment
                   </h3>
-                  <p className="text-xs text-white/40">Demo payment options</p>
+
+                  <p className="text-xs text-white/40">
+                    Available payment methods
+                  </p>
                 </div>
               </div>
 
@@ -302,13 +389,14 @@ export default function RegistrationEventPage({
                 {event.allowOnlinePayment ? (
                   <div className="flex items-start gap-3 rounded-[18px] border border-white/10 bg-white/[0.035] p-3">
                     <WalletCards className="mt-0.5 h-4 w-4 shrink-0 text-cyan-200" />
+
                     <div>
                       <p className="text-sm font-bold text-white">
                         Online card payment
                       </p>
+
                       <p className="mt-1 text-xs leading-5 text-white/45">
-                        Secure payment will be connected to Square during the
-                        production integration.
+                        Secure online checkout is processed through Stripe.
                       </p>
                     </div>
                   </div>
@@ -317,10 +405,12 @@ export default function RegistrationEventPage({
                 {event.allowCashPayment ? (
                   <div className="flex items-start gap-3 rounded-[18px] border border-white/10 bg-white/[0.035] p-3">
                     <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#FFB199]" />
+
                     <div>
                       <p className="text-sm font-bold text-white">
                         Pay cash in person
                       </p>
+
                       <p className="mt-1 text-xs leading-5 text-white/45">
                         Cash entries remain pending until confirmed by the
                         organization.
@@ -328,18 +418,23 @@ export default function RegistrationEventPage({
                     </div>
                   </div>
                 ) : null}
-              </div>
 
-              <div className="mt-5 border-t border-white/10 pt-5">
-                <div className="flex justify-between text-sm text-white/55">
-                  <span>Corner League fee</span>
-                  <span>{formatCurrency(event.platformFee)}</span>
-                </div>
+                {event.allowManualPayment ? (
+                  <div className="flex items-start gap-3 rounded-[18px] border border-white/10 bg-white/[0.035] p-3">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-200" />
 
-                <div className="mt-2 flex justify-between text-sm text-white/55">
-                  <span>Demo processing fee</span>
-                  <span>{formatCurrency(event.processingFee)}</span>
-                </div>
+                    <div>
+                      <p className="text-sm font-bold text-white">
+                        Organizer-managed payment
+                      </p>
+
+                      <p className="mt-1 text-xs leading-5 text-white/45">
+                        Additional organizer-approved payment options may be
+                        available.
+                      </p>
+                    </div>
+                  </div>
+                ) : null}
               </div>
 
               <button
@@ -353,6 +448,7 @@ export default function RegistrationEventPage({
                 {registrationOpen
                   ? "Begin Registration"
                   : "Registration Not Open"}
+
                 <ArrowRight className="h-4 w-4" />
               </button>
             </div>
@@ -365,8 +461,9 @@ export default function RegistrationEventPage({
                   <p className="text-[9px] font-black uppercase tracking-[0.14em] text-white/35">
                     Hosted by
                   </p>
+
                   <p className="mt-1 text-sm font-black text-white">
-                    {event.organizationName}
+                    {event.organization.name}
                   </p>
                 </div>
               </div>
@@ -379,93 +476,96 @@ export default function RegistrationEventPage({
                 Refund and transfer policy
               </h3>
 
-              <p className="mt-2 text-xs leading-6 text-white/45">
-                {event.refundPolicy ||
+              <p className="mt-2 whitespace-pre-line text-xs leading-6 text-white/45">
+                {event.refundPolicyText ||
                   "Refund and class-transfer terms are controlled by the race organization."}
               </p>
             </div>
           </aside>
         </section>
 
-        <section className="rounded-[28px] border border-cyan-300/10 bg-[#07111F]/78 p-5 sm:p-6">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <div className="text-[9px] font-black uppercase tracking-[0.16em] text-cyan-200/55">
-                Public entry list
+        {event.showPublicEntryList !== false ? (
+          <section className="rounded-[28px] border border-cyan-300/10 bg-[#07111F]/78 p-5 sm:p-6">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <div className="text-[9px] font-black uppercase tracking-[0.16em] text-cyan-200/55">
+                  Public entry list
+                </div>
+
+                <h2 className="mt-2 text-2xl font-black uppercase tracking-[-0.035em] text-white">
+                  Confirmed racers
+                </h2>
+
+                <p className="mt-2 text-sm text-white/45">
+                  Registered entries approved for public display.
+                </p>
               </div>
 
-              <h2 className="mt-2 text-2xl font-black uppercase tracking-[-0.035em] text-white">
-                Confirmed racers
-              </h2>
-
-              <p className="mt-2 text-sm text-white/45">
-                Only confirmed entries are publicly displayed.
-              </p>
+              <button
+                type="button"
+                onClick={() =>
+                  navigate(`/registration/events/${event.slug}/racers`)
+                }
+                className="inline-flex items-center gap-2 self-start rounded-full border border-white/10 bg-white/[0.05] px-4 py-3 text-[9px] font-black uppercase tracking-[0.13em] text-white/70 transition hover:border-cyan-300/25 hover:bg-cyan-300/10 hover:text-white"
+              >
+                View Full Entry List
+                <ArrowRight className="h-4 w-4" />
+              </button>
             </div>
 
-            <button
-              type="button"
-              onClick={() =>
-                navigate(`/registration/events/${event.slug}/racers`)
-              }
-              className="inline-flex items-center gap-2 self-start rounded-full border border-white/10 bg-white/[0.05] px-4 py-3 text-[9px] font-black uppercase tracking-[0.13em] text-white/70 transition hover:border-cyan-300/25 hover:bg-cyan-300/10 hover:text-white"
-            >
-              View Full Entry List
-              <ArrowRight className="h-4 w-4" />
-            </button>
-          </div>
+            {visibleRacers.length === 0 ? (
+              <div className="mt-5 rounded-[22px] border border-dashed border-white/10 bg-black/15 px-5 py-10 text-center">
+                <Users className="mx-auto h-7 w-7 text-white/20" />
 
-          {visibleRacers.length === 0 ? (
-            <div className="mt-5 rounded-[22px] border border-dashed border-white/10 bg-black/15 px-5 py-10 text-center">
-              <Users className="mx-auto h-7 w-7 text-white/20" />
-              <p className="mt-3 text-sm text-white/45">
-                No confirmed registrations have been published yet.
-              </p>
-            </div>
-          ) : (
-            <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-              {visibleRacers.map((registration) => (
-                <div
-                  key={registration.registrationId}
-                  className="rounded-[20px] border border-white/10 bg-white/[0.035] p-4"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-cyan-300/15 bg-cyan-300/10 text-sm font-black text-cyan-200">
-                      {registration.racer.name
-                        .split(" ")
-                        .map((part) => part[0])
-                        .join("")
-                        .slice(0, 2)
-                        .toUpperCase()}
+                <p className="mt-3 text-sm text-white/45">
+                  No public registrations have been published yet.
+                </p>
+              </div>
+            ) : (
+              <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                {visibleRacers.map((registration) => (
+                  <div
+                    key={registration.registrationId}
+                    className="rounded-[20px] border border-white/10 bg-white/[0.035] p-4"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-cyan-300/15 bg-cyan-300/10 text-sm font-black text-cyan-200">
+                        {registration.racer.name
+                          .split(" ")
+                          .map((part) => part[0])
+                          .join("")
+                          .slice(0, 2)
+                          .toUpperCase()}
+                      </div>
+
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-black uppercase text-white">
+                          {registration.racer.name}
+                        </p>
+
+                        <p className="mt-1 truncate text-xs text-white/40">
+                          {registration.racer.formattedLocation ||
+                            "Location not listed"}
+                        </p>
+                      </div>
                     </div>
 
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-black uppercase text-white">
-                        {registration.racer.name}
-                      </p>
-
-                      <p className="mt-1 truncate text-xs text-white/40">
-                        {registration.racer.formattedLocation ||
-                          "Location not listed"}
-                      </p>
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {registration.selectedClasses.map((selection) => (
+                        <span
+                          key={selection.classId}
+                          className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.1em] text-white/60"
+                        >
+                          {selection.className}
+                        </span>
+                      ))}
                     </div>
                   </div>
-
-                  <div className="mt-3 flex flex-wrap gap-1.5">
-                    {registration.selectedClasses.map((selection) => (
-                      <span
-                        key={selection.classId}
-                        className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.1em] text-white/60"
-                      >
-                        {selection.className}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
+                ))}
+              </div>
+            )}
+          </section>
+        ) : null}
       </div>
     </RegistrationLayout>
   );

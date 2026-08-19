@@ -63,7 +63,7 @@ function toRacerLite(rec: any): RacerLite | null {
     const loc = firstNonEmpty(a?.origin, rec?.origin, rec?.city, rec?.country);
 
     return {
-      id: rec.id ?? a.id ?? rec.uuid,
+      id: a.id ?? rec.athleteId ?? rec.id ?? rec.uuid,
       racerName: name,
       racerImage: image ?? null,
       location: loc ?? null,

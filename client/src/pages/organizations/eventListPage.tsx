@@ -43,7 +43,12 @@ type SportEvent = {
 
 const PAGE_SIZE = 25;
 
-export default function EventListPage() {
+type EventListPageProps = {
+  organizationId?: string;
+};
+
+export default function EventListPage({ organizationId }: EventListPageProps) {
+  const isOrganizationScoped = Boolean(organizationId);
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [events, setEvents] = useState<SportEvent[]>([]);
@@ -68,10 +73,24 @@ export default function EventListPage() {
   async function load(pageToLoad = page) {
     setLoading(true);
     try {
-      const res = await apiFetch(
-        `/sport-event?page=${pageToLoad}&limit=${PAGE_SIZE}&sortBy=startDate&order=DESC${search.trim() ? `&search=${encodeURIComponent(search.trim())}` : ""}`,
-        { method: "GET" },
-      );
+      const params = new URLSearchParams({
+        page: String(pageToLoad),
+        limit: String(PAGE_SIZE),
+        sortBy: "startDate",
+        order: "DESC",
+      });
+
+      if (search.trim()) {
+        params.set("search", search.trim());
+      }
+
+      if (organizationId) {
+        params.set("organizerId", organizationId);
+      }
+
+      const res = await apiFetch(`/sport-event?${params.toString()}`, {
+        method: "GET",
+      });
       const json = await res.json();
 
       const list =
@@ -195,7 +214,10 @@ export default function EventListPage() {
               <div className="mb-4 flex flex-wrap items-center gap-2">
                 <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-cyan-200">
                   <span className="h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_18px_rgba(103,232,249,0.95)]" />
-                  Admin Events
+
+                  {isOrganizationScoped
+                    ? "Organization Events"
+                    : "Admin Events"}
                 </div>
 
                 <div className="inline-flex items-center rounded-full border border-[#FF6B35]/20 bg-[#FF6B35]/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-[#FFB199]">
@@ -211,8 +233,9 @@ export default function EventListPage() {
               </h1>
 
               <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
-                Search, edit, delete, and create jet ski racing events for the
-                Corner League platform.
+                {isOrganizationScoped
+                  ? "Search, create, edit, and manage events belonging to this organization."
+                  : "Search, edit, delete, and create events across the Corner League platform."}
               </p>
             </div>
 
@@ -221,7 +244,15 @@ export default function EventListPage() {
                 Total: {totalCount || events.length}
               </div>
 
-              <Link href="/events/create">
+              <Link
+                href={
+                  organizationId
+                    ? `/organizations/${encodeURIComponent(
+                        organizationId,
+                      )}/admin/events/create`
+                    : "/events/create"
+                }
+              >
                 <Button
                   className="h-12 w-full rounded-full bg-cyan-300 px-6 text-xs font-black uppercase tracking-[0.16em] text-[#06111d] shadow-[0_0_28px_rgba(34,211,238,0.25)] hover:bg-cyan-200 sm:w-auto"
                   size="sm"
@@ -344,7 +375,13 @@ export default function EventListPage() {
                           </div>
 
                           <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto lg:flex-col">
-                            <Link href={`/organization/events/${e.id}`}>
+                            <Link
+                              href={
+                                organizationId
+                                  ? `/organizations/${encodeURIComponent(organizationId)}/admin/events/${e.id}`
+                                  : `/organization/events/${e.id}`
+                              }
+                            >
                               <Button
                                 variant="outline"
                                 size="sm"

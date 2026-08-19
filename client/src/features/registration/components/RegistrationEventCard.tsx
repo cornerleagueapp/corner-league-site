@@ -4,7 +4,6 @@ import {
   ChevronRight,
   Clock3,
   MapPin,
-  Share2,
   Trophy,
   Users,
 } from "lucide-react";
@@ -51,7 +50,11 @@ function formatDateRange(startDate: string, endDate: string) {
   })}${sameYear ? `, ${end.getFullYear()}` : ""}`;
 }
 
-function formatRegistrationDeadline(date: string) {
+function formatRegistrationDeadline(date?: string | null) {
+  if (!date) {
+    return "No deadline";
+  }
+
   return new Date(date).toLocaleDateString(undefined, {
     month: "short",
     day: "numeric",
@@ -79,12 +82,6 @@ function getStatusStyles(status: RegistrationEvent["registrationStatus"]) {
         className: "border-red-300/20 bg-red-300/10 text-red-200",
       };
 
-    case "completed":
-      return {
-        label: "Completed",
-        className: "border-white/10 bg-white/[0.05] text-white/55",
-      };
-
     default:
       return {
         label: status,
@@ -101,6 +98,11 @@ export default function RegistrationEventCard({
 
   const status = getStatusStyles(event.registrationStatus);
 
+  const organizationName = event.organization?.name || "Corner League";
+
+  const organizationAbbreviation =
+    event.organization?.abbreviation || organizationName;
+
   const openEvent = () => {
     navigate(`/registration/events/${event.slug}`);
   };
@@ -114,7 +116,7 @@ export default function RegistrationEventCard({
       }`}
     >
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-cyan-400/10 blur-3xl" />
+        <div className="absolute -right-24 -top-24 h-64 w-64 rounded-full bg-cyan-300/10 blur-3xl" />
 
         <div className="absolute -bottom-24 -left-20 h-56 w-56 rounded-full bg-[#FF6B35]/8 blur-3xl" />
 
@@ -134,7 +136,7 @@ export default function RegistrationEventCard({
 
             <div className="min-w-0">
               <div className="truncate text-[10px] font-black uppercase tracking-[0.17em] text-cyan-200/65">
-                {event.organizationAbbreviation || event.organizationName}
+                {organizationAbbreviation}
               </div>
 
               <div
@@ -196,7 +198,9 @@ export default function RegistrationEventCard({
             <Clock3 className="h-4 w-4 shrink-0 text-[#FFB199]" />
 
             <span className="min-w-0 truncate">
-              Closes {formatRegistrationDeadline(event.registrationCloseDate)}
+              {event.registrationClosesAt
+                ? `Closes ${formatRegistrationDeadline(event.registrationClosesAt)}`
+                : "No registration deadline"}
             </span>
           </div>
         </div>
@@ -204,7 +208,8 @@ export default function RegistrationEventCard({
         <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-5">
           <div className="flex items-center gap-2 text-xs font-bold text-white/50">
             <Building2 className="h-4 w-4 text-white/35" />
-            <span className="line-clamp-1">{event.organizationName}</span>
+
+            <span className="line-clamp-1">{organizationName}</span>
           </div>
 
           <button

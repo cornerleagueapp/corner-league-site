@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useLocation } from "wouter";
+
 import {
   ArrowRight,
   CalendarDays,
@@ -9,24 +9,105 @@ import {
   Users,
   X,
 } from "lucide-react";
+
+import { useLocation } from "wouter";
+
 import RegistrationLayout from "../components/RegistrationLayout";
+
 import RegistrationShareButton from "../components/RegistrationShareButton";
+
 import PublicRegisteredRacerCard from "../components/PublicRegisteredRacerCard";
+
 import {
-  getPublicRegisteredRacers,
+  getPublicRegistrationEntries,
   getRegistrationEventBySlug,
-} from "../services/registrationDemoService";
+} from "../services/registrationService";
+
 import type {
   PublicRegisteredRacer,
+  RegistrationClassSelection,
   RegistrationEvent,
-  RegistrationRaceDay,
 } from "../types/registration.types";
 
 type PublicRegisteredRacersPageProps = {
   eventSlug: string;
 };
 
-type DayFilter = "all" | RegistrationRaceDay;
+function groupPublicEntries(
+  entries: Awaited<ReturnType<typeof getPublicRegistrationEntries>>["items"],
+): PublicRegisteredRacer[] {
+  const grouped = new Map<string, PublicRegisteredRacer>();
+
+  for (const entry of entries) {
+    const selection: RegistrationClassSelection = {
+      classId: entry.classEntry.eventClassId,
+
+      className: entry.classEntry.className,
+
+      selectedEventDayIds: entry.classEntry.selectedDays.map((day) => day.id),
+
+      selectedEventDays: entry.classEntry.selectedDays.map((day, index) => ({
+        id: day.id,
+
+        key: day.key,
+
+        label: day.label,
+
+        date: day.date,
+
+        startsAt: null,
+
+        endsAt: null,
+
+        isRegistrationEnabled: true,
+
+        displayOrder: index,
+      })),
+
+      estimatedPriceCents: 0,
+    };
+
+    const existing = grouped.get(entry.registrationId);
+
+    if (existing) {
+      existing.selectedClasses.push(selection);
+
+      continue;
+    }
+
+    grouped.set(entry.registrationId, {
+      registrationId: entry.registrationId,
+
+      racer: {
+        id: entry.racer.id,
+
+        name: entry.racer.name,
+
+        nickname: entry.racer.nickname,
+
+        imageUrl: entry.racer.imageUrl,
+
+        formattedLocation: entry.racer.formattedLocation,
+
+        city: entry.racer.city,
+
+        stateCode: entry.racer.stateCode,
+
+        countryCode: entry.racer.countryCode,
+
+        teamName: entry.racer.teamName,
+      },
+
+      selectedClasses: [selection],
+
+      status: entry.registrationStatus,
+
+      registeredAt: entry.registeredAt,
+    });
+  }
+
+  return [...grouped.values()];
+}
 
 export default function PublicRegisteredRacersPage({
   eventSlug,
@@ -34,33 +115,54 @@ export default function PublicRegisteredRacersPage({
   const [, navigate] = useLocation();
 
   const [event, setEvent] = useState<RegistrationEvent | null>(null);
+
   const [registrations, setRegistrations] = useState<PublicRegisteredRacer[]>(
     [],
   );
 
   const [query, setQuery] = useState("");
+
   const [classId, setClassId] = useState("all");
-  const [day, setDay] = useState<DayFilter>("all");
+
+  /**
+   * This is now an actual event-day UUID rather than
+   * "saturday" / "sunday".
+   */
+  const [dayId, setDayId] = useState("all");
+
   const [loading, setLoading] = useState(true);
+
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadPage() {
       try {
-        const eventResult = await getRegistrationEventBySlug(eventSlug);
+        setLoading(true);
+        setError(null);
 
-        if (!eventResult) {
+        const [eventResult, entriesResult] = await Promise.all([
+          getRegistrationEventBySlug(eventSlug),
+
+          getPublicRegistrationEntries(eventSlug, {
+            page: 1,
+            limit: 100,
+          }),
+        ]);
+
+        if (cancelled) {
           return;
         }
 
-        const registrationsResult = await getPublicRegisteredRacers(
-          eventResult.id,
-        );
+        setEvent(eventResult);
 
+        setRegistrations(groupPublicEntries(entriesResult.items));
+      } catch (loadError: any) {
         if (!cancelled) {
-          setEvent(eventResult);
-          setRegistrations(registrationsResult);
+          setError(
+            loadError?.message || "Unable to load the public entry list.",
+          );
         }
       } finally {
         if (!cancelled) {
@@ -84,9 +186,13 @@ export default function PublicRegisteredRacersPage({
         !normalizedQuery ||
         [
           registration.racer.name,
+
           registration.racer.nickname,
+
           registration.racer.raceNumber,
+
           registration.racer.teamName,
+
           registration.racer.formattedLocation,
         ].some((value) =>
           String(value ?? "")
@@ -101,23 +207,25 @@ export default function PublicRegisteredRacersPage({
         );
 
       const matchesDay =
-        day === "all" ||
+        dayId === "all" ||
         registration.selectedClasses.some((selection) =>
-          selection.raceDays.includes(day),
+          selection.selectedEventDayIds.includes(dayId),
         );
 
       return matchesSearch && matchesClass && matchesDay;
     });
-  }, [registrations, query, classId, day]);
+  }, [registrations, query, classId, dayId]);
 
   const groupedByClass = useMemo(() => {
     if (!event) {
       return [];
     }
 
-    return event.classes
+    return [...event.classes]
+      .sort((a, b) => a.displayOrder - b.displayOrder)
       .map((eventClass) => ({
         eventClass,
+
         registrations: filtered.filter((registration) =>
           registration.selectedClasses.some(
             (selection) => selection.classId === eventClass.id,
@@ -126,6 +234,16 @@ export default function PublicRegisteredRacersPage({
       }))
       .filter((group) => group.registrations.length > 0);
   }, [event, filtered]);
+
+  const enabledEventDays = useMemo(
+    () =>
+      event
+        ? [...event.eventDays]
+            .filter((day) => day.isRegistrationEnabled)
+            .sort((a, b) => a.displayOrder - b.displayOrder)
+        : [],
+    [event],
+  );
 
   if (loading) {
     return (
@@ -137,11 +255,14 @@ export default function PublicRegisteredRacersPage({
     );
   }
 
-  if (!event) {
+  if (error || !event) {
     return (
       <RegistrationLayout
         title="Entry list unavailable"
-        description="The requested event and its public entry list could not be loaded."
+        description={
+          error ||
+          "The requested event and its public entry list could not be loaded."
+        }
         backHref="/registration/events"
         backLabel="All Events"
       >
@@ -162,6 +283,8 @@ export default function PublicRegisteredRacersPage({
     );
   }
 
+  const registrationOpen = event.registrationStatus === "open";
+
   return (
     <RegistrationLayout
       eyebrow="Public Entry List"
@@ -180,10 +303,11 @@ export default function PublicRegisteredRacersPage({
 
           <button
             type="button"
+            disabled={!registrationOpen}
             onClick={() =>
               navigate(`/registration/events/${event.slug}/register`)
             }
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#FF6B35] px-5 text-[10px] font-black uppercase tracking-[0.14em] text-white transition hover:bg-[#ff7c4d]"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#FF6B35] px-5 text-[10px] font-black uppercase tracking-[0.14em] text-white transition hover:bg-[#ff7c4d] disabled:cursor-not-allowed disabled:bg-white/15 disabled:text-white/35"
           >
             Register Now
             <ArrowRight className="h-4 w-4" />
@@ -195,9 +319,11 @@ export default function PublicRegisteredRacersPage({
         <section className="grid gap-3 sm:grid-cols-3">
           <div className="rounded-[22px] border border-cyan-300/10 bg-[#07111F]/78 p-4">
             <Users className="h-5 w-5 text-cyan-200" />
+
             <p className="mt-3 text-2xl font-black text-white">
               {registrations.length}
             </p>
+
             <p className="mt-1 text-[9px] font-black uppercase tracking-[0.13em] text-white/35">
               Confirmed Racers
             </p>
@@ -205,9 +331,11 @@ export default function PublicRegisteredRacersPage({
 
           <div className="rounded-[22px] border border-cyan-300/10 bg-[#07111F]/78 p-4">
             <Flag className="h-5 w-5 text-[#FFB199]" />
+
             <p className="mt-3 text-2xl font-black text-white">
               {groupedByClass.length}
             </p>
+
             <p className="mt-1 text-[9px] font-black uppercase tracking-[0.13em] text-white/35">
               Active Classes
             </p>
@@ -215,9 +343,13 @@ export default function PublicRegisteredRacersPage({
 
           <div className="rounded-[22px] border border-cyan-300/10 bg-[#07111F]/78 p-4">
             <CalendarDays className="h-5 w-5 text-cyan-200" />
-            <p className="mt-3 text-2xl font-black text-white">2</p>
+
+            <p className="mt-3 text-2xl font-black text-white">
+              {enabledEventDays.length}
+            </p>
+
             <p className="mt-1 text-[9px] font-black uppercase tracking-[0.13em] text-white/35">
-              Race Days
+              Event Days
             </p>
           </div>
         </section>
@@ -229,7 +361,7 @@ export default function PublicRegisteredRacersPage({
 
               <input
                 value={query}
-                onChange={(event) => setQuery(event.target.value)}
+                onChange={(inputEvent) => setQuery(inputEvent.target.value)}
                 placeholder="Search racer, number, team, or location..."
                 className="h-12 w-full rounded-[16px] border border-white/10 bg-white/[0.045] pl-11 pr-10 text-sm text-white outline-none placeholder:text-white/30 focus:border-cyan-300/30"
               />
@@ -238,6 +370,7 @@ export default function PublicRegisteredRacersPage({
                 <button
                   type="button"
                   onClick={() => setQuery("")}
+                  aria-label="Clear racer search"
                   className="absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full text-white/35 hover:bg-white/10 hover:text-white"
                 >
                   <X className="h-4 w-4" />
@@ -247,26 +380,32 @@ export default function PublicRegisteredRacersPage({
 
             <select
               value={classId}
-              onChange={(event) => setClassId(event.target.value)}
+              onChange={(selectEvent) => setClassId(selectEvent.target.value)}
               className="h-12 rounded-[16px] border border-white/10 bg-[#0A1422] px-4 text-sm text-white outline-none focus:border-cyan-300/30"
             >
               <option value="all">All Classes</option>
 
-              {event.classes.map((eventClass) => (
-                <option key={eventClass.id} value={eventClass.id}>
-                  {eventClass.name}
-                </option>
-              ))}
+              {[...event.classes]
+                .sort((a, b) => a.displayOrder - b.displayOrder)
+                .map((eventClass) => (
+                  <option key={eventClass.id} value={eventClass.id}>
+                    {eventClass.name}
+                  </option>
+                ))}
             </select>
 
             <select
-              value={day}
-              onChange={(event) => setDay(event.target.value as DayFilter)}
+              value={dayId}
+              onChange={(selectEvent) => setDayId(selectEvent.target.value)}
               className="h-12 rounded-[16px] border border-white/10 bg-[#0A1422] px-4 text-sm text-white outline-none focus:border-cyan-300/30"
             >
               <option value="all">All Days</option>
-              <option value="saturday">Saturday</option>
-              <option value="sunday">Sunday</option>
+
+              {enabledEventDays.map((day) => (
+                <option key={day.id} value={day.id}>
+                  {day.label}
+                </option>
+              ))}
             </select>
           </div>
         </section>
@@ -280,7 +419,7 @@ export default function PublicRegisteredRacersPage({
             </h2>
 
             <p className="mt-2 text-sm text-white/40">
-              Try changing the racer search, class, or day filter.
+              Try changing the racer search, class, or event day filter.
             </p>
           </div>
         ) : (
@@ -310,6 +449,7 @@ export default function PublicRegisteredRacersPage({
                       key={`${group.eventClass.id}-${registration.registrationId}`}
                       registration={{
                         ...registration,
+
                         selectedClasses: registration.selectedClasses.filter(
                           (selection) =>
                             selection.classId === group.eventClass.id,

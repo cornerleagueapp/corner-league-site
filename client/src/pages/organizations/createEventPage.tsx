@@ -16,16 +16,28 @@ type OrganizationOption = {
   name: string;
 };
 
-export default function CreateEventPage() {
+type CreateEventPageProps = {
+  organizationId?: string;
+};
+
+export default function CreateEventPage({
+  organizationId,
+}: CreateEventPageProps) {
   const { toast } = useToast();
   const [, navigate] = useLocation();
+
+  const isOrganizationScoped = Boolean(organizationId);
+
+  const eventListPath = organizationId
+    ? `/organizations/${encodeURIComponent(organizationId)}/admin/events`
+    : "/organization/event-list";
 
   const [saving, setSaving] = useState(false);
   const [loadingOrgs, setLoadingOrgs] = useState(true);
   const [organizations, setOrganizations] = useState<OrganizationOption[]>([]);
 
   const [draft, setDraft] = useState({
-    organizerId: "",
+    organizerId: organizationId ?? "",
     name: "",
     description: "",
     location: "",
@@ -146,7 +158,7 @@ export default function CreateEventPage() {
         description: json?.message || "Sport event created successfully.",
       });
 
-      navigate("/organization/event-list");
+      navigate(eventListPath);
     } catch (err: any) {
       console.error("Create event failed:", err);
       console.error("Create event failed body:", err?.body);
@@ -181,7 +193,7 @@ export default function CreateEventPage() {
             <div className="min-w-0">
               <button
                 type="button"
-                onClick={() => navigate("/organization/event-list")}
+                onClick={() => navigate(eventListPath)}
                 className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-white/70 transition hover:bg-white/10 hover:text-white"
               >
                 <ArrowLeft className="h-4 w-4" />
@@ -242,38 +254,40 @@ export default function CreateEventPage() {
 
           <div className="space-y-5 p-5 sm:p-6 md:p-8">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="flex flex-col gap-2 md:col-span-2">
-                <label className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">
-                  Organization *
-                </label>
+              {!isOrganizationScoped && (
+                <div className="flex flex-col gap-2 md:col-span-2">
+                  <label className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">
+                    Organization *
+                  </label>
 
-                <div className="relative">
-                  <select
-                    className="h-12 w-full appearance-none rounded-[14px] border border-white/10 bg-white/[0.055] px-4 text-sm text-white outline-none transition focus:border-cyan-300/30 focus:ring-2 focus:ring-cyan-300/10"
-                    value={draft.organizerId}
-                    onChange={(e) => set("organizerId", e.target.value)}
-                    disabled={loadingOrgs}
-                  >
-                    <option className="bg-[#07111F] text-white" value="">
-                      {loadingOrgs
-                        ? "Loading organizations..."
-                        : "Select organization"}
-                    </option>
-
-                    {organizations.map((org) => (
-                      <option
-                        className="bg-[#07111F] text-white"
-                        key={org.id}
-                        value={org.id}
-                      >
-                        {org.name}
+                  <div className="relative">
+                    <select
+                      className="h-12 w-full appearance-none rounded-[14px] border border-white/10 bg-white/[0.055] px-4 text-sm text-white outline-none transition focus:border-cyan-300/30 focus:ring-2 focus:ring-cyan-300/10"
+                      value={draft.organizerId}
+                      onChange={(e) => set("organizerId", e.target.value)}
+                      disabled={loadingOrgs}
+                    >
+                      <option className="bg-[#07111F] text-white" value="">
+                        {loadingOrgs
+                          ? "Loading organizations..."
+                          : "Select organization"}
                       </option>
-                    ))}
-                  </select>
 
-                  <Flag className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35" />
+                      {organizations.map((org) => (
+                        <option
+                          className="bg-[#07111F] text-white"
+                          key={org.id}
+                          value={org.id}
+                        >
+                          {org.name}
+                        </option>
+                      ))}
+                    </select>
+
+                    <Flag className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35" />
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">
@@ -367,7 +381,7 @@ export default function CreateEventPage() {
               <Button
                 variant="ghost"
                 className="h-12 rounded-full border border-white/10 px-6 text-xs font-black uppercase tracking-[0.16em] text-white/70 hover:bg-white/10 hover:text-white"
-                onClick={() => navigate("/organization/event-list")}
+                onClick={() => navigate(eventListPath)}
               >
                 Cancel
               </Button>

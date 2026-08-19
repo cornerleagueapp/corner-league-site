@@ -1,34 +1,39 @@
 import {
   CalendarDays,
   CreditCard,
-  Flag,
   MapPin,
   ShipWheel,
   UserRound,
 } from "lucide-react";
+
 import type {
   RegistrationDraft,
   RegistrationEvent,
-  RegistrationRaceDay,
 } from "../types/registration.types";
 
 type RegistrationSummaryProps = {
   event: RegistrationEvent;
+
   draft: RegistrationDraft;
+
   compact?: boolean;
 };
 
-function formatCurrency(value: number) {
+function formatCurrency(cents: number, currency = "USD") {
   return new Intl.NumberFormat(undefined, {
     style: "currency",
-    currency: "USD",
+
+    currency,
+
     minimumFractionDigits: 2,
+
     maximumFractionDigits: 2,
-  }).format(value);
+  }).format(Number(cents || 0) / 100);
 }
 
 function formatDateRange(startDate: string, endDate: string) {
   const start = new Date(startDate);
+
   const end = new Date(endDate);
 
   const sameMonth =
@@ -45,18 +50,15 @@ function formatDateRange(startDate: string, endDate: string) {
 
   return `${start.toLocaleDateString(undefined, {
     month: "short",
+
     day: "numeric",
   })} – ${end.toLocaleDateString(undefined, {
     month: "short",
+
     day: "numeric",
+
     year: "numeric",
   })}`;
-}
-
-function formatRaceDays(days: RegistrationRaceDay[]) {
-  return days
-    .map((day) => day.charAt(0).toUpperCase() + day.slice(1))
-    .join(" & ");
 }
 
 export default function RegistrationSummary({
@@ -70,20 +72,14 @@ export default function RegistrationSummary({
         compact ? "p-4" : "p-5"
       }`}
     >
-      <div className="flex items-start gap-3 border-b border-white/10 pb-4">
-        <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-cyan-300/15 bg-cyan-300/10 text-cyan-200">
-          <Flag className="h-5 w-5" />
-        </div>
+      <div className="min-w-0">
+        <p className="text-[9px] font-black uppercase tracking-[0.16em] text-cyan-200/60">
+          Registration Summary
+        </p>
 
-        <div className="min-w-0">
-          <p className="text-[9px] font-black uppercase tracking-[0.16em] text-cyan-200/60">
-            Registration Summary
-          </p>
-
-          <h2 className="mt-1 break-words text-base font-black uppercase leading-tight text-white">
-            {event.name}
-          </h2>
-        </div>
+        <h2 className="mt-1 break-words text-base font-black uppercase leading-tight text-white">
+          {event.name}
+        </h2>
       </div>
 
       <div className="mt-4 space-y-3">
@@ -104,7 +100,7 @@ export default function RegistrationSummary({
 
           <div>
             <p className="text-xs font-bold leading-5 text-white">
-              {event.formattedLocation}
+              {event.formattedLocation || "Location to be announced"}
             </p>
 
             <p className="mt-0.5 text-[11px] text-white/40">Location</p>
@@ -171,12 +167,17 @@ export default function RegistrationSummary({
                     </p>
 
                     <p className="mt-1 text-[10px] text-white/40">
-                      {formatRaceDays(selection.raceDays)}
+                      {selection.selectedEventDays
+                        .map((day) => day.label)
+                        .join(" & ")}
                     </p>
                   </div>
 
                   <p className="shrink-0 text-xs font-black text-white">
-                    {formatCurrency(selection.price)}
+                    {formatCurrency(
+                      selection.estimatedPriceCents,
+                      event.currency,
+                    )}
                   </p>
                 </div>
               </div>
@@ -188,29 +189,52 @@ export default function RegistrationSummary({
       <div className="mt-5 space-y-2 border-t border-white/10 pt-4">
         <div className="flex justify-between gap-3 text-xs text-white/50">
           <span>Class subtotal</span>
-          <span>{formatCurrency(draft.pricing.classSubtotal)}</span>
+
+          <span>
+            {formatCurrency(
+              draft.pricing.classSubtotalCents,
+              draft.pricing.currency,
+            )}
+          </span>
         </div>
 
         <div className="flex justify-between gap-3 text-xs text-white/50">
-          <span>Corner League fee</span>
-          <span>{formatCurrency(draft.pricing.platformFee)}</span>
+          <span>Estimated Corner League fee</span>
+
+          <span>
+            {formatCurrency(
+              draft.pricing.platformFeeCents,
+              draft.pricing.currency,
+            )}
+          </span>
         </div>
 
         <div className="flex justify-between gap-3 text-xs text-white/50">
-          <span>Processing fee</span>
-          <span>{formatCurrency(draft.pricing.processingFee)}</span>
+          <span>Estimated processing fee</span>
+
+          <span>
+            {formatCurrency(
+              draft.pricing.processingFeeCents,
+              draft.pricing.currency,
+            )}
+          </span>
         </div>
 
         <div className="mt-3 flex items-center justify-between gap-3 border-t border-white/10 pt-3">
           <span className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-white">
             <CreditCard className="h-4 w-4 text-cyan-200" />
-            Total
+            Estimated Total
           </span>
 
           <span className="text-xl font-black text-white">
-            {formatCurrency(draft.pricing.total)}
+            {formatCurrency(draft.pricing.totalCents, draft.pricing.currency)}
           </span>
         </div>
+
+        <p className="pt-2 text-[10px] leading-4 text-white/30">
+          Final pricing is calculated by the server when the registration is
+          submitted.
+        </p>
       </div>
     </aside>
   );

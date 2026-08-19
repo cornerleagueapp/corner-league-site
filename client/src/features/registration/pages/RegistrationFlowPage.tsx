@@ -25,9 +25,11 @@ import {
   useRegistrationDraft,
 } from "../context/registrationDraftContext";
 import {
+  createStripeCheckout,
   getRegistrationEventBySlug,
-  submitDemoRegistration,
-} from "../services/registrationDemoService";
+  submitRegistration,
+  type CreateRaceRegistrationInput,
+} from "../services/registrationService";
 import type { RegistrationEvent } from "../types/registration.types";
 import { clearRegistrationDraft } from "../utils/registrationStorage";
 
@@ -40,6 +42,7 @@ function RegistrationFlowContent() {
   const { toast } = useToast();
   const { user } = useAuth();
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const {
     event,
@@ -51,6 +54,8 @@ function RegistrationFlowContent() {
     updateWatercraft,
     setPaymentMethod,
     setRegisteredByUserId,
+    setTermsAccepted,
+    setCouponCode,
   } = useRegistrationDraft();
 
   const [highestCompletedStep, setHighestCompletedStep] = useState(
@@ -84,26 +89,29 @@ function RegistrationFlowContent() {
       3: isClassSelectionComplete(draft.selectedClasses),
       4: isWatercraftInformationComplete(draft.watercraft),
       5: isPaymentMethodComplete(draft.paymentMethod),
-      6: true,
+      6: draft.termsAccepted,
     } as Record<number, boolean>;
   }, [draft]);
 
   function getStepValidationMessage(step: number) {
     switch (step) {
       case 1:
-        return "Select or create the racer being registered.";
+        return "Select the racer being registered.";
 
       case 2:
         return "Enter a valid email, phone number, city, and country.";
 
       case 3:
-        return "Select at least one class and one race day for every selected class.";
+        return "Select at least one class and the required event days for every selected class.";
 
       case 4:
         return "Enter the boat number, manufacturer, and model.";
 
       case 5:
         return "Select online payment or cash in person.";
+
+      case 6:
+        return "Accept the registration terms before submitting.";
 
       default:
         return "Complete the required registration information.";
@@ -159,45 +167,155 @@ function RegistrationFlowContent() {
     }
   }
 
-  async function submitRegistration() {
-    if (!draft.racer || !draft.paymentMethod || submitting) {
+  async function handleSubmitRegistration() {
+    if (!event) {
+      return;
+    }
+
+    setSubmitError(null);
+
+    if (!user) {
+      const message = "You must be signed in to submit a race registration.";
+
+      setSubmitError(message);
+
+      toast({
+        title: "Sign in required",
+        description: message,
+        variant: "destructive",
+      });
+
+      return;
+    }
+
+    if (!draft.racer?.id) {
+      setSubmitError("Please select a racer before submitting.");
+      return;
+    }
+
+    if (!draft.paymentMethod) {
+      setSubmitError("Please select a payment method.");
+      return;
+    }
+
+    if (draft.paymentMethod !== "online" && draft.paymentMethod !== "cash") {
+      setSubmitError("Unsupported payment method.");
+      return;
+    }
+
+    if (!draft.termsAccepted) {
+      setSubmitError(
+        "You must accept the registration terms before submitting.",
+      );
+
+      return;
+    }
+
+    if (draft.selectedClasses.length === 0) {
+      setSubmitError("Select at least one race class before submitting.");
       return;
     }
 
     try {
       setSubmitting(true);
+      setSubmitError(null);
 
-      const online = draft.paymentMethod === "online";
+      const clientRequestId =
+        typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+          ? crypto.randomUUID()
+          : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
-      const registration = await submitDemoRegistration({
-        eventId: event.id,
-        eventSlug: event.slug,
+      const modelYear = draft.watercraft.year?.trim()
+        ? Number(draft.watercraft.year)
+        : undefined;
 
-        registeredByUserId: draft.registeredByUserId || null,
+      const payload: CreateRaceRegistrationInput = {
+        clientRequestId,
 
-        racer: draft.racer,
-        contact: draft.contact,
+        racerId: draft.racer.id,
 
-        selectedClasses: draft.selectedClasses,
-        watercraft: draft.watercraft,
+        contactEmail: draft.contact.email.trim(),
+
+        contactPhone: draft.contact.phone.trim(),
+
+        contactCity: draft.contact.city.trim(),
+
+        contactStateCode: draft.contact.stateCode?.trim() || undefined,
+
+        contactCountryCode: draft.contact.countryCode.trim().toUpperCase(),
 
         paymentMethod: draft.paymentMethod,
 
-        paymentStatus: online ? "completed" : "pending",
+        entries: draft.selectedClasses.map((selection) => ({
+          eventClassId: selection.classId,
 
-        status: online ? "confirmed" : "pending_cash",
+          selectedEventDayIds: selection.selectedEventDayIds,
+        })),
 
-        pricing: draft.pricing,
-      });
+        watercraft: {
+          boatNumber: draft.watercraft.boatNumber.trim(),
+
+          manufacturer: draft.watercraft.make.trim(),
+
+          model: draft.watercraft.model.trim(),
+
+          modelYear: Number.isFinite(modelYear) ? modelYear : undefined,
+
+          useForAllClasses: draft.watercraft.useForAllClasses,
+
+          hullIdentificationNumber:
+            draft.watercraft.hullIdentificationNumber?.trim() || undefined,
+
+          engineDescription:
+            draft.watercraft.engineDescription?.trim() || undefined,
+
+          notes: draft.watercraft.notes?.trim() || undefined,
+        },
+
+        termsAccepted: true,
+
+        termsVersion: "registration-v1",
+
+        couponCode: draft.couponCode?.trim() || undefined,
+      };
+
+      const result = await submitRegistration(event.slug, payload);
 
       clearRegistrationDraft(event.slug);
 
-      navigate(`/registration/success/${registration.id}`);
+      if (draft.paymentMethod === "online" && result.paymentRequired) {
+        const checkoutIdempotencyKey =
+          typeof crypto !== "undefined" &&
+          typeof crypto.randomUUID === "function"
+            ? crypto.randomUUID()
+            : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+        const checkout = await createStripeCheckout(result.registration.id, {
+          idempotencyKey: checkoutIdempotencyKey,
+
+          customerEmail: draft.contact.email.trim() || undefined,
+        });
+
+        if (!checkout.checkoutUrl) {
+          throw new Error("Stripe checkout could not be started.");
+        }
+
+        window.location.assign(checkout.checkoutUrl);
+
+        return;
+      }
+
+      navigate(`/registration/success/${result.registration.id}`);
     } catch (error: any) {
+      const message = error?.message || "Unable to submit registration.";
+
+      setSubmitError(message);
+
       toast({
-        title: "Unable to submit registration",
-        description:
-          error?.message || "The demo registration could not be completed.",
+        title: "Registration could not be submitted",
+
+        description: message,
+
         variant: "destructive",
       });
     } finally {
@@ -228,7 +346,7 @@ function RegistrationFlowContent() {
         return (
           <ClassSelectionStep
             event={event}
-            selections={draft.selectedClasses}
+            selectedClasses={draft.selectedClasses}
             onChange={setSelectedClasses}
           />
         );
@@ -253,11 +371,70 @@ function RegistrationFlowContent() {
 
       case 6:
         return (
-          <RegistrationReviewStep
-            event={event}
-            draft={draft}
-            onEditStep={setCurrentStep}
-          />
+          <>
+            <RegistrationReviewStep
+              event={event}
+              draft={draft}
+              onEditStep={setCurrentStep}
+            />
+
+            <div className="mt-5 rounded-[22px] border border-white/10 bg-white/[0.03] p-4 sm:p-5">
+              <label className="flex cursor-pointer items-start gap-3">
+                <input
+                  type="checkbox"
+                  checked={draft.termsAccepted}
+                  onChange={(inputEvent) =>
+                    setTermsAccepted(inputEvent.target.checked)
+                  }
+                  className="mt-1 h-4 w-4 accent-cyan-300"
+                />
+
+                <div>
+                  <p className="text-sm font-black text-white">
+                    I agree to the registration terms
+                  </p>
+
+                  <p className="mt-1 text-xs leading-5 text-white/45">
+                    By submitting this registration, you agree to the race
+                    organization's registration terms, policies, eligibility
+                    requirements, and applicable refund policy.
+                  </p>
+
+                  {event.termsText ? (
+                    <div className="mt-3 max-h-36 overflow-y-auto rounded-xl border border-white/10 bg-black/20 p-3 text-xs leading-5 text-white/45">
+                      {event.termsText}
+                    </div>
+                  ) : null}
+                </div>
+              </label>
+            </div>
+
+            {event.allowCoupons ? (
+              <div className="mt-4 rounded-[22px] border border-white/10 bg-white/[0.03] p-4 sm:p-5">
+                <label>
+                  <span className="mb-2 block text-[10px] font-black uppercase tracking-[0.13em] text-white/50">
+                    Coupon Code
+                  </span>
+
+                  <input
+                    value={draft.couponCode ?? ""}
+                    onChange={(inputEvent) =>
+                      setCouponCode(inputEvent.target.value)
+                    }
+                    maxLength={64}
+                    placeholder="Enter coupon code"
+                    className="h-12 w-full rounded-[16px] border border-white/10 bg-white/[0.045] px-4 text-sm uppercase text-white outline-none placeholder:text-white/30 focus:border-cyan-300/30"
+                  />
+                </label>
+              </div>
+            ) : null}
+
+            {submitError ? (
+              <div className="mt-4 rounded-[18px] border border-red-300/20 bg-red-300/[0.06] p-4">
+                <p className="text-sm font-bold text-red-100">{submitError}</p>
+              </div>
+            ) : null}
+          </>
         );
 
       default:
@@ -267,9 +444,13 @@ function RegistrationFlowContent() {
 
   return (
     <RegistrationLayout
-      eyebrow={event.organizationAbbreviation || "Race Registration"}
+      eyebrow={
+        event.organization?.abbreviation ||
+        event.organization?.name ||
+        "Race Registration"
+      }
       title={`Register for ${event.name}`}
-      description="Complete each step below. Your progress is saved locally so you can return to this demo registration later."
+      description="Complete each step below. Your progress is saved on this device so you can safely return before submitting."
       backHref={`/registration/events/${event.slug}`}
       backLabel="Back to Event"
     >
@@ -303,7 +484,8 @@ function RegistrationFlowContent() {
             <button
               type="button"
               onClick={goBack}
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-4 text-[10px] font-black uppercase tracking-[0.14em] text-white/65 transition hover:bg-white/10 hover:text-white sm:px-5"
+              disabled={submitting}
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-4 text-[10px] font-black uppercase tracking-[0.14em] text-white/65 transition hover:bg-white/10 hover:text-white disabled:cursor-wait disabled:opacity-60 sm:px-5"
             >
               <ArrowLeft className="h-4 w-4" />
 
@@ -336,11 +518,11 @@ function RegistrationFlowContent() {
             ) : (
               <button
                 type="button"
-                disabled={submitting}
-                onClick={submitRegistration}
-                disabled:cursor-wait
-                disabled:opacity-60
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-cyan-300 px-5 text-[10px] font-black uppercase tracking-[0.14em] text-[#06111d] shadow-[0_0_28px_rgba(34,211,238,0.2)] transition hover:bg-cyan-200 sm:px-6"
+                disabled={submitting || !draft.termsAccepted}
+                onClick={() => {
+                  void handleSubmitRegistration();
+                }}
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-cyan-300 px-5 text-[10px] font-black uppercase tracking-[0.14em] text-[#06111d] shadow-[0_0_28px_rgba(34,211,238,0.2)] transition hover:bg-cyan-200 disabled:cursor-wait disabled:opacity-60 sm:px-6"
               >
                 {submitting ? (
                   <>
@@ -366,7 +548,9 @@ export default function RegistrationFlowPage({
   eventSlug,
 }: RegistrationFlowPageProps) {
   const [event, setEvent] = useState<RegistrationEvent | null>(null);
+
   const [loading, setLoading] = useState(true);
+
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -379,13 +563,11 @@ export default function RegistrationFlowPage({
 
         const result = await getRegistrationEventBySlug(eventSlug);
 
-        if (!result) {
-          throw new Error("This race event could not be found.");
+        if (cancelled) {
+          return;
         }
 
-        if (!cancelled) {
-          setEvent(result);
-        }
+        setEvent(result);
       } catch (err: any) {
         if (!cancelled) {
           setError(err?.message || "Unable to load registration.");

@@ -10,8 +10,6 @@ import {
   CircleUserRound,
   Gamepad2,
   Home,
-  LogIn,
-  LogOut,
   Map,
   MessageSquare,
   Mic2,
@@ -19,13 +17,17 @@ import {
   PanelLeftOpen,
   Radio,
   Search,
-  Settings,
   ShieldCheck,
   Trophy,
   UserPlus,
   Users,
   Vote,
   Wifi,
+  CircleDollarSign,
+  ClipboardList,
+  Gauge,
+  ListOrdered,
+  SlidersHorizontal,
 } from "lucide-react";
 
 export type SidebarItem = {
@@ -50,7 +52,15 @@ export function useAppSidebarSections(opts?: {
   isSuperAdmin?: boolean;
   guestMode?: boolean;
 }) {
-  const [, navigate] = useLocation();
+  const [location, navigate] = useLocation();
+
+  const organizationAdminMatch = location.match(
+    /^\/organizations\/([^/]+)\/admin(?:\/|$)/,
+  );
+
+  const activeOrganizationId = organizationAdminMatch?.[1]
+    ? decodeURIComponent(organizationAdminMatch[1])
+    : null;
 
   const goToAuth = () => {
     const next = encodeURIComponent(
@@ -122,6 +132,173 @@ export function useAppSidebarSections(opts?: {
                   matchPaths: ["/admin/racepods"],
                   onSelect: () => navigate("/admin/racepods"),
                 },
+              ],
+            },
+          ]
+        : []),
+
+      ...(opts?.isSuperAdmin && !guest
+        ? [
+            {
+              title: "Org Admin",
+              items: [
+                {
+                  key: "org-admin-select",
+                  label: activeOrganizationId
+                    ? "Change Organization"
+                    : "Select Organization",
+                  selectable: false,
+                  helper: activeOrganizationId
+                    ? "Switch to another organization admin console."
+                    : "Choose an organization to administer.",
+                  matchPaths: [],
+                  onSelect: () => navigate("/aqua-organizations?adminSelect=1"),
+                },
+
+                ...(activeOrganizationId
+                  ? [
+                      {
+                        key: "org-admin-overview",
+                        label: "Overview",
+                        helper: "Organization administration overview.",
+                        selectable: false,
+                        matchPaths: [
+                          `/organizations/${activeOrganizationId}/admin`,
+                        ],
+                        onSelect: () =>
+                          navigate(
+                            `/organizations/${activeOrganizationId}/admin`,
+                          ),
+                      },
+
+                      {
+                        key: "org-admin-events",
+                        label: "Events",
+                        helper:
+                          "Create and manage events for this organization.",
+                        selectable: false,
+                        matchPaths: [
+                          `/organizations/${activeOrganizationId}/admin/events`,
+                          `/organizations/${activeOrganizationId}/admin/events/*`,
+                        ],
+                        onSelect: () =>
+                          navigate(
+                            `/organizations/${activeOrganizationId}/admin/events`,
+                          ),
+                      },
+
+                      {
+                        key: "org-admin-registrations",
+                        label: "Registrations",
+                        helper:
+                          "Manage racers, entries, registration status, and roster.",
+                        selectable: false,
+                        matchPaths: [
+                          `/organizations/${activeOrganizationId}/admin/registrations`,
+                          `/organizations/${activeOrganizationId}/admin/registrations/*`,
+                        ],
+                        onSelect: () =>
+                          navigate(
+                            `/organizations/${activeOrganizationId}/admin/registrations`,
+                          ),
+                      },
+
+                      {
+                        key: "org-admin-race-days",
+                        label: "Race Days",
+                        helper:
+                          "Configure race days, classes, rounds, and event setup.",
+                        selectable: false,
+                        matchPaths: [
+                          `/organizations/${activeOrganizationId}/admin/race-days`,
+                          `/organizations/${activeOrganizationId}/admin/race-days/*`,
+                        ],
+                        onSelect: () =>
+                          navigate(
+                            `/organizations/${activeOrganizationId}/admin/race-days`,
+                          ),
+                      },
+
+                      {
+                        key: "org-admin-race-schedule",
+                        label: "Race Schedule",
+                        helper:
+                          "Generate, edit, validate, and publish race orders.",
+                        selectable: false,
+                        matchPaths: [
+                          `/organizations/${activeOrganizationId}/admin/race-schedule`,
+                          `/organizations/${activeOrganizationId}/admin/race-schedule/*`,
+                        ],
+                        onSelect: () =>
+                          navigate(
+                            `/organizations/${activeOrganizationId}/admin/race-schedule`,
+                          ),
+                      },
+
+                      {
+                        key: "org-admin-payments",
+                        label: "Payments",
+                        helper:
+                          "Review registration payments, refunds, and Stripe status.",
+                        selectable: false,
+                        matchPaths: [
+                          `/organizations/${activeOrganizationId}/admin/payments`,
+                          `/organizations/${activeOrganizationId}/admin/payments/*`,
+                        ],
+                        onSelect: () =>
+                          navigate(
+                            `/organizations/${activeOrganizationId}/admin/payments`,
+                          ),
+                      },
+
+                      {
+                        key: "org-admin-results",
+                        label: "Results",
+                        helper: "Manage registration-to-results enrollment.",
+                        selectable: false,
+                        matchPaths: [
+                          `/organizations/${activeOrganizationId}/admin/results`,
+                          `/organizations/${activeOrganizationId}/admin/results/*`,
+                        ],
+                        onSelect: () =>
+                          navigate(
+                            `/organizations/${activeOrganizationId}/admin/results`,
+                          ),
+                      },
+
+                      {
+                        key: "org-admin-members",
+                        label: "Members",
+                        helper:
+                          "Manage organization administrators and permissions.",
+                        selectable: false,
+                        matchPaths: [
+                          `/organizations/${activeOrganizationId}/admin/members`,
+                          `/organizations/${activeOrganizationId}/admin/members/*`,
+                        ],
+                        onSelect: () =>
+                          navigate(
+                            `/organizations/${activeOrganizationId}/admin/members`,
+                          ),
+                      },
+
+                      {
+                        key: "org-admin-settings",
+                        label: "Settings",
+                        helper:
+                          "Manage organization event, pricing, and registration settings.",
+                        selectable: false,
+                        matchPaths: [
+                          `/organizations/${activeOrganizationId}/admin/settings`,
+                          `/organizations/${activeOrganizationId}/admin/settings/*`,
+                        ],
+                        onSelect: () =>
+                          navigate(
+                            `/organizations/${activeOrganizationId}/admin/settings`,
+                          ),
+                      },
+                    ]
+                  : []),
               ],
             },
           ]
@@ -209,6 +386,7 @@ export function useAppSidebarSections(opts?: {
 
     return opts?.extra?.length ? [...base, ...opts.extra] : base;
   }, [
+    location,
     navigate,
     opts?.extra,
     opts?.onLogout,
@@ -317,6 +495,36 @@ function getSidebarItemIcon(key: string) {
     case "my":
     case "discover":
       return Users;
+
+    case "org-admin-overview":
+      return Gauge;
+
+    case "org-admin-events":
+      return CalendarDays;
+
+    case "org-admin-select":
+      return Building2;
+
+    case "org-admin-registrations":
+      return ClipboardList;
+
+    case "org-admin-race-days":
+      return CalendarDays;
+
+    case "org-admin-race-schedule":
+      return ListOrdered;
+
+    case "org-admin-payments":
+      return CircleDollarSign;
+
+    case "org-admin-results":
+      return Trophy;
+
+    case "org-admin-members":
+      return Users;
+
+    case "org-admin-settings":
+      return SlidersHorizontal;
 
     default:
       return CircleUserRound;

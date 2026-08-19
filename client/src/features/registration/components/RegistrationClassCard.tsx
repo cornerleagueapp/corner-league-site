@@ -1,8 +1,6 @@
-import { CalendarDays, Check, ChevronRight, Flag, Users } from "lucide-react";
-import type {
-  RegistrationEventClass,
-  RegistrationRaceDay,
-} from "../types/registration.types";
+import { Check, ChevronRight, Flag, Users } from "lucide-react";
+
+import type { RegistrationEventClass } from "../types/registration.types";
 
 type RegistrationClassCardProps = {
   eventClass: RegistrationEventClass;
@@ -19,10 +17,6 @@ function formatCurrency(value: number) {
   }).format(value);
 }
 
-function formatRaceDay(day: RegistrationRaceDay) {
-  return day.charAt(0).toUpperCase() + day.slice(1);
-}
-
 export default function RegistrationClassCard({
   eventClass,
   selected = false,
@@ -33,7 +27,8 @@ export default function RegistrationClassCard({
     typeof eventClass.capacity === "number" &&
     eventClass.confirmedRacerCount >= eventClass.capacity;
 
-  const disabled = !eventClass.isOpen || full;
+  const disabled =
+    !eventClass.isRegistrationOpen || (full && !eventClass.allowWaitlist);
 
   return (
     <button
@@ -90,7 +85,7 @@ export default function RegistrationClassCard({
 
           <div className="shrink-0 text-right">
             <div className="text-lg font-black text-white">
-              {formatCurrency(eventClass.price)}
+              {formatCurrency(eventClass.basePriceCents / 100)}
             </div>
 
             <div className="text-[9px] font-black uppercase tracking-[0.12em] text-white/35">
@@ -106,26 +101,20 @@ export default function RegistrationClassCard({
         ) : null}
 
         <div className="mt-4 flex flex-wrap items-center gap-2">
-          {eventClass.availableDays.map((day) => (
-            <span
-              key={day}
-              className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/20 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.12em] text-white/65"
-            >
-              <CalendarDays className="h-3 w-3 text-cyan-200" />
-              {formatRaceDay(day)}
-            </span>
-          ))}
-
           <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/20 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.12em] text-white/65">
             <Users className="h-3 w-3 text-[#FFB199]" />
             {eventClass.confirmedRacerCount} entered
           </span>
 
-          {full ? (
+          {full && eventClass.allowWaitlist ? (
+            <span className="rounded-full border border-amber-300/20 bg-amber-300/10 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.12em] text-amber-200">
+              Waitlist Available
+            </span>
+          ) : full ? (
             <span className="rounded-full border border-red-300/20 bg-red-300/10 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.12em] text-red-200">
               Class Full
             </span>
-          ) : !eventClass.isOpen ? (
+          ) : !eventClass.isRegistrationOpen ? (
             <span className="rounded-full border border-amber-300/20 bg-amber-300/10 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.12em] text-amber-200">
               Not Open
             </span>

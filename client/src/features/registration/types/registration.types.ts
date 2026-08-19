@@ -1,31 +1,29 @@
 export type RegistrationStatus =
-  | "draft"
   | "pending_payment"
   | "pending_cash"
   | "confirmed"
+  | "waitlisted"
   | "cancelled"
-  | "withdrawn";
-
-export type RegistrationPaymentMethod = "online" | "cash";
-
-export type RegistrationPaymentStatus =
-  | "unpaid"
-  | "pending"
-  | "completed"
-  | "failed"
+  | "partially_refunded"
   | "refunded";
 
-export type RegistrationEventStatus =
-  | "upcoming"
-  | "open"
-  | "closed"
-  | "completed";
+export type RegistrationPaymentMethod = "online" | "cash" | "manual" | "waived";
 
-export type RegistrationRaceDay = "saturday" | "sunday";
+export type RegistrationPaymentStatus =
+  | "not_required"
+  | "pending"
+  | "processing"
+  | "completed"
+  | "failed"
+  | "cancelled"
+  | "partially_refunded"
+  | "refunded";
+
+export type RegistrationEventStatus = "upcoming" | "open" | "closed";
 
 export type RegistrationOrganization = {
   id: string;
-  slug: string;
+  slug?: string;
   name: string;
   abbreviation?: string | null;
   description?: string | null;
@@ -35,58 +33,113 @@ export type RegistrationOrganization = {
   stateCode?: string | null;
   countryCode?: string | null;
   websiteUrl?: string | null;
-  squareConnected?: boolean;
+};
+
+export type RegistrationEventDay = {
+  id: string;
+  key: string;
+  label: string;
+  date: string;
+  startsAt?: string | null;
+  endsAt?: string | null;
+  isRegistrationEnabled: boolean;
+  displayOrder: number;
+};
+
+export type RegistrationPriceRule = {
+  id: string;
+  name: string;
+  description?: string | null;
+  pricingModel: string;
+  amountCents: number;
+  currency: string;
+  validFrom?: string | null;
+  validUntil?: string | null;
+  priority: number;
+  primaryEventDayId?: string | null;
+  eventDayIds: string[];
 };
 
 export type RegistrationEventClass = {
   id: string;
-  eventId: string;
+  eventId?: string;
+  divisionId: string;
+
   name: string;
   code?: string | null;
   description?: string | null;
-  price: number;
-  availableDays: RegistrationRaceDay[];
+
+  pricingModel?: string;
+  basePriceCents: number;
+  currency: string;
+
   capacity?: number | null;
-  confirmedRacerCount: number;
-  isOpen: boolean;
+  allowWaitlist: boolean;
+
+  minimumSelectedDays: number;
+  maximumSelectedDays?: number | null;
+
+  isRegistrationOpen: boolean;
   displayOrder: number;
+
+  confirmedRacerCount: number;
+
+  priceRules?: RegistrationPriceRule[];
 };
 
 export type RegistrationEvent = {
   id: string;
+  registrationSettingsId?: string;
+
   slug: string;
-  organizationId: string;
-  organizationName: string;
-  organizationAbbreviation?: string | null;
 
   name: string;
   description: string;
 
-  city: string;
-  stateCode?: string | null;
-  countryCode: string;
+  sport?: string | null;
+  imageUrl?: string | null;
+
+  location?: string | null;
   formattedLocation: string;
+  latitude?: number | null;
+  longitude?: number | null;
 
   startDate: string;
   endDate: string;
 
-  registrationOpenDate: string;
-  registrationCloseDate: string;
   registrationStatus: RegistrationEventStatus;
 
-  coverImageUrl?: string | null;
+  registrationOpensAt?: string | null;
+  registrationClosesAt?: string | null;
 
-  platformFee: number;
-  processingFee: number;
+  confirmedRacerCount: number;
+  classCount?: number;
+  dayCount?: number;
+
+  organization: {
+    id: string;
+    name: string;
+    abbreviation?: string | null;
+    logoUrl?: string | null;
+  };
 
   allowOnlinePayment: boolean;
   allowCashPayment: boolean;
+  allowManualPayment?: boolean;
+  allowCoupons?: boolean;
+  allowWaitlist?: boolean;
 
-  confirmedRacerCount: number;
+  requireAccount?: boolean;
+  showPublicEntryList?: boolean;
+
+  currency: string;
+
+  termsText?: string | null;
+  refundPolicyText?: string | null;
+  confirmationMessage?: string | null;
+
+  eventDays: RegistrationEventDay[];
   classes: RegistrationEventClass[];
-
-  refundPolicy?: string | null;
-  cashPaymentInstructions?: string | null;
 };
 
 export type RegistrationRacer = {
@@ -110,15 +163,18 @@ export type NewRegistrationRacerInput = {
   firstName: string;
   lastName: string;
   nickname?: string;
+
   city: string;
   stateCode?: string;
   countryCode: string;
+
   raceNumber?: string;
 };
 
 export type RegistrationContact = {
   email: string;
   phone: string;
+
   city: string;
   stateCode?: string;
   countryCode: string;
@@ -127,8 +183,16 @@ export type RegistrationContact = {
 export type RegistrationClassSelection = {
   classId: string;
   className: string;
-  raceDays: RegistrationRaceDay[];
-  price: number;
+
+  selectedEventDayIds: string[];
+  selectedEventDays: RegistrationEventDay[];
+
+  /**
+   * Display-only estimate.
+   *
+   * The backend remains authoritative for final pricing.
+   */
+  estimatedPriceCents: number;
 };
 
 export type RegistrationWatercraft = {
@@ -136,14 +200,20 @@ export type RegistrationWatercraft = {
   make: string;
   model: string;
   year?: string;
+
   useForAllClasses: boolean;
+
+  hullIdentificationNumber?: string;
+  engineDescription?: string;
+  notes?: string;
 };
 
 export type RegistrationPricingSummary = {
-  classSubtotal: number;
-  platformFee: number;
-  processingFee: number;
-  total: number;
+  classSubtotalCents: number;
+  platformFeeCents: number;
+  processingFeeCents: number;
+  totalCents: number;
+  currency: string;
 };
 
 export type RegistrationDraft = {
@@ -153,6 +223,7 @@ export type RegistrationDraft = {
   registeredByUserId?: string | null;
 
   racer?: RegistrationRacer | null;
+
   newRacer?: NewRegistrationRacerInput | null;
 
   contact: RegistrationContact;
@@ -165,46 +236,62 @@ export type RegistrationDraft = {
 
   pricing: RegistrationPricingSummary;
 
+  termsAccepted: boolean;
+  couponCode?: string;
+
   currentStep: number;
 
   updatedAt: string;
 };
 
-export type DemoRegistration = {
-  id: string;
+export type PublicRegistrationEntry = {
+  registrationId: string;
+  confirmationNumber: string;
 
-  eventId: string;
-  eventSlug: string;
+  registrationStatus: RegistrationStatus;
 
-  registeredByUserId?: string | null;
+  registeredAt: string;
 
-  racer: RegistrationRacer;
-  contact: RegistrationContact;
+  racer: {
+    id: string;
+    name: string;
+    nickname?: string | null;
+    imageUrl?: string | null;
 
-  selectedClasses: RegistrationClassSelection[];
-  watercraft: RegistrationWatercraft;
+    formattedLocation?: string | null;
+    city?: string | null;
+    stateCode?: string | null;
+    countryCode?: string | null;
 
-  paymentMethod: RegistrationPaymentMethod;
-  paymentStatus: RegistrationPaymentStatus;
-  status: RegistrationStatus;
+    teamName?: string | null;
+  };
 
-  pricing: RegistrationPricingSummary;
+  classEntry: {
+    id: string;
 
-  createdAt: string;
-  updatedAt: string;
+    eventClassId: string;
+    divisionId: string;
+
+    className: string;
+    status: string;
+
+    selectedDays: Array<{
+      id: string;
+      key: string;
+      label: string;
+      date: string;
+    }>;
+  };
 };
 
 export type PublicRegisteredRacer = {
   registrationId: string;
-  racer: RegistrationRacer;
-  selectedClasses: RegistrationClassSelection[];
-  status: "confirmed";
-  registeredAt: string;
-};
 
-export type RegistrationDemoData = {
-  organizations: RegistrationOrganization[];
-  events: RegistrationEvent[];
-  racers: RegistrationRacer[];
-  registrations: DemoRegistration[];
+  racer: RegistrationRacer;
+
+  selectedClasses: RegistrationClassSelection[];
+
+  status: RegistrationStatus;
+
+  registeredAt: string;
 };

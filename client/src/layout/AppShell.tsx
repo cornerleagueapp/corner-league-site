@@ -32,6 +32,43 @@ function activeKeyFromPath(pathnameWithQuery: string): string {
     return "home";
   }
 
+  const organizationAdminMatch = pathname.match(
+    /^\/organizations\/[^/]+\/admin(?:\/([^/]+))?/,
+  );
+
+  if (organizationAdminMatch) {
+    const section = organizationAdminMatch[1];
+
+    switch (section) {
+      case "events":
+        return "org-admin-events";
+
+      case "registrations":
+        return "org-admin-registrations";
+
+      case "race-days":
+        return "org-admin-race-days";
+
+      case "race-schedule":
+        return "org-admin-race-schedule";
+
+      case "payments":
+        return "org-admin-payments";
+
+      case "results":
+        return "org-admin-results";
+
+      case "members":
+        return "org-admin-members";
+
+      case "settings":
+        return "org-admin-settings";
+
+      default:
+        return "org-admin-overview";
+    }
+  }
+
   if (pathname === "/profile") {
     return "your-profile";
   }
@@ -132,6 +169,14 @@ export default function AppShell({
   });
 
   const [location, navigate] = useLocation();
+
+  const organizationAdminMatch = location.match(
+    /^\/organizations\/([^/]+)\/admin(?:\/|$)/,
+  );
+
+  const activeOrganizationId = organizationAdminMatch?.[1]
+    ? decodeURIComponent(organizationAdminMatch[1])
+    : null;
 
   const { user, isAuthenticated } = useAuth();
   const effectiveGuestMode = guestMode && !isAuthenticated;

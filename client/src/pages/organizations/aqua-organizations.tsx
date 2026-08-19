@@ -20,6 +20,10 @@ type Organization = {
 export default function AquaOrganizationsPage() {
   const [, navigate] = useLocation();
 
+  const isAdminSelection =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("adminSelect") === "1";
+
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["/organizations"],
     queryFn: async () => {
@@ -98,21 +102,22 @@ export default function AquaOrganizationsPage() {
 
               <div className="space-y-3">
                 <p className="text-xs font-black uppercase tracking-[0.28em] text-cyan-200/65">
-                  Aqua • Sanctioning Bodies • Race Series
+                  {isAdminSelection
+                    ? "Corner League • Organization Administration"
+                    : "Aqua • Sanctioning Bodies • Race Series"}
                 </p>
 
                 <h1 className="text-[2.35rem] font-black uppercase leading-[0.9] tracking-[-0.04em] text-white min-[380px]:text-4xl sm:text-5xl lg:text-6xl">
-                  AQUA{" "}
+                  {isAdminSelection ? "SELECT " : "AQUA "}
                   <span className="bg-[linear-gradient(90deg,#19E3FF_0%,#FF7849_100%)] bg-clip-text text-transparent">
-                    Organizations
+                    Organization
                   </span>
                 </h1>
 
                 <p className="max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
-                  Explore sanctioning bodies and race organizations with a more
-                  modern, event-driven viewing experience. Select an
-                  organization to see its details, branding, and competition
-                  information.
+                  {isAdminSelection
+                    ? "Choose an organization to enter its administration console and manage events, registrations, race scheduling, payments, results, members, and settings."
+                    : "Explore sanctioning bodies and race organizations with a more modern, event-driven viewing experience. Select an organization to see its details, branding, and competition information."}
                 </p>
               </div>
             </div>
@@ -244,6 +249,13 @@ export default function AquaOrganizationsPage() {
                       sourcePage: "organizations_list",
                     }).catch(() => {});
 
+                    if (isAdminSelection) {
+                      navigate(
+                        `/organizations/${encodeURIComponent(o.id)}/admin`,
+                      );
+                      return;
+                    }
+
                     navigate(`/aqua-organizations/${o.id}`);
                   }}
                   className="group relative min-w-0 w-full overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-5 text-left shadow-[0_24px_70px_rgba(0,0,0,0.28)] transition duration-300 hover:-translate-y-1 hover:border-cyan-300/25 hover:bg-cyan-300/[0.045] focus:outline-none focus:ring-2 focus:ring-cyan-300/30 sm:p-6"
@@ -337,7 +349,9 @@ export default function AquaOrganizationsPage() {
                           Details
                         </div>
                         <div className="mt-1 text-sm font-semibold text-cyan-300">
-                          View Profile
+                          {isAdminSelection
+                            ? "Open Admin Console"
+                            : "View Profile"}
                         </div>
                       </div>
                     </div>
@@ -346,23 +360,6 @@ export default function AquaOrganizationsPage() {
                       <p className="min-w-0 break-all text-[10px] uppercase tracking-[0.16em] text-white/35">
                         ID: {o.id}
                       </p>
-
-                      {/* <span className="inline-flex items-center gap-2 text-sm font-semibold text-cyan-300 transition group-hover:text-cyan-200">
-                        Open organization
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-4 w-4 transition group-hover:translate-x-0.5"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.8"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M7 17 17 7" />
-                          <path d="M8 7h9v9" />
-                        </svg>
-                      </span> */}
                     </div>
                   </div>
                 </button>

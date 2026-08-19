@@ -1,4 +1,5 @@
 import { CheckCircle2, Clock3, Users } from "lucide-react";
+
 import type { PublicRegisteredRacer } from "../types/registration.types";
 
 type RecentRegistrationsProps = {
@@ -14,6 +15,7 @@ function formatRelativeTime(dateValue: string) {
   }
 
   const differenceMs = Date.now() - timestamp;
+
   const minutes = Math.max(0, Math.floor(differenceMs / 60_000));
 
   if (minutes < 1) {
@@ -64,10 +66,10 @@ export default function RecentRegistrations({
     .slice(0, limit);
 
   return (
-    <section className="rounded-[26px] border border-cyan-300/10 bg-[#07111F]/82 p-5">
+    <section className="rounded-[26px] border border-cyan-300/10 bg-[#07111F]/78 p-5">
       <div className="flex items-center gap-3">
-        <div className="grid h-11 w-11 place-items-center rounded-2xl border border-[#FF6B35]/15 bg-[#FF6B35]/10 text-[#FFB199]">
-          <Users className="h-5 w-5" />
+        <div className="grid h-10 w-10 place-items-center rounded-2xl border border-[#FF6B35]/15 bg-[#FF6B35]/10">
+          <Users className="h-4 w-4 text-[#FFB199]" />
         </div>
 
         <div>
@@ -97,8 +99,16 @@ export default function RecentRegistrations({
               className="rounded-[18px] border border-white/10 bg-white/[0.03] p-3"
             >
               <div className="flex items-center gap-3">
-                <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-cyan-300/15 bg-cyan-300/10 text-xs font-black text-cyan-200">
-                  {getInitials(registration.racer.name)}
+                <div className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full border border-cyan-300/15 bg-cyan-300/10 text-xs font-black text-cyan-200">
+                  {registration.racer.imageUrl ? (
+                    <img
+                      src={registration.racer.imageUrl}
+                      alt={registration.racer.name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    getInitials(registration.racer.name)
+                  )}
                 </div>
 
                 <div className="min-w-0 flex-1">
@@ -119,6 +129,7 @@ export default function RecentRegistrations({
 
                 <div className="flex shrink-0 items-center gap-1 text-[9px] font-bold text-white/35">
                   <Clock3 className="h-3 w-3" />
+
                   {formatRelativeTime(registration.registeredAt)}
                 </div>
               </div>
