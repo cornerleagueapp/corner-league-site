@@ -98,22 +98,6 @@ export function getOrganizationAdminNavigation(
     },
 
     {
-      key: "race-days",
-      label: "Race Days",
-      description: "Configure race days, classes, rounds, and event setup.",
-      href: `${basePath}/race-days`,
-      permission: "manageEventDays",
-    },
-
-    {
-      key: "race-schedule",
-      label: "Race Schedule",
-      description: "Generate, edit, validate, and publish race orders.",
-      href: `${basePath}/race-schedule`,
-      permission: "manageRaceScheduling",
-    },
-
-    {
       key: "payments",
       label: "Payments",
       description: "Review registration payments, refunds, and Stripe status.",

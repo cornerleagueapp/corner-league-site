@@ -4,8 +4,11 @@ import {
   CheckCircle2,
   CircleDollarSign,
   Clock3,
+  ExternalLink,
   Loader2,
+  Settings2,
   Search,
+  SlidersHorizontal,
   UserRound,
   Users,
   XCircle,
@@ -115,6 +118,59 @@ function statusBadgeClass(status?: string) {
   return "border-amber-300/20 bg-amber-300/10 text-amber-100";
 }
 
+function getRegistrationSetupStatus(configuration: any) {
+  const settings =
+    configuration?.settings ?? configuration?.registrationSettings ?? null;
+
+  if (!settings) {
+    return {
+      label: "Not Configured",
+      className: "border-amber-300/20 bg-amber-300/10 text-amber-100",
+      enabled: false,
+    };
+  }
+
+  if (!settings.isRegistrationEnabled) {
+    return {
+      label: "Configured / Closed",
+      className: "border-white/10 bg-white/[0.05] text-white/60",
+      enabled: false,
+    };
+  }
+
+  const now = Date.now();
+
+  const opensAt = settings.registrationOpensAt
+    ? new Date(settings.registrationOpensAt).getTime()
+    : null;
+
+  const closesAt = settings.registrationClosesAt
+    ? new Date(settings.registrationClosesAt).getTime()
+    : null;
+
+  if (opensAt && now < opensAt) {
+    return {
+      label: "Scheduled",
+      className: "border-cyan-300/20 bg-cyan-300/10 text-cyan-100",
+      enabled: false,
+    };
+  }
+
+  if (closesAt && now > closesAt) {
+    return {
+      label: "Closed",
+      className: "border-red-300/20 bg-red-300/10 text-red-100",
+      enabled: false,
+    };
+  }
+
+  return {
+    label: "Registration Open",
+    className: "border-emerald-300/20 bg-emerald-300/10 text-emerald-100",
+    enabled: true,
+  };
+}
+
 type MetricProps = {
   label: string;
 
@@ -198,6 +254,19 @@ export default function OrganizationRegistrationsPage({
 
   const selectedEvent =
     events.find((event) => event.id === selectedEventId) ?? null;
+
+  const registrationStatus = getRegistrationSetupStatus(
+    configurationQuery.data,
+  );
+
+  const registrationSettings =
+    configurationQuery.data?.settings ??
+    configurationQuery.data?.registrationSettings ??
+    null;
+
+  const raceDaysCount = registrationSettings?.eventDays?.length ?? 0;
+
+  const classCount = registrationSettings?.eventClasses?.length ?? 0;
 
   const filteredRegistrations = useMemo(() => {
     const normalized = search.trim().toLowerCase();
@@ -303,26 +372,74 @@ export default function OrganizationRegistrationsPage({
         ) : (
           <>
             {selectedEvent ? (
-              <div className="mt-7 rounded-[22px] border border-cyan-300/10 bg-cyan-300/[0.035] p-4">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <div className="text-sm font-black text-white">
-                      {selectedEvent.name}
+              <div className="mt-7 overflow-hidden rounded-[24px] border border-cyan-300/10 bg-cyan-300/[0.035]">
+                <div className="flex flex-col gap-4 p-5 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="text-sm font-black text-white">
+                        {selectedEvent.name}
+                      </div>
+
+                      <span
+                        className={`inline-flex rounded-full border px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.12em] ${registrationStatus.className}`}
+                      >
+                        {registrationStatus.label}
+                      </span>
                     </div>
 
-                    <div className="mt-1 text-xs text-slate-500">
-                      {formatDate(selectedEvent.startDate)}
-                      {selectedEvent.endDate
-                        ? ` – ${formatDate(selectedEvent.endDate)}`
-                        : ""}
+                    <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+                      <span>
+                        {formatDate(selectedEvent.startDate)}
+                        {selectedEvent.endDate
+                          ? ` – ${formatDate(selectedEvent.endDate)}`
+                          : ""}
+                      </span>
+
+                      {selectedEvent.location ? (
+                        <span>{selectedEvent.location}</span>
+                      ) : null}
                     </div>
+
+                    {hasRegistrationConfiguration ? (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.1em] text-white/55">
+                          {raceDaysCount} race day
+                          {raceDaysCount === 1 ? "" : "s"}
+                        </span>
+
+                        <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.1em] text-white/55">
+                          {classCount} class
+                          {classCount === 1 ? "" : "es"}
+                        </span>
+                      </div>
+                    ) : null}
                   </div>
 
-                  {selectedEvent.location ? (
-                    <div className="text-xs font-bold text-slate-400">
-                      {selectedEvent.location}
-                    </div>
-                  ) : null}
+                  <div className="flex flex-wrap gap-2">
+                    <a
+                      href={`/organizations/${encodeURIComponent(
+                        organizationId,
+                      )}/admin/race-days?eventId=${encodeURIComponent(
+                        selectedEventId,
+                      )}`}
+                      className="inline-flex h-10 items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 text-[9px] font-black uppercase tracking-[0.12em] text-white/65 transition hover:bg-white/[0.08] hover:text-white"
+                    >
+                      <SlidersHorizontal className="h-3.5 w-3.5" />
+                      Race Days
+                    </a>
+
+                    <a
+                      href={`/organizations/${encodeURIComponent(
+                        organizationId,
+                      )}/admin/settings?eventId=${encodeURIComponent(
+                        selectedEventId,
+                      )}`}
+                      className="inline-flex h-10 items-center gap-2 rounded-full border border-cyan-300/15 bg-cyan-300/[0.06] px-4 text-[9px] font-black uppercase tracking-[0.12em] text-cyan-100 transition hover:bg-cyan-300/10"
+                    >
+                      <Settings2 className="h-3.5 w-3.5" />
+                      Settings
+                    </a>
+                  </div>
                 </div>
               </div>
             ) : null}
@@ -344,14 +461,31 @@ export default function OrganizationRegistrationsPage({
                   up registration before accepting racer entries.
                 </p>
 
-                <a
-                  href={`/organizations/${encodeURIComponent(
-                    organizationId,
-                  )}/admin/settings?eventId=${encodeURIComponent(selectedEventId)}`}
-                  className="mt-6 inline-flex h-11 items-center justify-center rounded-full bg-cyan-300 px-6 text-[10px] font-black uppercase tracking-[0.14em] text-[#06111d] transition hover:bg-cyan-200"
-                >
-                  Set Up Registration
-                </a>
+                <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+                  <a
+                    href={`/organizations/${encodeURIComponent(
+                      organizationId,
+                    )}/admin/settings?eventId=${encodeURIComponent(
+                      selectedEventId,
+                    )}`}
+                    className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-cyan-300 px-6 text-[10px] font-black uppercase tracking-[0.14em] text-[#06111d] transition hover:bg-cyan-200"
+                  >
+                    <Settings2 className="h-4 w-4" />
+                    Set Up Registration
+                  </a>
+
+                  <a
+                    href={`/organizations/${encodeURIComponent(
+                      organizationId,
+                    )}/admin/race-days?eventId=${encodeURIComponent(
+                      selectedEventId,
+                    )}`}
+                    className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-6 text-[10px] font-black uppercase tracking-[0.14em] text-white/65 transition hover:bg-white/[0.08] hover:text-white"
+                  >
+                    <CalendarDays className="h-4 w-4" />
+                    Configure Race Days
+                  </a>
+                </div>
               </div>
             ) : registrationsQuery.isLoading ? (
               <div className="mt-10 flex min-h-[320px] items-center justify-center">
@@ -369,6 +503,61 @@ export default function OrganizationRegistrationsPage({
               </div>
             ) : (
               <>
+                {hasRegistrationConfiguration && !registrationStatus.enabled ? (
+                  <div className="mt-7 flex flex-col gap-4 rounded-[22px] border border-amber-300/15 bg-amber-300/[0.04] p-5 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <div className="text-sm font-black text-amber-100">
+                        Registration is not currently open
+                      </div>
+
+                      <p className="mt-1 text-xs leading-5 text-amber-100/55">
+                        The event is configured, but racers cannot currently
+                        submit registrations. Update the registration window or
+                        enable registration when you are ready.
+                      </p>
+                    </div>
+
+                    <a
+                      href={`/organizations/${encodeURIComponent(
+                        organizationId,
+                      )}/admin/settings?eventId=${encodeURIComponent(
+                        selectedEventId,
+                      )}`}
+                      className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-full border border-amber-300/20 bg-amber-300/10 px-4 text-[9px] font-black uppercase tracking-[0.12em] text-amber-100 transition hover:bg-amber-300/15"
+                    >
+                      <Settings2 className="h-3.5 w-3.5" />
+                      Manage Registration
+                    </a>
+                  </div>
+                ) : null}
+
+                {registrationStatus.enabled &&
+                registrationSettings?.publicSlug ? (
+                  <div className="mt-7 flex flex-col gap-4 rounded-[22px] border border-emerald-300/15 bg-emerald-300/[0.04] p-5 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <div className="text-sm font-black text-emerald-100">
+                        Public registration is open
+                      </div>
+
+                      <p className="mt-1 text-xs leading-5 text-emerald-100/55">
+                        Racers can currently register for this event.
+                      </p>
+                    </div>
+
+                    <a
+                      href={`/registration/events/${encodeURIComponent(
+                        registrationSettings.publicSlug,
+                      )}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-full border border-emerald-300/20 bg-emerald-300/10 px-4 text-[9px] font-black uppercase tracking-[0.12em] text-emerald-100 transition hover:bg-emerald-300/15"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                      View Public Registration
+                    </a>
+                  </div>
+                ) : null}
+
                 <div className="mt-7 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                   <Metric
                     label="Registrations"

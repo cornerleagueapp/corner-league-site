@@ -6,6 +6,7 @@ import {
   getRegistrationEventDivisions,
   updateRegistrationEventClass,
   updateRegistrationEventDay,
+  syncRegistrationEventDays,
 } from "../api/organizationRaceDayApi";
 import type {
   CreateRegistrationClassInput,
@@ -33,6 +34,28 @@ export function useRegistrationEventConfiguration(
     staleTime: 30 * 1000,
 
     retry: false,
+  });
+}
+
+export function useSyncRegistrationEventDays(
+  eventId: string | null | undefined,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      if (!eventId) {
+        throw new Error("Event ID is required.");
+      }
+
+      return syncRegistrationEventDays(eventId);
+    },
+
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["organization-registration-configuration", eventId],
+      });
+    },
   });
 }
 

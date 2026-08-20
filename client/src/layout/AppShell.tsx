@@ -46,12 +46,6 @@ function activeKeyFromPath(pathnameWithQuery: string): string {
       case "registrations":
         return "org-admin-registrations";
 
-      case "race-days":
-        return "org-admin-race-days";
-
-      case "race-schedule":
-        return "org-admin-race-schedule";
-
       case "payments":
         return "org-admin-payments";
 

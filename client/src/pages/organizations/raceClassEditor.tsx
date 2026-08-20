@@ -72,11 +72,43 @@ type DivisionFinalResult = {
   sumPositions: number;
 };
 
-export default function RaceClassEditor() {
+type RaceClassEditorProps = {
+  organizationId?: string;
+  eventId?: string;
+  embedded?: boolean;
+};
+
+export default function RaceClassEditor({
+  organizationId,
+  eventId: eventIdProp,
+  embedded = false,
+}: RaceClassEditorProps = {}) {
   const [, navigate] = useLocation();
   const { toast } = useToast();
-  const [, params] = useRoute("/organization/events/:id/classes");
-  const eventId = params?.id || "";
+
+  // Legacy Super Admin route:
+  // /organization/events/:id/classes
+  const [, legacyParams] = useRoute("/organization/events/:id/classes");
+
+  const eventId = eventIdProp || legacyParams?.id || "";
+
+  const eventPath =
+    organizationId && eventId
+      ? `/organizations/${encodeURIComponent(
+          organizationId,
+        )}/admin/events/${encodeURIComponent(eventId)}`
+      : `/organization/events/${encodeURIComponent(eventId)}`;
+
+  const manageClassPath = (divisionId: string) =>
+    organizationId && eventId
+      ? `/organizations/${encodeURIComponent(
+          organizationId,
+        )}/admin/events/${encodeURIComponent(
+          eventId,
+        )}/classes/${encodeURIComponent(divisionId)}/manage`
+      : `/organization/events/${encodeURIComponent(
+          eventId,
+        )}/classes/${encodeURIComponent(divisionId)}/manage`;
 
   const [loading, setLoading] = useState(false);
   const [divisions, setDivisions] = useState<Division[]>([]);
@@ -264,57 +296,177 @@ export default function RaceClassEditor() {
   }
 
   return (
-    <div className="relative min-h-dvh overflow-x-hidden bg-[#030913] text-white">
-      <div className="pointer-events-none fixed inset-0 -z-10">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.12),transparent_28%),radial-gradient(circle_at_82%_12%,rgba(255,107,53,0.10),transparent_24%),linear-gradient(180deg,#030913_0%,#07111F_48%,#02050A_100%)]" />
-        <div className="absolute inset-0 opacity-[0.04] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:72px_72px]" />
-      </div>
+    <div
+      className={
+        embedded
+          ? "text-white"
+          : "relative min-h-dvh overflow-x-hidden bg-[#030913] text-white"
+      }
+    >
+      {!embedded ? (
+        <div className="pointer-events-none fixed inset-0 -z-10">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.12),transparent_28%),radial-gradient(circle_at_82%_12%,rgba(255,107,53,0.10),transparent_24%),linear-gradient(180deg,#030913_0%,#07111F_48%,#02050A_100%)]" />
+          <div className="absolute inset-0 opacity-[0.04] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:72px_72px]" />
+        </div>
+      ) : null}
 
-      <main className="mx-auto w-full max-w-6xl space-y-6 px-4 py-8 pb-24 sm:px-6 sm:py-12 lg:px-8">
-        <section className="relative overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[linear-gradient(180deg,rgba(7,17,31,0.94)_0%,rgba(4,10,19,0.98)_100%)] p-5 shadow-[0_30px_90px_rgba(0,0,0,0.42)] sm:rounded-[38px] sm:p-8">
-          <div className="pointer-events-none absolute inset-0">
-            <div className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-cyan-400/10 blur-3xl" />
-            <div className="absolute -right-24 bottom-0 h-96 w-96 rounded-full bg-[#FF6B35]/10 blur-3xl" />
-            <div className="absolute inset-0 opacity-[0.05] [background-image:linear-gradient(rgba(255,255,255,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.18)_1px,transparent_1px)] [background-size:72px_72px]" />
-          </div>
+      <main
+        className={
+          embedded
+            ? "w-full space-y-6"
+            : "mx-auto w-full max-w-6xl space-y-6 px-4 py-8 pb-24 sm:px-6 sm:py-12 lg:px-8"
+        }
+      >
+        {!embedded ? (
+          <section className="relative overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[linear-gradient(180deg,rgba(7,17,31,0.94)_0%,rgba(4,10,19,0.98)_100%)] p-5 shadow-[0_30px_90px_rgba(0,0,0,0.42)] sm:rounded-[38px] sm:p-8">
+            <div className="pointer-events-none absolute inset-0">
+              <div className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-cyan-400/10 blur-3xl" />
+              <div className="absolute -right-24 bottom-0 h-96 w-96 rounded-full bg-[#FF6B35]/10 blur-3xl" />
+              <div className="absolute inset-0 opacity-[0.05] [background-image:linear-gradient(rgba(255,255,255,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.18)_1px,transparent_1px)] [background-size:72px_72px]" />
+            </div>
 
-          <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-            <div className="min-w-0">
-              <button
-                type="button"
-                onClick={() => navigate(`/organization/events/${eventId}`)}
-                className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-white/70 transition hover:bg-white/10 hover:text-white"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Back to Event
-              </button>
+            <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+              <div className="min-w-0">
+                <button
+                  type="button"
+                  onClick={() => navigate(eventPath)}
+                  className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-white/70 transition hover:bg-white/10 hover:text-white"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to Event
+                </button>
 
-              <div className="mb-4 flex flex-wrap items-center gap-2">
-                <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-cyan-200">
-                  <span className="h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_18px_rgba(103,232,249,0.95)]" />
-                  Admin Classes
+                <div className="mb-4 flex flex-wrap items-center gap-2">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-cyan-200">
+                    <span className="h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_18px_rgba(103,232,249,0.95)]" />
+                    Admin Classes
+                  </div>
+
+                  <div className="inline-flex items-center rounded-full border border-[#FF6B35]/20 bg-[#FF6B35]/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-[#FFB199]">
+                    Results Setup
+                  </div>
                 </div>
 
-                <div className="inline-flex items-center rounded-full border border-[#FF6B35]/20 bg-[#FF6B35]/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-[#FFB199]">
-                  Results Setup
-                </div>
+                <h1 className="max-w-4xl text-3xl font-black uppercase leading-[0.95] tracking-[-0.04em] text-white sm:text-5xl">
+                  Classes &{" "}
+                  <span className="bg-[linear-gradient(90deg,#19E3FF_0%,#7CF4FF_35%,#FF7849_100%)] bg-clip-text text-transparent">
+                    Results
+                  </span>
+                </h1>
+
+                <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
+                  Manage classes, divisions, motos, and event result groups.
+                </p>
               </div>
 
-              <h1 className="max-w-4xl text-3xl font-black uppercase leading-[0.95] tracking-[-0.04em] text-white sm:text-5xl">
-                Classes &{" "}
-                <span className="bg-[linear-gradient(90deg,#19E3FF_0%,#7CF4FF_35%,#FF7849_100%)] bg-clip-text text-transparent">
-                  Results
-                </span>
-              </h1>
+              <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+                <DialogTrigger asChild>
+                  <Button className="h-12 w-full rounded-full bg-cyan-300 px-6 text-xs font-black uppercase tracking-[0.16em] text-[#06111d] shadow-[0_0_28px_rgba(34,211,238,0.25)] hover:bg-cyan-200 sm:w-auto">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Class
+                  </Button>
+                </DialogTrigger>
 
-              <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
-                Manage classes, divisions, motos, and event result groups.
+                <DialogContent className="rounded-[28px] border border-cyan-300/10 bg-[#07111F] text-white shadow-[0_30px_90px_rgba(0,0,0,0.52)]">
+                  <DialogHeader>
+                    <DialogTitle className="text-2xl font-black uppercase tracking-[-0.03em] text-white">
+                      Create Class
+                    </DialogTitle>
+                    <DialogDescription className="text-slate-300">
+                      Add a race class, such as “Novice Runabout Stock”.
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  <div className="space-y-4 pt-2">
+                    <div className="grid gap-2">
+                      <Label className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">
+                        Class name *
+                      </Label>
+                      <Input
+                        autoFocus
+                        value={formName}
+                        onChange={(e) => setFormName(e.target.value)}
+                        placeholder="Enter race class name…"
+                        className="h-12 rounded-[14px] border-white/10 bg-white/[0.055] text-white placeholder:text-white/35 focus-visible:ring-cyan-300/30"
+                      />
+                    </div>
+                  </div>
+
+                  <DialogFooter className="gap-2 pt-2 sm:gap-2">
+                    <DialogClose asChild>
+                      <Button
+                        variant="outline"
+                        className="h-11 rounded-full border-white/10 bg-white/[0.05] px-5 text-white hover:bg-white/10"
+                      >
+                        Cancel
+                      </Button>
+                    </DialogClose>
+
+                    <Button
+                      className="h-11 rounded-full bg-cyan-300 px-5 text-xs font-black uppercase tracking-[0.14em] text-[#06111d] hover:bg-cyan-200"
+                      onClick={handleCreate}
+                      disabled={creating}
+                    >
+                      {creating ? "Creating…" : "Create Class"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            <div className="relative mt-6">
+              {event ? (
+                <div className="rounded-[22px] border border-cyan-300/10 bg-cyan-300/[0.04] px-4 py-4">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0">
+                      <div className="break-words text-base font-black uppercase tracking-[-0.02em] text-white">
+                        {event.name}
+                      </div>
+                      <div className="mt-2 flex flex-wrap gap-2 text-xs text-white/55">
+                        <span className="inline-flex items-center gap-1.5">
+                          <Flag className="h-3.5 w-3.5 text-cyan-200" />
+                          {event.location || "Location TBD"}
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <CalendarDays className="h-3.5 w-3.5 text-[#FFB199]" />
+                          {fmtDate(event.startDate)} → {fmtDate(event.endDate)}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="inline-flex w-fit items-center rounded-full border border-cyan-300/15 bg-cyan-300/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200">
+                      {divisions.length} Class
+                      {divisions.length === 1 ? "" : "es"}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-4 text-sm text-white/55">
+                  Loading event…
+                </div>
+              )}
+            </div>
+          </section>
+        ) : (
+          <div className="flex flex-col gap-4 rounded-[24px] border border-cyan-300/10 bg-cyan-300/[0.035] p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="text-[9px] font-black uppercase tracking-[0.2em] text-cyan-200">
+                Competition Setup
+              </div>
+
+              <h2 className="mt-2 text-2xl font-black uppercase tracking-[-0.03em] text-white">
+                Event Classes & Results
+              </h2>
+
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
+                Create the event's master class list and manage racers, motos,
+                scoring, and final results.
               </p>
             </div>
 
             <Dialog open={createOpen} onOpenChange={setCreateOpen}>
               <DialogTrigger asChild>
-                <Button className="h-12 w-full rounded-full bg-cyan-300 px-6 text-xs font-black uppercase tracking-[0.16em] text-[#06111d] shadow-[0_0_28px_rgba(34,211,238,0.25)] hover:bg-cyan-200 sm:w-auto">
+                <Button className="h-11 rounded-full bg-cyan-300 px-5 text-[10px] font-black uppercase tracking-[0.14em] text-[#06111d] hover:bg-cyan-200">
                   <Plus className="mr-2 h-4 w-4" />
                   Add Class
                 </Button>
@@ -325,6 +477,7 @@ export default function RaceClassEditor() {
                   <DialogTitle className="text-2xl font-black uppercase tracking-[-0.03em] text-white">
                     Create Class
                   </DialogTitle>
+
                   <DialogDescription className="text-slate-300">
                     Add a race class, such as “Novice Runabout Stock”.
                   </DialogDescription>
@@ -335,6 +488,7 @@ export default function RaceClassEditor() {
                     <Label className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">
                       Class name *
                     </Label>
+
                     <Input
                       autoFocus
                       value={formName}
@@ -366,39 +520,7 @@ export default function RaceClassEditor() {
               </DialogContent>
             </Dialog>
           </div>
-
-          <div className="relative mt-6">
-            {event ? (
-              <div className="rounded-[22px] border border-cyan-300/10 bg-cyan-300/[0.04] px-4 py-4">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="min-w-0">
-                    <div className="break-words text-base font-black uppercase tracking-[-0.02em] text-white">
-                      {event.name}
-                    </div>
-                    <div className="mt-2 flex flex-wrap gap-2 text-xs text-white/55">
-                      <span className="inline-flex items-center gap-1.5">
-                        <Flag className="h-3.5 w-3.5 text-cyan-200" />
-                        {event.location || "Location TBD"}
-                      </span>
-                      <span className="inline-flex items-center gap-1.5">
-                        <CalendarDays className="h-3.5 w-3.5 text-[#FFB199]" />
-                        {fmtDate(event.startDate)} → {fmtDate(event.endDate)}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="inline-flex w-fit items-center rounded-full border border-cyan-300/15 bg-cyan-300/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200">
-                    {divisions.length} Class{divisions.length === 1 ? "" : "es"}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-4 text-sm text-white/55">
-                Loading event…
-              </div>
-            )}
-          </div>
-        </section>
+        )}
 
         <Card className="overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/90 p-0 shadow-[0_28px_80px_rgba(0,0,0,0.32)]">
           <div className="border-b border-white/10 px-5 py-5 sm:px-6">
@@ -462,11 +584,7 @@ export default function RaceClassEditor() {
                           aria-label="Edit class"
                           title="Edit / Manage"
                           className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-cyan-300/15 bg-cyan-300/10 px-4 text-xs font-black uppercase tracking-[0.12em] text-cyan-100 transition hover:bg-cyan-300/15"
-                          onClick={() =>
-                            navigate(
-                              `/organization/events/${eventId}/classes/${d.id}/manage`,
-                            )
-                          }
+                          onClick={() => navigate(manageClassPath(d.id))}
                         >
                           <Pencil size={15} />
                           Manage

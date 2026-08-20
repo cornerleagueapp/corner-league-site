@@ -53,7 +53,21 @@ export async function getRegistrationEventConfiguration(
     {
       refreshOn401: true,
 
-      logoutOn401: true,
+      logoutOn401: false,
+    },
+  );
+
+  return unwrap(response);
+}
+
+export async function syncRegistrationEventDays(eventId: string) {
+  const response = await apiRequest(
+    "POST",
+    `/registration/admin/events/${encodeURIComponent(eventId)}/days/sync`,
+    undefined,
+    {
+      refreshOn401: true,
+      logoutOn401: false,
     },
   );
 
@@ -65,7 +79,7 @@ export async function getRegistrationEventDivisions(
 ): Promise<RegistrationDivisionOption[]> {
   const response = await apiRequest(
     "GET",
-    `/sport-event/division/event/${encodeURIComponent(eventId)}?page=1&limit=100`,
+    `/sport-event/division/event/${encodeURIComponent(eventId)}?page=1&limit=50`,
     undefined,
     {
       refreshOn401: true,

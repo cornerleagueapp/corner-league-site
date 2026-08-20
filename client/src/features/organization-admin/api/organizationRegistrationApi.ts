@@ -51,7 +51,7 @@ export async function getOrganizationEvents(
     "GET",
     `/sport-event/organization/${encodeURIComponent(
       organizationId,
-    )}?page=1&limit=100&order=ASC`,
+    )}?page=1&limit=25&order=ASC`,
     undefined,
     {
       refreshOn401: false,

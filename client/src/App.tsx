@@ -246,6 +246,34 @@ function PrivateRouter() {
             {() => <SuperAdminRoute component={ClassMatchManagePage} />}
           </Route>
 
+          <Route path="/organizations/:organizationId/admin/events/:eventId/classes/:divisionId/manage">
+            {(params) => (
+              <ClassMatchManagePage
+                organizationId={params.organizationId}
+                eventId={params.eventId}
+                divisionId={params.divisionId}
+              />
+            )}
+          </Route>
+
+          <Route path="/organizations/:organizationId/admin/events/:eventId/classes">
+            {(params) => (
+              <RaceClassEditor
+                organizationId={params.organizationId}
+                eventId={params.eventId}
+              />
+            )}
+          </Route>
+
+          <Route path="/organizations/:organizationId/admin/events/:eventId/classes">
+            {(params) => (
+              <RaceClassEditor
+                organizationId={params.organizationId}
+                eventId={params.eventId}
+              />
+            )}
+          </Route>
+
           <Route path="/organizations/:organizationId/admin/events/:eventId">
             {(params) => (
               <UpdateEventPage

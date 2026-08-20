@@ -295,13 +295,33 @@ function getResultPointsDisplay(result?: ResultLite | null) {
   return "—";
 }
 
-export default function ClassMatchManagePage() {
-  const [, params] = useRoute(
+type ClassMatchManagePageProps = {
+  organizationId?: string;
+  eventId?: string;
+  divisionId?: string;
+};
+
+export default function ClassMatchManagePage({
+  organizationId,
+  eventId: eventIdProp,
+  divisionId: divisionIdProp,
+}: ClassMatchManagePageProps = {}) {
+  const [, legacyParams] = useRoute(
     "/organization/events/:eventId/classes/:divisionId/manage",
   );
-  const { eventId = "", divisionId = "" } = params || {};
+
+  const eventId = eventIdProp || legacyParams?.eventId || "";
+  const divisionId = divisionIdProp || legacyParams?.divisionId || "";
+
   const [, navigate] = useLocation();
   const { toast } = useToast();
+
+  const classesPath =
+    organizationId && eventId
+      ? `/organizations/${encodeURIComponent(
+          organizationId,
+        )}/admin/events/${encodeURIComponent(eventId)}/classes`
+      : `/organization/events/${encodeURIComponent(eventId)}/classes`;
 
   const [loading, setLoading] = useState(true);
   const [match, setMatch] = useState<MatchLite | null>(null);
@@ -1038,9 +1058,7 @@ export default function ClassMatchManagePage() {
             <div className="min-w-0">
               <button
                 type="button"
-                onClick={() =>
-                  navigate(`/organization/events/${eventId}/classes`)
-                }
+                onClick={() => navigate(classesPath)}
                 className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-white/70 transition hover:bg-white/10 hover:text-white"
               >
                 <ArrowLeft className="h-4 w-4" />

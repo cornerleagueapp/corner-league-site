@@ -1,5 +1,5 @@
 // pages/updateEventPage.tsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,14 +10,20 @@ import {
   ArrowLeft,
   CalendarDays,
   ClipboardList,
+  CreditCard,
+  Layers3,
   Save,
   Trophy,
 } from "lucide-react";
-
+import RaceClassEditor from "./raceClassEditor";
 import {
   LocationAutocomplete,
   type LocationSelection,
 } from "@/components/LocationAutocomplete";
+import {
+  useRegistrationEventConfiguration,
+  useSyncRegistrationEventDays,
+} from "@/features/organization-admin/hooks/useOrganizationRaceDays";
 
 type SportEnum = "jet ski";
 
@@ -42,21 +48,51 @@ export default function UpdateEventPage({
   // Organization admins receive the event id directly from App.tsx.
   const eventId = eventIdProp || legacyParams?.id || "";
 
-  const isOrganizationScoped = Boolean(organizationId);
-
   const eventListPath = organizationId
     ? `/organizations/${encodeURIComponent(organizationId)}/admin/events`
     : "/organization/event-list";
 
-  const classesPath =
-    organizationId && eventId
-      ? `/organizations/${encodeURIComponent(
-          organizationId,
-        )}/admin/events/${encodeURIComponent(eventId)}/classes`
-      : `/organization/events/${encodeURIComponent(eventId)}/classes`;
-
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  type WorkspaceTab = "details" | "classes" | "registration" | "race-days";
+
+  const [workspaceTab, setWorkspaceTab] = useState<WorkspaceTab>("details");
+
+  const registrationConfigurationQuery =
+    useRegistrationEventConfiguration(eventId);
+
+  const syncRaceDaysMutation = useSyncRegistrationEventDays(eventId);
+  const lastAutoSyncedEventIdRef = useRef<string | null>(null);
+
+  const raceDays =
+    registrationConfigurationQuery.data?.settings?.eventDays ?? [];
+
+  useEffect(() => {
+    if (
+      workspaceTab !== "race-days" ||
+      !eventId ||
+      !registrationConfigurationQuery.isSuccess ||
+      syncRaceDaysMutation.isPending ||
+      lastAutoSyncedEventIdRef.current === eventId
+    ) {
+      return;
+    }
+
+    lastAutoSyncedEventIdRef.current = eventId;
+
+    syncRaceDaysMutation.mutate(undefined, {
+      onError: () => {
+        // Allow another automatic attempt if synchronization failed.
+        lastAutoSyncedEventIdRef.current = null;
+      },
+    });
+  }, [
+    workspaceTab,
+    eventId,
+    registrationConfigurationQuery.isSuccess,
+    syncRaceDaysMutation.isPending,
+  ]);
 
   const [draft, setDraft] = useState({
     name: "",
@@ -268,186 +304,432 @@ export default function UpdateEventPage({
           </div>
         </section>
 
-        <Card className="mt-6 overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/90 p-0 shadow-[0_28px_80px_rgba(0,0,0,0.32)]">
-          <div className="border-b border-white/10 px-5 py-5 sm:px-6">
-            <div className="flex items-center gap-3">
-              <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-cyan-300/20 bg-cyan-300/10 text-cyan-200">
-                <CalendarDays className="h-5 w-5" />
-              </div>
+        <section className="mt-6 rounded-[26px] border border-cyan-300/10 bg-[#07111F]/85 p-2">
+          <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+            <button
+              type="button"
+              onClick={() => setWorkspaceTab("details")}
+              className={`flex min-h-16 items-center gap-3 rounded-[20px] border px-4 text-left transition ${
+                workspaceTab === "details"
+                  ? "border-cyan-300/25 bg-cyan-300/10 text-white"
+                  : "border-transparent text-white/50 hover:bg-white/[0.04] hover:text-white"
+              }`}
+            >
+              <CalendarDays className="h-5 w-5 shrink-0 text-cyan-200" />
 
               <div>
-                <div className="text-xs font-black uppercase tracking-[0.22em] text-cyan-300/80">
+                <div className="text-[10px] font-black uppercase tracking-[0.14em]">
                   Event Details
                 </div>
-                <p className="mt-1 text-sm text-white/55">
-                  Update the form below and save changes.
-                </p>
+
+                <div className="mt-1 text-[11px] text-white/35">
+                  Dates, location & info
+                </div>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setWorkspaceTab("classes")}
+              className={`flex min-h-16 items-center gap-3 rounded-[20px] border px-4 text-left transition ${
+                workspaceTab === "classes"
+                  ? "border-cyan-300/25 bg-cyan-300/10 text-white"
+                  : "border-transparent text-white/50 hover:bg-white/[0.04] hover:text-white"
+              }`}
+            >
+              <Layers3 className="h-5 w-5 shrink-0 text-cyan-200" />
+
+              <div>
+                <div className="text-[10px] font-black uppercase tracking-[0.14em]">
+                  Classes & Results
+                </div>
+
+                <div className="mt-1 text-[11px] text-white/35">
+                  Classes, motos & scoring
+                </div>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setWorkspaceTab("registration")}
+              className={`flex min-h-16 items-center gap-3 rounded-[20px] border px-4 text-left transition ${
+                workspaceTab === "registration"
+                  ? "border-cyan-300/25 bg-cyan-300/10 text-white"
+                  : "border-transparent text-white/50 hover:bg-white/[0.04] hover:text-white"
+              }`}
+            >
+              <CreditCard className="h-5 w-5 shrink-0 text-[#FFB199]" />
+
+              <div>
+                <div className="text-[10px] font-black uppercase tracking-[0.14em]">
+                  Registration
+                </div>
+
+                <div className="mt-1 text-[11px] text-white/35">
+                  Publish & registration setup
+                </div>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setWorkspaceTab("race-days")}
+              className={`flex min-h-16 items-center gap-3 rounded-[20px] border px-4 text-left transition ${
+                workspaceTab === "race-days"
+                  ? "border-cyan-300/25 bg-cyan-300/10 text-white"
+                  : "border-transparent text-white/50 hover:bg-white/[0.04] hover:text-white"
+              }`}
+            >
+              <ClipboardList className="h-5 w-5 shrink-0 text-[#FFB199]" />
+
+              <div>
+                <div className="text-[10px] font-black uppercase tracking-[0.14em]">
+                  Race Days
+                </div>
+
+                <div className="mt-1 text-[11px] text-white/35">
+                  Daily classes & race lists
+                </div>
+              </div>
+            </button>
+          </div>
+        </section>
+
+        {workspaceTab === "details" ? (
+          <Card className="mt-6 overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/90 p-0 shadow-[0_28px_80px_rgba(0,0,0,0.32)]">
+            <div className="border-b border-white/10 px-5 py-5 sm:px-6">
+              <div className="flex items-center gap-3">
+                <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-cyan-300/20 bg-cyan-300/10 text-cyan-200">
+                  <CalendarDays className="h-5 w-5" />
+                </div>
+
+                <div>
+                  <div className="text-xs font-black uppercase tracking-[0.22em] text-cyan-300/80">
+                    Event Details
+                  </div>
+                  <p className="mt-1 text-sm text-white/55">
+                    Update the form below and save changes.
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="space-y-5 p-5 sm:p-6 md:p-8">
-            {loading ? (
-              <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-6 text-sm text-white/60">
-                Loading event…
-              </div>
-            ) : (
-              <>
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <div className="flex flex-col gap-2">
-                    <label className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">
-                      Event Name *
-                    </label>
-                    <Input
-                      className="h-12 rounded-[14px] border-white/10 bg-white/[0.055] text-white placeholder:text-white/35 focus-visible:ring-cyan-300/30"
-                      value={draft.name}
-                      onChange={(e) => set("name", e.target.value)}
-                    />
-                  </div>
+            <div className="space-y-5 p-5 sm:p-6 md:p-8">
+              {loading ? (
+                <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-6 text-sm text-white/60">
+                  Loading event…
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div className="flex flex-col gap-2">
+                      <label className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">
+                        Event Name *
+                      </label>
+                      <Input
+                        className="h-12 rounded-[14px] border-white/10 bg-white/[0.055] text-white placeholder:text-white/35 focus-visible:ring-cyan-300/30"
+                        value={draft.name}
+                        onChange={(e) => set("name", e.target.value)}
+                      />
+                    </div>
 
-                  <div className="flex flex-col gap-2">
-                    <LocationAutocomplete
-                      label="Location *"
-                      value={draft.location}
-                      placeholder="Search city, venue, lake, or full address..."
-                      onTextChange={(value) =>
-                        setDraft((d) => ({
-                          ...d,
-                          location: value,
-                          formattedAddress: "",
-                          latitude: "",
-                          longitude: "",
-                          placeId: "",
-                          locationProvider: "",
-                          city: "",
-                          stateCode: "",
-                          countryCode: "",
-                        }))
-                      }
-                      onSelect={handleLocationSelect}
-                    />
-
-                    {draft.latitude && draft.longitude ? (
-                      <div className="rounded-[14px] border border-cyan-300/10 bg-cyan-300/[0.04] px-3 py-2 text-xs leading-5 text-cyan-100/70">
-                        Coordinates attached:{" "}
-                        {Number(draft.latitude).toFixed(5)},{" "}
-                        {Number(draft.longitude).toFixed(5)}
-                      </div>
-                    ) : (
-                      <div className="text-xs leading-5 text-white/40">
-                        Select a location from the dropdown to attach map
-                        coordinates.
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex flex-col gap-2 md:col-span-2">
-                    <label className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">
-                      Description *
-                    </label>
-                    <textarea
-                      className="min-h-28 rounded-[14px] border border-white/10 bg-white/[0.055] px-4 py-3 text-sm text-white outline-none placeholder:text-white/35 transition focus:border-cyan-300/30 focus:ring-2 focus:ring-cyan-300/10"
-                      value={draft.description}
-                      onChange={(e) => set("description", e.target.value)}
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">
-                      Sport *
-                    </label>
-
-                    <div className="relative">
-                      <select
-                        className="h-12 w-full appearance-none rounded-[14px] border border-white/10 bg-white/[0.055] px-4 text-sm text-white outline-none transition focus:border-cyan-300/30 focus:ring-2 focus:ring-cyan-300/10"
-                        value={draft.sport}
-                        onChange={(e) =>
-                          set("sport", e.target.value as SportEnum)
+                    <div className="flex flex-col gap-2">
+                      <LocationAutocomplete
+                        label="Location *"
+                        value={draft.location}
+                        placeholder="Search city, venue, lake, or full address..."
+                        onTextChange={(value) =>
+                          setDraft((d) => ({
+                            ...d,
+                            location: value,
+                            formattedAddress: "",
+                            latitude: "",
+                            longitude: "",
+                            placeId: "",
+                            locationProvider: "",
+                            city: "",
+                            stateCode: "",
+                            countryCode: "",
+                          }))
                         }
-                      >
-                        {SPORT_OPTIONS.map((s) => (
-                          <option
-                            className="bg-[#07111F] text-white"
-                            key={s}
-                            value={s}
-                          >
-                            {s}
-                          </option>
-                        ))}
-                      </select>
+                        onSelect={handleLocationSelect}
+                      />
 
-                      <Trophy className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35" />
+                      {draft.latitude && draft.longitude ? (
+                        <div className="rounded-[14px] border border-cyan-300/10 bg-cyan-300/[0.04] px-3 py-2 text-xs leading-5 text-cyan-100/70">
+                          Coordinates attached:{" "}
+                          {Number(draft.latitude).toFixed(5)},{" "}
+                          {Number(draft.longitude).toFixed(5)}
+                        </div>
+                      ) : (
+                        <div className="text-xs leading-5 text-white/40">
+                          Select a location from the dropdown to attach map
+                          coordinates.
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex flex-col gap-2 md:col-span-2">
+                      <label className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">
+                        Description *
+                      </label>
+                      <textarea
+                        className="min-h-28 rounded-[14px] border border-white/10 bg-white/[0.055] px-4 py-3 text-sm text-white outline-none placeholder:text-white/35 transition focus:border-cyan-300/30 focus:ring-2 focus:ring-cyan-300/10"
+                        value={draft.description}
+                        onChange={(e) => set("description", e.target.value)}
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                      <label className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">
+                        Sport *
+                      </label>
+
+                      <div className="relative">
+                        <select
+                          className="h-12 w-full appearance-none rounded-[14px] border border-white/10 bg-white/[0.055] px-4 text-sm text-white outline-none transition focus:border-cyan-300/30 focus:ring-2 focus:ring-cyan-300/10"
+                          value={draft.sport}
+                          onChange={(e) =>
+                            set("sport", e.target.value as SportEnum)
+                          }
+                        >
+                          {SPORT_OPTIONS.map((s) => (
+                            <option
+                              className="bg-[#07111F] text-white"
+                              key={s}
+                              value={s}
+                            >
+                              {s}
+                            </option>
+                          ))}
+                        </select>
+
+                        <Trophy className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35" />
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                      <label className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">
+                        Start Date *
+                      </label>
+                      <Input
+                        type="date"
+                        className="h-12 rounded-[14px] border-white/10 bg-white/[0.055] text-white focus-visible:ring-cyan-300/30"
+                        value={draft.startDate}
+                        onChange={(e) => set("startDate", e.target.value)}
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                      <label className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">
+                        End Date *
+                      </label>
+                      <Input
+                        type="date"
+                        className="h-12 rounded-[14px] border-white/10 bg-white/[0.055] text-white focus-visible:ring-cyan-300/30"
+                        value={draft.endDate}
+                        onChange={(e) => set("endDate", e.target.value)}
+                      />
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-2">
-                    <label className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">
-                      Start Date *
-                    </label>
-                    <Input
-                      type="date"
-                      className="h-12 rounded-[14px] border-white/10 bg-white/[0.055] text-white focus-visible:ring-cyan-300/30"
-                      value={draft.startDate}
-                      onChange={(e) => set("startDate", e.target.value)}
-                    />
+                  <div className="rounded-[20px] border border-[#FF6B35]/15 bg-[#FF6B35]/[0.06] px-4 py-4 text-sm leading-6 text-[#FFB199]/80">
+                    <div className="mb-1 flex items-center gap-2 font-black uppercase tracking-[0.16em] text-[#FFB199]">
+                      <ClipboardList className="h-4 w-4" />
+                      Results Setup
+                    </div>
+                    Once the event details are correct, manage classes, motos,
+                    and racer results from the controls below.
                   </div>
 
-                  <div className="flex flex-col gap-2">
-                    <label className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">
-                      End Date *
-                    </label>
-                    <Input
-                      type="date"
-                      className="h-12 rounded-[14px] border-white/10 bg-white/[0.055] text-white focus-visible:ring-cyan-300/30"
-                      value={draft.endDate}
-                      onChange={(e) => set("endDate", e.target.value)}
-                    />
+                  <div className="flex flex-col gap-3 border-t border-white/10 pt-5 sm:flex-row sm:items-center sm:justify-between">
+                    <Button
+                      variant="outline"
+                      className="h-12 rounded-full border-cyan-300/15 bg-cyan-300/10 px-6 text-xs font-black uppercase tracking-[0.16em] text-cyan-100 hover:bg-cyan-300/15 hover:text-white"
+                      onClick={() => setWorkspaceTab("classes")}
+                    >
+                      Manage Classes & Results
+                    </Button>
+
+                    <div className="flex flex-col gap-3 sm:flex-row">
+                      <Button
+                        variant="ghost"
+                        className="h-12 rounded-full border border-white/10 px-6 text-xs font-black uppercase tracking-[0.16em] text-white/70 hover:bg-white/10 hover:text-white"
+                        onClick={() => navigate(eventListPath)}
+                      >
+                        Cancel
+                      </Button>
+
+                      <Button
+                        className="h-12 rounded-full bg-cyan-300 px-6 text-xs font-black uppercase tracking-[0.16em] text-[#06111d] shadow-[0_0_28px_rgba(34,211,238,0.25)] hover:bg-cyan-200 disabled:opacity-50"
+                        onClick={handleSave}
+                        disabled={saving}
+                      >
+                        <Save className="mr-2 h-4 w-4" />
+                        {saving ? "Saving..." : "Save"}
+                      </Button>
+                    </div>
                   </div>
+                </>
+              )}
+            </div>
+          </Card>
+        ) : null}
+
+        {/* ------------------------------------------------------------ */}
+        {/* Classes & Results                                            */}
+        {/* ------------------------------------------------------------ */}
+
+        {workspaceTab === "classes" ? (
+          <section className="mt-6">
+            <RaceClassEditor
+              organizationId={organizationId}
+              eventId={eventId}
+              embedded
+            />
+          </section>
+        ) : null}
+
+        {/* ------------------------------------------------------------ */}
+        {/* Registration                                                 */}
+        {/* ------------------------------------------------------------ */}
+
+        {workspaceTab === "registration" ? (
+          <section className="mt-6 rounded-[30px] border border-cyan-300/10 bg-[#07111F]/90 p-6 shadow-[0_28px_80px_rgba(0,0,0,0.32)] sm:p-8">
+            <div className="text-[9px] font-black uppercase tracking-[0.2em] text-cyan-200">
+              Registration Management
+            </div>
+
+            <h2 className="mt-2 text-2xl font-black uppercase tracking-[-0.03em] text-white sm:text-3xl">
+              Public Registration
+            </h2>
+
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-400">
+              Configure registration, pricing, registration availability,
+              payment options, and the public registration experience for this
+              event.
+            </p>
+
+            <div className="mt-6 rounded-[22px] border border-white/10 bg-white/[0.03] p-5">
+              <div className="text-sm font-black text-white">
+                Registration controls are coming next
+              </div>
+
+              <p className="mt-2 max-w-2xl text-xs leading-6 text-white/40">
+                We will connect your existing registration settings here and add
+                simple manual Open Registration and Close Registration controls
+                so the organizer is not locked into the configured registration
+                dates.
+              </p>
+            </div>
+          </section>
+        ) : null}
+
+        {/* ------------------------------------------------------------ */}
+        {/* Race Days                                                    */}
+        {/* ------------------------------------------------------------ */}
+
+        {workspaceTab === "race-days" ? (
+          <section className="mt-6 rounded-[30px] border border-cyan-300/10 bg-[#07111F]/90 p-6 shadow-[0_28px_80px_rgba(0,0,0,0.32)] sm:p-8">
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <div className="text-[9px] font-black uppercase tracking-[0.2em] text-cyan-200">
+                  Event Operations
                 </div>
 
-                <div className="rounded-[20px] border border-[#FF6B35]/15 bg-[#FF6B35]/[0.06] px-4 py-4 text-sm leading-6 text-[#FFB199]/80">
-                  <div className="mb-1 flex items-center gap-2 font-black uppercase tracking-[0.16em] text-[#FFB199]">
-                    <ClipboardList className="h-4 w-4" />
-                    Results Setup
-                  </div>
-                  Once the event details are correct, manage classes, motos, and
-                  racer results from the controls below.
+                <h2 className="mt-2 text-2xl font-black uppercase tracking-[-0.03em] text-white sm:text-3xl">
+                  Race Days
+                </h2>
+
+                <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">
+                  Race days are generated automatically from the event date
+                  range. Each day will eventually contain its participating
+                  classes, race counts, race list, practices, breaks, lunch, and
+                  custom schedule items.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                disabled={syncRaceDaysMutation.isPending}
+                onClick={() => syncRaceDaysMutation.mutate()}
+                className="inline-flex h-11 shrink-0 items-center justify-center rounded-full border border-cyan-300/20 bg-cyan-300/10 px-5 text-[10px] font-black uppercase tracking-[0.14em] text-cyan-100 transition hover:bg-cyan-300/15 disabled:opacity-50"
+              >
+                {syncRaceDaysMutation.isPending
+                  ? "Syncing..."
+                  : "Sync Race Days"}
+              </button>
+            </div>
+
+            <div className="mt-6 rounded-[22px] border border-cyan-300/10 bg-cyan-300/[0.035] p-5">
+              <div className="text-[9px] font-black uppercase tracking-[0.18em] text-cyan-200/60">
+                Event Date Range
+              </div>
+
+              <div className="mt-2 text-sm font-black uppercase tracking-[0.08em] text-white">
+                {draft.startDate || "Start date"} →{" "}
+                {draft.endDate || "End date"}
+              </div>
+            </div>
+
+            {registrationConfigurationQuery.isLoading ||
+            syncRaceDaysMutation.isPending ? (
+              <div className="mt-6 rounded-[24px] border border-white/10 bg-white/[0.03] p-8 text-center text-sm text-white/50">
+                Preparing race days…
+              </div>
+            ) : raceDays.length === 0 ? (
+              <div className="mt-6 rounded-[24px] border border-dashed border-white/10 bg-white/[0.02] p-8 text-center">
+                <div className="text-sm font-black text-white">
+                  No race days available
                 </div>
 
-                <div className="flex flex-col gap-3 border-t border-white/10 pt-5 sm:flex-row sm:items-center sm:justify-between">
-                  <Button
-                    variant="outline"
-                    className="h-12 rounded-full border-cyan-300/15 bg-cyan-300/10 px-6 text-xs font-black uppercase tracking-[0.16em] text-cyan-100 hover:bg-cyan-300/15 hover:text-white"
-                    onClick={() =>
-                      navigate(`/organization/events/${eventId}/classes`)
-                    }
+                <p className="mt-2 text-xs leading-6 text-white/40">
+                  Save valid event start and end dates, then sync the race days.
+                </p>
+              </div>
+            ) : (
+              <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                {raceDays.map((day: any) => (
+                  <button
+                    key={day.id}
+                    type="button"
+                    className="group rounded-[22px] border border-white/10 bg-white/[0.03] p-5 text-left transition hover:border-cyan-300/25 hover:bg-cyan-300/[0.04]"
                   >
-                    Manage Classes & Results
-                  </Button>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="grid h-10 w-10 place-items-center rounded-[14px] border border-cyan-300/15 bg-cyan-300/10">
+                        <CalendarDays className="h-4 w-4 text-cyan-200" />
+                      </div>
 
-                  <div className="flex flex-col gap-3 sm:flex-row">
-                    <Button
-                      variant="ghost"
-                      className="h-12 rounded-full border border-white/10 px-6 text-xs font-black uppercase tracking-[0.16em] text-white/70 hover:bg-white/10 hover:text-white"
-                      onClick={() => navigate(eventListPath)}
-                    >
-                      Cancel
-                    </Button>
+                      <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.14em] text-white/40">
+                        Race Day
+                      </span>
+                    </div>
 
-                    <Button
-                      className="h-12 rounded-full bg-cyan-300 px-6 text-xs font-black uppercase tracking-[0.16em] text-[#06111d] shadow-[0_0_28px_rgba(34,211,238,0.25)] hover:bg-cyan-200 disabled:opacity-50"
-                      onClick={handleSave}
-                      disabled={saving}
-                    >
-                      <Save className="mr-2 h-4 w-4" />
-                      {saving ? "Saving..." : "Save"}
-                    </Button>
-                  </div>
-                </div>
-              </>
+                    <div className="mt-4 text-lg font-black text-white">
+                      {day.label}
+                    </div>
+
+                    <div className="mt-1 text-sm text-white/45">
+                      {new Date(`${day.eventDate}T00:00:00`).toLocaleDateString(
+                        undefined,
+                        {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        },
+                      )}
+                    </div>
+
+                    <div className="mt-5 text-[9px] font-black uppercase tracking-[0.14em] text-cyan-200/60">
+                      Manage Day →
+                    </div>
+                  </button>
+                ))}
+              </div>
             )}
-          </div>
-        </Card>
+          </section>
+        ) : null}
       </main>
     </div>
   );
