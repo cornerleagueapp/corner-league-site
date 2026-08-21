@@ -5,6 +5,10 @@ export type RaceScheduleSettings = {
 
   eventId?: string;
 
+  defaultRacesPerClass: number;
+
+  minimumRestRaceGap: number;
+
   suggestClassMerges: boolean;
 
   smallClassRacerThreshold: number;
@@ -46,6 +50,8 @@ export type RaceScheduleClassConfig = {
   };
 
   racerCount?: number;
+
+  participantSource?: "registration" | "historical_match" | "none";
 
   participants?: Array<{
     racerId: string;
@@ -157,6 +163,10 @@ export type UpdateRaceScheduleClassConfigInput = {
 };
 
 export type UpdateRaceScheduleSettingsInput = {
+  defaultRacesPerClass?: number;
+
+  minimumRestRaceGap?: number;
+
   suggestClassMerges?: boolean;
 
   smallClassRacerThreshold?: number;
@@ -350,4 +360,12 @@ export type RaceScheduleUnpublishResult = {
   status: RaceScheduleStatus;
 
   version: number;
+};
+
+export type SaveRaceScheduleOrderInput = {
+  slots: Array<{
+    slotId: string;
+
+    displayOrder: number;
+  }>;
 };

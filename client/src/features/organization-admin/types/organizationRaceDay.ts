@@ -1,3 +1,6 @@
+import type { RegistrationEventSettings } from "./organizationSettings";
+export type { RegistrationEventSettings } from "./organizationSettings";
+
 export type RegistrationEventDay = {
   id: string;
 
@@ -48,18 +51,6 @@ export type RegistrationEventClass = {
   };
 };
 
-export type RegistrationEventSettings = {
-  id: string;
-
-  publicSlug?: string;
-
-  isRegistrationEnabled?: boolean;
-
-  eventDays: RegistrationEventDay[];
-
-  eventClasses: RegistrationEventClass[];
-};
-
 export type RegistrationAdminEventConfiguration = {
   event: {
     id: string;
@@ -83,7 +74,13 @@ export type RegistrationAdminEventConfiguration = {
     } | null;
   };
 
-  settings: RegistrationEventSettings | null;
+  settings:
+    | (RegistrationEventSettings & {
+        eventDays: RegistrationEventDay[];
+
+        eventClasses: RegistrationEventClass[];
+      })
+    | null;
 };
 
 export type UpdateRegistrationDayInput = {

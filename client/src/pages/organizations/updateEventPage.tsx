@@ -14,6 +14,15 @@ import {
   Layers3,
   Save,
   Trophy,
+  ChevronLeft,
+  Flag,
+  AlertTriangle,
+  Loader2,
+  Users,
+  ExternalLink,
+  LockKeyhole,
+  Radio,
+  RotateCcw,
 } from "lucide-react";
 import RaceClassEditor from "./raceClassEditor";
 import {
@@ -24,6 +33,21 @@ import {
   useRegistrationEventConfiguration,
   useSyncRegistrationEventDays,
 } from "@/features/organization-admin/hooks/useOrganizationRaceDays";
+import {
+  useGenerateRaceSchedule,
+  useInitializeRaceScheduleDay,
+  useRaceScheduleDay,
+  useUpdateRaceScheduleClassConfig,
+} from "@/features/organization-admin/hooks/useOrganizationRaceSchedule";
+import { RaceScheduleEditor } from "@/features/organization-admin/components/RaceScheduleEditor";
+import { RaceSchedulePublishPanel } from "@/features/organization-admin/components/RaceSchedulePublishPanel";
+import type { RaceScheduleClassConfig } from "@/features/organization-admin/types/organizationRaceSchedule";
+import {
+  useCreateRegistrationEventSettings,
+  useUpdateRegistrationEventSettings,
+} from "@/features/organization-admin/hooks/useOrganizationSettings";
+import type { RegistrationEventSettings } from "@/features/organization-admin/types/organizationSettings";
+import { RaceScheduleSettingsPanel } from "@/features/organization-admin/components/RaceScheduleSettingsPanel";
 
 type SportEnum = "jet ski";
 
@@ -33,6 +57,733 @@ type UpdateEventPageProps = {
   organizationId?: string;
   eventId?: string;
 };
+
+function classNameForScheduleConfig(config: RaceScheduleClassConfig) {
+  return (
+    config.eventClass.displayName?.trim() ||
+    config.eventClass.division?.name?.trim() ||
+    "Unnamed Class"
+  );
+}
+
+function RaceDayClassCard({
+  config,
+  dayId,
+}: {
+  config: RaceScheduleClassConfig;
+  dayId: string;
+}) {
+  const mutation = useUpdateRaceScheduleClassConfig(dayId);
+
+  const racerCount = config.racerCount ?? config.participants?.length ?? 0;
+
+  const updateRaceCount = (raceCount: number) => {
+    mutation.mutate({
+      classConfigId: config.id,
+      input: {
+        raceCount,
+      },
+    });
+  };
+
+  return (
+    <article
+      className={`rounded-[22px] border p-4 transition ${
+        config.raceCount > 0
+          ? "border-cyan-300/15 bg-cyan-300/[0.045]"
+          : "border-white/10 bg-white/[0.025]"
+      }`}
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <div className="text-[9px] font-black uppercase tracking-[0.15em] text-[#FFB199]">
+            Event Class
+          </div>
+
+          <h4 className="mt-1 truncate text-base font-black text-white">
+            {classNameForScheduleConfig(config)}
+          </h4>
+
+          <div className="mt-2 flex items-center gap-1.5 text-xs text-white/40">
+            <Users className="h-3.5 w-3.5" />
+            {racerCount} racer
+            {racerCount === 1 ? "" : "s"}
+            {config.participantSource === "registration"
+              ? " · Registration"
+              : config.participantSource === "historical_match"
+                ? " · Historical class"
+                : ""}
+          </div>
+        </div>
+
+        {mutation.isPending ? (
+          <Loader2 className="h-4 w-4 animate-spin text-cyan-200" />
+        ) : (
+          <span
+            className={`rounded-full border px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.12em] ${
+              config.raceCount > 0
+                ? "border-emerald-300/20 bg-emerald-300/10 text-emerald-200"
+                : "border-white/10 bg-white/[0.04] text-white/35"
+            }`}
+          >
+            {config.raceCount > 0 ? "Racing Today" : "Off Today"}
+          </span>
+        )}
+      </div>
+
+      <div className="mt-5">
+        <div className="text-[9px] font-black uppercase tracking-[0.14em] text-white/35">
+          Races / Motos Today
+        </div>
+
+        <div className="mt-2 grid grid-cols-4 gap-2">
+          {[0, 1, 2, 3].map((count) => (
+            <button
+              key={count}
+              type="button"
+              disabled={mutation.isPending}
+              onClick={() => updateRaceCount(count)}
+              className={`h-10 rounded-xl border text-sm font-black transition ${
+                config.raceCount === count
+                  ? "border-cyan-300 bg-cyan-300 text-[#04101C]"
+                  : "border-white/10 bg-white/[0.035] text-white/55 hover:bg-white/[0.07]"
+              }`}
+            >
+              {count === 0 ? "Off" : count}
+            </button>
+          ))}
+        </div>
+
+        <p className="mt-2 text-[10px] leading-5 text-white/30">
+          Set Off when this class does not compete on this race day.
+        </p>
+      </div>
+    </article>
+  );
+}
+
+function RaceDayWorkspace({
+  day,
+  eventId,
+  onBack,
+}: {
+  day: any;
+  eventId: string;
+  onBack: () => void;
+}) {
+  const dayQuery = useRaceScheduleDay(day.id);
+
+  const generateMutation = useGenerateRaceSchedule(day.id);
+
+  const dayData: any = dayQuery.data;
+
+  const schedule =
+    dayData?.schedule ??
+    dayData?.data?.schedule ??
+    dayData?.result?.schedule ??
+    (dayData?.id ? dayData : null) ??
+    (dayData?.data?.id ? dayData.data : null) ??
+    (dayData?.result?.id ? dayData.result : null);
+
+  const classConfigs: RaceScheduleClassConfig[] =
+    schedule?.classConfigs ??
+    dayData?.classConfigs ??
+    dayData?.data?.classConfigs ??
+    dayData?.result?.classConfigs ??
+    [];
+
+  const enabledClasses = classConfigs.filter(
+    (config: RaceScheduleClassConfig) => config.raceCount > 0,
+  );
+
+  const canGenerateRaceList =
+    enabledClasses.length > 0 && !!schedule?.id && !generateMutation.isPending;
+
+  const notInitialized = dayQuery.isError;
+
+  const generateRaceList = () => {
+    if (!schedule?.id) {
+      return;
+    }
+
+    generateMutation.mutate(schedule.id, {
+      onSuccess: () => {
+        dayQuery.refetch();
+      },
+    });
+  };
+
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={onBack}
+        className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-[10px] font-black uppercase tracking-[0.13em] text-white/60 transition hover:bg-white/[0.08] hover:text-white"
+      >
+        <ChevronLeft className="h-4 w-4" />
+        All Race Days
+      </button>
+
+      <div className="mt-5 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <div className="text-[9px] font-black uppercase tracking-[0.18em] text-cyan-200">
+            Race Day
+          </div>
+
+          <h2 className="mt-2 text-3xl font-black uppercase tracking-[-0.04em] text-white">
+            {day.label}
+          </h2>
+
+          <p className="mt-2 text-sm text-white/45">
+            {new Date(`${day.eventDate}T00:00:00`).toLocaleDateString(
+              undefined,
+              {
+                weekday: "long",
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+              },
+            )}
+          </p>
+        </div>
+
+        {!notInitialized && schedule ? (
+          <div className="flex gap-2">
+            <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-[9px] font-black uppercase tracking-[0.12em] text-white/50">
+              {enabledClasses.length} Classes Racing
+            </span>
+
+            <span className="rounded-full border border-cyan-300/15 bg-cyan-300/[0.06] px-3 py-2 text-[9px] font-black uppercase tracking-[0.12em] text-cyan-100">
+              Draft Schedule
+            </span>
+          </div>
+        ) : null}
+      </div>
+
+      <RaceScheduleSettingsPanel
+        eventId={eventId}
+        onChanged={() => {
+          dayQuery.refetch();
+        }}
+      />
+
+      {dayQuery.isLoading ? (
+        <div className="mt-6 flex min-h-56 items-center justify-center rounded-[24px] border border-white/10 bg-white/[0.025]">
+          <Loader2 className="h-6 w-6 animate-spin text-cyan-200" />
+        </div>
+      ) : notInitialized ? (
+        <div className="mt-6 rounded-[24px] border border-red-300/15 bg-red-300/[0.04] p-6">
+          <AlertTriangle className="h-6 w-6 text-red-200" />
+
+          <h3 className="mt-4 text-xl font-black uppercase text-white">
+            Unable to Load Race Day
+          </h3>
+
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-white/45">
+            This race day could not be loaded. Return to the race-day list and
+            try opening it again.
+          </p>
+
+          <button
+            type="button"
+            onClick={onBack}
+            className="mt-5 inline-flex h-11 items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-5 text-[10px] font-black uppercase tracking-[0.14em] text-white/70 transition hover:bg-white/10 hover:text-white"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Back to Race Days
+          </button>
+        </div>
+      ) : (
+        <>
+          <section className="mt-7">
+            <div>
+              <div className="text-[9px] font-black uppercase tracking-[0.18em] text-[#FFB199]">
+                Daily Competition
+              </div>
+
+              <h3 className="mt-2 text-xl font-black uppercase text-white">
+                Classes Racing Today
+              </h3>
+
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-white/40">
+                Event classes are defined once in Classes & Results. Here you
+                decide whether each class runs on this day and how many races or
+                motos it receives.
+              </p>
+            </div>
+
+            {classConfigs.length === 0 ? (
+              <div className="mt-5 rounded-[22px] border border-dashed border-white/10 bg-white/[0.02] p-8 text-center">
+                <div className="text-sm font-black text-white">
+                  No event classes found
+                </div>
+
+                <p className="mt-2 text-xs text-white/35">
+                  Add classes under Classes & Results first.
+                </p>
+              </div>
+            ) : (
+              <div className="mt-5 grid gap-4 md:grid-cols-2">
+                {classConfigs.map((config) => (
+                  <RaceDayClassCard
+                    key={config.id}
+                    config={config}
+                    dayId={day.id}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section className="mt-8">
+            <div className="rounded-[24px] border border-cyan-300/10 bg-black/15 p-5 sm:p-6">
+              <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                  <div className="text-[9px] font-black uppercase tracking-[0.16em] text-cyan-200/60">
+                    Daily Schedule
+                  </div>
+
+                  <h3 className="mt-2 text-xl font-black uppercase text-white">
+                    Race List
+                  </h3>
+
+                  <p className="mt-2 max-w-3xl text-xs leading-6 text-white/40">
+                    Generate the race order from today's enabled classes, then
+                    manually adjust the schedule, insert practice sessions,
+                    lunch, meetings, or other custom schedule blocks.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  disabled={!canGenerateRaceList}
+                  onClick={generateRaceList}
+                  className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-cyan-300 px-5 text-[10px] font-black uppercase tracking-[0.13em] text-[#04101C] transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-35"
+                >
+                  {generateMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Flag className="h-4 w-4" />
+                  )}
+
+                  {schedule?.generatedAt
+                    ? "Regenerate Race List"
+                    : "Generate Race List"}
+                </button>
+              </div>
+
+              {enabledClasses.length === 0 ? (
+                <div className="mt-5 rounded-[18px] border border-amber-300/15 bg-amber-300/[0.05] p-4 text-xs leading-6 text-amber-100/60">
+                  Enable at least one class for this race day before generating
+                  the race list.
+                </div>
+              ) : null}
+            </div>
+
+            {schedule?.slots?.length ? (
+              <>
+                <div className="mt-6">
+                  <RaceScheduleEditor
+                    dayId={day.id}
+                    schedule={schedule}
+                    classConfigs={classConfigs}
+                    minimumRestRaceGap={
+                      dayData?.minimumRestRaceGap ??
+                      schedule?.minimumRestRaceGap ??
+                      2
+                    }
+                    onChanged={() => {
+                      dayQuery.refetch();
+                    }}
+                  />
+                </div>
+
+                <div className="mt-6">
+                  <RaceSchedulePublishPanel
+                    dayId={day.id}
+                    schedule={schedule}
+                    onChanged={() => {
+                      dayQuery.refetch();
+                    }}
+                  />
+                </div>
+              </>
+            ) : (
+              <div className="mt-5 rounded-[22px] border border-dashed border-white/10 bg-white/[0.02] p-8 text-center">
+                <div className="text-sm font-black text-white">
+                  No race list generated yet
+                </div>
+
+                <p className="mt-2 text-xs leading-6 text-white/35">
+                  Configure today's classes above, then generate the race order.
+                </p>
+              </div>
+            )}
+          </section>
+        </>
+      )}
+    </div>
+  );
+}
+
+function getRegistrationAvailability(
+  settings: RegistrationEventSettings | null | undefined,
+) {
+  if (!settings) {
+    return {
+      status: "not-configured" as const,
+      label: "Not Configured",
+      description: "Registration has not been configured for this event.",
+    };
+  }
+
+  if (settings.registrationAvailabilityOverride === "open") {
+    return {
+      status: "open" as const,
+      label: "Open",
+      description: "Registration has been manually opened by the organizer.",
+    };
+  }
+
+  if (settings.registrationAvailabilityOverride === "closed") {
+    return {
+      status: "closed" as const,
+      label: "Closed",
+      description: "Registration has been manually closed by the organizer.",
+    };
+  }
+
+  if (!settings.isRegistrationEnabled) {
+    return {
+      status: "closed" as const,
+      label: "Closed",
+      description: "Scheduled registration is currently disabled.",
+    };
+  }
+
+  const now = Date.now();
+
+  const opensAt = settings.registrationOpensAt
+    ? new Date(settings.registrationOpensAt).getTime()
+    : null;
+
+  const closesAt = settings.registrationClosesAt
+    ? new Date(settings.registrationClosesAt).getTime()
+    : null;
+
+  if (opensAt && opensAt > now) {
+    return {
+      status: "upcoming" as const,
+      label: "Upcoming",
+      description: "Registration will open automatically on schedule.",
+    };
+  }
+
+  if (closesAt && closesAt <= now) {
+    return {
+      status: "closed" as const,
+      label: "Closed",
+      description: "The configured registration window has ended.",
+    };
+  }
+
+  return {
+    status: "open" as const,
+    label: "Open",
+    description: "Registration is currently following its scheduled window.",
+  };
+}
+
+function formatRegistrationDate(value?: string | null) {
+  if (!value) {
+    return "No date set";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Invalid date";
+  }
+
+  return date.toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+function RegistrationWorkspace({
+  eventId,
+  eventName,
+  settings,
+  loading,
+  onChanged,
+}: {
+  eventId: string;
+  eventName: string;
+  settings: RegistrationEventSettings | null | undefined;
+  loading: boolean;
+  onChanged: () => void;
+}) {
+  const createMutation = useCreateRegistrationEventSettings(eventId);
+
+  const updateMutation = useUpdateRegistrationEventSettings(eventId);
+
+  const availability = getRegistrationAvailability(settings);
+
+  const isSaving = createMutation.isPending || updateMutation.isPending;
+
+  const slugify = (value: string) =>
+    value
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 160);
+
+  const setupRegistration = async () => {
+    const publicSlug = slugify(eventName) || `event-${eventId.slice(0, 8)}`;
+
+    await createMutation.mutateAsync({
+      publicSlug,
+
+      isRegistrationEnabled: false,
+
+      registrationAvailabilityOverride: null,
+
+      registrationOpensAt: null,
+      registrationClosesAt: null,
+
+      allowOnlinePayment: true,
+      allowCashPayment: false,
+      allowManualPayment: true,
+
+      allowCoupons: true,
+      allowWaitlist: false,
+
+      showPublicEntryList: true,
+      showPendingCashEntries: false,
+
+      requireAccount: true,
+
+      maxClassesPerRegistration: 10,
+
+      platformFeeFixedCents: 0,
+      platformFeeBasisPoints: 0,
+
+      currency: "USD",
+
+      termsText: null,
+      refundPolicyText: null,
+      confirmationMessage: null,
+    });
+
+    onChanged();
+  };
+
+  const setAvailabilityOverride = async (value: "open" | "closed" | null) => {
+    await updateMutation.mutateAsync({
+      registrationAvailabilityOverride: value,
+    });
+
+    onChanged();
+  };
+
+  if (loading) {
+    return (
+      <div className="mt-6 flex min-h-64 items-center justify-center rounded-[28px] border border-white/10 bg-white/[0.02]">
+        <Loader2 className="h-6 w-6 animate-spin text-cyan-200" />
+      </div>
+    );
+  }
+
+  if (!settings) {
+    return (
+      <div className="mt-6 rounded-[28px] border border-cyan-300/15 bg-cyan-300/[0.035] p-6 sm:p-8">
+        <CreditCard className="h-7 w-7 text-cyan-200" />
+
+        <div className="mt-5 text-[9px] font-black uppercase tracking-[0.18em] text-cyan-200">
+          Registration Setup
+        </div>
+
+        <h3 className="mt-2 text-2xl font-black uppercase text-white">
+          Registration Not Configured
+        </h3>
+
+        <p className="mt-3 max-w-2xl text-sm leading-7 text-white/45">
+          Create the registration configuration for this event. This does not
+          publish registration or allow racers to register yet.
+        </p>
+
+        <button
+          type="button"
+          disabled={createMutation.isPending}
+          onClick={setupRegistration}
+          className="mt-6 inline-flex h-11 items-center gap-2 rounded-full bg-cyan-300 px-5 text-[10px] font-black uppercase tracking-[0.14em] text-[#04101C] hover:bg-cyan-200 disabled:opacity-50"
+        >
+          {createMutation.isPending ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <CreditCard className="h-4 w-4" />
+          )}
+          Configure Registration
+        </button>
+      </div>
+    );
+  }
+
+  const manuallyOverridden =
+    settings.registrationAvailabilityOverride !== null &&
+    settings.registrationAvailabilityOverride !== undefined;
+
+  return (
+    <div className="mt-6 space-y-5">
+      <section
+        className={`rounded-[28px] border p-6 sm:p-7 ${
+          availability.status === "open"
+            ? "border-emerald-300/20 bg-emerald-300/[0.045]"
+            : availability.status === "upcoming"
+              ? "border-cyan-300/15 bg-cyan-300/[0.035]"
+              : "border-[#FFB199]/15 bg-[#FF6B35]/[0.035]"
+        }`}
+      >
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <div className="flex items-center gap-3">
+              <span
+                className={`h-2.5 w-2.5 rounded-full ${
+                  availability.status === "open"
+                    ? "bg-emerald-300"
+                    : availability.status === "upcoming"
+                      ? "bg-cyan-300"
+                      : "bg-[#FF8A66]"
+                }`}
+              />
+
+              <div className="text-[9px] font-black uppercase tracking-[0.18em] text-white/45">
+                Public Registration
+              </div>
+            </div>
+
+            <h3 className="mt-3 text-2xl font-black uppercase text-white">
+              {availability.label}
+            </h3>
+
+            <p className="mt-2 text-sm leading-6 text-white/45">
+              {availability.description}
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              disabled={isSaving}
+              onClick={() => setAvailabilityOverride("open")}
+              className="inline-flex h-11 items-center gap-2 rounded-full bg-emerald-300 px-5 text-[9px] font-black uppercase tracking-[0.13em] text-emerald-950 transition hover:bg-emerald-200 disabled:opacity-50"
+            >
+              <Radio className="h-4 w-4" />
+              Open Now
+            </button>
+
+            <button
+              type="button"
+              disabled={isSaving}
+              onClick={() => setAvailabilityOverride("closed")}
+              className="inline-flex h-11 items-center gap-2 rounded-full border border-red-300/15 bg-red-300/[0.07] px-5 text-[9px] font-black uppercase tracking-[0.13em] text-red-100 transition hover:bg-red-300/10 disabled:opacity-50"
+            >
+              <LockKeyhole className="h-4 w-4" />
+              Close Now
+            </button>
+
+            {manuallyOverridden ? (
+              <button
+                type="button"
+                disabled={isSaving}
+                onClick={() => setAvailabilityOverride(null)}
+                className="inline-flex h-11 items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-5 text-[9px] font-black uppercase tracking-[0.13em] text-white/60 transition hover:bg-white/[0.08] hover:text-white disabled:opacity-50"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Follow Schedule
+              </button>
+            ) : null}
+          </div>
+        </div>
+      </section>
+
+      <div className="grid gap-5 xl:grid-cols-2">
+        <section className="rounded-[24px] border border-white/10 bg-white/[0.025] p-5">
+          <div className="text-[9px] font-black uppercase tracking-[0.16em] text-cyan-200/60">
+            Scheduled Window
+          </div>
+
+          <div className="mt-5 grid gap-4 sm:grid-cols-2">
+            <div>
+              <div className="text-[8px] font-black uppercase tracking-[0.14em] text-white/30">
+                Opens
+              </div>
+
+              <div className="mt-2 text-sm font-bold text-white">
+                {formatRegistrationDate(settings.registrationOpensAt)}
+              </div>
+            </div>
+
+            <div>
+              <div className="text-[8px] font-black uppercase tracking-[0.14em] text-white/30">
+                Closes
+              </div>
+
+              <div className="mt-2 text-sm font-bold text-white">
+                {formatRegistrationDate(settings.registrationClosesAt)}
+              </div>
+            </div>
+          </div>
+
+          {manuallyOverridden ? (
+            <p className="mt-5 text-xs leading-5 text-amber-100/45">
+              A manual availability override is active. These dates are
+              preserved, but they do not currently determine whether
+              registration is open.
+            </p>
+          ) : (
+            <p className="mt-5 text-xs leading-5 text-white/35">
+              Registration is currently following these configured dates.
+            </p>
+          )}
+        </section>
+
+        <section className="rounded-[24px] border border-white/10 bg-white/[0.025] p-5">
+          <div className="text-[9px] font-black uppercase tracking-[0.16em] text-[#FFB199]">
+            Public Registration Page
+          </div>
+
+          <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4">
+            <div className="text-[8px] font-black uppercase tracking-[0.13em] text-white/30">
+              Public Slug
+            </div>
+
+            <div className="mt-2 break-all text-sm font-bold text-white">
+              {settings.publicSlug}
+            </div>
+          </div>
+
+          <a
+            href={`/registration/events/${encodeURIComponent(
+              settings.publicSlug,
+            )}`}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-4 inline-flex h-11 items-center gap-2 rounded-full border border-cyan-300/15 bg-cyan-300/[0.07] px-5 text-[9px] font-black uppercase tracking-[0.13em] text-cyan-100 transition hover:bg-cyan-300/10"
+          >
+            <ExternalLink className="h-4 w-4" />
+            Preview Public Registration
+          </a>
+        </section>
+      </div>
+    </div>
+  );
+}
 
 export default function UpdateEventPage({
   organizationId,
@@ -58,7 +809,11 @@ export default function UpdateEventPage({
   type WorkspaceTab = "details" | "classes" | "registration" | "race-days";
 
   const [workspaceTab, setWorkspaceTab] = useState<WorkspaceTab>("details");
+  const [selectedRaceDayId, setSelectedRaceDayId] = useState<string | null>(
+    null,
+  );
 
+  const [openingRaceDayId, setOpeningRaceDayId] = useState<string | null>(null);
   const registrationConfigurationQuery =
     useRegistrationEventConfiguration(eventId);
 
@@ -67,6 +822,41 @@ export default function UpdateEventPage({
 
   const raceDays =
     registrationConfigurationQuery.data?.settings?.eventDays ?? [];
+
+  const selectedRaceDay =
+    raceDays.find((day: any) => day.id === selectedRaceDayId) ?? null;
+
+  const initializeRaceDayMutation = useInitializeRaceScheduleDay();
+
+  async function handleOpenRaceDay(dayId: string) {
+    if (openingRaceDayId) {
+      return;
+    }
+
+    setOpeningRaceDayId(dayId);
+
+    /**
+     * Enter the Race Day workspace immediately.
+     */
+    setSelectedRaceDayId(dayId);
+
+    try {
+      await initializeRaceDayMutation.mutateAsync(dayId);
+    } catch (error: any) {
+      console.error("Unable to initialize race day:", error);
+
+      toast({
+        variant: "destructive",
+        title: "Unable to initialize race day",
+        description:
+          error?.body?.message ||
+          error?.message ||
+          "The race day opened, but its schedule could not be initialized.",
+      });
+    } finally {
+      setOpeningRaceDayId(null);
+    }
+  }
 
   useEffect(() => {
     if (
@@ -601,28 +1391,28 @@ export default function UpdateEventPage({
               Registration Management
             </div>
 
-            <h2 className="mt-2 text-2xl font-black uppercase tracking-[-0.03em] text-white sm:text-3xl">
-              Public Registration
-            </h2>
+            <div className="mt-2 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <h2 className="text-2xl font-black uppercase tracking-[-0.03em] text-white sm:text-3xl">
+                  Public Registration
+                </h2>
 
-            <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-400">
-              Configure registration, pricing, registration availability,
-              payment options, and the public registration experience for this
-              event.
-            </p>
-
-            <div className="mt-6 rounded-[22px] border border-white/10 bg-white/[0.03] p-5">
-              <div className="text-sm font-black text-white">
-                Registration controls are coming next
+                <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">
+                  Publish, close, reopen, and preview registration for this
+                  event without changing the event itself.
+                </p>
               </div>
-
-              <p className="mt-2 max-w-2xl text-xs leading-6 text-white/40">
-                We will connect your existing registration settings here and add
-                simple manual Open Registration and Close Registration controls
-                so the organizer is not locked into the configured registration
-                dates.
-              </p>
             </div>
+
+            <RegistrationWorkspace
+              eventId={eventId}
+              eventName={draft.name}
+              settings={registrationConfigurationQuery.data?.settings ?? null}
+              loading={registrationConfigurationQuery.isLoading}
+              onChanged={() => {
+                registrationConfigurationQuery.refetch();
+              }}
+            />
           </section>
         ) : null}
 
@@ -632,101 +1422,122 @@ export default function UpdateEventPage({
 
         {workspaceTab === "race-days" ? (
           <section className="mt-6 rounded-[30px] border border-cyan-300/10 bg-[#07111F]/90 p-6 shadow-[0_28px_80px_rgba(0,0,0,0.32)] sm:p-8">
-            <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-              <div>
-                <div className="text-[9px] font-black uppercase tracking-[0.2em] text-cyan-200">
-                  Event Operations
-                </div>
-
-                <h2 className="mt-2 text-2xl font-black uppercase tracking-[-0.03em] text-white sm:text-3xl">
-                  Race Days
-                </h2>
-
-                <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">
-                  Race days are generated automatically from the event date
-                  range. Each day will eventually contain its participating
-                  classes, race counts, race list, practices, breaks, lunch, and
-                  custom schedule items.
-                </p>
-              </div>
-
-              <button
-                type="button"
-                disabled={syncRaceDaysMutation.isPending}
-                onClick={() => syncRaceDaysMutation.mutate()}
-                className="inline-flex h-11 shrink-0 items-center justify-center rounded-full border border-cyan-300/20 bg-cyan-300/10 px-5 text-[10px] font-black uppercase tracking-[0.14em] text-cyan-100 transition hover:bg-cyan-300/15 disabled:opacity-50"
-              >
-                {syncRaceDaysMutation.isPending
-                  ? "Syncing..."
-                  : "Sync Race Days"}
-              </button>
-            </div>
-
-            <div className="mt-6 rounded-[22px] border border-cyan-300/10 bg-cyan-300/[0.035] p-5">
-              <div className="text-[9px] font-black uppercase tracking-[0.18em] text-cyan-200/60">
-                Event Date Range
-              </div>
-
-              <div className="mt-2 text-sm font-black uppercase tracking-[0.08em] text-white">
-                {draft.startDate || "Start date"} →{" "}
-                {draft.endDate || "End date"}
-              </div>
-            </div>
-
-            {registrationConfigurationQuery.isLoading ||
-            syncRaceDaysMutation.isPending ? (
-              <div className="mt-6 rounded-[24px] border border-white/10 bg-white/[0.03] p-8 text-center text-sm text-white/50">
-                Preparing race days…
-              </div>
-            ) : raceDays.length === 0 ? (
-              <div className="mt-6 rounded-[24px] border border-dashed border-white/10 bg-white/[0.02] p-8 text-center">
-                <div className="text-sm font-black text-white">
-                  No race days available
-                </div>
-
-                <p className="mt-2 text-xs leading-6 text-white/40">
-                  Save valid event start and end dates, then sync the race days.
-                </p>
-              </div>
+            {selectedRaceDay ? (
+              <RaceDayWorkspace
+                key={selectedRaceDay.id}
+                day={selectedRaceDay}
+                eventId={eventId}
+                onBack={() => {
+                  setSelectedRaceDayId(null);
+                  setOpeningRaceDayId(null);
+                }}
+              />
             ) : (
-              <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                {raceDays.map((day: any) => (
+              <>
+                <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                  <div>
+                    <div className="text-[9px] font-black uppercase tracking-[0.2em] text-cyan-200">
+                      Event Operations
+                    </div>
+
+                    <h2 className="mt-2 text-2xl font-black uppercase tracking-[-0.03em] text-white sm:text-3xl">
+                      Race Days
+                    </h2>
+
+                    <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">
+                      Race days are generated automatically from the event date
+                      range. Each day will eventually contain its participating
+                      classes, race counts, race list, practices, breaks, lunch,
+                      and custom schedule items.
+                    </p>
+                  </div>
+
                   <button
-                    key={day.id}
                     type="button"
-                    className="group rounded-[22px] border border-white/10 bg-white/[0.03] p-5 text-left transition hover:border-cyan-300/25 hover:bg-cyan-300/[0.04]"
+                    disabled={syncRaceDaysMutation.isPending}
+                    onClick={() => syncRaceDaysMutation.mutate()}
+                    className="inline-flex h-11 shrink-0 items-center justify-center rounded-full border border-cyan-300/20 bg-cyan-300/10 px-5 text-[10px] font-black uppercase tracking-[0.14em] text-cyan-100 transition hover:bg-cyan-300/15 disabled:opacity-50"
                   >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="grid h-10 w-10 place-items-center rounded-[14px] border border-cyan-300/15 bg-cyan-300/10">
-                        <CalendarDays className="h-4 w-4 text-cyan-200" />
-                      </div>
-
-                      <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.14em] text-white/40">
-                        Race Day
-                      </span>
-                    </div>
-
-                    <div className="mt-4 text-lg font-black text-white">
-                      {day.label}
-                    </div>
-
-                    <div className="mt-1 text-sm text-white/45">
-                      {new Date(`${day.eventDate}T00:00:00`).toLocaleDateString(
-                        undefined,
-                        {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        },
-                      )}
-                    </div>
-
-                    <div className="mt-5 text-[9px] font-black uppercase tracking-[0.14em] text-cyan-200/60">
-                      Manage Day →
-                    </div>
+                    {syncRaceDaysMutation.isPending
+                      ? "Syncing..."
+                      : "Sync Race Days"}
                   </button>
-                ))}
-              </div>
+                </div>
+
+                <div className="mt-6 rounded-[22px] border border-cyan-300/10 bg-cyan-300/[0.035] p-5">
+                  <div className="text-[9px] font-black uppercase tracking-[0.18em] text-cyan-200/60">
+                    Event Date Range
+                  </div>
+
+                  <div className="mt-2 text-sm font-black uppercase tracking-[0.08em] text-white">
+                    {draft.startDate || "Start date"} →{" "}
+                    {draft.endDate || "End date"}
+                  </div>
+                </div>
+
+                {registrationConfigurationQuery.isLoading ||
+                syncRaceDaysMutation.isPending ? (
+                  <div className="mt-6 rounded-[24px] border border-white/10 bg-white/[0.03] p-8 text-center text-sm text-white/50">
+                    Preparing race days…
+                  </div>
+                ) : raceDays.length === 0 ? (
+                  <div className="mt-6 rounded-[24px] border border-dashed border-white/10 bg-white/[0.02] p-8 text-center">
+                    <div className="text-sm font-black text-white">
+                      No race days available
+                    </div>
+
+                    <p className="mt-2 text-xs leading-6 text-white/40">
+                      Save valid event start and end dates, then sync the race
+                      days.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                    {raceDays.map((day: any) => (
+                      <button
+                        key={day.id}
+                        type="button"
+                        disabled={
+                          openingRaceDayId !== null &&
+                          openingRaceDayId !== day.id
+                        }
+                        onClick={() => handleOpenRaceDay(day.id)}
+                        className="group rounded-[22px] border border-white/10 bg-white/[0.03] p-5 text-left transition hover:border-cyan-300/25 hover:bg-cyan-300/[0.04] disabled:cursor-wait disabled:opacity-60"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="grid h-10 w-10 place-items-center rounded-[14px] border border-cyan-300/15 bg-cyan-300/10">
+                            <CalendarDays className="h-4 w-4 text-cyan-200" />
+                          </div>
+
+                          <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.14em] text-white/40">
+                            Race Day
+                          </span>
+                        </div>
+
+                        <div className="mt-4 text-lg font-black text-white">
+                          {day.label}
+                        </div>
+
+                        <div className="mt-1 text-sm text-white/45">
+                          {new Date(
+                            `${day.eventDate}T00:00:00`,
+                          ).toLocaleDateString(undefined, {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
+                        </div>
+
+                        <div className="mt-5 text-[9px] font-black uppercase tracking-[0.14em] text-cyan-200/60">
+                          {openingRaceDayId === day.id
+                            ? "Opening..."
+                            : "Manage Day →"}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </section>
         ) : null}

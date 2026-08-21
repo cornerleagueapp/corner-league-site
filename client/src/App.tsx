@@ -50,8 +50,6 @@ import AdminCreateOrganizationPage from "./pages/organizations/admin-create-orga
 import AquaOrganizationDetailsPage from "./pages/organizations/aqua-organization-details";
 import OrganizationAdminOverviewPage from "@/features/organization-admin/pages/OrganizationAdminOverviewPage";
 import OrganizationRegistrationsPage from "@/features/organization-admin/pages/OrganizationRegistrationsPage";
-import OrganizationRaceDaysPage from "@/features/organization-admin/pages/OrganizationRaceDaysPage";
-import OrganizationRaceSchedulePage from "@/features/organization-admin/pages/OrganizationRaceSchedulePage";
 import PublicRaceSchedulePage from "@/features/race-schedule-public/pages/PublicRaceSchedulePage";
 import OrganizationPaymentsPage from "@/features/organization-admin/pages/OrganizationPaymentsPage";
 import OrganizationResultsPage from "@/features/organization-admin/pages/OrganizationResultsPage";
@@ -265,15 +263,6 @@ function PrivateRouter() {
             )}
           </Route>
 
-          <Route path="/organizations/:organizationId/admin/events/:eventId/classes">
-            {(params) => (
-              <RaceClassEditor
-                organizationId={params.organizationId}
-                eventId={params.eventId}
-              />
-            )}
-          </Route>
-
           <Route path="/organizations/:organizationId/admin/events/:eventId">
             {(params) => (
               <UpdateEventPage
@@ -298,22 +287,6 @@ function PrivateRouter() {
           <Route path="/organizations/:organizationId/admin/registrations">
             {(params) => (
               <OrganizationRegistrationsPage
-                organizationId={params.organizationId}
-              />
-            )}
-          </Route>
-
-          <Route path="/organizations/:organizationId/admin/race-days">
-            {(params) => (
-              <OrganizationRaceDaysPage
-                organizationId={params.organizationId}
-              />
-            )}
-          </Route>
-
-          <Route path="/organizations/:organizationId/admin/race-schedule">
-            {(params) => (
-              <OrganizationRaceSchedulePage
                 organizationId={params.organizationId}
               />
             )}

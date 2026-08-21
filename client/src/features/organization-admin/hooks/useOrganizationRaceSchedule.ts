@@ -7,19 +7,20 @@ import {
   initializeRaceScheduleDay,
   mergeRaceScheduleSlots,
   moveRaceScheduleSlot,
+  publishRaceSchedule,
   setRaceScheduleSlotLock,
   splitRaceScheduleSlot,
+  unpublishRaceSchedule,
   updateRaceScheduleClassConfig,
   updateRaceScheduleSettings,
   validateRaceSchedule,
   validateRaceScheduleDetailed,
-  publishRaceSchedule,
-  unpublishRaceSchedule,
+  saveRaceScheduleOrder,
 } from "../api/organizationRaceScheduleApi";
-
 import type {
   UpdateRaceScheduleClassConfigInput,
   UpdateRaceScheduleSettingsInput,
+  SaveRaceScheduleOrderInput,
 } from "../types/organizationRaceSchedule";
 
 export function useRaceScheduleSettings(
@@ -65,13 +66,47 @@ export function useRaceScheduleDay(dayId: string | null | undefined) {
   });
 }
 
+export function useSaveRaceScheduleOrder(dayId: string | null | undefined) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      scheduleId,
+      input,
+    }: {
+      scheduleId: string;
+      input: SaveRaceScheduleOrderInput;
+    }) => saveRaceScheduleOrder(scheduleId, input),
+
+    onSuccess: async () => {
+      if (!dayId) {
+        return;
+      }
+
+      await queryClient.invalidateQueries({
+        queryKey: ["race-schedule-day", dayId],
+      });
+    },
+  });
+}
+
 export function useInitializeRaceScheduleDay() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (dayId: string) => initializeRaceScheduleDay(dayId),
 
-    onSuccess: async (_data, dayId) => {
+    onSuccess: async (data, dayId) => {
+      /**
+       * Initialization already returns the complete normalized race-day
+       * schedule response, so seed the cache immediately.
+       */
+      queryClient.setQueryData(["race-schedule-day", dayId], data);
+
+      /**
+       * Still invalidate afterward so the server remains the final source
+       * of truth if anything changed during initialization.
+       */
       await queryClient.invalidateQueries({
         queryKey: ["race-schedule-day", dayId],
       });
@@ -116,7 +151,6 @@ export function useUpdateRaceScheduleClassConfig(
       input,
     }: {
       classConfigId: string;
-
       input: UpdateRaceScheduleClassConfigInput;
     }) => updateRaceScheduleClassConfig(classConfigId, input),
 

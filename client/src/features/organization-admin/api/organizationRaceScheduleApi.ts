@@ -5,29 +5,24 @@ import type {
   MoveRaceScheduleSlotInput,
   RaceScheduleDayResponse,
   RaceScheduleGenerationResult,
+  RaceSchedulePublishResult,
   RaceScheduleSettings,
+  RaceScheduleUnpublishResult,
   RaceScheduleValidationResult,
   SetRaceScheduleSlotLockInput,
   SplitRaceScheduleSlotInput,
   UpdateRaceScheduleClassConfigInput,
   UpdateRaceScheduleSettingsInput,
-  RaceSchedulePublishResult,
-  RaceScheduleUnpublishResult,
+  SaveRaceScheduleOrderInput,
 } from "../types/organizationRaceSchedule";
 
 type ApiEnvelope<T> = {
   status?: boolean;
-
   statusCode?: number;
-
   path?: string;
-
   message?: string;
-
   data?: T;
-
   result?: T;
-
   timestamp?: string;
 };
 
@@ -47,6 +42,70 @@ function unwrap<T>(response: T | ApiEnvelope<T>): T {
   return response as T;
 }
 
+/**
+ * The race-scheduling backend currently returns schedule details as the
+ * root object rather than:
+ *
+ * {
+ *   schedule: {...},
+ *   eventDay: {...},
+ *   classConfigs: [...]
+ * }
+ *
+ * Normalize both response formats here so every frontend consumer receives
+ * the same RaceScheduleDayResponse shape.
+ */
+function normalizeRaceScheduleDayResponse(
+  response: unknown,
+): RaceScheduleDayResponse {
+  const data: any = unwrap<any>(response as any);
+
+  /**
+   * Support either:
+   *
+   * 1. Wrapped schedule response
+   *    {
+   *      schedule: {...},
+   *      eventDay: {...},
+   *      classConfigs: [...]
+   *    }
+   *
+   * 2. Schedule returned directly
+   *    {
+   *      id: "...",
+   *      eventDay: {...},
+   *      classConfigs: [...],
+   *      slots: [...]
+   *    }
+   */
+  const schedule =
+    data?.schedule ??
+    (data?.id
+      ? {
+          ...data,
+          /**
+           * Avoid recursively embedding the entire response if a future
+           * backend response contains its own schedule property.
+           */
+          schedule: undefined,
+        }
+      : null);
+
+  return {
+    eventDay: data?.eventDay ?? data?.day ?? schedule?.eventDay ?? null,
+
+    schedule,
+
+    classConfigs:
+      data?.classConfigs ?? data?.classes ?? schedule?.classConfigs ?? [],
+
+    settings: data?.settings ?? schedule?.settings ?? null,
+
+    minimumRestRaceGap:
+      data?.minimumRestRaceGap ?? schedule?.minimumRestRaceGap,
+  };
+}
+
 export async function getRaceScheduleSettings(
   eventId: string,
 ): Promise<RaceScheduleSettings> {
@@ -58,7 +117,6 @@ export async function getRaceScheduleSettings(
     undefined,
     {
       refreshOn401: true,
-
       logoutOn401: true,
     },
   );
@@ -78,7 +136,6 @@ export async function updateRaceScheduleSettings(
     input,
     {
       refreshOn401: true,
-
       logoutOn401: true,
     },
   );
@@ -95,12 +152,11 @@ export async function initializeRaceScheduleDay(
     {},
     {
       refreshOn401: true,
-
       logoutOn401: true,
     },
   );
 
-  return unwrap(response);
+  return normalizeRaceScheduleDayResponse(response);
 }
 
 export async function getRaceScheduleDay(
@@ -112,28 +168,11 @@ export async function getRaceScheduleDay(
     undefined,
     {
       refreshOn401: true,
-
       logoutOn401: true,
     },
   );
 
-  const data = unwrap<any>(response);
-
-  /*
-   * Keep normalization here because Nest's ResponseInterceptor may wrap
-   * service responses and we want the React UI to consume one shape.
-   */
-  return {
-    eventDay: data.eventDay ?? data.day,
-
-    schedule: data.schedule,
-
-    classConfigs: data.classConfigs ?? data.classes ?? [],
-
-    settings: data.settings ?? null,
-
-    minimumRestRaceGap: data.minimumRestRaceGap,
-  };
+  return normalizeRaceScheduleDayResponse(response);
 }
 
 export async function updateRaceScheduleClassConfig(
@@ -146,7 +185,6 @@ export async function updateRaceScheduleClassConfig(
     input,
     {
       refreshOn401: true,
-
       logoutOn401: true,
     },
   );
@@ -167,7 +205,6 @@ export async function generateRaceSchedule(
     {},
     {
       refreshOn401: true,
-
       logoutOn401: true,
     },
   );
@@ -184,7 +221,6 @@ export async function validateRaceSchedule(scheduleId: string) {
     {},
     {
       refreshOn401: true,
-
       logoutOn401: true,
     },
   );
@@ -199,6 +235,23 @@ export async function moveRaceScheduleSlot(
   const response = await apiRequest(
     "PATCH",
     `/race-scheduling/admin/slots/${encodeURIComponent(slotId)}/move`,
+    input,
+    {
+      refreshOn401: true,
+      logoutOn401: true,
+    },
+  );
+
+  return unwrap(response);
+}
+
+export async function saveRaceScheduleOrder(
+  scheduleId: string,
+  input: SaveRaceScheduleOrderInput,
+) {
+  const response = await apiRequest(
+    "PATCH",
+    `/race-scheduling/admin/schedules/${encodeURIComponent(scheduleId)}/order`,
     input,
     {
       refreshOn401: true,

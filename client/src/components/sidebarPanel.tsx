@@ -27,7 +27,6 @@ import {
   CircleDollarSign,
   ClipboardList,
   Gauge,
-  ListOrdered,
   SlidersHorizontal,
 } from "lucide-react";
 
@@ -239,36 +238,6 @@ export function useAppSidebarSections(opts?: {
                         onSelect: () =>
                           navigate(
                             `/organizations/${activeOrganizationId}/admin/registrations`,
-                          ),
-                      },
-
-                      {
-                        key: "org-admin-race-days",
-                        label: "Race Days",
-                        helper: "Classes and event setup.",
-                        selectable: false,
-                        matchPaths: [
-                          `/organizations/${activeOrganizationId}/admin/race-days`,
-                          `/organizations/${activeOrganizationId}/admin/race-days/*`,
-                        ],
-                        onSelect: () =>
-                          navigate(
-                            `/organizations/${activeOrganizationId}/admin/race-days`,
-                          ),
-                      },
-
-                      {
-                        key: "org-admin-race-schedule",
-                        label: "Race Schedule",
-                        helper: "Edit and publish race lists.",
-                        selectable: false,
-                        matchPaths: [
-                          `/organizations/${activeOrganizationId}/admin/race-schedule`,
-                          `/organizations/${activeOrganizationId}/admin/race-schedule/*`,
-                        ],
-                        onSelect: () =>
-                          navigate(
-                            `/organizations/${activeOrganizationId}/admin/race-schedule`,
                           ),
                       },
 
@@ -542,12 +511,6 @@ function getSidebarItemIcon(key: string) {
 
     case "org-admin-registrations":
       return ClipboardList;
-
-    case "org-admin-race-days":
-      return CalendarDays;
-
-    case "org-admin-race-schedule":
-      return ListOrdered;
 
     case "org-admin-payments":
       return CircleDollarSign;

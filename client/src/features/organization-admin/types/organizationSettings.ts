@@ -1,9 +1,23 @@
+export type RegistrationAvailabilityOverride = "open" | "closed" | null;
+
 export type RegistrationEventSettings = {
   id?: string;
 
   publicSlug: string;
 
   isRegistrationEnabled?: boolean;
+
+  /**
+   * null:
+   * Follow the configured registration open/close schedule.
+   *
+   * "open":
+   * Force registration open regardless of configured dates.
+   *
+   * "closed":
+   * Force registration closed regardless of configured dates.
+   */
+  registrationAvailabilityOverride?: RegistrationAvailabilityOverride;
 
   registrationOpensAt?: string | null;
 
