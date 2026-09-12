@@ -1,6 +1,9 @@
 import { apiRequest } from "@/lib/apiClient";
 
-import type { PublicRaceScheduleDayResponse } from "../types/publicRaceSchedule";
+import type {
+  PublicRaceScheduleDayResponse,
+  PublicRaceScheduleEventResponse,
+} from "../types/publicRaceSchedule";
 
 type ApiEnvelope<T> = {
   status?: boolean;
@@ -42,6 +45,26 @@ export async function getPublishedRaceScheduleDay(
   >(
     "GET",
     `/race-scheduling/public/days/${encodeURIComponent(dayId)}`,
+    undefined,
+    {
+      refreshOn401: false,
+
+      logoutOn401: false,
+    },
+  );
+
+  return unwrap(response);
+}
+
+export async function getPublishedRaceScheduleEvent(
+  eventSlug: string,
+): Promise<PublicRaceScheduleEventResponse> {
+  const response = await apiRequest<
+    | PublicRaceScheduleEventResponse
+    | ApiEnvelope<PublicRaceScheduleEventResponse>
+  >(
+    "GET",
+    `/race-scheduling/public/events/${encodeURIComponent(eventSlug)}`,
     undefined,
     {
       refreshOn401: false,

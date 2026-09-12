@@ -74,6 +74,8 @@ export type PublicRaceScheduleDayResponse = {
       name?: string | null;
 
       abbreviation?: string | null;
+
+      logoUrl?: string | null;
     } | null;
   };
 
@@ -92,4 +94,32 @@ export type PublicRaceScheduleDayResponse = {
   };
 
   schedule: PublicRaceSchedule;
+};
+
+export type PublicRaceScheduleEventResponse = {
+  event: {
+    id: string;
+
+    slug: string;
+
+    name: string;
+
+    location?: string | null;
+
+    startDate?: string | null;
+
+    endDate?: string | null;
+
+    organizer?: {
+      id?: string;
+
+      name?: string | null;
+
+      abbreviation?: string | null;
+
+      logoUrl?: string | null;
+    } | null;
+  };
+
+  days: PublicRaceScheduleDayResponse[];
 };

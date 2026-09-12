@@ -409,6 +409,16 @@ function Router() {
         )}
       </Route>
 
+      <Route path="/events/:eventSlug/race-schedule">
+        {(params) => (
+          <AppShell guestMode>
+            <ErrorBoundary>
+              <PublicRaceSchedulePage eventSlug={params.eventSlug} />
+            </ErrorBoundary>
+          </AppShell>
+        )}
+      </Route>
+
       <Route path="/race-schedule/day/:dayId">
         {(params) => (
           <AppShell guestMode>

@@ -229,6 +229,16 @@ export function RaceSchedulePublishPanel({
                   Public
                 </div>
 
+                <a
+                  href={`/race-schedule/day/${encodeURIComponent(dayId)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex h-11 items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/[0.07] px-4 text-[10px] font-black uppercase tracking-[0.12em] text-cyan-100 transition hover:bg-cyan-300/10"
+                >
+                  <Eye className="h-4 w-4" />
+                  View Live Schedule
+                </a>
+
                 <button
                   type="button"
                   disabled={unpublishMutation.isPending}
