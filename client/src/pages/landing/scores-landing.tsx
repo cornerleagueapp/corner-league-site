@@ -193,13 +193,13 @@ export default function ScoresLandingPage() {
           </div>
         </section>
 
+        <FeaturedPollSection sourcePage="landing_page" />
+
         <LeagueTopPerformersSection />
 
         <FeaturedRacerGallerySection sourcePage="landing_page" limit={7} />
 
         <RacePodSection />
-
-        <FeaturedPollSection sourcePage="landing_page" />
 
         <NationwideMap events={allEvents} />
 

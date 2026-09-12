@@ -90,6 +90,10 @@ export function RaceSchedulePublishPanel({
       return;
     }
 
+    if (result.raceWarnings.length > 0 && !result.allowConflictOverride) {
+      return;
+    }
+
     setShowConfirmation(true);
   };
 
@@ -114,12 +118,19 @@ export function RaceSchedulePublishPanel({
   const structuralErrors = validation
     ? validation.duplicateClassRoundWarnings.length +
       validation.missingClassRoundWarnings.length +
-      validation.emptyRaceSlotWarnings.length
+      validation.emptyRaceSlotWarnings.length +
+      validation.duplicateRacerInRaceWarnings.length +
+      validation.invalidRaceStructureWarnings.length
     : 0;
 
   const highConflicts =
     validation?.raceWarnings.filter((warning) => warning.severity === "high")
       .length ?? 0;
+
+  const hasRestWarnings = (validation?.raceWarnings.length ?? 0) > 0;
+
+  const restWarningsBlockPublish =
+    hasRestWarnings && validation?.allowConflictOverride === false;
 
   const error =
     validateMutation.error || publishMutation.error || unpublishMutation.error;
@@ -281,8 +292,9 @@ export function RaceSchedulePublishPanel({
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-200" />
 
             <p className="text-xs leading-5 text-red-100/75">
-              This schedule contains structural race-order errors. Fix the
-              duplicate rounds, missing rounds, or empty races before
+              This schedule contains critical race-order errors. Fix duplicate
+              or missing motos, empty races, invalid race numbering, or racers
+              assigned to multiple classes in the same physical race before
               publishing.
             </p>
           </div>
@@ -290,19 +302,42 @@ export function RaceSchedulePublishPanel({
 
         {validation &&
         validation.structurallyValid &&
-        validation.raceWarnings.length > 0 ? (
+        restWarningsBlockPublish ? (
+          <div className="mt-4 flex items-start gap-3 rounded-2xl border border-red-300/15 bg-red-300/[0.05] p-4">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-200" />
+
+            <div>
+              <div className="text-xs font-black text-red-100">
+                Publishing blocked by racer-rest conflicts
+              </div>
+
+              <p className="mt-1 text-xs leading-5 text-red-100/65">
+                {validation.raceWarnings.length} racer-rest warning
+                {validation.raceWarnings.length === 1 ? "" : "s"} remain.
+                Conflict overrides are disabled for this event. Adjust the race
+                order before publishing.
+              </p>
+            </div>
+          </div>
+        ) : null}
+
+        {validation &&
+        validation.structurallyValid &&
+        hasRestWarnings &&
+        validation.allowConflictOverride ? (
           <div className="mt-4 flex items-start gap-3 rounded-2xl border border-amber-300/15 bg-amber-300/[0.05] p-4">
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-200" />
 
             <div>
               <div className="text-xs font-black text-amber-100">
-                Racer-rest warnings remain
+                Ready to publish with warnings
               </div>
 
               <p className="mt-1 text-xs leading-5 text-amber-100/65">
-                The backend will make the final decision about whether these
-                warnings may be overridden based on the event scheduling
-                settings.
+                {validation.raceWarnings.length} racer-rest warning
+                {validation.raceWarnings.length === 1 ? "" : "s"} remain.
+                Conflict overrides are enabled for this event, so the race
+                director may publish after reviewing them.
               </p>
             </div>
           </div>
@@ -364,8 +399,9 @@ export function RaceSchedulePublishPanel({
                     </strong>{" "}
                     racer-rest warning
                     {validation.raceWarnings.length === 1 ? "" : "s"} remaining.
-                    Publishing may still be blocked by the backend if
-                    high-severity conflict overrides are disabled.
+                    Conflict overrides are enabled for this event. Publishing
+                    will make this race order official with those warnings
+                    acknowledged.
                   </p>
                 </div>
               </div>

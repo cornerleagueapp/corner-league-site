@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -155,9 +155,28 @@ export function RaceScheduleEditor({
 
   const [orderDirty, setOrderDirty] = useState(false);
 
+  const localSlotsRef = useRef(slots);
+
+  useEffect(() => {
+    localSlotsRef.current = slots;
+  }, [slots]);
+
   useEffect(() => {
     if (orderDirty) {
-      return;
+      const localSlots = localSlotsRef.current;
+
+      const localIds = new Set(localSlots.map((slot) => slot.id));
+      const serverIds = new Set(sortedServerSlots.map((slot) => slot.id));
+
+      const sameSlotSet =
+        localIds.size === serverIds.size &&
+        [...localIds].every((id) => serverIds.has(id));
+
+      if (sameSlotSet) {
+        return;
+      }
+
+      setOrderDirty(false);
     }
 
     setSlots(sortedServerSlots);
@@ -167,6 +186,9 @@ export function RaceScheduleEditor({
     if (!orderDirty) {
       return;
     }
+
+    // Clear any previous Save Order error before retrying.
+    saveOrderMutation.reset();
 
     await saveOrderMutation.mutateAsync({
       scheduleId: schedule.id,
@@ -180,6 +202,10 @@ export function RaceScheduleEditor({
     });
 
     setOrderDirty(false);
+
+    // Make sure a successful retry does not leave
+    // an old error visible in the editor.
+    saveOrderMutation.reset();
 
     onChanged?.();
   };
@@ -363,6 +389,11 @@ export function RaceScheduleEditor({
 
     setMergeTargetId(null);
 
+    mergeMutation.reset();
+    splitMutation.reset();
+    lockMutation.reset();
+    breakMutation.reset();
+
     onChanged?.();
   };
 
@@ -417,10 +448,15 @@ export function RaceScheduleEditor({
       return;
     }
 
+    // Clear any previous manual merge error.
+    mergeMutation.reset();
+
     await mergeMutation.mutateAsync({
       targetSlotId: target.id,
       sourceSlotId: source.id,
     });
+
+    mergeMutation.reset();
 
     await afterChange();
   };
@@ -429,6 +465,8 @@ export function RaceScheduleEditor({
     if (slot.classes.length <= 1) {
       return;
     }
+
+    splitMutation.reset();
 
     /**
      * Keep the first class in the current race.
@@ -448,6 +486,8 @@ export function RaceScheduleEditor({
       });
     }
 
+    splitMutation.reset();
+
     await afterChange();
   };
 
@@ -458,12 +498,16 @@ export function RaceScheduleEditor({
       return;
     }
 
+    breakMutation.reset();
+
     await breakMutation.mutateAsync({
       scheduleId: schedule.id,
       displayOrder: slots.length,
       label,
       durationMinutes: Math.max(1, breakDuration),
     });
+
+    breakMutation.reset();
 
     setBreakLabel("Break");
     setBreakDuration(15);
@@ -497,7 +541,8 @@ export function RaceScheduleEditor({
     saveOrderMutation.isPending ||
     lockMutation.isPending ||
     mergeMutation.isPending ||
-    splitMutation.isPending;
+    splitMutation.isPending ||
+    breakMutation.isPending;
 
   return (
     <section>

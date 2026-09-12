@@ -289,6 +289,8 @@ export type RaceScheduleValidationResult = {
 
   minimumRestRaceGap: number;
 
+  allowConflictOverride: boolean;
+
   summary?: Record<string, unknown> | null;
 
   raceWarnings: RaceScheduleRaceWarning[];
@@ -310,6 +312,24 @@ export type RaceScheduleValidationResult = {
   missingClassRoundWarnings: RaceScheduleMissingClassRoundWarning[];
 
   emptyRaceSlotWarnings: RaceScheduleEmptySlotWarning[];
+
+  duplicateRacerInRaceWarnings: Array<{
+    type: "DUPLICATE_RACER_IN_RACE";
+    severity: "high";
+    racerId: string;
+    racerName: string;
+    raceNumber: number;
+    classNames: string[];
+    reason: string;
+  }>;
+
+  invalidRaceStructureWarnings: Array<{
+    type: "INVALID_RACE_STRUCTURE";
+    severity: "high";
+    slotId?: string;
+    raceNumber?: number | null;
+    reason: string;
+  }>;
 };
 
 export type AddRaceScheduleBreakInput = {

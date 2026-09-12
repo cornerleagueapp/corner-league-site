@@ -41,6 +41,7 @@ import {
 } from "@/features/organization-admin/hooks/useOrganizationRaceSchedule";
 import { RaceScheduleEditor } from "@/features/organization-admin/components/RaceScheduleEditor";
 import { RaceSchedulePublishPanel } from "@/features/organization-admin/components/RaceSchedulePublishPanel";
+import { RaceScheduleExportPanel } from "@/features/organization-admin/components/RaceScheduleExportPanel";
 import type { RaceScheduleClassConfig } from "@/features/organization-admin/types/organizationRaceSchedule";
 import {
   useCreateRegistrationEventSettings,
@@ -66,6 +67,37 @@ function classNameForScheduleConfig(config: RaceScheduleClassConfig) {
   );
 }
 
+const MERGE_COMPATIBILITY_OPTIONS = [
+  {
+    value: "",
+    label: "Do Not Auto-Merge",
+  },
+  {
+    value: "ski",
+    label: "Ski",
+  },
+  {
+    value: "runabout",
+    label: "Runabout",
+  },
+  {
+    value: "vintage",
+    label: "Vintage",
+  },
+  {
+    value: "junior",
+    label: "Junior",
+  },
+  {
+    value: "sport",
+    label: "Sport",
+  },
+  {
+    value: "custom",
+    label: "Custom Group",
+  },
+] as const;
+
 function RaceDayClassCard({
   config,
   dayId,
@@ -77,12 +109,91 @@ function RaceDayClassCard({
 
   const racerCount = config.racerCount ?? config.participants?.length ?? 0;
 
-  const updateRaceCount = (raceCount: number) => {
+  const participantSourceLabel =
+    config.participantSource === "registration"
+      ? "Registration"
+      : config.participantSource === "historical_match"
+        ? "Historical Class"
+        : null;
+
+  const knownCompatibilityValues = MERGE_COMPATIBILITY_OPTIONS.map(
+    (option) => option.value,
+  );
+
+  const currentCompatibilityValue = config.mergeCompatibilityGroup ?? "";
+
+  const isCustomCompatibilityGroup =
+    !!currentCompatibilityValue &&
+    !knownCompatibilityValues.includes(currentCompatibilityValue as any);
+
+  const selectedCompatibilityOption = isCustomCompatibilityGroup
+    ? "custom"
+    : currentCompatibilityValue;
+
+  const update = (
+    input: Partial<{
+      raceCount: number;
+      allowCombinedRace: boolean;
+      mergeCompatibilityGroup: string | null;
+    }>,
+  ) => {
     mutation.mutate({
       classConfigId: config.id,
-      input: {
-        raceCount,
-      },
+      input,
+    });
+  };
+
+  const updateRaceCount = (raceCount: number) => {
+    update({
+      raceCount,
+    });
+  };
+
+  const toggleCombinedRace = () => {
+    const next = !config.allowCombinedRace;
+
+    /**
+     * Turning automatic combining OFF should also
+     * clear the compatibility group.
+     */
+    update({
+      allowCombinedRace: next,
+
+      mergeCompatibilityGroup: next ? config.mergeCompatibilityGroup : null,
+    });
+  };
+
+  const updateCompatibilityOption = (value: string) => {
+    if (!value) {
+      update({
+        allowCombinedRace: false,
+        mergeCompatibilityGroup: null,
+      });
+
+      return;
+    }
+
+    if (value === "custom") {
+      /**
+       * Keep an existing custom value.
+       * If one doesn't exist yet, wait for the
+       * admin to type it below.
+       */
+      update({
+        allowCombinedRace: true,
+
+        mergeCompatibilityGroup: isCustomCompatibilityGroup
+          ? currentCompatibilityValue
+          : null,
+      });
+
+      return;
+    }
+
+    update({
+      allowCombinedRace: true,
+
+      mergeCompatibilityGroup: value,
     });
   };
 
@@ -94,6 +205,10 @@ function RaceDayClassCard({
           : "border-white/10 bg-white/[0.025]"
       }`}
     >
+      {/* ------------------------------------------------ */}
+      {/* Class header */}
+      {/* ------------------------------------------------ */}
+
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="text-[9px] font-black uppercase tracking-[0.15em] text-[#FFB199]">
@@ -104,15 +219,28 @@ function RaceDayClassCard({
             {classNameForScheduleConfig(config)}
           </h4>
 
-          <div className="mt-2 flex items-center gap-1.5 text-xs text-white/40">
-            <Users className="h-3.5 w-3.5" />
-            {racerCount} racer
-            {racerCount === 1 ? "" : "s"}
-            {config.participantSource === "registration"
-              ? " · Registration"
-              : config.participantSource === "historical_match"
-                ? " · Historical class"
-                : ""}
+          <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-white/40">
+            <span className="inline-flex items-center gap-1.5">
+              <Users className="h-3.5 w-3.5" />
+              {racerCount} racer
+              {racerCount === 1 ? "" : "s"}
+            </span>
+
+            {participantSourceLabel ? (
+              <>
+                <span className="text-white/15">•</span>
+
+                <span
+                  className={
+                    config.participantSource === "registration"
+                      ? "text-emerald-200/55"
+                      : "text-amber-200/55"
+                  }
+                >
+                  {participantSourceLabel}
+                </span>
+              </>
+            ) : null}
           </div>
         </div>
 
@@ -130,6 +258,10 @@ function RaceDayClassCard({
           </span>
         )}
       </div>
+
+      {/* ------------------------------------------------ */}
+      {/* Race / moto count */}
+      {/* ------------------------------------------------ */}
 
       <div className="mt-5">
         <div className="text-[9px] font-black uppercase tracking-[0.14em] text-white/35">
@@ -158,6 +290,128 @@ function RaceDayClassCard({
           Set Off when this class does not compete on this race day.
         </p>
       </div>
+
+      {/* ------------------------------------------------ */}
+      {/* Automatic merging */}
+      {/* ------------------------------------------------ */}
+
+      {config.raceCount > 0 ? (
+        <div className="mt-5 border-t border-white/[0.07] pt-4">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <div className="text-xs font-black text-white">
+                Allow Automatic Merge
+              </div>
+
+              <p className="mt-1 max-w-sm text-[10px] leading-4 text-white/30">
+                Allow this class to share one physical race with another
+                compatible small class.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              disabled={mutation.isPending}
+              onClick={toggleCombinedRace}
+              className={`relative h-6 w-11 shrink-0 rounded-full border transition ${
+                config.allowCombinedRace
+                  ? "border-emerald-300/40 bg-emerald-300"
+                  : "border-white/10 bg-white/[0.06]"
+              }`}
+              aria-label="Toggle automatic race merging"
+            >
+              <span
+                className={`absolute top-[3px] h-4 w-4 rounded-full bg-[#04101C] transition ${
+                  config.allowCombinedRace ? "left-[23px]" : "left-[3px]"
+                }`}
+              />
+            </button>
+          </div>
+
+          {config.allowCombinedRace ? (
+            <div className="mt-4 rounded-2xl border border-purple-300/10 bg-purple-300/[0.035] p-3">
+              <label className="text-[9px] font-black uppercase tracking-[0.14em] text-purple-200/60">
+                Merge Compatibility
+              </label>
+
+              <p className="mt-1 text-[10px] leading-4 text-white/30">
+                Only small classes using the same compatibility group can be
+                automatically merged.
+              </p>
+
+              <select
+                value={selectedCompatibilityOption}
+                disabled={mutation.isPending}
+                onChange={(event) =>
+                  updateCompatibilityOption(event.target.value)
+                }
+                className="mt-3 h-11 w-full rounded-xl border border-white/10 bg-[#07111F] px-3 text-sm font-semibold text-white outline-none transition focus:border-purple-300/35"
+              >
+                {MERGE_COMPATIBILITY_OPTIONS.map((option) => (
+                  <option key={option.value || "none"} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+
+              {selectedCompatibilityOption === "custom" ? (
+                <div className="mt-3">
+                  <label className="text-[8px] font-black uppercase tracking-[0.12em] text-white/30">
+                    Custom Group Name
+                  </label>
+
+                  <input
+                    key={currentCompatibilityValue || "custom-empty"}
+                    defaultValue={
+                      isCustomCompatibilityGroup
+                        ? currentCompatibilityValue
+                        : ""
+                    }
+                    disabled={mutation.isPending}
+                    onBlur={(event) => {
+                      const value = event.target.value
+                        .trim()
+                        .toLowerCase()
+                        .replace(/[^a-z0-9]+/g, "-")
+                        .replace(/^-+|-+$/g, "");
+
+                      update({
+                        allowCombinedRace: true,
+
+                        mergeCompatibilityGroup: value || null,
+                      });
+                    }}
+                    placeholder="Example: pro-am-ski"
+                    className="mt-2 h-11 w-full rounded-xl border border-white/10 bg-black/20 px-3 text-sm text-white outline-none placeholder:text-white/20 focus:border-purple-300/35"
+                  />
+                </div>
+              ) : null}
+
+              {config.mergeCompatibilityGroup ? (
+                <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-purple-300/10 bg-purple-300/[0.04] px-3 py-2">
+                  <div className="text-[9px] font-black uppercase tracking-[0.1em] text-white/30">
+                    Current Group
+                  </div>
+
+                  <span className="rounded-full border border-purple-300/15 bg-purple-300/[0.08] px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.1em] text-purple-200">
+                    {config.mergeCompatibilityGroup}
+                  </span>
+                </div>
+              ) : (
+                <div className="mt-3 rounded-xl border border-amber-300/10 bg-amber-300/[0.04] px-3 py-2 text-[10px] leading-4 text-amber-100/55">
+                  Select a compatibility group before automatic merging can
+                  occur.
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="mt-3 text-[10px] leading-4 text-white/25">
+              This class will always receive its own physical race unless
+              manually merged by a race director.
+            </div>
+          )}
+        </div>
+      ) : null}
     </article>
   );
 }
@@ -165,10 +419,14 @@ function RaceDayClassCard({
 function RaceDayWorkspace({
   day,
   eventId,
+  eventName,
+  organizationName,
   onBack,
 }: {
   day: any;
   eventId: string;
+  eventName: string;
+  organizationName: string;
   onBack: () => void;
 }) {
   const dayQuery = useRaceScheduleDay(day.id);
@@ -204,6 +462,34 @@ function RaceDayWorkspace({
   const generateRaceList = () => {
     if (!schedule?.id) {
       return;
+    }
+
+    /**
+     * The first generation doesn't need a warning.
+     *
+     * Regeneration rebuilds all unlocked races while
+     * preserving locked races and manually added
+     * schedule blocks.
+     */
+    if (schedule.generatedAt) {
+      const confirmed = window.confirm(
+        [
+          "Regenerate this race list?",
+          "",
+          "This will:",
+          "• Rebuild all unlocked races",
+          "• Preserve locked races",
+          "• Preserve Practice, Meetings, Awards, and custom blocks",
+          "• Recreate the automatic lunch break",
+          "• Recalculate auto-merges and racer-rest spacing",
+          "",
+          "Manually merged races must be locked if you want to preserve them.",
+        ].join("\n"),
+      );
+
+      if (!confirmed) {
+        return;
+      }
     }
 
     generateMutation.mutate(schedule.id, {
@@ -405,6 +691,17 @@ function RaceDayWorkspace({
                     onChanged={() => {
                       dayQuery.refetch();
                     }}
+                  />
+                </div>
+
+                <div className="mt-6">
+                  <RaceScheduleExportPanel
+                    schedule={schedule}
+                    classConfigs={classConfigs}
+                    eventName={eventName}
+                    organizationName={organizationName}
+                    eventDate={day.eventDate}
+                    dayLabel={day.label}
                   />
                 </div>
               </>
@@ -1427,6 +1724,11 @@ export default function UpdateEventPage({
                 key={selectedRaceDay.id}
                 day={selectedRaceDay}
                 eventId={eventId}
+                eventName={draft.name}
+                organizationName={
+                  registrationConfigurationQuery.data?.event?.organizer?.name ??
+                  "Corner League"
+                }
                 onBack={() => {
                   setSelectedRaceDayId(null);
                   setOpeningRaceDayId(null);

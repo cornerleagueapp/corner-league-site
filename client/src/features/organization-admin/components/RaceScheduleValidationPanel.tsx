@@ -15,6 +15,8 @@ export function RaceScheduleValidationPanel({ validation }: Props) {
     ...validation.duplicateClassRoundWarnings,
     ...validation.missingClassRoundWarnings,
     ...validation.emptyRaceSlotWarnings,
+    ...validation.duplicateRacerInRaceWarnings,
+    ...validation.invalidRaceStructureWarnings,
   ];
 
   const highRestWarnings = validation.raceWarnings.filter(
