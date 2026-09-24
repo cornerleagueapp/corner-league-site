@@ -527,10 +527,13 @@ export default function OrgEventDetailsPage(props: { params: { id: string } }) {
 
               <SectionCard
                 icon={<CalendarDays className="h-5 w-5" />}
-                title="Classes"
-                description="View all classes/divisions attached to this event."
-                active={activeModal === "classes"}
-                onClick={() => setModalState("classes")}
+                title="Schedule"
+                description="View official published race days, race order, classes, and participating racers."
+                onClick={() =>
+                  navigate(
+                    `/events/${encodeURIComponent(eventId)}/race-schedule`,
+                  )
+                }
               />
             </div>
 

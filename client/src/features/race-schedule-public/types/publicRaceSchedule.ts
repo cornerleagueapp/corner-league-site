@@ -5,6 +5,13 @@ export type PublicRaceScheduleSlotClass = {
 
   displayOrder?: number;
 
+  participants?: Array<{
+    racerId: string;
+    racerName: string;
+  }>;
+
+  participantSource?: "registration" | "historical_match" | "none" | string;
+
   eventClass: {
     id: string;
 
