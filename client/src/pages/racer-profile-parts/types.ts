@@ -37,6 +37,7 @@ export type Racer = {
   claimedByUserId?: string | null;
   claimedByUsername?: string | null;
   isClaimed?: boolean;
+  isVerifiedAthlete?: boolean;
 };
 
 export type AthleteHistoryItem = {

@@ -218,7 +218,7 @@ export function PremiumRacerHero({
                 />
               </button>
 
-              {racer.isClaimed ? (
+              {racer.isVerifiedAthlete ? (
                 <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/20 bg-emerald-500/15 px-2.5 py-1 text-[10px] font-semibold text-emerald-200 min-[1025px]:text-[11px]">
                   <ShieldCheck className="h-3.5 w-3.5" />
                   Verified
@@ -309,6 +309,28 @@ export function PremiumRacerHero({
               </div>
             </div>
           </div>
+
+          {canEdit && !racer.isVerifiedAthlete && (
+            <div className="mt-6 rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-slate-300">
+              {hasPendingClaim ? (
+                "Your identity verification is pending review."
+              ) : (
+                <>
+                  <p>
+                    Your racer profile is linked to your account. Request
+                    verification to add the reviewed athlete badge.
+                  </p>
+                  <Button
+                    onClick={onClaim}
+                    disabled={!canClaim}
+                    className="mt-3"
+                  >
+                    Request athlete verification
+                  </Button>
+                </>
+              )}
+            </div>
+          )}
 
           <div className="mt-8 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 min-[1025px]:grid-cols-[220px_auto_minmax(320px,1fr)]">
             {canEdit ? (

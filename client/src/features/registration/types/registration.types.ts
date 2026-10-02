@@ -88,6 +88,7 @@ export type RegistrationEventClass = {
 };
 
 export type RegistrationEvent = {
+  livestreamUrl?: string | null;
   id: string;
   registrationSettingsId?: string;
 

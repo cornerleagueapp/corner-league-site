@@ -1,4 +1,5 @@
 import React from "react";
+import { eventLivestreamUrl } from "@/lib/eventLivestream";
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,7 @@ type SportEvent = {
   startDate: string;
   endDate: string;
   imageUrl?: string | null;
+  livestreamUrl?: string | null;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -203,7 +205,9 @@ export default function OrgEventDetailsPage(props: { params: { id: string } }) {
         json?.data?.sportEvent ??
         null) as SportEvent | null;
     },
-    staleTime: 60_000,
+    staleTime: 30_000,
+    refetchOnWindowFocus: true,
+    refetchInterval: 60_000,
   });
 
   const {
@@ -231,7 +235,9 @@ export default function OrgEventDetailsPage(props: { params: { id: string } }) {
       const list = json?.divisions ?? json?.data?.divisions ?? [];
       return Array.isArray(list) ? (list as Division[]) : [];
     },
-    staleTime: 60_000,
+    staleTime: 30_000,
+    refetchOnWindowFocus: true,
+    refetchInterval: 60_000,
   });
 
   const { data: resultsByDivision = {}, isLoading: resultsLoading } = useQuery({
@@ -425,6 +431,16 @@ export default function OrgEventDetailsPage(props: { params: { id: string } }) {
               </div>
 
               <div className="flex flex-col gap-3 sm:flex-row lg:flex-col lg:items-end">
+                {eventLivestreamUrl(data?.livestreamUrl) && (
+                  <a
+                    href={eventLivestreamUrl(data?.livestreamUrl)!}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-full bg-cyan-300 px-5 py-3 text-center text-sm font-black text-[#06111d]"
+                  >
+                    Watch stream ↗
+                  </a>
+                )}
                 <Button
                   onClick={() => {
                     if (orgIdFromQuery) {

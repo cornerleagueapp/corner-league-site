@@ -16,6 +16,7 @@ import { searchRegistrationRacers } from "../services/registrationRacerService";
 
 import type { RegistrationRacer } from "../types/registration.types";
 
+import { useMyRacerProfile } from "@/hooks/useMyRacerProfile";
 import CreateRegistrationRacerModal from "./CreateRegistrationRacerModal";
 
 type RacerLookupStepProps = {
@@ -38,6 +39,8 @@ export default function RacerLookupStep({
   selectedRacer,
   onSelectRacer,
 }: RacerLookupStepProps) {
+  const identity = useMyRacerProfile();
+  const own = identity.data?.profile;
   const [query, setQuery] = useState("");
 
   const [results, setResults] = useState<RegistrationRacer[]>([]);
@@ -116,6 +119,25 @@ export default function RacerLookupStep({
             another racer when permitted.
           </p>
         </div>
+
+        {own && (
+          <button
+            type="button"
+            onClick={() =>
+              onSelectRacer({
+                id: own.athleteId,
+                name: own.name,
+                nickname: own.nickname,
+                imageUrl: own.imageUrl,
+                formattedLocation: own.formattedLocation,
+              })
+            }
+            className="rounded-xl border border-cyan-300/25 bg-cyan-300/10 px-4 py-3 font-bold text-cyan-200"
+          >
+            Register as {own.name}
+            {own.isVerifiedAthlete ? " • Verified athlete" : ""}
+          </button>
+        )}
 
         {selectedRacer ? (
           <div className="rounded-[24px] border border-emerald-300/20 bg-emerald-300/[0.07] p-4 sm:p-5">

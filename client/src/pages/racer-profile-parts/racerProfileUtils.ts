@@ -135,7 +135,7 @@ export function mapDetail(rec: any): Racer {
       rec.skillLevel ??
       rec.skill_level ??
       "amateur",
-    racerAge: a.age ?? rec.age ?? undefined,
+    racerAge: (a.age ?? rec.age) > 0 ? (a.age ?? rec.age) : undefined,
     dateOfBirth:
       a.dateOfBirth ??
       a.date_of_birth ??
@@ -188,6 +188,7 @@ export function mapDetail(rec: any): Racer {
     claimedByUserId: claimedByUser?.id ?? null,
     claimedByUsername: claimedByUser?.username ?? null,
     isClaimed: !!claimedByUser?.id,
+    isVerifiedAthlete: claimedByUser?.isVerifiedAthlete === true,
   };
 }
 
@@ -198,7 +199,7 @@ export function mapAthlete(a: any): Racer {
     racerName: a?.name ?? a?.fullName ?? a?.displayName ?? "",
     nickname: a?.nickname ?? a?.nick_name ?? null,
     skillLevel: a?.skillLevel ?? a?.skill_level ?? "amateur",
-    racerAge: a?.age ?? undefined,
+    racerAge: a?.age > 0 ? a.age : undefined,
     dateOfBirth: a?.dateOfBirth ?? a?.date_of_birth ?? null,
     bio: a?.bio ?? null,
     racerImage: a?.image ?? a?.avatar ?? a?.photo ?? null,
@@ -219,6 +220,7 @@ export function mapAthlete(a: any): Racer {
     claimedByUserId: a?.claimedByUser?.id ?? null,
     claimedByUsername: a?.claimedByUser?.username ?? null,
     isClaimed: !!a?.claimedByUser?.id,
+    isVerifiedAthlete: a?.claimedByUser?.isVerifiedAthlete === true,
   };
 }
 

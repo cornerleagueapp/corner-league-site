@@ -1,3 +1,4 @@
+import { eventLivestreamUrl } from "@/lib/eventLivestream";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "wouter";
 import {
@@ -253,6 +254,16 @@ export default function RegistrationEventPage({
       backLabel="All Events"
       actions={
         <>
+          {eventLivestreamUrl(event.livestreamUrl) && (
+            <a
+              href={eventLivestreamUrl(event.livestreamUrl)!}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-full bg-cyan-300 px-5 py-3 text-sm font-black text-[#06111d]"
+            >
+              Watch stream ↗
+            </a>
+          )}
           <RegistrationShareButton
             eventName={event.name}
             eventSlug={event.slug}

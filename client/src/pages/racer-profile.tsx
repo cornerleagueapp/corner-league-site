@@ -1112,7 +1112,7 @@ export default function RacerProfilePage({
   const canClaim =
     !!currentUserId &&
     !!racer?.athleteId &&
-    !racer?.isClaimed &&
+    (!racer?.isClaimed || (isOwner && !racer?.isVerifiedAthlete)) &&
     (!claimStatus?.hasClaim || hasRejectedClaim);
 
   const canEdit = isOwner || hasApprovedClaim;

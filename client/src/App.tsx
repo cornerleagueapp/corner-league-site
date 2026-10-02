@@ -36,6 +36,7 @@ import NotFound from "@/pages/not-found";
 import ClubDetailsPage from "./pages/clubs/clubDetails";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import RacerProfilePage from "./pages/racer-profile";
+import CreateRacerProfilePage from "./pages/create-racer-profile";
 import AppShell from "./layout/AppShell";
 import ProfileRedirect from "@/pages/profile/profile";
 import UserProfilePage from "./pages/profile/user-profile";
@@ -47,6 +48,7 @@ import WelcomeSplash from "./pages/welcome-splash";
 import AdminCreateRacerPage from "./pages/admin/admin-create-racer";
 import AquaOrganizationsPage from "./pages/organizations/aqua-organizations";
 import AdminCreateOrganizationPage from "./pages/organizations/admin-create-organization";
+import { OrganizationPostPage } from "@/features/organization-posts/OrganizationPosts";
 import AquaOrganizationDetailsPage from "./pages/organizations/aqua-organization-details";
 import OrganizationAdminOverviewPage from "@/features/organization-admin/pages/OrganizationAdminOverviewPage";
 import OrganizationRegistrationsPage from "@/features/organization-admin/pages/OrganizationRegistrationsPage";
@@ -489,6 +491,16 @@ function Router() {
         )}
       </Route>
 
+      <Route path="/organization-posts/:id">
+        {(params) => (
+          <AppShell guestMode>
+            <ErrorBoundary>
+              <OrganizationPostPage id={params.id} />
+            </ErrorBoundary>
+          </AppShell>
+        )}
+      </Route>
+
       <Route path="/aqua-organizations">
         {() => (
           <AppShell guestMode>
@@ -517,6 +529,14 @@ function Router() {
             </ErrorBoundary>
           </AppShell>
         )}
+      </Route>
+
+      <Route path="/create-racer-profile">
+        <AppShell guestMode>
+          <ErrorBoundary>
+            <CreateRacerProfilePage />
+          </ErrorBoundary>
+        </AppShell>
       </Route>
 
       <Route path="/racer/:idOrSlug">

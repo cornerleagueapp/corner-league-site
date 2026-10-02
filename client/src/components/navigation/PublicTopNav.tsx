@@ -1,4 +1,5 @@
 import React from "react";
+import MyRacerProfileLink from "@/components/MyRacerProfileLink";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { logout } from "@/lib/logout";
@@ -360,6 +361,8 @@ export default function PublicTopNav({
                     <CircleUserRound className="h-4 w-4 shrink-0 text-cyan-200" />
                     Your Profile
                   </button>
+
+                  <MyRacerProfileLink onNavigate={navigateFromAccount} />
 
                   <button
                     type="button"

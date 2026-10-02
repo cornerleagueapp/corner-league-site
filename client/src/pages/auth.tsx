@@ -1,3 +1,8 @@
+import {
+  consumerAuthDestination,
+  ORGANIZATION_SIGNUP_URL,
+  signupThenSignIn,
+} from "@/lib/organizationSignup";
 // src/pages/AuthPage.tsx
 import { useState, useEffect, type Dispatch, type SetStateAction } from "react";
 import { useLocation } from "wouter";
@@ -50,7 +55,26 @@ export default function AuthPage() {
   const [authMethod, setAuthMethod] = useState<
     "welcome" | "email" | "apple" | "google"
   >("welcome");
-  const [isLogin, setIsLogin] = useState(true);
+  const [isLogin, setIsLogin] = useState(
+    () =>
+      typeof window === "undefined" ||
+      new URLSearchParams(window.location.search).get("mode") !== "signup",
+  );
+  const [organizerSignup, setOrganizerSignup] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("intent") ===
+        "organization",
+  );
+  function finishAuthentication() {
+    const target = consumerAuthDestination(
+      window.location.search,
+      organizerSignup,
+    );
+    if (target.startsWith(ORGANIZATION_SIGNUP_URL))
+      window.location.assign(target);
+    else setLocation(target, { replace: true });
+  }
   const { toast } = useToast();
   const { isAuthenticated } = useAuth();
 
@@ -89,9 +113,7 @@ export default function AuthPage() {
   // Redirect if already authenticated
   useEffect(() => {
     if (!isAuthenticated) return;
-    const next =
-      new URLSearchParams(window.location.search).get("next") || "/scores/aqua";
-    setLocation(next, { replace: true });
+    finishAuthentication();
   }, [isAuthenticated, setLocation]);
 
   const loginMutation = useMutation<AuthSuccess, Error, typeof loginData>({
@@ -132,10 +154,7 @@ export default function AuthPage() {
         title: "Welcome back!",
         description: `Hello ${user.firstName ?? user.username}!`,
       });
-      const next =
-        new URLSearchParams(window.location.search).get("next") ||
-        "/scores/aqua";
-      setLocation(next, { replace: true });
+      finishAuthentication();
     },
     onError: (err: any) => {
       toast({
@@ -285,22 +304,26 @@ export default function AuthPage() {
         sportInterests: selectedSports.map((s) => s.trim()).filter(Boolean),
       };
 
-      await apiRequest("POST", "/auth/sign-up", payload);
-      const loginJson = await apiRequest<LoginResponse>(
-        "POST",
-        "/auth/sign-in",
-        {
-          email: form.email.trim(),
-          password: form.password,
+      return signupThenSignIn(
+        () => apiRequest("POST", "/auth/sign-up", payload),
+        async () => {
+          const loginJson = await apiRequest<LoginResponse>(
+            "POST",
+            "/auth/sign-in",
+            {
+              email: form.email.trim(),
+              password: form.password,
+            },
+          );
+          const data = loginJson.data ?? loginJson;
+          const accessToken = data?.accessToken;
+          const refreshToken = data?.refreshToken;
+          const user = data?.user;
+          if (!accessToken || !user)
+            throw new Error("Invalid login response after sign-up");
+          return { accessToken, refreshToken, user } as AuthSuccess;
         },
       );
-      const data = loginJson.data ?? loginJson;
-      const accessToken = data?.accessToken;
-      const refreshToken = data?.refreshToken;
-      const user = data?.user;
-      if (!accessToken || !user)
-        throw new Error("Invalid login response after sign-up");
-      return { accessToken, refreshToken, user } as AuthSuccess;
     },
     onSuccess: ({ accessToken, refreshToken, user }) => {
       setTokens(accessToken, refreshToken);
@@ -313,12 +336,16 @@ export default function AuthPage() {
         title: "Welcome to Corner League!",
         description: `Account created for ${user.firstName ?? user.username}!`,
       });
-      const next =
-        new URLSearchParams(window.location.search).get("next") ||
-        "/scores/aqua";
-      setLocation(next, { replace: true });
+      finishAuthentication();
     },
     onError: (err: any) => {
+      if (err?.accountCreated) {
+        setIsLogin(true);
+        setLoginData({
+          identifier: registerData.email,
+          password: registerData.password,
+        });
+      }
       const msg = err?.body?.message || err?.message || "Please try again.";
       console.error("Sign-up failed:", {
         status: err?.status,
@@ -530,6 +557,31 @@ export default function AuthPage() {
               )}
             </div>
 
+            {!isLogin ? (
+              <label className="mb-5 flex items-start gap-3 rounded-2xl border border-cyan-300/20 bg-cyan-300/5 p-4 text-sm text-slate-200">
+                <input
+                  type="checkbox"
+                  checked={organizerSignup}
+                  onChange={(event) => setOrganizerSignup(event.target.checked)}
+                  className="mt-1 h-4 w-4"
+                />
+                <span>
+                  <strong>Create an organization after signup</strong>
+                  <br />
+                  Continue to your free organizer workspace after creating your
+                  Corner League account. No card required.
+                </span>
+              </label>
+            ) : (
+              <a
+                href={ORGANIZATION_SIGNUP_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mb-5 block text-sm font-semibold text-cyan-200"
+              >
+                Organizing sports? Create your own Org
+              </a>
+            )}
             {/* Auth Toggle */}
             <div className="mb-8 grid grid-cols-2 overflow-hidden rounded-full border border-white/10 bg-white/[0.04] p-1">
               <button

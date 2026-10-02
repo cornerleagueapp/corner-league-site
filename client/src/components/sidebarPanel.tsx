@@ -1,9 +1,13 @@
+import { hasMoreBelow } from "@/lib/sidebarScroll";
+import { useAuth } from "@/hooks/useAuth";
+import { CreateOrganizationLink } from "./CreateOrganizationLink";
 // src/components/sidebarPanel.tsx
 import { Link, useLocation } from "wouter";
 import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import { useMyOrganizationAdminOrganizations } from "@/features/organization-admin/hooks/useMyOrganizationAdminOrganizations";
-import { logout } from "@/lib/logout";
+import { OrgDashboardLink, canOpenOrgDashboard } from "./OrgDashboardLink";
 import {
+  ChevronDown,
   Bell,
   Building2,
   CalendarDays,
@@ -74,6 +78,10 @@ export type SidebarSection = {
   items: SidebarItem[];
 
   organizationSwitcher?: SidebarOrganizationSwitcher;
+
+  organizationDashboard?: boolean;
+
+  organizationCreation?: boolean;
 };
 
 function formatOrganizationRole(value?: string | null) {
@@ -93,254 +101,32 @@ export function useAppSidebarSections(opts?: {
   isSuperAdmin?: boolean;
   guestMode?: boolean;
 }) {
-  const [location, navigate] = useLocation();
-
+  const [, navigate] = useLocation();
+  const { isAuthenticated } = useAuth();
   const guest = !!opts?.guestMode;
-
   const myOrganizationsQuery = useMyOrganizationAdminOrganizations(!guest);
-
-  const myAdminOrganizations = myOrganizationsQuery.data?.organizations ?? [];
-
-  const organizationAdminMatch = location.match(
-    /^\/organizations\/([^/]+)\/admin(?:\/|$)/,
+  const showOrgDashboard = canOpenOrgDashboard(
+    !guest && myOrganizationsQuery.isSuccess && !myOrganizationsQuery.isError,
+    myOrganizationsQuery.data,
   );
 
-  const routeOrganizationId = organizationAdminMatch?.[1]
-    ? decodeURIComponent(organizationAdminMatch[1])
-    : null;
-
-  const defaultOrganizationId =
-    !opts?.isSuperAdmin && myAdminOrganizations.length === 1
-      ? myAdminOrganizations[0].organizationId
-      : null;
-
-  const activeOrganizationId = routeOrganizationId ?? defaultOrganizationId;
-
-  const activeOrganization =
-    myAdminOrganizations.find(
-      (organization) => organization.organizationId === activeOrganizationId,
-    ) ?? null;
-
-  const goToAuth = () => {
-    const next = encodeURIComponent(
-      `${window.location.pathname}${window.location.search}`,
-    );
-
-    navigate(`/auth?next=${next}`);
-  };
-
   return useMemo<SidebarSection[]>(() => {
-    const guest = !!opts?.guestMode;
-
     const base: SidebarSection[] = [
-      ...(opts?.isSuperAdmin && !guest
+      ...(!guest && isAuthenticated
         ? [
             {
-              title: "Admin",
-              items: [
-                {
-                  key: "admin-athlete-claims",
-                  label: "Athlete Claims",
-                  selectable: false,
-                  matchPaths: ["/admin/athlete-claims"],
-                  onSelect: () => navigate("/admin/athlete-claims"),
-                },
-                {
-                  key: "admin-create-racer",
-                  label: "Create Racer",
-                  selectable: false,
-                  matchPaths: ["/admin/create-racer"],
-                  onSelect: () => navigate("/admin/create-racer"),
-                },
-                {
-                  key: "admin-create-organization",
-                  label: "Create Organization",
-                  selectable: false,
-                  matchPaths: ["/admin/create-organization"],
-                  onSelect: () => navigate("/admin/create-organization"),
-                },
-                {
-                  key: "admin-event-list",
-                  label: "Event List",
-                  selectable: false,
-                  matchPaths: [
-                    "/organization/event-list",
-                    "/events/create",
-                    "/organization/events/*",
-                  ],
-                  onSelect: () => navigate("/organization/event-list"),
-                },
-                {
-                  key: "admin-rankings",
-                  label: "Rankings Dashboard",
-                  selectable: false,
-                  matchPaths: ["/admin/rankings"],
-                  onSelect: () => navigate("/admin/rankings"),
-                },
-                {
-                  key: "admin-polls",
-                  label: "Polls Console",
-                  selectable: false,
-                  matchPaths: ["/admin/polls"],
-                  onSelect: () => navigate("/admin/polls"),
-                },
-                {
-                  key: "admin-racepods",
-                  label: "RacePods",
-                  selectable: false,
-                  matchPaths: ["/admin/racepods"],
-                  onSelect: () => navigate("/admin/racepods"),
-                },
-              ],
+              title: "Create organization",
+              organizationCreation: true,
+              items: [],
             },
           ]
         : []),
-
-      ...(!guest && (opts?.isSuperAdmin || myAdminOrganizations.length > 0)
+      ...(showOrgDashboard
         ? [
             {
-              title: "Org Admin",
-
-              organizationSwitcher: {
-                activeOrganizationId,
-
-                activeOrganizationName:
-                  activeOrganization?.organizationName ?? null,
-
-                activeOrganizationAbbreviation:
-                  activeOrganization?.organizationAbbreviation ?? null,
-
-                activeOrganizationRole: activeOrganization?.role ?? null,
-
-                organizations: myAdminOrganizations,
-
-                isGlobalAdmin: !!opts?.isSuperAdmin,
-
-                loading: myOrganizationsQuery.isLoading,
-
-                onSelectOrganization: (organizationId: string) => {
-                  navigate(
-                    `/organizations/${encodeURIComponent(
-                      organizationId,
-                    )}/admin`,
-                  );
-                },
-
-                onBrowseOrganizations: () => {
-                  navigate("/aqua-organizations?adminSelect=1");
-                },
-              },
-
-              items: [
-                ...(activeOrganizationId
-                  ? [
-                      {
-                        key: "org-admin-overview",
-                        label: "Overview",
-                        helper: "Organization admin overview.",
-                        selectable: false,
-                        matchPaths: [
-                          `/organizations/${activeOrganizationId}/admin`,
-                        ],
-                        onSelect: () =>
-                          navigate(
-                            `/organizations/${activeOrganizationId}/admin`,
-                          ),
-                      },
-
-                      {
-                        key: "org-admin-events",
-                        label: "Events",
-                        helper: "Create and manage events.",
-                        selectable: false,
-                        matchPaths: [
-                          `/organizations/${activeOrganizationId}/admin/events`,
-                          `/organizations/${activeOrganizationId}/admin/events/*`,
-                        ],
-                        onSelect: () =>
-                          navigate(
-                            `/organizations/${activeOrganizationId}/admin/events`,
-                          ),
-                      },
-
-                      {
-                        key: "org-admin-registrations",
-                        label: "Registrations",
-                        helper: "Manage racers and registration.",
-                        selectable: false,
-                        matchPaths: [
-                          `/organizations/${activeOrganizationId}/admin/registrations`,
-                          `/organizations/${activeOrganizationId}/admin/registrations/*`,
-                        ],
-                        onSelect: () =>
-                          navigate(
-                            `/organizations/${activeOrganizationId}/admin/registrations`,
-                          ),
-                      },
-
-                      {
-                        key: "org-admin-payments",
-                        label: "Payments",
-                        helper: "Review payment processes.",
-                        selectable: false,
-                        matchPaths: [
-                          `/organizations/${activeOrganizationId}/admin/payments`,
-                          `/organizations/${activeOrganizationId}/admin/payments/*`,
-                        ],
-                        onSelect: () =>
-                          navigate(
-                            `/organizations/${activeOrganizationId}/admin/payments`,
-                          ),
-                      },
-
-                      {
-                        key: "org-admin-results",
-                        label: "Results",
-                        helper: "Manage registration-to-results.",
-                        selectable: false,
-                        matchPaths: [
-                          `/organizations/${activeOrganizationId}/admin/results`,
-                          `/organizations/${activeOrganizationId}/admin/results/*`,
-                        ],
-                        onSelect: () =>
-                          navigate(
-                            `/organizations/${activeOrganizationId}/admin/results`,
-                          ),
-                      },
-
-                      {
-                        key: "org-admin-members",
-                        label: "Members",
-                        helper: "Manage members and permissions.",
-                        selectable: false,
-                        matchPaths: [
-                          `/organizations/${activeOrganizationId}/admin/members`,
-                          `/organizations/${activeOrganizationId}/admin/members/*`,
-                        ],
-                        onSelect: () =>
-                          navigate(
-                            `/organizations/${activeOrganizationId}/admin/members`,
-                          ),
-                      },
-
-                      {
-                        key: "org-admin-settings",
-                        label: "Settings",
-                        helper:
-                          "Manage event, pricing, and registration settings.",
-                        selectable: false,
-                        matchPaths: [
-                          `/organizations/${activeOrganizationId}/admin/settings`,
-                          `/organizations/${activeOrganizationId}/admin/settings/*`,
-                        ],
-                        onSelect: () =>
-                          navigate(
-                            `/organizations/${activeOrganizationId}/admin/settings`,
-                          ),
-                      },
-                    ]
-                  : []),
-              ],
+              title: "Organizer workspace",
+              organizationDashboard: true,
+              items: [],
             },
           ]
         : []),
@@ -426,18 +212,7 @@ export function useAppSidebarSections(opts?: {
     ];
 
     return opts?.extra?.length ? [...base, ...opts.extra] : base;
-  }, [
-    location,
-    navigate,
-    opts?.extra,
-    opts?.onLogout,
-    opts?.isSuperAdmin,
-    opts?.guestMode,
-    activeOrganizationId,
-    activeOrganization,
-    myAdminOrganizations,
-    myOrganizationsQuery.isLoading,
-  ]);
+  }, [navigate, opts?.extra, showOrgDashboard, guest, isAuthenticated]);
 }
 
 type Props = {
@@ -600,6 +375,34 @@ export default function SidebarPanel({
   const [tooltip, setTooltip] = useState<SidebarTooltipState>(null);
 
   const collapseTimerRef = useRef<number | null>(null);
+  const navScrollRef = useRef<HTMLDivElement>(null);
+  const navContentRef = useRef<HTMLDivElement>(null);
+  const [moreBelow, setMoreBelow] = useState(false);
+  useEffect(() => {
+    const scroll = navScrollRef.current;
+    const content = navContentRef.current;
+    if (!scroll || !content) return;
+    const update = () =>
+      setMoreBelow(
+        hasMoreBelow(
+          scroll.scrollHeight,
+          scroll.clientHeight,
+          scroll.scrollTop,
+        ),
+      );
+    update();
+    scroll.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    const observer =
+      typeof ResizeObserver !== "undefined" ? new ResizeObserver(update) : null;
+    observer?.observe(scroll);
+    observer?.observe(content);
+    return () => {
+      observer?.disconnect();
+      scroll.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+    };
+  }, []);
 
   void showSignIn;
   void signInHref;
@@ -836,320 +639,364 @@ export default function SidebarPanel({
           </div>
         </header>
 
-        <div
-          className={`relative z-10 min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain [scrollbar-width:thin] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-cyan-300/20 ${
-            renderCollapsed ? "px-2 py-3" : "p-4"
-          }`}
-        >
-          {sections.map((section) => {
-            const open = renderCollapsed ? true : !!openMap[section.title];
+        <div className="relative z-10 min-h-0 flex-1">
+          <div
+            ref={navScrollRef}
+            className={`h-full overflow-x-hidden overflow-y-auto overscroll-contain [scrollbar-width:thin] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-cyan-300/20 ${
+              renderCollapsed ? "px-2 py-3" : "p-4"
+            }`}
+          >
+            <div ref={navContentRef} className="pb-11">
+              {sections.map((section) => {
+                if (section.organizationCreation)
+                  return (
+                    <CreateOrganizationLink
+                      key={section.title}
+                      collapsed={renderCollapsed}
+                      onNavigate={onClose}
+                    />
+                  );
+                if (section.organizationDashboard) {
+                  return (
+                    <OrgDashboardLink
+                      key={section.title}
+                      collapsed={renderCollapsed}
+                      onNavigate={onClose}
+                    />
+                  );
+                }
+                const open = renderCollapsed ? true : !!openMap[section.title];
 
-            return (
-              <section
-                className={renderCollapsed ? "mb-4" : "mb-2"}
-                key={section.title}
-              >
-                {!renderCollapsed ? (
-                  <button
-                    type="button"
-                    onClick={() => toggleSection(section.title)}
-                    className="flex w-full items-center justify-between rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-3 text-[11px] font-black uppercase tracking-[0.18em] text-white/70 transition hover:border-cyan-300/20 hover:bg-cyan-300/[0.06] hover:text-white"
-                    aria-expanded={open}
+                return (
+                  <section
+                    className={renderCollapsed ? "mb-4" : "mb-2"}
+                    key={section.title}
                   >
-                    <span>{section.title}</span>
-                    <Chevron open={open} />
-                  </button>
-                ) : (
-                  <div
-                    className="mx-auto mb-2 h-px w-8 bg-white/10"
-                    aria-hidden="true"
-                  />
-                )}
+                    {!renderCollapsed ? (
+                      <button
+                        type="button"
+                        onClick={() => toggleSection(section.title)}
+                        className="flex w-full items-center justify-between rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-3 text-[11px] font-black uppercase tracking-[0.18em] text-white/70 transition hover:border-cyan-300/20 hover:bg-cyan-300/[0.06] hover:text-white"
+                        aria-expanded={open}
+                      >
+                        <span>{section.title}</span>
+                        <Chevron open={open} />
+                      </button>
+                    ) : (
+                      <div
+                        className="mx-auto mb-2 h-px w-8 bg-white/10"
+                        aria-hidden="true"
+                      />
+                    )}
 
-                {open ? (
-                  <div
-                    className={
-                      renderCollapsed ? "space-y-2" : "mt-2 space-y-1 pl-1"
-                    }
-                  >
-                    {section.organizationSwitcher && !renderCollapsed ? (
-                      <div className="mb-3">
-                        {(() => {
-                          const switcher = section.organizationSwitcher;
+                    {open ? (
+                      <div
+                        className={
+                          renderCollapsed ? "space-y-2" : "mt-2 space-y-1 pl-1"
+                        }
+                      >
+                        {section.organizationSwitcher && !renderCollapsed ? (
+                          <div className="mb-3">
+                            {(() => {
+                              const switcher = section.organizationSwitcher;
 
-                          const switcherOpen =
-                            openOrganizationSwitcher === section.title;
+                              const switcherOpen =
+                                openOrganizationSwitcher === section.title;
 
-                          const activeLabel =
-                            switcher.activeOrganizationName ??
-                            switcher.activeOrganizationAbbreviation ??
-                            (switcher.isGlobalAdmin
-                              ? "Select Organization"
-                              : "Organization");
+                              const activeLabel =
+                                switcher.activeOrganizationName ??
+                                switcher.activeOrganizationAbbreviation ??
+                                (switcher.isGlobalAdmin
+                                  ? "Select Organization"
+                                  : "Organization");
 
-                          const activeRole = formatOrganizationRole(
-                            switcher.activeOrganizationRole,
-                          );
+                              const activeRole = formatOrganizationRole(
+                                switcher.activeOrganizationRole,
+                              );
 
-                          return (
-                            <div className="relative">
-                              <button
-                                type="button"
-                                disabled={switcher.loading}
-                                onClick={() => {
-                                  setOpenOrganizationSwitcher(
-                                    switcherOpen ? null : section.title,
-                                  );
-                                }}
-                                className="w-full rounded-[20px] border border-cyan-300/20 bg-cyan-300/[0.07] p-3 text-left transition hover:border-cyan-300/35 hover:bg-cyan-300/[0.1] disabled:opacity-50"
-                              >
-                                <div className="flex items-center gap-3">
-                                  <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-cyan-300/15 bg-cyan-300/[0.08] text-cyan-100">
-                                    <Building2 className="h-5 w-5" />
-                                  </div>
+                              return (
+                                <div className="relative">
+                                  <button
+                                    type="button"
+                                    disabled={switcher.loading}
+                                    onClick={() => {
+                                      setOpenOrganizationSwitcher(
+                                        switcherOpen ? null : section.title,
+                                      );
+                                    }}
+                                    className="w-full rounded-[20px] border border-cyan-300/20 bg-cyan-300/[0.07] p-3 text-left transition hover:border-cyan-300/35 hover:bg-cyan-300/[0.1] disabled:opacity-50"
+                                  >
+                                    <div className="flex items-center gap-3">
+                                      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-cyan-300/15 bg-cyan-300/[0.08] text-cyan-100">
+                                        <Building2 className="h-5 w-5" />
+                                      </div>
 
-                                  <div className="min-w-0 flex-1">
-                                    <div className="text-[8px] font-black uppercase tracking-[0.16em] text-cyan-200/45">
-                                      Active Organization
+                                      <div className="min-w-0 flex-1">
+                                        <div className="text-[8px] font-black uppercase tracking-[0.16em] text-cyan-200/45">
+                                          Active Organization
+                                        </div>
+
+                                        <div className="mt-1 truncate text-sm font-black text-white">
+                                          {switcher.loading
+                                            ? "Loading organizations..."
+                                            : activeLabel}
+                                        </div>
+
+                                        {activeRole ? (
+                                          <div className="mt-0.5 text-[10px] font-bold text-white/35">
+                                            {activeRole}
+                                          </div>
+                                        ) : switcher.isGlobalAdmin &&
+                                          switcher.activeOrganizationId ? (
+                                          <div className="mt-0.5 text-[10px] font-bold text-white/35">
+                                            Corner League Administrator
+                                          </div>
+                                        ) : null}
+                                      </div>
+
+                                      <Chevron open={switcherOpen} />
                                     </div>
+                                  </button>
 
-                                    <div className="mt-1 truncate text-sm font-black text-white">
-                                      {switcher.loading
-                                        ? "Loading organizations..."
-                                        : activeLabel}
-                                    </div>
-
-                                    {activeRole ? (
-                                      <div className="mt-0.5 text-[10px] font-bold text-white/35">
-                                        {activeRole}
-                                      </div>
-                                    ) : switcher.isGlobalAdmin &&
-                                      switcher.activeOrganizationId ? (
-                                      <div className="mt-0.5 text-[10px] font-bold text-white/35">
-                                        Corner League Administrator
-                                      </div>
-                                    ) : null}
-                                  </div>
-
-                                  <Chevron open={switcherOpen} />
-                                </div>
-                              </button>
-
-                              {switcherOpen ? (
-                                <div className="mt-2 overflow-hidden rounded-[18px] border border-white/10 bg-[#07111F] shadow-[0_18px_55px_rgba(0,0,0,0.45)]">
-                                  {switcher.organizations.length > 0 ? (
-                                    <div className="p-2">
-                                      <div className="px-3 pb-2 pt-1 text-[8px] font-black uppercase tracking-[0.16em] text-white/25">
-                                        Your Organizations
-                                      </div>
-
-                                      <div className="space-y-1">
-                                        {switcher.organizations.map(
-                                          (organization) => {
-                                            const isCurrent =
-                                              organization.organizationId ===
-                                              switcher.activeOrganizationId;
-
-                                            const role = formatOrganizationRole(
-                                              organization.role,
-                                            );
-
-                                            return (
-                                              <button
-                                                key={
-                                                  organization.organizationId
-                                                }
-                                                type="button"
-                                                onClick={() => {
-                                                  setOpenOrganizationSwitcher(
-                                                    null,
-                                                  );
-
-                                                  switcher.onSelectOrganization(
-                                                    organization.organizationId,
-                                                  );
-
-                                                  onClose();
-                                                }}
-                                                className={`w-full rounded-xl border px-3 py-3 text-left transition ${
-                                                  isCurrent
-                                                    ? "border-cyan-300/20 bg-cyan-300/10"
-                                                    : "border-transparent hover:border-white/10 hover:bg-white/[0.05]"
-                                                }`}
-                                              >
-                                                <div className="flex items-start gap-3">
-                                                  <div
-                                                    className={`mt-0.5 h-2.5 w-2.5 shrink-0 rounded-full ${
-                                                      isCurrent
-                                                        ? "bg-cyan-300 shadow-[0_0_10px_rgba(103,232,249,0.5)]"
-                                                        : "bg-white/15"
-                                                    }`}
-                                                  />
-
-                                                  <div className="min-w-0 flex-1">
-                                                    <div
-                                                      className={`truncate text-xs font-black ${
-                                                        isCurrent
-                                                          ? "text-cyan-100"
-                                                          : "text-white/75"
-                                                      }`}
-                                                    >
-                                                      {
-                                                        organization.organizationName
-                                                      }
-                                                    </div>
-
-                                                    <div className="mt-1 flex flex-wrap items-center gap-2">
-                                                      {organization.organizationAbbreviation ? (
-                                                        <span className="text-[9px] font-bold uppercase tracking-[0.1em] text-white/30">
-                                                          {
-                                                            organization.organizationAbbreviation
-                                                          }
-                                                        </span>
-                                                      ) : null}
-
-                                                      {role ? (
-                                                        <span className="text-[9px] font-bold text-white/30">
-                                                          {role}
-                                                        </span>
-                                                      ) : null}
-                                                    </div>
-                                                  </div>
-
-                                                  {isCurrent ? (
-                                                    <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-2 py-1 text-[7px] font-black uppercase tracking-[0.12em] text-cyan-100">
-                                                      Active
-                                                    </span>
-                                                  ) : null}
-                                                </div>
-                                              </button>
-                                            );
-                                          },
-                                        )}
-                                      </div>
-                                    </div>
-                                  ) : null}
-
-                                  {switcher.isGlobalAdmin ||
-                                  switcher.organizations.length === 0 ? (
-                                    <>
+                                  {switcherOpen ? (
+                                    <div className="mt-2 overflow-hidden rounded-[18px] border border-white/10 bg-[#07111F] shadow-[0_18px_55px_rgba(0,0,0,0.45)]">
                                       {switcher.organizations.length > 0 ? (
-                                        <div className="border-t border-white/[0.07]" />
+                                        <div className="p-2">
+                                          <div className="px-3 pb-2 pt-1 text-[8px] font-black uppercase tracking-[0.16em] text-white/25">
+                                            Your Organizations
+                                          </div>
+
+                                          <div className="space-y-1">
+                                            {switcher.organizations.map(
+                                              (organization) => {
+                                                const isCurrent =
+                                                  organization.organizationId ===
+                                                  switcher.activeOrganizationId;
+
+                                                const role =
+                                                  formatOrganizationRole(
+                                                    organization.role,
+                                                  );
+
+                                                return (
+                                                  <button
+                                                    key={
+                                                      organization.organizationId
+                                                    }
+                                                    type="button"
+                                                    onClick={() => {
+                                                      setOpenOrganizationSwitcher(
+                                                        null,
+                                                      );
+
+                                                      switcher.onSelectOrganization(
+                                                        organization.organizationId,
+                                                      );
+
+                                                      onClose();
+                                                    }}
+                                                    className={`w-full rounded-xl border px-3 py-3 text-left transition ${
+                                                      isCurrent
+                                                        ? "border-cyan-300/20 bg-cyan-300/10"
+                                                        : "border-transparent hover:border-white/10 hover:bg-white/[0.05]"
+                                                    }`}
+                                                  >
+                                                    <div className="flex items-start gap-3">
+                                                      <div
+                                                        className={`mt-0.5 h-2.5 w-2.5 shrink-0 rounded-full ${
+                                                          isCurrent
+                                                            ? "bg-cyan-300 shadow-[0_0_10px_rgba(103,232,249,0.5)]"
+                                                            : "bg-white/15"
+                                                        }`}
+                                                      />
+
+                                                      <div className="min-w-0 flex-1">
+                                                        <div
+                                                          className={`truncate text-xs font-black ${
+                                                            isCurrent
+                                                              ? "text-cyan-100"
+                                                              : "text-white/75"
+                                                          }`}
+                                                        >
+                                                          {
+                                                            organization.organizationName
+                                                          }
+                                                        </div>
+
+                                                        <div className="mt-1 flex flex-wrap items-center gap-2">
+                                                          {organization.organizationAbbreviation ? (
+                                                            <span className="text-[9px] font-bold uppercase tracking-[0.1em] text-white/30">
+                                                              {
+                                                                organization.organizationAbbreviation
+                                                              }
+                                                            </span>
+                                                          ) : null}
+
+                                                          {role ? (
+                                                            <span className="text-[9px] font-bold text-white/30">
+                                                              {role}
+                                                            </span>
+                                                          ) : null}
+                                                        </div>
+                                                      </div>
+
+                                                      {isCurrent ? (
+                                                        <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-2 py-1 text-[7px] font-black uppercase tracking-[0.12em] text-cyan-100">
+                                                          Active
+                                                        </span>
+                                                      ) : null}
+                                                    </div>
+                                                  </button>
+                                                );
+                                              },
+                                            )}
+                                          </div>
+                                        </div>
                                       ) : null}
 
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          setOpenOrganizationSwitcher(null);
+                                      {switcher.isGlobalAdmin ||
+                                      switcher.organizations.length === 0 ? (
+                                        <>
+                                          {switcher.organizations.length > 0 ? (
+                                            <div className="border-t border-white/[0.07]" />
+                                          ) : null}
 
-                                          switcher.onBrowseOrganizations?.();
+                                          <button
+                                            type="button"
+                                            onClick={() => {
+                                              setOpenOrganizationSwitcher(null);
 
-                                          onClose();
-                                        }}
-                                        className="flex w-full items-center gap-3 px-4 py-3 text-left text-xs font-bold text-white/55 transition hover:bg-white/[0.05] hover:text-white"
-                                      >
-                                        <Building2 className="h-4 w-4 text-cyan-200/60" />
+                                              switcher.onBrowseOrganizations?.();
 
-                                        {switcher.isGlobalAdmin
-                                          ? "Browse All Organizations"
-                                          : "View Organizations"}
-                                      </button>
-                                    </>
+                                              onClose();
+                                            }}
+                                            className="flex w-full items-center gap-3 px-4 py-3 text-left text-xs font-bold text-white/55 transition hover:bg-white/[0.05] hover:text-white"
+                                          >
+                                            <Building2 className="h-4 w-4 text-cyan-200/60" />
+
+                                            {switcher.isGlobalAdmin
+                                              ? "Browse All Organizations"
+                                              : "View Organizations"}
+                                          </button>
+                                        </>
+                                      ) : null}
+                                    </div>
                                   ) : null}
                                 </div>
-                              ) : null}
-                            </div>
-                          );
-                        })()}
-                      </div>
-                    ) : null}
+                              );
+                            })()}
+                          </div>
+                        ) : null}
 
-                    {section.items.map((item) => {
-                      const ItemIcon = getSidebarItemIcon(item.key);
+                        {section.items.map((item) => {
+                          const ItemIcon = getSidebarItemIcon(item.key);
 
-                      const isActive =
-                        !item.disabled &&
-                        (item.key === activeKey ||
-                          (!activeKey && isRouteMatch(item)));
+                          const isActive =
+                            !item.disabled &&
+                            (item.key === activeKey ||
+                              (!activeKey && isRouteMatch(item)));
 
-                      if (renderCollapsed) {
-                        return (
-                          <div key={item.key} className="flex justify-center">
+                          if (renderCollapsed) {
+                            return (
+                              <div
+                                key={item.key}
+                                className="flex justify-center"
+                              >
+                                <button
+                                  type="button"
+                                  onClick={() => selectItem(item)}
+                                  onMouseEnter={(event) =>
+                                    showItemTooltip(event, item)
+                                  }
+                                  onMouseLeave={() => setTooltip(null)}
+                                  onFocus={(event) =>
+                                    showItemTooltip(
+                                      event as unknown as MouseEvent<HTMLButtonElement>,
+                                      item,
+                                    )
+                                  }
+                                  onBlur={() => setTooltip(null)}
+                                  aria-label={item.label}
+                                  disabled={item.disabled}
+                                  className={`relative grid h-12 w-12 place-items-center rounded-2xl border transition ${
+                                    item.disabled
+                                      ? "cursor-not-allowed border-white/5 bg-white/[0.02] text-white/20"
+                                      : isActive
+                                        ? "border-cyan-300/30 bg-cyan-300/12 text-cyan-100 shadow-[0_0_24px_rgba(34,211,238,0.12)]"
+                                        : "border-transparent bg-transparent text-white/45 hover:border-cyan-300/15 hover:bg-cyan-300/[0.07] hover:text-white"
+                                  }`}
+                                >
+                                  <ItemIcon className="h-5 w-5" />
+
+                                  {item.badge ? (
+                                    <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full border-2 border-[#030913] bg-[#FF6B35]" />
+                                  ) : null}
+                                </button>
+                              </div>
+                            );
+                          }
+
+                          return (
                             <button
+                              key={item.key}
                               type="button"
                               onClick={() => selectItem(item)}
-                              onMouseEnter={(event) =>
-                                showItemTooltip(event, item)
-                              }
-                              onMouseLeave={() => setTooltip(null)}
-                              onFocus={(event) =>
-                                showItemTooltip(
-                                  event as unknown as MouseEvent<HTMLButtonElement>,
-                                  item,
-                                )
-                              }
-                              onBlur={() => setTooltip(null)}
-                              aria-label={item.label}
                               disabled={item.disabled}
-                              className={`relative grid h-12 w-12 place-items-center rounded-2xl border transition ${
+                              className={`group w-full rounded-2xl border px-3 py-3 text-left transition ${
                                 item.disabled
-                                  ? "cursor-not-allowed border-white/5 bg-white/[0.02] text-white/20"
+                                  ? "cursor-not-allowed border-white/5 bg-white/[0.02] text-white/25"
                                   : isActive
-                                    ? "border-cyan-300/30 bg-cyan-300/12 text-cyan-100 shadow-[0_0_24px_rgba(34,211,238,0.12)]"
-                                    : "border-transparent bg-transparent text-white/45 hover:border-cyan-300/15 hover:bg-cyan-300/[0.07] hover:text-white"
+                                    ? "border-cyan-300/25 bg-cyan-300/10 text-cyan-100 shadow-[0_0_24px_rgba(34,211,238,0.08)]"
+                                    : "border-transparent bg-transparent text-white/55 hover:border-cyan-300/15 hover:bg-cyan-300/[0.06] hover:text-white"
                               }`}
                             >
-                              <ItemIcon className="h-5 w-5" />
+                              <div className="flex min-w-0 items-center gap-3">
+                                <ItemIcon className="h-4 w-4 shrink-0 text-current opacity-75" />
 
-                              {item.badge ? (
-                                <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full border-2 border-[#030913] bg-[#FF6B35]" />
+                                <span className="min-w-0 flex-1 break-words text-sm font-bold">
+                                  {item.label}
+                                </span>
+
+                                {item.badge ? (
+                                  <span className="shrink-0 rounded-full border border-[#FF6B35]/20 bg-[#FF6B35]/10 px-2 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-[#FFB199]">
+                                    {item.badge}
+                                  </span>
+                                ) : null}
+                              </div>
+
+                              {item.helper ? (
+                                <div className="mt-1 pl-7 text-xs leading-5 text-white/35">
+                                  {item.helper}
+                                </div>
                               ) : null}
                             </button>
-                          </div>
-                        );
-                      }
-
-                      return (
-                        <button
-                          key={item.key}
-                          type="button"
-                          onClick={() => selectItem(item)}
-                          disabled={item.disabled}
-                          className={`group w-full rounded-2xl border px-3 py-3 text-left transition ${
-                            item.disabled
-                              ? "cursor-not-allowed border-white/5 bg-white/[0.02] text-white/25"
-                              : isActive
-                                ? "border-cyan-300/25 bg-cyan-300/10 text-cyan-100 shadow-[0_0_24px_rgba(34,211,238,0.08)]"
-                                : "border-transparent bg-transparent text-white/55 hover:border-cyan-300/15 hover:bg-cyan-300/[0.06] hover:text-white"
-                          }`}
-                        >
-                          <div className="flex min-w-0 items-center gap-3">
-                            <ItemIcon className="h-4 w-4 shrink-0 text-current opacity-75" />
-
-                            <span className="min-w-0 flex-1 break-words text-sm font-bold">
-                              {item.label}
-                            </span>
-
-                            {item.badge ? (
-                              <span className="shrink-0 rounded-full border border-[#FF6B35]/20 bg-[#FF6B35]/10 px-2 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-[#FFB199]">
-                                {item.badge}
-                              </span>
-                            ) : null}
-                          </div>
-
-                          {item.helper ? (
-                            <div className="mt-1 pl-7 text-xs leading-5 text-white/35">
-                              {item.helper}
-                            </div>
-                          ) : null}
-                        </button>
-                      );
-                    })}
-                  </div>
-                ) : null}
-              </section>
-            );
-          })}
+                          );
+                        })}
+                      </div>
+                    ) : null}
+                  </section>
+                );
+              })}
+            </div>
+          </div>
+          {moreBelow && (
+            <button
+              type="button"
+              aria-label="Scroll down for more navigation"
+              onClick={() => {
+                const el = navScrollRef.current;
+                if (el)
+                  el.scrollBy({
+                    top: Math.max(150, el.clientHeight * 0.7),
+                    behavior: "smooth",
+                  });
+              }}
+              className="absolute bottom-0 left-2 right-2 flex min-h-10 items-center justify-center gap-2 rounded-lg border border-cyan-300/20 bg-[#10283C] text-xs font-semibold text-cyan-100"
+            >
+              {!renderCollapsed && <span>More below</span>}
+              <ChevronDown className="h-5 w-5" />
+            </button>
+          )}
         </div>
 
         <footer

@@ -1,3 +1,4 @@
+import { OrganizationPosts } from "@/features/organization-posts/OrganizationPosts";
 import React, { useMemo, useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
@@ -10,7 +11,6 @@ import {
   MapPin,
   ChevronRight,
   Trophy,
-  Newspaper,
   Clock3,
 } from "lucide-react";
 
@@ -359,14 +359,7 @@ export default function AquaOrganizationDetailsPage(props: {
               </div>
 
               {/* info blocks */}
-              <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
-                <InfoCard
-                  icon={<Newspaper className="h-5 w-5" />}
-                  title="News & Updates"
-                  description="Official organization news, announcements, and updates will appear here soon."
-                  muted
-                />
-
+              <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
                 <button
                   type="button"
                   onClick={() => {
@@ -423,6 +416,7 @@ export default function AquaOrganizationDetailsPage(props: {
                 />
               </div>
             </div>
+            <OrganizationPosts key={org.id} organizationId={org.id} />
           </>
         )}
 
