@@ -1,3 +1,4 @@
+import { clearCommunityCache } from "@/lib/socialCache";
 // src/lib/logout.ts
 import { apiRequest, cancelProactiveRefresh } from "@/lib/apiClient";
 import { clearTokens } from "@/lib/token";
@@ -10,6 +11,7 @@ export async function logout(redirectTo = "/auth") {
   } catch {}
   cancelProactiveRefresh();
   clearTokens();
+  clearCommunityCache(queryClient);
   CacheManager?.handleUserAction?.("logout");
   queryClient.setQueryData(["/auth/me"], null);
   queryClient.removeQueries({ queryKey: ["/auth/me"], exact: true });

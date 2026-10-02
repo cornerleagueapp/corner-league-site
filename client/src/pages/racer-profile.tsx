@@ -21,6 +21,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
+import SocialPostFeed from "@/components/community/SocialPosts";
 import RacerSearchModal from "@/components/RacerSearchModal";
 import { generateRacerAnalysis } from "@/lib/geminiRacerAnalysis";
 import { trackEvent } from "@/lib/analytics";
@@ -1356,6 +1357,12 @@ export default function RacerProfilePage({
             setShareOpen(true);
           }}
         />
+
+        {racer.athleteId && (
+          <section className="mt-6">
+            <SocialPostFeed athleteId={String(racer.athleteId)} compose />
+          </section>
+        )}
 
         <div className="mt-4 grid grid-cols-2 gap-3 rounded-[24px] border border-cyan-300/10 bg-[#07111F]/80 p-4 sm:grid-cols-4">
           <div>

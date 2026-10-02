@@ -1,3 +1,4 @@
+import { clearCommunityCache } from "@/lib/socialCache";
 // src/App.tsx
 import { useEffect, useState } from "react";
 
@@ -39,6 +40,7 @@ import RacerProfilePage from "./pages/racer-profile";
 import CreateRacerProfilePage from "./pages/create-racer-profile";
 import AppShell from "./layout/AppShell";
 import ProfileRedirect from "@/pages/profile/profile";
+import { SocialPostPage } from "@/components/community/SocialPosts";
 import UserProfilePage from "./pages/profile/user-profile";
 import FeedPage from "@/pages/profile/feed";
 import ExploreFeedPage from "@/pages/profile/explore";
@@ -531,6 +533,27 @@ function Router() {
         )}
       </Route>
 
+      <Route path="/posts/:id">
+        {(params) => (
+          <AppShell guestMode>
+            <ErrorBoundary>
+              <SocialPostPage id={params.id} />
+            </ErrorBoundary>
+          </AppShell>
+        )}
+      </Route>
+      <Route path="/profile/:username">
+        {(params) => (
+          <AppShell guestMode>
+            <ErrorBoundary>
+              <UserProfilePage
+                key={params.username}
+                username={params.username}
+              />
+            </ErrorBoundary>
+          </AppShell>
+        )}
+      </Route>
       <Route path="/create-racer-profile">
         <AppShell guestMode>
           <ErrorBoundary>
@@ -682,6 +705,7 @@ function AuthSessionManager() {
     const handleExpired = () => {
       cancelProactiveRefresh();
       clearTokens();
+      clearCommunityCache(queryClient);
       queryClient.setQueryData(["/auth/me"], null);
       queryClient.removeQueries({ queryKey: ["/auth/me"], exact: true });
       setExpiredOpen(true);

@@ -1,4 +1,5 @@
 // pages/settings.tsx
+import SocialPreferences from "@/components/community/SocialPreferences";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useMutation } from "@tanstack/react-query";
@@ -53,7 +54,9 @@ export default function Settings() {
 
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [profilePicFile, setProfilePicFile] = useState<File | null>(null);
-  const [activeSection, setActiveSection] = useState<"profile">("profile");
+  const [activeSection, setActiveSection] = useState<
+    "profile" | "notifications"
+  >("profile");
 
   const nameChanged =
     !!initialProfile &&
@@ -319,10 +322,20 @@ export default function Settings() {
                 <UserRound className="h-4 w-4" />
                 Profile
               </button>
+              <button
+                type="button"
+                onClick={() => setActiveSection("notifications")}
+                className="inline-flex min-h-11 items-center rounded-xl border border-white/10 px-4 py-3 text-sm text-cyan-100"
+              >
+                Notifications & messages
+              </button>
             </nav>
           </aside>
 
           <section className="min-w-0">
+            {activeSection === "notifications" && (
+              <SocialPreferences key={String(user?.id)} />
+            )}
             {activeSection === "profile" && (
               <div className="overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/90 shadow-[0_28px_80px_rgba(0,0,0,0.32)]">
                 <div className="border-b border-white/10 px-5 py-5 sm:px-6">
