@@ -1,4 +1,5 @@
 import { useState, type CSSProperties, type ReactNode } from "react";
+import AthleteFollowButton from "@/components/community/AthleteFollowButton";
 import { Button } from "@/components/ui/button";
 import stockAvatar from "@/assets/stockprofilepicture.jpeg";
 import {
@@ -329,6 +330,12 @@ export function PremiumRacerHero({
                   </Button>
                 </>
               )}
+            </div>
+          )}
+
+          {racer.athleteId && (
+            <div className="mt-5">
+              <AthleteFollowButton athleteId={String(racer.athleteId)} />
             </div>
           )}
 

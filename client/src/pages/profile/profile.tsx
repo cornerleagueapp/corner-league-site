@@ -16,7 +16,7 @@ export default function ProfileRedirect() {
       if (location !== to) navigate(to, { replace: true });
     } else {
       const next = encodeURIComponent("/profile");
-      const to = `/auth?next=${next}`;
+      const to = `/login?next=${next}`;
       if (location !== to) navigate(to, { replace: true });
     }
   }, [user, isLoading, location, navigate]);

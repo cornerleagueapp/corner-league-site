@@ -1,6 +1,10 @@
 // /pages/user-profile.tsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation } from "wouter";
+import { useQueryClient } from "@tanstack/react-query";
+import { getCommunityProfile, type PublicAthlete } from "@/lib/communityApi";
+import RacerIdentityCard from "@/components/community/RacerIdentityCard";
+import FollowedAthletesPanel from "@/components/community/FollowedAthletesPanel";
 import { PageSEO } from "@/seo/usePageSEO";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest, apiFetch } from "@/lib/apiClient";
@@ -20,6 +24,9 @@ import {
   Sparkles,
   UserRound,
   Star,
+  ShieldCheck,
+  RefreshCw,
+  Settings,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getTeamLogo } from "@/constants/teamLogos";
@@ -139,8 +146,14 @@ export default function UserProfilePage({ username }: { username: string }) {
   const [teams, setTeams] = useState<FavoriteTeam[]>([]);
   const [followers, setFollowers] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
-  const [points, setPoints] = useState(0);
+  const cache = useQueryClient();
+  const [racerProfile, setRacerProfile] = useState<PublicAthlete | null>(null);
+  const [refreshVersion, setRefreshVersion] = useState(0);
+  const [postsError, setPostsError] = useState<string | null>(null);
+  const [postsLoading, setPostsLoading] = useState(false);
+  const [statsError, setStatsError] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
+  const [userFollowBusy, setUserFollowBusy] = useState(false);
   const [posts, setPosts] = useState<ProfilePost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -168,134 +181,155 @@ export default function UserProfilePage({ username }: { username: string }) {
   >([]);
   const [loadingFollows, setLoadingFollows] = useState(false);
 
-  const [activeTab, setActiveTab] = useState<"scores" | "posts" | "clubs">(
-    "scores",
-  );
+  const [activeTab, setActiveTab] = useState<
+    "athletes" | "scores" | "posts" | "clubs"
+  >("athletes");
 
-  if (!username) return <div style={{ padding: 24 }}>no username param</div>;
-
-  const apiGet = <T,>(path: string) => apiRequest<T>("GET", path);
+  const apiGet = <T,>(path: string) =>
+    cache.fetchQuery<T>({
+      queryKey: ["profile-resource", viewerId, path],
+      queryFn: () => apiRequest<T>("GET", path),
+      staleTime: 60_000,
+    });
 
   useEffect(() => {
     let ignore = false;
-
+    setLoading(true);
+    setError(null);
+    setMe(null);
+    setRacerProfile(null);
+    setIsFollowing(false);
+    setFollowers(0);
+    setFollowingCount(0);
+    setTeams([]);
+    setStatsError(false);
     (async () => {
       try {
-        setLoading(true);
-        setError(null);
-
-        const uRes = await apiGet<{ data: ProfileUser }>(
-          `/users/get-user-by-username/${encodeURIComponent(username)}`,
-        );
-
-        const u = uRes?.data;
-        if (!u) throw new Error("User not found");
-
-        const [counts, favTeams] = await Promise.all([
+        const profile = await cache.fetchQuery({
+          queryKey: ["community-profile", username],
+          queryFn: () => getCommunityProfile(username),
+          staleTime: 60_000,
+        });
+        if (ignore) return;
+        const u = profile.user;
+        setMe(u);
+        setRacerProfile(profile.racerProfile);
+        setLoading(false);
+        const [counts, favoriteTeams, following] = await Promise.allSettled([
           apiGet<{ data: { followersCount: number; followingCount: number } }>(
             `/users/${u.id}/get-followers-count`,
           ),
           apiGet<{ data: { teams: FavoriteTeam[] } }>(
             `/users/${u.id}/get-favorite-teams`,
           ),
+          viewerId && u.id !== viewerId
+            ? apiGet<{ data: { followingList: { id: string | number }[] } }>(
+                `/users/${viewerId}/get-following-list`,
+              )
+            : Promise.resolve(null),
         ]);
-
-        const all = await apiGet<{ data: { profilePosts: any[] } }>(
-          `/social/profile-posts`,
-        );
-
-        const onlyMine = (all?.data?.profilePosts || []).filter(
-          (p) => String(p?.user?.id) === String(u.id),
-        );
-
-        const normalized = onlyMine
-          .map((p: any) => ({
-            ...p,
-            mediaUrls: Array.isArray(p.mediaUrls)
-              ? p.mediaUrls
-              : Array.isArray(p.media_urls)
-                ? p.media_urls
-                : (() => {
-                    try {
-                      return JSON.parse(p.mediaUrls ?? "[]");
-                    } catch {
-                      return [];
-                    }
-                  })(),
-          }))
-          .sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
-
-        const enriched = await Promise.all(
-          normalized.map(async (p: any) => {
-            try {
-              const [userReaction, reactionCount, commentCount] =
-                await Promise.all([
-                  apiGet<{ reaction: string | null }>(
-                    `/social/post-reactions/${p.id}/${viewerId}`,
-                  ),
-                  apiGet<{ count: number }>(
-                    `/social/post-reactions/count/${p.id}`,
-                  ),
-                  apiGet<{ count: number }>(
-                    `/social/profile-posts/${p.id}/comments-count`,
-                  ),
-                ]);
-
-              return {
-                ...p,
-                reaction:
-                  (userReaction as any)?.reaction ??
-                  (userReaction as any)?.reaction?.reaction ??
-                  null,
-                reactionCount: reactionCount?.count ?? 0,
-                commentCount: commentCount?.count ?? 0,
-              } as ProfilePost;
-            } catch {
-              return {
-                ...p,
-                reaction: null,
-                reactionCount: 0,
-                commentCount: 0,
-              } as ProfilePost;
-            }
-          }),
-        );
-
         if (ignore) return;
-
-        setMe(u);
-        setFollowers(counts?.data?.followersCount ?? 0);
-        setFollowingCount(counts?.data?.followingCount ?? 0);
-        setPoints(counts?.data?.followingCount ?? 0);
-        setTeams(
-          Array.isArray(favTeams?.data?.teams) ? favTeams.data.teams : [],
+        setStatsError(
+          counts.status === "rejected" || favoriteTeams.status === "rejected",
         );
-        setPosts(enriched);
-
-        try {
-          if (viewerId && String(u.id) !== String(viewerId)) {
-            const following = await apiGet<{
-              data: { followingList: Array<{ id: string | number }> };
-            }>(`/users/${viewerId}/get-following-list`);
-
-            const amIFollowing = (following?.data?.followingList ?? []).some(
-              (f) => String(f.id) === String(u.id),
-            );
-
-            if (!ignore) setIsFollowing(amIFollowing);
-          }
-        } catch {}
+        if (counts.status === "fulfilled") {
+          setFollowers(counts.value.data?.followersCount ?? 0);
+          setFollowingCount(counts.value.data?.followingCount ?? 0);
+        }
+        if (favoriteTeams.status === "fulfilled")
+          setTeams(
+            Array.isArray(favoriteTeams.value.data?.teams)
+              ? favoriteTeams.value.data.teams
+              : [],
+          );
+        if (following.status === "fulfilled")
+          setIsFollowing(
+            (following.value?.data?.followingList ?? []).some(
+              (user) => String(user.id) === u.id,
+            ),
+          );
       } catch (e: any) {
-        if (!ignore) setError(e?.message || "Failed to load profile");
-      } finally {
-        if (!ignore) setLoading(false);
+        if (!ignore) {
+          setError(e?.message || "Failed to load profile");
+          setLoading(false);
+        }
       }
     })();
-
     return () => {
       ignore = true;
     };
-  }, [username, viewerId]);
+  }, [username, viewerId, refreshVersion, cache]);
+
+  // Keep the existing post experience lazy and independent of profile identity.
+  useEffect(() => {
+    if (activeTab !== "posts" || !me) return;
+    let ignore = false;
+    setPostsLoading(true);
+    setPostsError(null);
+    setPosts([]);
+    (async () => {
+      try {
+        const all = await apiGet<{ data: { profilePosts: any[] } }>(
+          "/social/profile-posts",
+        );
+        if (!Array.isArray(all?.data?.profilePosts))
+          throw new Error("Unable to read posts.");
+        const mine = all.data.profilePosts.filter(
+          (post) => String(post.user?.id) === me.id,
+        );
+        const normalized = mine
+          .map((post: any) => {
+            let media = post.mediaUrls ?? post.media_urls ?? [];
+            if (typeof media === "string") {
+              try {
+                media = JSON.parse(media);
+              } catch {
+                media = [];
+              }
+            }
+            return { ...post, mediaUrls: Array.isArray(media) ? media : [] };
+          })
+          .sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
+        const enriched = await Promise.all(
+          normalized.map(async (post: any) => {
+            const [reaction, count, comments] = await Promise.allSettled([
+              viewerId
+                ? apiGet<any>(`/social/post-reactions/${post.id}/${viewerId}`)
+                : Promise.resolve(null),
+              apiGet<any>(`/social/post-reactions/count/${post.id}`),
+              apiGet<any>(`/social/profile-posts/${post.id}/comments-count`),
+            ]);
+            const r =
+              reaction.status === "fulfilled"
+                ? (reaction.value?.data ?? reaction.value)
+                : null;
+            const c =
+              count.status === "fulfilled"
+                ? (count.value?.data ?? count.value)
+                : null;
+            const n =
+              comments.status === "fulfilled"
+                ? (comments.value?.data ?? comments.value)
+                : null;
+            return {
+              ...post,
+              reaction: typeof r?.reaction === "string" ? r.reaction : null,
+              reactionCount: c?.count ?? 0,
+              commentCount: n?.count ?? 0,
+            };
+          }),
+        );
+        if (!ignore) setPosts(enriched);
+      } catch (e: any) {
+        if (!ignore) setPostsError(e?.message || "Unable to load posts.");
+      } finally {
+        if (!ignore) setPostsLoading(false);
+      }
+    })();
+    return () => {
+      ignore = true;
+    };
+  }, [activeTab, me?.id, viewerId, refreshVersion]);
 
   async function authHeaders() {
     const token = localStorage.getItem("authToken");
@@ -340,6 +374,7 @@ export default function UserProfilePage({ username }: { username: string }) {
 
   async function refreshOne(postId: string) {
     try {
+      await cache.invalidateQueries({ queryKey: ["profile-resource"] });
       const [userReaction, reactionCount, commentCount] = await Promise.all([
         apiGet<{ reaction: string | null }>(
           `/social/post-reactions/${postId}/${viewerId}`,
@@ -478,14 +513,38 @@ export default function UserProfilePage({ username }: { username: string }) {
       </div>
 
       <main className="mx-auto w-full max-w-6xl px-4 py-6 pb-24 sm:px-6 sm:py-10 lg:px-8">
-        <div className="mb-4 flex justify-end">
-          <button
-            onClick={() => setSearchOpen(true)}
-            className="grid h-11 w-11 place-items-center rounded-full border border-cyan-300/15 bg-cyan-300/10 text-cyan-100 shadow-[0_0_24px_rgba(34,211,238,0.12)] hover:bg-cyan-300/15"
-            aria-label="Search users"
-          >
-            <SearchIcon size={18} />
-          </button>
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/50">
+            Corner League community
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              aria-label="Refresh profile"
+              onClick={async () => {
+                await Promise.all([
+                  cache.invalidateQueries({
+                    queryKey: ["community-profile", username],
+                  }),
+                  cache.invalidateQueries({ queryKey: ["profile-resource"] }),
+                  cache.invalidateQueries({
+                    queryKey: ["profile-athletes", username],
+                  }),
+                ]);
+                setRefreshVersion((value) => value + 1);
+              }}
+              className="grid h-11 w-11 place-items-center rounded-full border border-white/15 text-white/70"
+            >
+              <RefreshCw size={18} />
+            </button>
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="grid h-11 w-11 place-items-center rounded-full border border-cyan-300/15 bg-cyan-300/10 text-cyan-100 shadow-[0_0_24px_rgba(34,211,238,0.12)] hover:bg-cyan-300/15"
+              aria-label="Search users"
+            >
+              <SearchIcon size={18} />
+            </button>
+          </div>
         </div>
 
         <section className="relative overflow-hidden rounded-[32px] border border-cyan-300/10 bg-[linear-gradient(180deg,rgba(7,17,31,0.94)_0%,rgba(4,10,19,0.98)_100%)] p-5 shadow-[0_30px_90px_rgba(0,0,0,0.42)] sm:p-7">
@@ -512,7 +571,7 @@ export default function UserProfilePage({ username }: { username: string }) {
               <div className="mb-3 flex flex-wrap justify-center gap-2 sm:justify-start">
                 <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-cyan-200">
                   <UserRound className="h-3.5 w-3.5" />
-                  Profile
+                  Community member
                 </div>
 
                 {!!me?.tags?.profile?.length &&
@@ -534,6 +593,15 @@ export default function UserProfilePage({ username }: { username: string }) {
                 @{me?.username}
               </p>
 
+              {racerProfile?.isVerifiedAthlete && racerProfile.profileUrl && (
+                <a
+                  href={racerProfile.profileUrl}
+                  className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-500/10 px-4 text-sm font-semibold text-emerald-200"
+                >
+                  <ShieldCheck className="h-4 w-4" />
+                  Verified athlete · View racer profile
+                </a>
+              )}
               <BioBlock text={me?.bio} className="mt-4 sm:hidden" />
 
               <div className="mt-5 grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
@@ -551,7 +619,19 @@ export default function UserProfilePage({ username }: { username: string }) {
                   <StatBox label="Followers" value={followers} />
                 </button>
 
-                <StatBox label="Points" value={points} trophy />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!me) return;
+                    setFollowersOpen(true);
+                    setFollowersTab("following");
+                    void loadFollowing(me.id);
+                  }}
+                  className="text-left"
+                  aria-label="Open following list"
+                >
+                  <StatBox label="Following users" value={followingCount} />
+                </button>
               </div>
             </div>
 
@@ -562,11 +642,28 @@ export default function UserProfilePage({ username }: { username: string }) {
                 "sm:justify-end",
               )}
             >
+              {isOwn && (
+                <Button
+                  onClick={() => navigate("/settings")}
+                  className="h-12 rounded-full border border-white/10 bg-white/5 text-white hover:bg-white/10"
+                >
+                  <Settings className="mr-2 h-4 w-4" />
+                  Edit profile
+                </Button>
+              )}
               {!isOwn && (
                 <Button
+                  disabled={userFollowBusy}
                   onClick={async () => {
-                    if (!viewerId || !me?.id) return;
+                    if (!viewerId) {
+                      navigate(
+                        `/login?next=${encodeURIComponent(`/profile/${username}`)}`,
+                      );
+                      return;
+                    }
+                    if (!me?.id) return;
 
+                    setUserFollowBusy(true);
                     const wasFollowing = isFollowing;
                     setIsFollowing(!wasFollowing);
                     setFollowers((c) =>
@@ -576,8 +673,14 @@ export default function UserProfilePage({ username }: { username: string }) {
                     try {
                       if (wasFollowing) {
                         await unfollowUser(viewerId, String(me.id));
+                        await cache.invalidateQueries({
+                          queryKey: ["profile-resource"],
+                        });
                       } else {
                         await followUser(viewerId, String(me.id));
+                        await cache.invalidateQueries({
+                          queryKey: ["profile-resource"],
+                        });
                         await createFollowNotification({
                           recipientUserId: me.id,
                           senderUserId: viewerId,
@@ -597,6 +700,8 @@ export default function UserProfilePage({ username }: { username: string }) {
                         description: e?.message || "Please try again.",
                         variant: "destructive",
                       });
+                    } finally {
+                      setUserFollowBusy(false);
                     }
                   }}
                   className={cn(
@@ -630,11 +735,21 @@ export default function UserProfilePage({ username }: { username: string }) {
           </div>
 
           <BioBlock text={me?.bio} className="relative mt-5 hidden sm:block" />
+          {statsError && (
+            <p role="status" className="relative mt-3 text-xs text-amber-200">
+              Some community stats are unavailable. Use Refresh to retry.
+            </p>
+          )}
         </section>
 
         <div className="mt-6 overflow-hidden rounded-[26px] border border-cyan-300/10 bg-[#07111F]/90 shadow-[0_20px_60px_rgba(0,0,0,0.26)]">
           <div className="border-b border-white/10">
-            <div className="grid grid-cols-3 text-sm">
+            <div className="grid grid-cols-2 text-sm sm:grid-cols-4">
+              <Tab
+                label="Athletes"
+                active={activeTab === "athletes"}
+                onClick={() => setActiveTab("athletes")}
+              />
               <Tab
                 label="Scores"
                 active={activeTab === "scores"}
@@ -664,6 +779,7 @@ export default function UserProfilePage({ username }: { username: string }) {
 
           <div className="grid grid-cols-1 gap-6 p-4 sm:p-5 lg:grid-cols-3">
             <div className="order-2 space-y-6 lg:order-1 lg:col-span-1">
+              <RacerIdentityCard profile={racerProfile} isOwn={isOwn} />
               <Card className="rounded-[24px] border border-white/10 bg-white/[0.045] p-4">
                 <div className="flex items-center justify-between">
                   <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-300/80">
@@ -719,6 +835,9 @@ export default function UserProfilePage({ username }: { username: string }) {
             </div>
 
             <div className="order-1 lg:order-2 lg:col-span-2">
+              {activeTab === "athletes" && (
+                <FollowedAthletesPanel username={username} isOwn={isOwn} />
+              )}
               {activeTab === "scores" && (
                 <Card className="rounded-[24px] border border-white/10 bg-white/[0.045] p-5">
                   <div className="flex items-center gap-3">
@@ -727,13 +846,22 @@ export default function UserProfilePage({ username }: { username: string }) {
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-white">
-                        Scores widgets coming here.
+                        Racing results
                       </p>
                       <p className="mt-1 text-xs text-white/45">
-                        Racing and profile score cards can live in this section.
+                        Open your linked racer profile to see race results and
+                        rankings.
                       </p>
                     </div>
                   </div>
+                  {racerProfile?.profileUrl && (
+                    <a
+                      href={racerProfile.profileUrl}
+                      className="mt-4 inline-flex min-h-11 items-center font-bold text-cyan-200"
+                    >
+                      View racer results →
+                    </a>
+                  )}
                 </Card>
               )}
 
@@ -745,11 +873,39 @@ export default function UserProfilePage({ username }: { username: string }) {
 
               {activeTab === "posts" && (
                 <div className="space-y-4">
+                  {postsLoading && (
+                    <p role="status" className="text-white/60">
+                      Loading posts…
+                    </p>
+                  )}
+                  {postsError && (
+                    <div
+                      role="alert"
+                      className="rounded-2xl border border-rose-400/20 p-4 text-sm text-rose-200"
+                    >
+                      {postsError}
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          await cache.invalidateQueries({
+                            queryKey: ["profile-resource"],
+                          });
+                          setRefreshVersion((value) => value + 1);
+                        }}
+                        className="ml-3 underline"
+                      >
+                        Retry posts
+                      </button>
+                    </div>
+                  )}
                   {isOwn && (
                     <Composer
                       avatarSrc={me?.profilePicture || stockAvatar}
                       onPosted={async () => {
                         try {
+                          await cache.invalidateQueries({
+                            queryKey: ["profile-resource"],
+                          });
                           const all = await apiGet<{
                             data: { profilePosts: any[] };
                           }>(`/social/profile-posts`);
@@ -784,7 +940,7 @@ export default function UserProfilePage({ username }: { username: string }) {
                     />
                   )}
 
-                  {posts.length === 0 && (
+                  {!postsLoading && !postsError && posts.length === 0 && (
                     <Card className="rounded-[24px] border border-white/10 bg-white/[0.045] p-6 text-center text-white/60">
                       No posts yet.
                     </Card>
