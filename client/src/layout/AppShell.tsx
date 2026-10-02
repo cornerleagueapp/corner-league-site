@@ -131,6 +131,10 @@ function activeKeyFromPath(pathnameWithQuery: string): string {
     return "my";
   }
 
+  if (pathname === "/community" || pathname.startsWith("/community/")) return "community-forum";
+  if (pathname === "/articles" || pathname.startsWith("/articles/")) return "community-articles";
+  if (pathname === "/writer" || pathname.startsWith("/writer/")) return "writer-studio";
+
   if (pathname === "/messages") {
     return "messages";
   }

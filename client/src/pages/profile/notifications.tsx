@@ -1,3 +1,4 @@
+import { PageSEO } from "@/seo/usePageSEO";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
@@ -31,13 +32,16 @@ export default function NotificationsPage() {
         "PUT",
         id ? `me/notifications/${id}/read` : "me/notifications/read",
       ),
-    onSuccess: () =>
-      void cache.invalidateQueries({
-        queryKey: ["social-notifications", user?.id],
-      }),
+    onSuccess: async () => {
+      await Promise.all([
+        cache.invalidateQueries({queryKey:["social-notifications",user?.id]}),
+        cache.invalidateQueries({queryKey:["social-notification-count",user?.id]}),
+      ]);
+    },
   });
   return (
     <main className="mx-auto max-w-3xl space-y-5 p-4 py-8 text-white">
+      <PageSEO title="Notifications" canonicalPath="/notifications" noindex />
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-3xl font-black">Notifications</h1>
@@ -57,7 +61,7 @@ export default function NotificationsPage() {
         </button>
         <button
           className={socialButton}
-          disabled={read.isPending}
+          disabled={read.isPending || !query.data?.unreadCount}
           onClick={() => read.mutate(undefined)}
         >
           Mark all read

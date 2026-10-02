@@ -4,7 +4,10 @@ const path = require("node:path");
 const Module = require("node:module");
 const ts = require("typescript");
 const React = require("react");
-const { renderToStaticMarkup: render } = require("react-dom/server");
+const { renderToStaticMarkup } = require("react-dom/server");
+const { HelmetProvider } = require("react-helmet-async");
+const render = (node) =>
+  renderToStaticMarkup(React.createElement(HelmetProvider, null, node));
 const { QueryClient } = require("@tanstack/react-query");
 let auth = { user: { id: "a" }, isAuthenticated: true };
 let identity = { data: { profile: { athleteId: "athlete" } } };

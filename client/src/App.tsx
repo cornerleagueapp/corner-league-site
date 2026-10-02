@@ -1,5 +1,11 @@
 import { clearCommunityCache } from "@/lib/socialCache";
 // src/App.tsx
+import {
+  PublishingDirectory,
+  PublicationEditor,
+  PublicationPage,
+  WriterPage,
+} from "@/components/community/Publishing";
 import { useEffect, useState } from "react";
 
 import { AnalyticsEvents } from "@/lib/analytics-events";
@@ -553,6 +559,77 @@ function Router() {
             </ErrorBoundary>
           </AppShell>
         )}
+      </Route>
+      <Route path="/community/new">
+        <AppShell guestMode>
+          <ErrorBoundary>
+            <PublicationEditor kind="forum" />
+          </ErrorBoundary>
+        </AppShell>
+      </Route>
+      <Route path="/community/:id/edit">
+        {(params) => (
+          <AppShell guestMode>
+            <ErrorBoundary>
+              <PublicationEditor kind="forum" id={params.id} />
+            </ErrorBoundary>
+          </AppShell>
+        )}
+      </Route>
+      <Route path="/community/:id">
+        {(params) => (
+          <AppShell guestMode>
+            <ErrorBoundary>
+              <PublicationPage kind="forum" id={params.id} />
+            </ErrorBoundary>
+          </AppShell>
+        )}
+      </Route>
+      <Route path="/community">
+        <AppShell guestMode>
+          <ErrorBoundary>
+            <PublishingDirectory kind="forum" />
+          </ErrorBoundary>
+        </AppShell>
+      </Route>
+      <Route path="/writer/new">
+        <AppShell guestMode>
+          <ErrorBoundary>
+            <PublicationEditor kind="article" />
+          </ErrorBoundary>
+        </AppShell>
+      </Route>
+      <Route path="/writer">
+        <AppShell guestMode>
+          <ErrorBoundary>
+            <WriterPage />
+          </ErrorBoundary>
+        </AppShell>
+      </Route>
+      <Route path="/articles/:id/edit">
+        {(params) => (
+          <AppShell guestMode>
+            <ErrorBoundary>
+              <PublicationEditor kind="article" id={params.id} />
+            </ErrorBoundary>
+          </AppShell>
+        )}
+      </Route>
+      <Route path="/articles/:id">
+        {(params) => (
+          <AppShell guestMode>
+            <ErrorBoundary>
+              <PublicationPage kind="article" id={params.id} />
+            </ErrorBoundary>
+          </AppShell>
+        )}
+      </Route>
+      <Route path="/articles">
+        <AppShell guestMode>
+          <ErrorBoundary>
+            <PublishingDirectory kind="article" />
+          </ErrorBoundary>
+        </AppShell>
       </Route>
       <Route path="/create-racer-profile">
         <AppShell guestMode>

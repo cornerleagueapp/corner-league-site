@@ -23,7 +23,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
 import SocialPostFeed from "@/components/community/SocialPosts";
 import RacerSearchModal from "@/components/RacerSearchModal";
-import { generateRacerAnalysis } from "@/lib/geminiRacerAnalysis";
 import { trackEvent } from "@/lib/analytics";
 import { AnalyticsEvents } from "@/lib/analytics-events";
 import {
@@ -440,9 +439,6 @@ export default function RacerProfilePage({
     claimId?: string;
   } | null>(null);
 
-  const [analysis, setAnalysis] = useState<string | null>(null);
-  const [analysisLoading, setAnalysisLoading] = useState(false);
-  const [analysisErr, setAnalysisErr] = useState<string | null>(null);
 
   const seasonMotoWins = useMemo(() => {
     return history.filter(
@@ -715,31 +711,6 @@ export default function RacerProfilePage({
       cancelled = true;
     };
   }, [currentUserId, racer?.athleteId]);
-
-  useEffect(() => {
-    if (!racer) return;
-
-    let cancelled = false;
-
-    (async () => {
-      try {
-        setAnalysisLoading(true);
-        setAnalysisErr(null);
-        const text = await generateRacerAnalysis(racer);
-        if (!cancelled) setAnalysis(text);
-      } catch {
-        if (!cancelled) {
-          setAnalysisErr("Racer analysis is temporarily unavailable.");
-        }
-      } finally {
-        if (!cancelled) setAnalysisLoading(false);
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [racer?.id]);
 
   useEffect(() => {
     if (!racer?.athleteId) {
@@ -1516,25 +1487,7 @@ export default function RacerProfilePage({
               onClick={() => setRacePodSessionsOpen(true)}
             />
 
-            <Card className="overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
-              <div className="mb-2 inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.16em] text-cyan-300/80">
-                <Sparkles className="h-4 w-4" />
-                AI Racer Analysis
-              </div>
-              {analysisLoading ? (
-                <p className="text-sm text-white/60">Analyzing this racer…</p>
-              ) : analysisErr ? (
-                <p className="text-sm text-red-300">{analysisErr}</p>
-              ) : analysis ? (
-                <p className="whitespace-pre-wrap text-sm leading-7 text-white/80">
-                  {analysis}
-                </p>
-              ) : (
-                <p className="text-sm text-white/60">
-                  Analysis will appear here once available.
-                </p>
-              )}
-            </Card>
+
           </div>
 
           <div className="order-1 space-y-4 lg:order-2 lg:col-span-2">

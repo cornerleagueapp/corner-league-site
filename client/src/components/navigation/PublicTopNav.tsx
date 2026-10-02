@@ -1,9 +1,11 @@
+import { useUnreadNotifications, NotificationCount } from "@/components/community/NotificationCount";
 import React from "react";
 import MyRacerProfileLink from "@/components/MyRacerProfileLink";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { logout } from "@/lib/logout";
 import {
+  Bell,
   Check,
   ChevronDown,
   CircleUserRound,
@@ -73,6 +75,7 @@ export default function PublicTopNav({
   onSportChange,
 }: PublicTopNavProps) {
   const { user, isAuthenticated } = useAuth();
+  const notifications = useUnreadNotifications();
   const [location, navigate] = useLocation();
 
   const [sportsOpen, setSportsOpen] = React.useState(false);
@@ -323,6 +326,7 @@ export default function PublicTopNav({
                 className="inline-flex h-11 max-w-[126px] items-center gap-2 overflow-hidden rounded-full border border-[#FF6B35]/20 bg-[#FF6B35]/10 px-3 text-[10px] font-black uppercase tracking-[0.12em] text-[#FFB199] transition duration-200 hover:border-[#FF7849]/40 hover:bg-[#FF6B35]/20 hover:text-white sm:max-w-none sm:px-4 sm:text-xs sm:tracking-[0.18em]"
               >
                 <span className="block min-w-0 truncate">Account</span>
+                <NotificationCount count={notifications.data?.unreadCount} />
 
                 <ChevronDown
                   className={`h-4 w-4 shrink-0 transition-transform ${
@@ -362,6 +366,11 @@ export default function PublicTopNav({
                     Your Profile
                   </button>
 
+                  <button type="button" role="menuitem" onClick={() => navigateFromAccount("/notifications")} className="flex w-full items-center gap-3 rounded-[15px] px-3 py-3 text-left text-sm font-bold text-white/70 transition hover:bg-white/[0.06] hover:text-white">
+                    <Bell className="h-4 w-4 shrink-0 text-cyan-200" />
+                    <span>Notifications</span>
+                    <span className="ml-auto"><NotificationCount count={notifications.data?.unreadCount} /></span>
+                  </button>
                   <MyRacerProfileLink onNavigate={navigateFromAccount} />
 
                   <button

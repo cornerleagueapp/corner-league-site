@@ -132,6 +132,14 @@ export function useAppSidebarSections(opts?: {
         : []),
 
       {
+        title: "Community",
+        items: [
+          {key:"community-forum",label:"Community Forum",selectable:false,matchPaths:["/community","/community/*"],onSelect:()=>navigate("/community")},
+          {key:"community-articles",label:"Articles & Blogs",selectable:false,matchPaths:["/articles","/articles/*"],onSelect:()=>navigate("/articles")},
+          ...(isAuthenticated ? [{key:"writer-studio",label:"Writer Studio",selectable:false,matchPaths:["/writer","/writer/*"],onSelect:()=>navigate("/writer")}] : []),
+        ],
+      },
+      {
         title: "Explore",
         items: [
           {
@@ -303,6 +311,9 @@ function getSidebarItemIcon(key: string) {
     case "racepod":
       return Wifi;
 
+    case "community-forum":
+    case "community-articles":
+    case "writer-studio":
     case "messages":
       return MessageSquare;
 

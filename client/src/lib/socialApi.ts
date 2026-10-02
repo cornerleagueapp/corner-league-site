@@ -162,7 +162,7 @@ export async function loadPost(signedIn: boolean, id: string) {
 }
 export function safeLocalHref(value: unknown): string | null {
   return typeof value === "string" &&
-    /^\/(?:posts\/[a-zA-Z0-9-]+|profile\/[^/?#]+|messages\?thread=[a-zA-Z0-9-]+)$/.test(
+    /^\/(?:(?:posts|community|articles)\/[a-zA-Z0-9-]+|profile\/[^/?#]+|messages\?thread=[a-zA-Z0-9-]+)$/.test(
       value,
     )
     ? value

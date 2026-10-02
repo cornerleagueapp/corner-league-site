@@ -1,3 +1,5 @@
+import UserSearchPanel from "@/components/community/UserSearchPanel";
+import { PublicationList } from "@/components/community/Publishing";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
@@ -21,7 +23,7 @@ import SocialPostFeed, {
 import stockAvatar from "@/assets/stockprofilepicture.jpeg";
 export default function UserProfilePage({ username }: { username: string }) {
   const { user } = useAuth();
-  const [tab, setTab] = useState<"athletes" | "posts" | "results">("athletes");
+  const [tab, setTab] = useState<"athletes" | "posts" | "results" | "articles">("athletes");
   const [people, setPeople] = useState<"followers" | "following" | null>(null);
   const [share, setShare] = useState("");
   const profile = useQuery({
@@ -177,6 +179,7 @@ export default function UserProfilePage({ username }: { username: string }) {
         )}
       </header>
       {people && <PeoplePanel username={username} kind={people} />}
+      {isOwn && <UserSearchPanel key={user?.id} />}
       <div className="grid min-w-0 gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
         <aside className="order-2 space-y-5 lg:order-1">
           <RacerIdentityCard profile={racer} isOwn={isOwn} />
@@ -206,6 +209,7 @@ export default function UserProfilePage({ username }: { username: string }) {
                 ["athletes", "Athletes"],
                 ["posts", "Posts"],
                 ["results", "Results"],
+                ["articles", "Articles"],
               ] as const
             ).map(([value, label]) => (
               <button
@@ -225,6 +229,7 @@ export default function UserProfilePage({ username }: { username: string }) {
           {tab === "posts" && (
             <SocialPostFeed username={username} compose={isOwn} />
           )}
+          {tab === "articles" && (<section className="space-y-4">{isOwn && <Link className={socialButton} href="/writer">Manage your articles</Link>}<PublicationList kind="article" username={username} /></section>)}
           {tab === "results" && (
             <section className={socialBox}>
               <h2 className="font-bold">Race results & rankings</h2>
