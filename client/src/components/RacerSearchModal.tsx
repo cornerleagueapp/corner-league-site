@@ -12,6 +12,7 @@ import { Search, X, ChevronRight } from "lucide-react";
 
 type RacerLite = {
   id: string | number;
+  athleteId?: string | number;
   racerName: string;
   racerImage?: string | null;
   location?: string | null;
@@ -24,7 +25,7 @@ const MIN_QUERY_LENGTH = 2;
 const TARGET_MATCHES = 10;
 const AUTOSCAN_MAX_PAGES = 10;
 
-function toRacerLite(rec: any): RacerLite | null {
+export function toRacerLite(rec: any): RacerLite | null {
   if (!rec) return null;
 
   function firstNonEmpty(
@@ -63,7 +64,9 @@ function toRacerLite(rec: any): RacerLite | null {
     const loc = firstNonEmpty(a?.origin, rec?.origin, rec?.city, rec?.country);
 
     return {
-      id: a.id ?? rec.athleteId ?? rec.id ?? rec.uuid,
+      // Racer pages use JetSkiRacerDetails.id; athlete.id is for registration.
+      id: rec.id ?? rec.uuid,
+      athleteId: a.id ?? rec.athleteId,
       racerName: name,
       racerImage: image ?? null,
       location: loc ?? null,

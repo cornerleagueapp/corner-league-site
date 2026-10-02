@@ -1,13 +1,11 @@
 import React, { useState } from "react";
 import { useLocation } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/apiClient";
 import { useAuth } from "@/hooks/useAuth";
 import {
   useMyRacerProfile,
-  type MyRacerIdentity,
 } from "@/hooks/useMyRacerProfile";
-import { searchSelfRacers, type RacerMatch } from "@/lib/selfRacerLookup";
+import { createMyRacerIdentity, searchSelfRacers, type RacerMatch } from "@/lib/selfRacerLookup";
 import { Button } from "@/components/ui/button";
 
 export default function CreateRacerProfilePage() {
@@ -45,11 +43,9 @@ export default function CreateRacerProfilePage() {
     setBusy(true);
     setError("");
     try {
-      const result = await apiRequest<MyRacerIdentity>(
-        "POST",
-        "/athletes/me/racer-profile",
-        { name: name.trim(), nickname, origin, bio, skillLevel },
-      );
+      const result = await createMyRacerIdentity({
+        name: name.trim(), nickname, origin, bio, skillLevel,
+      });
       cache.setQueryData(["/athletes/me/racer-profile", user?.id], result);
       await cache.invalidateQueries({ queryKey: ["/auth/me"] });
       if (result.profile?.profileUrl) navigate(result.profile.profileUrl);

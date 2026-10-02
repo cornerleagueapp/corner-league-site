@@ -195,7 +195,7 @@ export default function RaceClassEditor({ draft, onChange, onRemove }: Props) {
           onClose={() => setIsSearchOpen(false)}
           onSelectRacer={(r) => {
             const newRacer: RaceClassRacer = {
-              athleteId: String(r.id),
+              athleteId: String(r.athleteId ?? r.id),
               name: r.racerName,
               age: null, // add if your modal returns age
               boatNumber: null, // add if your modal returns boat #
