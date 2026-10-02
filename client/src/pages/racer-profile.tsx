@@ -727,11 +727,9 @@ export default function RacerProfilePage({
         setAnalysisErr(null);
         const text = await generateRacerAnalysis(racer);
         if (!cancelled) setAnalysis(text);
-      } catch (e: any) {
-        console.error("[RacerProfile] AI analysis error", e);
+      } catch {
         if (!cancelled) {
-          setAnalysisErr("Ai Analysis to come soon.");
-          // setAnalysisErr("Could not generate AI analysis for this racer.");
+          setAnalysisErr("Racer analysis is temporarily unavailable.");
         }
       } finally {
         if (!cancelled) setAnalysisLoading(false);
