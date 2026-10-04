@@ -3,6 +3,7 @@ import React, { useMemo, useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/apiClient";
+import OrganizationPhotoGallery from "@/components/OrganizationPhotoGallery";
 import { Button } from "@/components/ui/button";
 import { PageSEO } from "@/seo/usePageSEO";
 import {
@@ -419,6 +420,8 @@ export default function AquaOrganizationDetailsPage(props: {
             <OrganizationPosts key={org.id} organizationId={org.id} />
           </>
         )}
+
+        {org?.id ? <div className="mt-6"><OrganizationPhotoGallery organizationId={org.id} /></div> : null}
 
         {scheduleOpen && (
           <ScheduleModal

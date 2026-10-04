@@ -1,3 +1,4 @@
+import OrganizationPhotoGallery from "@/components/OrganizationPhotoGallery";
 import React, { useEffect, useState, useMemo } from "react";
 import { PageSEO } from "@/seo/usePageSEO";
 import { apiRequest } from "@/lib/apiClient";
@@ -1539,6 +1540,8 @@ export default function RacerProfilePage({
                 </div>
               ) : null}
             </Card>
+
+            <OrganizationPhotoGallery athleteId={racer.athleteId} canRemoveTag={isOwner} />
 
             <Card className="overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)] sm:p-6">
               <div className="mb-4 text-lg font-semibold text-white">
