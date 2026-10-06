@@ -114,6 +114,8 @@ export function trackEvent(
 ) {
   if (typeof window === "undefined") return;
 
+  if (window.location.pathname.startsWith("/internal/test-organizations/")) return;
+
   const utmProperties = getPersistedUtmParams();
 
   const eventPayload = {

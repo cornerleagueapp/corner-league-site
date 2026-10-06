@@ -87,7 +87,16 @@ async function fetchJson(path) {
 async function fetchOrganizationPaths() {
   // Adjust this endpoint if your backend route name differs.
   // Your frontend route is: /aqua-organizations/:id
-  const json = await fetchJson("/sport-event/organization?limit=1000");
+  const collected = [];
+  for (let page = 1; page <= 100; page++) {
+    const response = await fetchJson(`/organizations?page=${page}&limit=50`);
+    const data = response?.data ?? response;
+    const rows = data?.organizations ?? data?.items ?? (Array.isArray(data) ? data : []);
+    if (!Array.isArray(rows)) break;
+    collected.push(...rows);
+    if (!data?.meta?.hasNextPage) break;
+  }
+  const json = { organizations: collected };
 
   const organizations =
     json?.data?.organizations ??
@@ -101,7 +110,10 @@ async function fetchOrganizationPaths() {
   return (Array.isArray(organizations) ? organizations : [])
     .map((org) => {
       const id = org?.slug || org?.id;
-      return id ? `/aqua-organizations/${id}` : null;
+      if (org?.isTest) return null;
+      if (!id) return null;
+      const sport = org?.primarySportKey;
+      return sport && sport !== "jet-ski" ? `/sports/${encodeURIComponent(sport)}/organizations/${encodeURIComponent(id)}` : `/aqua-organizations/${id}`;
     })
     .filter(Boolean);
 }

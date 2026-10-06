@@ -435,14 +435,7 @@ export default function AppShell({
         <PublicTopNav
           sticky={false}
           selectedSportKey="jet-ski"
-          sports={[
-            {
-              key: "jet-ski",
-              label: "Jet Ski",
-              href: "/scores/aqua",
-              enabled: true,
-            },
-          ]}
+
         />
 
         <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden">

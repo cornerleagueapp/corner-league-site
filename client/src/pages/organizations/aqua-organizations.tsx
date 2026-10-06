@@ -25,9 +25,9 @@ export default function AquaOrganizationsPage() {
     new URLSearchParams(window.location.search).get("adminSelect") === "1";
 
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["/organizations"],
+    queryKey: ["/sports/catalog/jet-ski/organizations"],
     queryFn: async () => {
-      const res = await apiFetch("/organizations", {
+      const res = await apiFetch("/sports/catalog/jet-ski/organizations", {
         method: "GET",
         skipAuth: true,
         noRefresh: true,

@@ -54,6 +54,9 @@ import MessagesPage from "@/pages/profile/messages";
 import NotificationsPage from "@/pages/profile/notifications";
 import WelcomeSplash from "./pages/welcome-splash";
 import AdminCreateRacerPage from "./pages/admin/admin-create-racer";
+import SportOrganizationsPage from "./pages/organizations/sport-organizations";
+import SportOrganizationDetailsPage from "./pages/organizations/sport-organization-details";
+import TestOrganizationPreview from "./pages/organizations/test-organization-preview";
 import AquaOrganizationsPage from "./pages/organizations/aqua-organizations";
 import AdminCreateOrganizationPage from "./pages/organizations/admin-create-organization";
 import { OrganizationPostPage } from "@/features/organization-posts/OrganizationPosts";
@@ -193,6 +196,10 @@ function PrivateRouter() {
     <AppShell>
       <ErrorBoundary>
         <Switch>
+          <Route path="/internal/test-organizations/:id" component={TestOrganizationPreview} />
+          <Route path="/sports/:sportKey/organizations/:id" component={SportOrganizationDetailsPage} />
+          <Route path="/sports/:sportKey" component={SportOrganizationsPage} />
+
           <Route path="/profile/:username">
             {(params) => <UserProfilePage username={params.username} />}
           </Route>

@@ -69,23 +69,7 @@ export default function Home() {
       <PublicTopNav
         activeTab="home"
         selectedSportKey="jet-ski"
-        sports={[
-          {
-            key: "jet-ski",
-            label: "Jet Ski",
-            href: "/scores/aqua",
-            enabled: true,
-          },
-          {
-            key: "supercross",
-            label: "Supercross",
-            href: "/scores/supercross",
-            enabled: false,
-          },
-          { key: "mlb", label: "MLB", href: "/scores/mlb", enabled: false },
-          { key: "nba", label: "NBA", href: "/scores/nba", enabled: false },
-          { key: "nfl", label: "NFL", href: "/scores/nfl", enabled: false },
-        ]}
+
       />
 
       <PageSEO

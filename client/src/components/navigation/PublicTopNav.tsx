@@ -1,5 +1,9 @@
-import { useUnreadNotifications, NotificationCount } from "@/components/community/NotificationCount";
+import {
+  useUnreadNotifications,
+  NotificationCount,
+} from "@/components/community/NotificationCount";
 import React from "react";
+import { usePublicSports } from "@/hooks/usePublicSports";
 import MyRacerProfileLink from "@/components/MyRacerProfileLink";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
@@ -28,7 +32,6 @@ type SportOption = {
 type PublicTopNavProps = {
   activeTab?: NavTabKey;
   sticky?: boolean;
-  sports?: SportOption[];
   selectedSportKey?: string;
   onSportChange?: (sport: SportOption) => void;
 };
@@ -41,15 +44,6 @@ const activeTabClass =
 
 const inactiveTabClass =
   "border border-white/10 bg-white/[0.04] text-white/65 hover:border-cyan-300/25 hover:bg-cyan-300/10 hover:text-white";
-
-const defaultSports: SportOption[] = [
-  {
-    key: "jet-ski",
-    label: "Jet Ski",
-    href: "/scores/aqua",
-    enabled: true,
-  },
-];
 
 function scrollToSection(targetId: string) {
   const element = document.getElementById(targetId);
@@ -70,11 +64,12 @@ function scrollToSection(targetId: string) {
 export default function PublicTopNav({
   activeTab = "home",
   sticky = true,
-  sports = defaultSports,
   selectedSportKey = "jet-ski",
   onSportChange,
 }: PublicTopNavProps) {
   const { user, isAuthenticated } = useAuth();
+  const availability = usePublicSports();
+  const sports = availability.isError || !Array.isArray(availability.data) ? [] : availability.data;
   const notifications = useUnreadNotifications();
   const [location, navigate] = useLocation();
 
@@ -89,7 +84,11 @@ export default function PublicTopNav({
   const isLandingPage = location === "/";
 
   const selectedSport =
-    sports.find((sport) => sport.key === selectedSportKey) ?? sports[0];
+    sports.find(
+      (sport) =>
+        sport.key ===
+        (location.match(/^\/sports\/([^/]+)/)?.[1] ?? selectedSportKey),
+    ) ?? sports[0];
 
   const username = String((user as any)?.username ?? "").trim();
 
@@ -247,71 +246,73 @@ export default function PublicTopNav({
         </span>
 
         <div className="ml-auto flex min-w-0 shrink-0 items-center justify-end gap-2 sm:gap-3">
-          <div ref={sportsRef} className="relative min-w-0">
-            <button
-              type="button"
-              aria-haspopup="menu"
-              aria-expanded={sportsOpen}
-              onClick={() => {
-                setAccountOpen(false);
+          {sports.length > 0 && (
+            <div ref={sportsRef} className="relative min-w-0">
+              <button
+                type="button"
+                aria-haspopup="menu"
+                aria-expanded={sportsOpen}
+                onClick={() => {
+                  setAccountOpen(false);
 
-                setSportsOpen((current) => !current);
-              }}
-              className="inline-flex h-11 max-w-[126px] items-center gap-2 overflow-hidden rounded-full border border-white/10 bg-white/[0.05] px-3 text-[10px] font-black uppercase tracking-[0.12em] text-white transition duration-200 hover:border-cyan-300/25 hover:bg-cyan-300/10 hover:text-cyan-50 sm:max-w-none sm:px-4 sm:text-xs sm:tracking-[0.18em]"
-            >
-              <span className="block min-w-0 truncate">
-                {selectedSport?.label ?? "Select Sport"}
-              </span>
-
-              <ChevronDown
-                className={`h-4 w-4 shrink-0 transition-transform ${
-                  sportsOpen ? "rotate-180" : ""
-                }`}
-              />
-            </button>
-
-            {sportsOpen ? (
-              <div
-                role="menu"
-                className="absolute right-0 z-[250] mt-3 w-[min(82vw,260px)] overflow-hidden rounded-2xl border border-cyan-300/10 bg-[#07111F]/98 shadow-[0_24px_70px_rgba(0,0,0,0.55)] backdrop-blur-xl"
+                  setSportsOpen((current) => !current);
+                }}
+                className="inline-flex h-11 max-w-[126px] items-center gap-2 overflow-hidden rounded-full border border-white/10 bg-white/[0.05] px-3 text-[10px] font-black uppercase tracking-[0.12em] text-white transition duration-200 hover:border-cyan-300/25 hover:bg-cyan-300/10 hover:text-cyan-50 sm:max-w-none sm:px-4 sm:text-xs sm:tracking-[0.18em]"
               >
-                {sports.map((sport) => {
-                  const selected = sport.key === selectedSport?.key;
+                <span className="block min-w-0 truncate">
+                  {selectedSport?.label ?? "Select Sport"}
+                </span>
 
-                  const disabled = sport.enabled === false;
+                <ChevronDown
+                  className={`h-4 w-4 shrink-0 transition-transform ${
+                    sportsOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
 
-                  return (
-                    <button
-                      key={sport.key}
-                      type="button"
-                      role="menuitem"
-                      disabled={disabled}
-                      onClick={() => handleSportSelect(sport)}
-                      className={`flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-sm transition ${
-                        disabled
-                          ? "cursor-not-allowed text-white/25"
-                          : selected
-                            ? "bg-cyan-300/10 text-cyan-100"
-                            : "text-white/75 hover:bg-white/[0.05] hover:text-white"
-                      }`}
-                    >
-                      <span className="min-w-0 truncate uppercase tracking-[0.12em]">
-                        {sport.label}
-                      </span>
+              {sportsOpen ? (
+                <div
+                  role="menu"
+                  className="absolute right-0 z-[250] mt-3 w-[min(82vw,260px)] overflow-hidden rounded-2xl border border-cyan-300/10 bg-[#07111F]/98 shadow-[0_24px_70px_rgba(0,0,0,0.55)] backdrop-blur-xl"
+                >
+                  {sports.map((sport) => {
+                    const selected = sport.key === selectedSport?.key;
 
-                      {selected ? (
-                        <Check className="h-4 w-4 shrink-0 text-cyan-200" />
-                      ) : disabled ? (
-                        <span className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-1 text-[8px] font-black uppercase tracking-[0.12em] text-white/30">
-                          Soon
+                    const disabled = sport.enabled === false;
+
+                    return (
+                      <button
+                        key={sport.key}
+                        type="button"
+                        role="menuitem"
+                        disabled={disabled}
+                        onClick={() => handleSportSelect(sport)}
+                        className={`flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-sm transition ${
+                          disabled
+                            ? "cursor-not-allowed text-white/25"
+                            : selected
+                              ? "bg-cyan-300/10 text-cyan-100"
+                              : "text-white/75 hover:bg-white/[0.05] hover:text-white"
+                        }`}
+                      >
+                        <span className="min-w-0 truncate uppercase tracking-[0.12em]">
+                          {sport.label}
                         </span>
-                      ) : null}
-                    </button>
-                  );
-                })}
-              </div>
-            ) : null}
-          </div>
+
+                        {selected ? (
+                          <Check className="h-4 w-4 shrink-0 text-cyan-200" />
+                        ) : disabled ? (
+                          <span className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-1 text-[8px] font-black uppercase tracking-[0.12em] text-white/30">
+                            Soon
+                          </span>
+                        ) : null}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : null}
+            </div>
+          )}
           {isAuthenticated ? (
             <div ref={accountRef} className="relative min-w-0">
               <button
@@ -366,10 +367,19 @@ export default function PublicTopNav({
                     Your Profile
                   </button>
 
-                  <button type="button" role="menuitem" onClick={() => navigateFromAccount("/notifications")} className="flex w-full items-center gap-3 rounded-[15px] px-3 py-3 text-left text-sm font-bold text-white/70 transition hover:bg-white/[0.06] hover:text-white">
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => navigateFromAccount("/notifications")}
+                    className="flex w-full items-center gap-3 rounded-[15px] px-3 py-3 text-left text-sm font-bold text-white/70 transition hover:bg-white/[0.06] hover:text-white"
+                  >
                     <Bell className="h-4 w-4 shrink-0 text-cyan-200" />
                     <span>Notifications</span>
-                    <span className="ml-auto"><NotificationCount count={notifications.data?.unreadCount} /></span>
+                    <span className="ml-auto">
+                      <NotificationCount
+                        count={notifications.data?.unreadCount}
+                      />
+                    </span>
                   </button>
                   <MyRacerProfileLink onNavigate={navigateFromAccount} />
 
