@@ -1,3 +1,5 @@
+import { rememberSport } from "@/hooks/useSportSelection";
+import { sportDirectory, sportOrganization } from "@/lib/sportNavigation";
 import { useOrganizationPageApi } from "./SandboxContext";
 import { OrganizationPosts } from "@/features/organization-posts/OrganizationPosts";
 import React, { useMemo, useState, useEffect } from "react";
@@ -21,6 +23,11 @@ import { trackContentEngagementToBackend } from "@/lib/contentEngagementApi";
 
 type Organization = {
   id: string;
+  primarySportKey?: string;
+  sportProfile?: {
+    label: string;
+    capabilities?: { eventManagement?: boolean };
+  };
   name: string;
   abbreviation?: string | null;
   description?: string | null;
@@ -115,6 +122,7 @@ function formatEventTime(start?: string, end?: string) {
 
 export default function AquaOrganizationDetailsPage(props: {
   params: { id: string };
+  expectedSportKey?: string;
 }) {
   const { sandbox, fetch: pageFetch } = useOrganizationPageApi();
   const [, navigate] = useLocation();
@@ -127,7 +135,12 @@ export default function AquaOrganizationDetailsPage(props: {
     isError,
     error,
   } = useQuery({
-    queryKey: ["/organizations", orgId, ...(sandbox ? [sandbox.account] : [])],
+    queryKey: [
+      "/organizations",
+      orgId,
+      ...(props.expectedSportKey ? [props.expectedSportKey] : []),
+      ...(sandbox ? [sandbox.account] : []),
+    ],
     enabled: !!orgId && !sandbox,
     queryFn: async () => {
       const res = await pageFetch(`/organizations/${orgId}`, {
@@ -143,7 +156,15 @@ export default function AquaOrganizationDetailsPage(props: {
 
       const org = getOrgFromResponse(json);
       if (!org) throw new Error("Organization not found in response.");
-      return org;
+      if (
+        props.expectedSportKey &&
+        (org as Organization).primarySportKey !== props.expectedSportKey
+      )
+        throw new Error("Organization not found for this sport.");
+      return {
+        ...org,
+        sportProfile: json?.sportProfile ?? json?.data?.sportProfile,
+      };
     },
     gcTime: sandbox ? 0 : undefined,
     staleTime: 60_000,
@@ -198,6 +219,22 @@ export default function AquaOrganizationDetailsPage(props: {
   const org = (sandbox?.data.organization ?? orgData) as
     Organization | undefined;
 
+  const primarySportKey =
+    org?.primarySportKey ?? props.expectedSportKey ?? "jet-ski";
+  const sportLabel =
+    org?.sportProfile?.label ??
+    (sandbox
+      ? sandbox.data.organization.primarySportKey
+      : (props.expectedSportKey?.replace(/-/g, " ") ?? "Sport"));
+  const hasCompetition =
+    !!sandbox ||
+    (org?.sportProfile?.capabilities?.eventManagement ??
+      primarySportKey === "jet-ski");
+  useEffect(() => {
+    if (org && !sandbox && org.primarySportKey)
+      rememberSport(org.primarySportKey);
+  }, [org?.id, org?.primarySportKey, sandbox]);
+
   useEffect(() => {
     if (!org || sandbox) return;
 
@@ -205,7 +242,7 @@ export default function AquaOrganizationDetailsPage(props: {
       organization_id: org.id,
       organization_name: org.name,
       organization_abbreviation: org.abbreviation ?? null,
-      sport: "jet_ski",
+      sport: primarySportKey,
       page_type: "organization_details",
     });
 
@@ -216,19 +253,21 @@ export default function AquaOrganizationDetailsPage(props: {
       contentName: org.name,
       organizationId: org.id,
       organizationName: org.name,
-      sport: "jet_ski",
+      sport: primarySportKey,
       sourcePage: "organization_details",
     }).catch(() => {});
-  }, [org?.id]);
+  }, [org?.id, primarySportKey]);
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-[#030913] text-white">
       <PageSEO
         title={`${org?.name || "Organization"} • Corner League Sports`}
-        description="View organization details, event schedules, race coverage, and official jet ski racing information."
+        description={`Official ${sportLabel} organization profile, news and photo gallery.`}
         noindex={!!sandbox}
         canonicalPath={
-          !sandbox && orgId ? `/aqua-organizations/${orgId}` : undefined
+          !sandbox && orgId
+            ? sportOrganization(primarySportKey, orgId)
+            : undefined
         }
       />
 
@@ -256,16 +295,12 @@ export default function AquaOrganizationDetailsPage(props: {
                 </div>
 
                 <div className="inline-flex items-center gap-2 rounded-full border border-[#FF6B35]/20 bg-[#FF6B35]/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-[#FFB199] sm:px-4 sm:text-[11px] sm:tracking-[0.24em]">
-                  Race Organization
+                  {sportLabel} Organization
                 </div>
               </div>
 
               <p className="text-xs font-black uppercase tracking-[0.26em] text-cyan-200/65">
-                {sandbox &&
-                sandbox.data.organization.primarySportKey !== "jet-ski"
-                  ? sandbox.data.organization.primarySportKey
-                  : "Aqua • Jet Ski Racing"}{" "}
-                • Official Profile
+                {sportLabel} • Official Profile
               </p>
 
               <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -289,25 +324,33 @@ export default function AquaOrganizationDetailsPage(props: {
             <div className="flex flex-col gap-3 sm:flex-row lg:flex-col lg:items-end">
               <button
                 type="button"
-                onClick={() => navigate("/aqua-organizations")}
+                onClick={() =>
+                  navigate(
+                    sandbox
+                      ? `/internal/test-organizations/${sandbox.id}`
+                      : sportDirectory(primarySportKey),
+                  )
+                }
                 className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/[0.05] px-5 py-3 text-xs font-black uppercase tracking-[0.14em] text-white/75 transition hover:border-cyan-300/25 hover:bg-cyan-300/10 hover:text-white"
               >
                 ← Back to Organizations
               </button>
 
-              <div className="inline-flex items-center gap-3 rounded-[24px] border border-cyan-300/10 bg-white/[0.04] px-4 py-3 shadow-[0_18px_45px_rgba(0,0,0,0.22)]">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-300/15 bg-cyan-300/10 text-cyan-200">
-                  <CalendarDays className="h-5 w-5" />
-                </div>
-                <div>
-                  <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">
-                    Upcoming
+              {hasCompetition && (
+                <div className="inline-flex items-center gap-3 rounded-[24px] border border-cyan-300/10 bg-white/[0.04] px-4 py-3 shadow-[0_18px_45px_rgba(0,0,0,0.22)]">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-300/15 bg-cyan-300/10 text-cyan-200">
+                    <CalendarDays className="h-5 w-5" />
                   </div>
-                  <div className="text-lg font-bold text-white">
-                    {upcomingCount} events
+                  <div>
+                    <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">
+                      Upcoming
+                    </div>
+                    <div className="text-lg font-bold text-white">
+                      {upcomingCount} events
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
@@ -375,63 +418,68 @@ export default function AquaOrganizationDetailsPage(props: {
               </div>
 
               {/* info blocks */}
-              <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!sandbox) {
-                      trackEvent(AnalyticsEvents.ORGANIZATION_SCHEDULE_OPENED, {
-                        organization_id: org?.id ?? orgId,
-                        organization_name: org?.name ?? null,
-                        sport: "jet_ski",
-                        page_type: "organization_details",
-                      });
+              {hasCompetition && (
+                <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!sandbox) {
+                        trackEvent(
+                          AnalyticsEvents.ORGANIZATION_SCHEDULE_OPENED,
+                          {
+                            organization_id: org?.id ?? orgId,
+                            organization_name: org?.name ?? null,
+                            sport: primarySportKey,
+                            page_type: "organization_details",
+                          },
+                        );
 
-                      void trackContentEngagementToBackend({
-                        contentType: "organization",
-                        action: "organization_schedule_opened",
-                        contentId: org?.id ?? orgId,
-                        contentName: org?.name ?? null,
-                        organizationId: org?.id ?? orgId,
-                        organizationName: org?.name ?? null,
-                        sport: "jet_ski",
-                        sourcePage: "organization_details",
-                      }).catch(() => {});
-                    }
-                    setScheduleOpen(true);
-                  }}
-                  className="group min-w-0 rounded-[24px] border border-cyan-300/10 bg-white/[0.04] p-5 text-left transition hover:border-cyan-300/25 hover:bg-cyan-300/[0.045]"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <div className="mb-2 inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-400/15 bg-cyan-400/8 text-cyan-300">
-                        <CalendarDays className="h-5 w-5" />
+                        void trackContentEngagementToBackend({
+                          contentType: "organization",
+                          action: "organization_schedule_opened",
+                          contentId: org?.id ?? orgId,
+                          contentName: org?.name ?? null,
+                          organizationId: org?.id ?? orgId,
+                          organizationName: org?.name ?? null,
+                          sport: primarySportKey,
+                          sourcePage: "organization_details",
+                        }).catch(() => {});
+                      }
+                      setScheduleOpen(true);
+                    }}
+                    className="group min-w-0 rounded-[24px] border border-cyan-300/10 bg-white/[0.04] p-5 text-left transition hover:border-cyan-300/25 hover:bg-cyan-300/[0.045]"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <div className="mb-2 inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-400/15 bg-cyan-400/8 text-cyan-300">
+                          <CalendarDays className="h-5 w-5" />
+                        </div>
+                        <div className="text-lg font-black uppercase tracking-[-0.01em] text-white">
+                          Schedule
+                        </div>
+                        <div className="mt-2 text-sm leading-7 text-slate-300">
+                          {eventsLoading && scheduleOpen
+                            ? "Loading events…"
+                            : upcomingCount > 0
+                              ? `${upcomingCount} upcoming event${upcomingCount === 1 ? "" : "s"} available to view`
+                              : "View all organization events and race dates"}
+                        </div>
                       </div>
-                      <div className="text-lg font-black uppercase tracking-[-0.01em] text-white">
-                        Schedule
-                      </div>
-                      <div className="mt-2 text-sm leading-7 text-slate-300">
-                        {eventsLoading && scheduleOpen
-                          ? "Loading events…"
-                          : upcomingCount > 0
-                            ? `${upcomingCount} upcoming event${upcomingCount === 1 ? "" : "s"} available to view`
-                            : "View all organization events and race dates"}
+
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-cyan-300 transition group-hover:border-cyan-300/25 group-hover:bg-cyan-400/8">
+                        <ChevronRight className="h-4 w-4" />
                       </div>
                     </div>
+                  </button>
 
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-cyan-300 transition group-hover:border-cyan-300/25 group-hover:bg-cyan-400/8">
-                      <ChevronRight className="h-4 w-4" />
-                    </div>
-                  </div>
-                </button>
-
-                <InfoCard
-                  icon={<Trophy className="h-5 w-5" />}
-                  title="Race Results"
-                  description="Past podiums, standings, and results modules can plug into this area later."
-                  muted
-                />
-              </div>
+                  <InfoCard
+                    icon={<Trophy className="h-5 w-5" />}
+                    title="Race Results"
+                    description="Past podiums, standings, and results modules can plug into this area later."
+                    muted
+                  />
+                </div>
+              )}
             </div>
             <OrganizationPosts key={org.id} organizationId={org.id} />
           </>

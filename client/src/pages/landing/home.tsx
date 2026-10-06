@@ -66,11 +66,7 @@ export default function Home() {
 
   return (
     <div className="consumer-document-page bg-black text-white font-sans overflow-x-hidden relative">
-      <PublicTopNav
-        activeTab="home"
-        selectedSportKey="jet-ski"
-
-      />
+      <PublicTopNav activeTab="home" />
 
       <PageSEO
         title="Home"

@@ -66,6 +66,15 @@ const api = {
   },
 };
 const mocks = {
+  "@/hooks/useSportSelection": {
+    rememberSport: () => {
+      throw new Error("Private preview changed public sport");
+    },
+  },
+  "@/lib/sportNavigation": {
+    sportDirectory: () => "/aqua-organizations",
+    sportOrganization: (_key, id) => `/aqua-organizations/${id}`,
+  },
   "@/lib/apiClient": api,
   "@tanstack/react-query": {
     useQuery: (config) => {

@@ -1,3 +1,5 @@
+import { useSportSelection } from "@/hooks/useSportSelection";
+import { sportDirectory, sportHub } from "@/lib/sportNavigation";
 import { hasMoreBelow } from "@/lib/sidebarScroll";
 import { useAuth } from "@/hooks/useAuth";
 import { CreateOrganizationLink } from "./CreateOrganizationLink";
@@ -104,6 +106,7 @@ export function useAppSidebarSections(opts?: {
   const [, navigate] = useLocation();
   const { isAuthenticated } = useAuth();
   const guest = !!opts?.guestMode;
+  const { sportKey, sport, isJetSki } = useSportSelection();
   const myOrganizationsQuery = useMyOrganizationAdminOrganizations(!guest);
   const showOrgDashboard = canOpenOrgDashboard(
     !guest && myOrganizationsQuery.isSuccess && !myOrganizationsQuery.isError,
@@ -147,16 +150,16 @@ export function useAppSidebarSections(opts?: {
             label: "Home",
             selectable: false,
             matchPaths: ["/"],
-            onSelect: () => navigate("/"),
+            onSelect: () => navigate(isJetSki ? "/" : sportHub(sportKey)),
           },
           {
             key: "racing-hub",
-            label: "Racing Hub",
+            label: isJetSki ? "Racing Hub" : `${sport?.label ?? "Sport"} Hub`,
             selectable: false,
-            matchPaths: ["/scores", "/scores/aqua"],
-            onSelect: () => navigate("/scores/aqua"),
+            matchPaths: isJetSki ? ["/scores", "/scores/aqua"] : [],
+            onSelect: () => navigate(sportHub(sportKey)),
           },
-          {
+          ...(isJetSki ? [{
             key: "race-registration",
             label: "Race Registration",
             selectable: false,
@@ -172,21 +175,21 @@ export function useAppSidebarSections(opts?: {
             onSelect: () => {
               window.dispatchEvent(new CustomEvent("racer-search:open"));
             },
-          },
+          }] : []),
           {
             key: "race-organizations",
-            label: "Race Organizations",
+            label: isJetSki ? "Race Organizations" : `${sport?.label ?? "Sport"} Organizations`,
             selectable: false,
-            matchPaths: ["/aqua-organizations", "/aqua-organizations/*"],
-            onSelect: () => navigate("/aqua-organizations"),
+            matchPaths: isJetSki ? ["/aqua-organizations", "/aqua-organizations/*"] : [`/sports/${sportKey}`, `/sports/${sportKey}/*`],
+            onSelect: () => navigate(sportDirectory(sportKey)),
           },
-          {
+          ...(isJetSki ? [{
             key: "event-map",
             label: "Event Map",
             selectable: false,
             matchPaths: ["/event-map"],
             onSelect: () => navigate("/event-map"),
-          },
+          }] : []),
           {
             key: "podcast-episodes",
             label: "Podcast Episodes",
@@ -220,7 +223,7 @@ export function useAppSidebarSections(opts?: {
     ];
 
     return opts?.extra?.length ? [...base, ...opts.extra] : base;
-  }, [navigate, opts?.extra, showOrgDashboard, guest, isAuthenticated]);
+  }, [navigate, opts?.extra, showOrgDashboard, guest, isAuthenticated, sportKey, sport?.label, isJetSki]);
 }
 
 type Props = {

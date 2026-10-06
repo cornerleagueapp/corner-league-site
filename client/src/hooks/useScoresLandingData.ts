@@ -1,3 +1,4 @@
+import { fetchAllSportOrganizations } from "@/lib/sportOrganizations";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/apiClient";
@@ -71,17 +72,8 @@ export type ViewedDivisionRow = {
   divisionHref?: string;
 };
 
-async function fetchOrganizations(): Promise<OrgItem[]> {
-  const res = await apiFetch("/organizations", {
-    method: "GET",
-    skipAuth: true,
-    noRefresh: true,
-  });
-
-  const json = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(json?.message || "Failed to load organizations");
-
-  return json?.organizations ?? json?.data?.organizations ?? [];
+async function fetchOrganizations(signal?: AbortSignal): Promise<OrgItem[]> {
+  return fetchAllSportOrganizations("jet-ski", signal);
 }
 
 async function fetchEventsForOrg(orgId: string): Promise<EventItem[]> {
@@ -206,7 +198,7 @@ async function fetchMostEngagedOrganizations(
   range: "7d" | "30d" = "30d",
 ): Promise<EngagedOrganizationRow[]> {
   const res = await apiFetch(
-    `/analytics/organizations/most-engaged?range=${encodeURIComponent(range)}&limit=5`,
+    `/analytics/organizations/most-engaged?range=${encodeURIComponent(range)}&limit=5&sportKey=jet-ski`,
     {
       method: "GET",
       skipAuth: true,
@@ -315,8 +307,8 @@ async function fetchMostViewedDivisions(
 
 export function useScoresLandingData() {
   const orgsQuery = useQuery({
-    queryKey: ["scores-landing-orgs"],
-    queryFn: fetchOrganizations,
+    queryKey: ["scores-landing-orgs", "jet-ski"],
+    queryFn: ({signal}) => fetchOrganizations(signal),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -568,7 +560,7 @@ export function useIhraSkiGpLeaderboard() {
 
 export function useEngagementLeaderboards(range: "7d" | "30d" = "30d") {
   const organizationsQuery = useQuery({
-    queryKey: ["most-engaged-organizations", range],
+    queryKey: ["most-engaged-organizations", "jet-ski", range],
     queryFn: () => fetchMostEngagedOrganizations(range),
     staleTime: 60 * 1000,
   });

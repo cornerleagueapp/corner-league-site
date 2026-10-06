@@ -3,7 +3,7 @@ import {
   NotificationCount,
 } from "@/components/community/NotificationCount";
 import React from "react";
-import { usePublicSports } from "@/hooks/usePublicSports";
+import { useSportSelection } from "@/hooks/useSportSelection";
 import MyRacerProfileLink from "@/components/MyRacerProfileLink";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
@@ -64,12 +64,11 @@ function scrollToSection(targetId: string) {
 export default function PublicTopNav({
   activeTab = "home",
   sticky = true,
-  selectedSportKey = "jet-ski",
+  selectedSportKey,
   onSportChange,
 }: PublicTopNavProps) {
   const { user, isAuthenticated } = useAuth();
-  const availability = usePublicSports();
-  const sports = availability.isError || !Array.isArray(availability.data) ? [] : availability.data;
+  const { sports, sport: activeSport, selectSport, isJetSki } = useSportSelection();
   const notifications = useUnreadNotifications();
   const [location, navigate] = useLocation();
 
@@ -83,12 +82,9 @@ export default function PublicTopNav({
 
   const isLandingPage = location === "/";
 
-  const selectedSport =
-    sports.find(
-      (sport) =>
-        sport.key ===
-        (location.match(/^\/sports\/([^/]+)/)?.[1] ?? selectedSportKey),
-    ) ?? sports[0];
+  const selectedSport = selectedSportKey
+    ? sports.find(sport => sport.key === selectedSportKey)
+    : activeSport;
 
   const username = String((user as any)?.username ?? "").trim();
 
@@ -150,6 +146,8 @@ export default function PublicTopNav({
     if (sport.enabled === false) {
       return;
     }
+
+    selectSport(sport.key);
 
     if (onSportChange) {
       onSportChange(sport);
@@ -383,6 +381,7 @@ export default function PublicTopNav({
                   </button>
                   <MyRacerProfileLink onNavigate={navigateFromAccount} />
 
+                  {isJetSki && (
                   <button
                     type="button"
                     role="menuitem"
@@ -392,6 +391,7 @@ export default function PublicTopNav({
                     <Wifi className="h-4 w-4 shrink-0 text-cyan-200" />
                     RacePod
                   </button>
+                  )}
 
                   <button
                     type="button"

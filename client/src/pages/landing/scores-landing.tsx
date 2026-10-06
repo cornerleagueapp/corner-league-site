@@ -1,3 +1,5 @@
+import { useSportSelection } from "@/hooks/useSportSelection";
+import SportOrganizationsPage from "@/pages/organizations/sport-organizations";
 import { useEffect, useState } from "react";
 import { trackEvent } from "@/lib/analytics";
 import { AnalyticsEvents } from "@/lib/analytics-events";
@@ -28,6 +30,11 @@ function scrollToSection(targetId: string) {
 }
 
 export default function ScoresLandingPage() {
+  const {sportKey, isJetSki, isLoading} = useSportSelection();
+  if (isLoading) return <p role="status" className="p-8 text-slate-300">Loading sports…</p>;
+  return isJetSki ? <JetSkiLandingPage /> : <SportOrganizationsPage sportKey={sportKey} />;
+}
+function JetSkiLandingPage() {
   const [selectedOrgId, setSelectedOrgId] = useState<string>("all");
   const [selectedRankingOrgId, setSelectedRankingOrgId] = useState<string>("");
 

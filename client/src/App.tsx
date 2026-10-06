@@ -196,8 +196,14 @@ function PrivateRouter() {
     <AppShell>
       <ErrorBoundary>
         <Switch>
-          <Route path="/internal/test-organizations/:id" component={TestOrganizationPreview} />
-          <Route path="/sports/:sportKey/organizations/:id" component={SportOrganizationDetailsPage} />
+          <Route
+            path="/internal/test-organizations/:id"
+            component={TestOrganizationPreview}
+          />
+          <Route
+            path="/sports/:sportKey/organizations/:id"
+            component={SportOrganizationDetailsPage}
+          />
           <Route path="/sports/:sportKey" component={SportOrganizationsPage} />
 
           <Route path="/profile/:username">

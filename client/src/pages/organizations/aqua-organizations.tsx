@@ -3,7 +3,7 @@ import { trackEvent } from "@/lib/analytics";
 import { AnalyticsEvents } from "@/lib/analytics-events";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { apiFetch } from "@/lib/apiClient";
+import { fetchAllSportOrganizations } from "@/lib/sportOrganizations";
 import { trackContentEngagementToBackend } from "@/lib/contentEngagementApi";
 import { PageSEO } from "@/seo/usePageSEO";
 
@@ -26,29 +26,7 @@ export default function AquaOrganizationsPage() {
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["/sports/catalog/jet-ski/organizations"],
-    queryFn: async () => {
-      const res = await apiFetch("/sports/catalog/jet-ski/organizations", {
-        method: "GET",
-        skipAuth: true,
-        noRefresh: true,
-      });
-
-      if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        throw new Error(j?.message || "Failed to load organizations.");
-      }
-
-      const json = await res.json();
-
-      const list =
-        json?.data?.organizations ??
-        json?.organizations ??
-        json?.data?.items ??
-        json?.items ??
-        [];
-
-      return Array.isArray(list) ? list : [];
-    },
+    queryFn: async ({signal}) => fetchAllSportOrganizations("jet-ski", signal),
     staleTime: 60_000,
   });
 
