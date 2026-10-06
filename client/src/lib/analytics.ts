@@ -1,3 +1,4 @@
+import { growthAttribution } from "@/lib/growthAnalytics";
 import mixpanel from "mixpanel-browser";
 
 declare global {
@@ -60,6 +61,7 @@ export function getUtmParams() {
 }
 
 export function persistUtmParams() {
+  growthAttribution();
   if (typeof window === "undefined") return;
 
   const utms = getUtmParams();
@@ -245,6 +247,7 @@ export function identifyUser(
 }
 
 export function clearAnalyticsUser() {
+  try { sessionStorage.removeItem("cl-growth-journey-v1"); } catch { /* optional analytics storage */ }
   if (typeof window === "undefined") return;
 
   if (MIXPANEL_TOKEN) {

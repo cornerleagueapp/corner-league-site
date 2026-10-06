@@ -1,3 +1,4 @@
+import { trackGrowth } from "@/lib/growthAnalytics";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
 import { useLocation } from "wouter";
@@ -57,6 +58,8 @@ function RegistrationFlowContent() {
     setTermsAccepted,
     setCouponCode,
   } = useRegistrationDraft();
+
+  useEffect(() => { trackGrowth("Registration Started", event.id); }, [event.id]);
 
   const [highestCompletedStep, setHighestCompletedStep] = useState(
     Math.max(0, draft.currentStep - 1),

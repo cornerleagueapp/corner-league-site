@@ -1,3 +1,4 @@
+import { trackGrowth } from "@/lib/growthAnalytics";
 import React from "react";
 import { eventLivestreamUrl } from "@/lib/eventLivestream";
 import { useQuery } from "@tanstack/react-query";
@@ -353,6 +354,7 @@ export default function OrgEventDetailsPage(props: { params: { id: string } }) {
   React.useEffect(() => {
     if (!data) return;
 
+    trackGrowth("Event Viewed", data.id);
     trackEvent(AnalyticsEvents.EVENT_DETAILS_VIEWED, {
       event_id: data.id,
       event_name: data.name,
@@ -434,6 +436,7 @@ export default function OrgEventDetailsPage(props: { params: { id: string } }) {
                 {eventLivestreamUrl(data?.livestreamUrl) && (
                   <a
                     href={eventLivestreamUrl(data?.livestreamUrl)!}
+                    onClick={() => data?.id && trackGrowth("Livestream Clicked", data.id)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="rounded-full bg-cyan-300 px-5 py-3 text-center text-sm font-black text-[#06111d]"

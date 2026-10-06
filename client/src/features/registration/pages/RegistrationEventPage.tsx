@@ -1,3 +1,4 @@
+import { trackGrowth } from "@/lib/growthAnalytics";
 import { eventLivestreamUrl } from "@/lib/eventLivestream";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "wouter";
@@ -77,6 +78,8 @@ export default function RegistrationEventPage({
   const [loading, setLoading] = useState(true);
 
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => { if (event?.id) trackGrowth("Event Viewed", event.id); }, [event?.id]);
 
   useEffect(() => {
     let cancelled = false;

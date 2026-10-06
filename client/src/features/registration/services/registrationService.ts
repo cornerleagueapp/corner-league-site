@@ -1,3 +1,4 @@
+import { growthAttribution } from "@/lib/growthAnalytics";
 import { apiFetch } from "@/lib/apiClient";
 
 import type {
@@ -309,7 +310,7 @@ export async function submitRegistration(
     `/registration/events/${encodeURIComponent(eventSlug)}/registrations`,
     {
       method: "POST",
-      body: input,
+      body: { ...input, growthAttribution: growthAttribution() },
     },
   );
 
