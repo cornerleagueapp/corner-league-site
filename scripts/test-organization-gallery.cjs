@@ -4,6 +4,7 @@ let payload,request,options,state;
 function compile(relative) {
  const file=path.resolve(__dirname,"..",relative),m=new Module(file,module);m.filename=file;m.paths=module.paths;
  m.require=name=>{
+    if (name === "@/pages/organizations/SandboxContext") return { useOrganizationPageApi: () => ({ sandbox: null }) };
   if(name==="@/lib/apiClient")return {apiRequest:async(...args)=>{request=args;return payload;}};
   if(name==="@/lib/organizationGallery")return api;
   if(name==="@tanstack/react-query")return {useQuery:o=>{options=o;return state;},useQueryClient:()=>({invalidateQueries:async()=>{}})};

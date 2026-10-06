@@ -1,8 +1,8 @@
+import { useOrganizationPageApi } from "./SandboxContext";
 import { OrganizationPosts } from "@/features/organization-posts/OrganizationPosts";
 import React, { useMemo, useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { apiFetch } from "@/lib/apiClient";
 import OrganizationPhotoGallery from "@/components/OrganizationPhotoGallery";
 import { Button } from "@/components/ui/button";
 import { PageSEO } from "@/seo/usePageSEO";
@@ -116,6 +116,7 @@ function formatEventTime(start?: string, end?: string) {
 export default function AquaOrganizationDetailsPage(props: {
   params: { id: string };
 }) {
+  const { sandbox, fetch: pageFetch } = useOrganizationPageApi();
   const [, navigate] = useLocation();
   const orgId = props?.params?.id;
   const [scheduleOpen, setScheduleOpen] = useState(false);
@@ -126,10 +127,10 @@ export default function AquaOrganizationDetailsPage(props: {
     isError,
     error,
   } = useQuery({
-    queryKey: ["/organizations", orgId],
-    enabled: !!orgId,
+    queryKey: ["/organizations", orgId, ...(sandbox ? [sandbox.account] : [])],
+    enabled: !!orgId && !sandbox,
     queryFn: async () => {
-      const res = await apiFetch(`/organizations/${orgId}`, {
+      const res = await pageFetch(`/organizations/${orgId}`, {
         method: "GET",
         skipAuth: true,
         noRefresh: true,
@@ -144,6 +145,7 @@ export default function AquaOrganizationDetailsPage(props: {
       if (!org) throw new Error("Organization not found in response.");
       return org;
     },
+    gcTime: sandbox ? 0 : undefined,
     staleTime: 60_000,
   });
 
@@ -153,10 +155,14 @@ export default function AquaOrganizationDetailsPage(props: {
     isError: eventsError,
     error: eventsQueryError,
   } = useQuery({
-    queryKey: ["/sport-event/organization", orgId],
+    queryKey: [
+      "/sport-event/organization",
+      orgId,
+      ...(sandbox ? [sandbox.account] : []),
+    ],
     enabled: !!orgId && scheduleOpen,
     queryFn: async () => {
-      const res = await apiFetch(
+      const res = await pageFetch(
         `/sport-event/organization/${orgId}?page=1&limit=50&order=ASC&sortBy=startDate`,
         {
           method: "GET",
@@ -178,6 +184,7 @@ export default function AquaOrganizationDetailsPage(props: {
           )
         : [];
     },
+    gcTime: sandbox ? 0 : undefined,
     staleTime: 30_000,
   });
 
@@ -188,10 +195,11 @@ export default function AquaOrganizationDetailsPage(props: {
     ).length;
   }, [events]);
 
-  const org = orgData as Organization | undefined;
+  const org = (sandbox?.data.organization ?? orgData) as
+    Organization | undefined;
 
   useEffect(() => {
-    if (!org) return;
+    if (!org || sandbox) return;
 
     trackEvent(AnalyticsEvents.ORGANIZATION_VIEWED, {
       organization_id: org.id,
@@ -218,7 +226,10 @@ export default function AquaOrganizationDetailsPage(props: {
       <PageSEO
         title={`${org?.name || "Organization"} • Corner League Sports`}
         description="View organization details, event schedules, race coverage, and official jet ski racing information."
-        canonicalPath={orgId ? `/aqua-organizations/${orgId}` : undefined}
+        noindex={!!sandbox}
+        canonicalPath={
+          !sandbox && orgId ? `/aqua-organizations/${orgId}` : undefined
+        }
       />
 
       <div className="pointer-events-none absolute inset-0">
@@ -250,7 +261,11 @@ export default function AquaOrganizationDetailsPage(props: {
               </div>
 
               <p className="text-xs font-black uppercase tracking-[0.26em] text-cyan-200/65">
-                Aqua • Jet Ski Racing • Official Profile
+                {sandbox &&
+                sandbox.data.organization.primarySportKey !== "jet-ski"
+                  ? sandbox.data.organization.primarySportKey
+                  : "Aqua • Jet Ski Racing"}{" "}
+                • Official Profile
               </p>
 
               <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -364,24 +379,25 @@ export default function AquaOrganizationDetailsPage(props: {
                 <button
                   type="button"
                   onClick={() => {
-                    trackEvent(AnalyticsEvents.ORGANIZATION_SCHEDULE_OPENED, {
-                      organization_id: org?.id ?? orgId,
-                      organization_name: org?.name ?? null,
-                      sport: "jet_ski",
-                      page_type: "organization_details",
-                    });
+                    if (!sandbox) {
+                      trackEvent(AnalyticsEvents.ORGANIZATION_SCHEDULE_OPENED, {
+                        organization_id: org?.id ?? orgId,
+                        organization_name: org?.name ?? null,
+                        sport: "jet_ski",
+                        page_type: "organization_details",
+                      });
 
-                    void trackContentEngagementToBackend({
-                      contentType: "organization",
-                      action: "organization_schedule_opened",
-                      contentId: org?.id ?? orgId,
-                      contentName: org?.name ?? null,
-                      organizationId: org?.id ?? orgId,
-                      organizationName: org?.name ?? null,
-                      sport: "jet_ski",
-                      sourcePage: "organization_details",
-                    }).catch(() => {});
-
+                      void trackContentEngagementToBackend({
+                        contentType: "organization",
+                        action: "organization_schedule_opened",
+                        contentId: org?.id ?? orgId,
+                        contentName: org?.name ?? null,
+                        organizationId: org?.id ?? orgId,
+                        organizationName: org?.name ?? null,
+                        sport: "jet_ski",
+                        sourcePage: "organization_details",
+                      }).catch(() => {});
+                    }
                     setScheduleOpen(true);
                   }}
                   className="group min-w-0 rounded-[24px] border border-cyan-300/10 bg-white/[0.04] p-5 text-left transition hover:border-cyan-300/25 hover:bg-cyan-300/[0.045]"
@@ -421,11 +437,16 @@ export default function AquaOrganizationDetailsPage(props: {
           </>
         )}
 
-        {org?.id ? <div className="mt-6"><OrganizationPhotoGallery organizationId={org.id} /></div> : null}
+        {org?.id ? (
+          <div className="mt-6">
+            <OrganizationPhotoGallery organizationId={org.id} />
+          </div>
+        ) : null}
 
         {scheduleOpen && (
           <ScheduleModal
             orgName={org?.name || "Organization"}
+            sandboxId={sandbox?.id}
             events={events}
             loading={eventsLoading}
             error={eventsError ? (eventsQueryError as any)?.message : null}
@@ -469,12 +490,14 @@ function InfoCard({
 
 function ScheduleModal({
   orgName,
+  sandboxId,
   events,
   loading,
   error,
   onClose,
 }: {
   orgName: string;
+  sandboxId?: string;
   events: SportEvent[];
   loading: boolean;
   error: string | null;
@@ -505,7 +528,11 @@ function ScheduleModal({
 
   function handleOpenEvent(eventId: string) {
     onClose();
-    navigate(`/aqua-organizations/event-details/${eventId}`);
+    navigate(
+      sandboxId
+        ? `/internal/test-organizations/${sandboxId}?event=${encodeURIComponent(eventId)}`
+        : `/aqua-organizations/event-details/${eventId}`,
+    );
   }
 
   return (

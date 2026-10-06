@@ -1,10 +1,22 @@
 import { useEffect, useState } from "react";
-import { Link, useRoute } from "wouter";
+import { Link, useLocation, useSearch } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { apiFetch } from "@/lib/apiClient";
 import { PageSEO } from "@/seo/usePageSEO";
+import { SandboxContext } from "./SandboxContext";
+import AquaOrganizationDetailsPage from "./aqua-organization-details";
+import OrgEventDetailsPage from "./org-event-details";
+import { OrganizationPostPage } from "@/features/organization-posts/OrganizationPosts";
+import PublicRaceSchedulePage from "@/features/race-schedule-public/pages/PublicRaceSchedulePage";
 export default function TestOrganizationPreview() {
-  const [, params] = useRoute("/internal/test-organizations/:id");
+  const search = useSearch();
+  const previewParams = new URLSearchParams(search);
+  const eventId = previewParams.get("event") || undefined;
+  const postId = previewParams.get("post") || undefined;
+  const schedule = previewParams.get("view") === "schedule";
+  const [location] = useLocation();
+  const id = location.split("/")[3];
+  const params = id ? { id } : null;
   const { user, isAuthenticated } = useAuth();
   const allowed =
     isAuthenticated && String(user?.role).toUpperCase() === "SUPER_ADMIN";
@@ -14,13 +26,19 @@ export default function TestOrganizationPreview() {
     data: any;
   } | null>(null);
   const [error, setError] = useState("");
+  const [refresh, setRefresh] = useState(0);
+  useEffect(() => {
+    const update = () => setRefresh((n) => n + 1);
+    window.addEventListener("focus", update);
+    return () => window.removeEventListener("focus", update);
+  }, []);
   useEffect(() => {
     setResult(null);
     setError("");
     if (!allowed || !params?.id || !user) return;
     const controller = new AbortController();
     void apiFetch(
-      `/sports/catalog/test-preview/${encodeURIComponent(params.id)}`,
+      `/sandbox/organizations/${encodeURIComponent(params.id)}/preview`,
       { cache: "no-store", signal: controller.signal, noRefresh: true },
     )
       .then(async (response) => {
@@ -40,46 +58,57 @@ export default function TestOrganizationPreview() {
         if (!controller.signal.aborted) setError(caught.message);
       });
     return () => controller.abort();
-  }, [allowed, user?.id, params?.id]);
+  }, [allowed, user?.id, params?.id, eventId, postId, schedule, refresh]);
   const data =
     allowed && result?.account === String(user?.id) && result?.id === params?.id
       ? result.data
       : null;
+  if (!allowed)
+    return (
+      <main className="p-6 text-white">
+        <PageSEO title="Private sandbox" noindex />
+        <p>Sign in with a Super Admin account to view this workspace.</p>
+        {!isAuthenticated && (
+          <Link
+            className="text-cyan-300 underline"
+            href={`/auth?next=${encodeURIComponent(window.location.pathname)}`}
+          >
+            Sign in
+          </Link>
+        )}
+      </main>
+    );
+  if (error || !data)
+    return (
+      <main className="p-6 text-white">
+        <PageSEO title="Private sandbox" noindex />
+        <p role={error ? "alert" : "status"}>
+          {error || "Loading private preview…"}
+        </p>
+      </main>
+    );
+  const sandbox = { id: params!.id, account: String(user!.id), data };
   return (
-    <main className="p-6 max-w-4xl mx-auto text-white">
-      <PageSEO title="Private test preview" noindex />
-      <p className="text-amber-300 font-bold">PRIVATE TEST PREVIEW</p>
-      {!allowed ? (
-        <div className="mt-4"><p>Sign in with a Super Admin account to view this workspace.</p>{!isAuthenticated && <Link className="inline-block mt-4 text-cyan-300 underline" href={`/auth?next=${encodeURIComponent(`/internal/test-organizations/${params?.id ?? ""}`)}`}>Sign in</Link>}</div>
-      ) : error ? (
-        <p role="alert">{error}</p>
-      ) : !data ? (
-        <p>Loading private preview…</p>
+    <SandboxContext.Provider
+      key={`${sandbox.account}:${sandbox.id}`}
+      value={sandbox}
+    >
+      <PageSEO title={`${data.organization.name} · Private sandbox`} noindex />
+      <div className="border-b border-amber-300/20 bg-amber-300/10 px-5 py-3 text-sm text-amber-200">
+        TEST SANDBOX · Super Admin only · This is the normal consumer layout
+        with private test data.
+      </div>
+      {postId ? (
+        <OrganizationPostPage id={postId} />
+      ) : eventId ? (
+        schedule ? (
+          <PublicRaceSchedulePage eventSlug={eventId} />
+        ) : (
+          <OrgEventDetailsPage params={{ id: eventId }} />
+        )
       ) : (
-        <>
-          <h1 className="text-3xl font-bold mt-4">{data.organization.name}</h1>
-          <p className="text-cyan-300 mt-2">{data.sportProfile.label}</p>
-          <p className="mt-4">{data.organization.description}</p>
-          <p className="my-6 text-amber-200">
-            Only organization setup and private text drafts are available in
-            this foundation batch. These drafts are not public posts.
-          </p>
-          <h2 className="text-xl font-bold">Private draft posts</h2>
-          {data.posts?.length ? (
-            data.posts.map((post: any) => (
-              <article
-                key={post.id}
-                className="mt-4 p-5 rounded-xl border border-white/20"
-              >
-                <h3 className="font-bold text-lg">{post.title}</h3>
-                <p className="whitespace-pre-wrap mt-3">{post.content}</p>
-              </article>
-            ))
-          ) : (
-            <p className="mt-4">No drafts yet.</p>
-          )}
-        </>
+        <AquaOrganizationDetailsPage params={{ id: sandbox.id }} />
       )}
-    </main>
+    </SandboxContext.Provider>
   );
 }

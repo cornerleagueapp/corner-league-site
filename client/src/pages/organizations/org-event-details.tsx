@@ -1,10 +1,10 @@
+import { useOrganizationPageApi } from "./SandboxContext";
 import { trackGrowth } from "@/lib/growthAnalytics";
 import React from "react";
 import { eventLivestreamUrl } from "@/lib/eventLivestream";
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { apiFetch } from "@/lib/apiClient";
 import { PageSEO } from "@/seo/usePageSEO";
 import { useLocation } from "wouter";
 import {
@@ -175,6 +175,7 @@ function buildRaceResultsData(
 }
 
 export default function OrgEventDetailsPage(props: { params: { id: string } }) {
+  const { sandbox, fetch: pageFetch } = useOrganizationPageApi();
   const eventId = props?.params?.id;
   const [urlVersion, bumpUrlVersion] = React.useReducer((x) => x + 1, 0);
   const [, navigate] = useLocation();
@@ -188,10 +189,10 @@ export default function OrgEventDetailsPage(props: { params: { id: string } }) {
   const activeDivisionId = searchParams.get("division") || "";
 
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["/sport-event", eventId],
+    queryKey: ["/sport-event", eventId, ...(sandbox ? [sandbox.account] : [])],
     enabled: !!eventId,
     queryFn: async () => {
-      const res = await apiFetch(`/sport-event/${eventId}`, {
+      const res = await pageFetch(`/sport-event/${eventId}`, {
         method: "GET",
         skipAuth: true,
         noRefresh: true,
@@ -206,6 +207,7 @@ export default function OrgEventDetailsPage(props: { params: { id: string } }) {
         json?.data?.sportEvent ??
         null) as SportEvent | null;
     },
+    gcTime: sandbox ? 0 : undefined,
     staleTime: 30_000,
     refetchOnWindowFocus: true,
     refetchInterval: 60_000,
@@ -216,10 +218,14 @@ export default function OrgEventDetailsPage(props: { params: { id: string } }) {
     isLoading: divisionsLoading,
     isError: divisionsError,
   } = useQuery({
-    queryKey: ["/sport-event/division/event", eventId],
+    queryKey: [
+      "/sport-event/division/event",
+      eventId,
+      ...(sandbox ? [sandbox.account] : []),
+    ],
     enabled: !!eventId,
     queryFn: async () => {
-      const res = await apiFetch(
+      const res = await pageFetch(
         `/sport-event/division/event/${eventId}?page=1&limit=50`,
         {
           method: "GET",
@@ -236,18 +242,24 @@ export default function OrgEventDetailsPage(props: { params: { id: string } }) {
       const list = json?.divisions ?? json?.data?.divisions ?? [];
       return Array.isArray(list) ? (list as Division[]) : [];
     },
+    gcTime: sandbox ? 0 : undefined,
     staleTime: 30_000,
     refetchOnWindowFocus: true,
     refetchInterval: 60_000,
   });
 
   const { data: resultsByDivision = {}, isLoading: resultsLoading } = useQuery({
-    queryKey: ["/results/final-results-by-division", eventId, divisions],
+    queryKey: [
+      "/results/final-results-by-division",
+      eventId,
+      divisions,
+      ...(sandbox ? [sandbox.account] : []),
+    ],
     enabled: !!eventId && divisions.length > 0,
     queryFn: async () => {
       const entries = await Promise.all(
         divisions.map(async (division) => {
-          const res = await apiFetch(
+          const res = await pageFetch(
             `/results/final-results-by-division/${division.id}`,
             {
               method: "GET",
@@ -276,12 +288,13 @@ export default function OrgEventDetailsPage(props: { params: { id: string } }) {
         DivisionFinalResult[]
       >;
     },
+    gcTime: sandbox ? 0 : undefined,
     staleTime: 30_000,
   });
 
   const setModalState = React.useCallback(
     (modal?: string, division?: string) => {
-      if (modal) {
+      if (modal && !sandbox) {
         trackEvent(AnalyticsEvents.EVENT_SECTION_OPENED, {
           event_id: eventId,
           event_name: data?.name ?? null,
@@ -324,7 +337,7 @@ export default function OrgEventDetailsPage(props: { params: { id: string } }) {
 
       const params = new URLSearchParams(window.location.search);
 
-      if (modal) {
+      if (modal && !sandbox) {
         params.set("modal", modal);
       } else {
         params.delete("modal");
@@ -342,7 +355,15 @@ export default function OrgEventDetailsPage(props: { params: { id: string } }) {
       window.history.pushState({}, "", nextUrl);
       bumpUrlVersion();
     },
-    [eventId, orgIdFromQuery, data?.id, data?.name, data?.sport, divisions],
+    [
+      eventId,
+      orgIdFromQuery,
+      data?.id,
+      data?.name,
+      data?.sport,
+      divisions,
+      sandbox?.id,
+    ],
   );
 
   React.useEffect(() => {
@@ -352,7 +373,7 @@ export default function OrgEventDetailsPage(props: { params: { id: string } }) {
   }, []);
 
   React.useEffect(() => {
-    if (!data) return;
+    if (!data || sandbox) return;
 
     trackGrowth("Event Viewed", data.id);
     trackEvent(AnalyticsEvents.EVENT_DETAILS_VIEWED, {
@@ -385,6 +406,7 @@ export default function OrgEventDetailsPage(props: { params: { id: string } }) {
       <PageSEO
         title={`${data?.name || "Event Details"} • Corner League Sports`}
         description="View event details, classes, divisions, final standings, and official jet ski racing results."
+        noindex={!!sandbox}
         canonicalPath={
           eventId ? `/aqua-organizations/event-details/${eventId}` : undefined
         }
@@ -436,7 +458,11 @@ export default function OrgEventDetailsPage(props: { params: { id: string } }) {
                 {eventLivestreamUrl(data?.livestreamUrl) && (
                   <a
                     href={eventLivestreamUrl(data?.livestreamUrl)!}
-                    onClick={() => data?.id && trackGrowth("Livestream Clicked", data.id)}
+                    onClick={() =>
+                      !sandbox &&
+                      data?.id &&
+                      trackGrowth("Livestream Clicked", data.id)
+                    }
                     target="_blank"
                     rel="noopener noreferrer"
                     className="rounded-full bg-cyan-300 px-5 py-3 text-center text-sm font-black text-[#06111d]"
@@ -453,7 +479,11 @@ export default function OrgEventDetailsPage(props: { params: { id: string } }) {
                       return;
                     }
 
-                    navigate("/aqua-organizations");
+                    navigate(
+                      sandbox
+                        ? `/internal/test-organizations/${sandbox.id}`
+                        : "/aqua-organizations",
+                    );
                   }}
                   className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-5 py-3 text-xs font-black uppercase tracking-[0.14em] text-white/75 hover:border-cyan-300/25 hover:bg-cyan-300/10 hover:text-white"
                 >
@@ -550,7 +580,9 @@ export default function OrgEventDetailsPage(props: { params: { id: string } }) {
                 description="View official published race days, race order, classes, and participating racers."
                 onClick={() =>
                   navigate(
-                    `/events/${encodeURIComponent(eventId)}/race-schedule`,
+                    sandbox
+                      ? `/internal/test-organizations/${sandbox.id}?event=${encodeURIComponent(eventId)}&view=schedule`
+                      : `/events/${encodeURIComponent(eventId)}/race-schedule`,
                   )
                 }
               />

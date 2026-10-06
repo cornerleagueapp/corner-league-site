@@ -21,6 +21,8 @@ export type OrgPost = {
 };
 export function safePostImage(value?: string | null) {
   if (!value) return undefined;
+  if (/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(value))
+    return value;
   try {
     const url = new URL(value);
     return url.protocol === "https:" ? url.href : undefined;

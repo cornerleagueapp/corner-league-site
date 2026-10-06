@@ -17,6 +17,7 @@ function compile(relative) {
   compiled.paths = module.paths;
   const load = compiled.require.bind(compiled);
   compiled.require = (name) => {
+    if (name === "@/pages/organizations/SandboxContext") return { useOrganizationPageApi: () => ({ sandbox: null }) };
     if (name === "wouter")
       return {
         Link: ({ href, children, ...props }) =>

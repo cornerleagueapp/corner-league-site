@@ -1,3 +1,4 @@
+import { useOrganizationPageApi } from "@/pages/organizations/SandboxContext";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
@@ -115,14 +116,29 @@ export function OrganizationPosts({
 }: {
   organizationId: string;
 }) {
+  const { sandbox, fetch: pageFetch } = useOrganizationPageApi();
   const [page, setPage] = useState(1);
   const query = useQuery<Feed>({
-    queryKey: ["organization-public-posts", organizationId, page],
+    queryKey: [
+      "organization-public-posts",
+      organizationId,
+      page,
+      ...(sandbox ? [sandbox.account] : []),
+    ],
     queryFn: () =>
-      fetchPublicPost(
-        `/org-articles/organization/${organizationId}/published?page=${page}&limit=6&order=DESC`,
-      ),
+      sandbox
+        ? pageFetch(
+            `/org-articles/organization/${organizationId}/published?page=${page}&limit=6`,
+          ).then(async (res) => {
+            if (!res.ok) throw new Error("Private posts unavailable");
+            const json = await res.json();
+            return json.data ?? json;
+          })
+        : fetchPublicPost(
+            `/org-articles/organization/${organizationId}/published?page=${page}&limit=6&order=DESC`,
+          ),
     enabled: !!organizationId,
+    gcTime: sandbox ? 0 : undefined,
     staleTime: 30_000,
     refetchInterval: 60_000,
     refetchOnWindowFocus: "always",
@@ -167,7 +183,11 @@ export function OrganizationPosts({
         {query.data?.articles.map((post) => (
           <Link
             key={post.id}
-            href={`/organization-posts/${post.id}`}
+            href={
+              sandbox
+                ? `/internal/test-organizations/${sandbox.id}?post=${encodeURIComponent(post.id)}`
+                : `/organization-posts/${post.id}`
+            }
             className="overflow-hidden rounded-xl border border-white/10 bg-slate-950/50 transition hover:border-cyan-300/50"
             style={{ borderTop: `3px solid ${postAccent(post.accentColor)}` }}
           >
@@ -214,9 +234,22 @@ export function OrganizationPosts({
   );
 }
 export function OrganizationPostPage({ id }: { id: string }) {
+  const { sandbox, fetch: pageFetch } = useOrganizationPageApi();
   const query = useQuery<{ article: OrgPost }>({
-    queryKey: ["organization-public-post", id],
-    queryFn: () => fetchPublicPost(`/org-articles/${id}`),
+    queryKey: [
+      "organization-public-post",
+      id,
+      ...(sandbox ? [sandbox.account] : []),
+    ],
+    queryFn: () =>
+      sandbox
+        ? pageFetch(`/org-articles/${id}`).then(async (res) => {
+            if (!res.ok) throw new Error("Private post unavailable");
+            const json = await res.json();
+            return json.data ?? json;
+          })
+        : fetchPublicPost(`/org-articles/${id}`),
+    gcTime: sandbox ? 0 : undefined,
     staleTime: 30_000,
     refetchInterval: 60_000,
     refetchOnWindowFocus: "always",
@@ -251,13 +284,18 @@ export function OrganizationPostPage({ id }: { id: string }) {
         >
           <PageSEO
             title={post.title}
+            noindex={!!sandbox}
             description={post.summary || post.content.slice(0, 160)}
             canonicalPath={`/organization-posts/${post.id}`}
             image={safePostImage(post.headerImageUrl)}
             type="article"
           />
           <Link
-            href={`/aqua-organizations/${post.organization?.id}`}
+            href={
+              sandbox
+                ? `/internal/test-organizations/${sandbox.id}`
+                : `/aqua-organizations/${post.organization?.id}`
+            }
             className="text-sm text-cyan-300"
           >
             ← {post.organization?.name || "Organization"}

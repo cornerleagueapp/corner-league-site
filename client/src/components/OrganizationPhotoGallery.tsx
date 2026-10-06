@@ -1,3 +1,5 @@
+import { useOrganizationPageApi } from "@/pages/organizations/SandboxContext";
+import { galleryResponse } from "@/lib/organizationGallery";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
@@ -44,16 +46,31 @@ function Gallery({
   id: string;
   canRemoveTag: boolean;
 }) {
+  const { sandbox, fetch: pageFetch } = useOrganizationPageApi();
   const [page, setPage] = useState(1),
     [selected, setSelected] = useState<GalleryPhoto | null>(null),
     [removing, setRemoving] = useState(false),
     [error, setError] = useState<string | null>(null);
   const cache = useQueryClient();
   const query = useQuery({
-    queryKey: ["organization-gallery", scope, id, page],
-    queryFn: () => loadOrganizationGallery(scope, id, page),
+    queryKey: [
+      "organization-gallery",
+      scope,
+      id,
+      page,
+      ...(sandbox ? [sandbox.account] : []),
+    ],
+    queryFn: () =>
+      sandbox
+        ? pageFetch(
+            `/organization-gallery/${scope}/${id}?page=${page}&limit=12`,
+          ).then(async (res) => {
+            if (!res.ok) throw new Error("Private gallery unavailable");
+            return galleryResponse(await res.json());
+          })
+        : loadOrganizationGallery(scope, id, page),
+    gcTime: sandbox ? 0 : 1800000,
     staleTime: 60000,
-    gcTime: 1800000,
     refetchOnWindowFocus: true,
   });
   const remove = async (photo: GalleryPhoto) => {
@@ -215,11 +232,16 @@ function Gallery({
   );
 }
 function PhotoCredits({ photo }: { photo: GalleryPhoto }) {
+  const { sandbox } = useOrganizationPageApi();
   return (
     <div className="space-y-2 text-xs">
       <Link
         className="text-cyan-200 underline"
-        href={`/aqua-organizations/${encodeURIComponent(photo.organizationId)}`}
+        href={
+          sandbox
+            ? `/internal/test-organizations/${sandbox.id}`
+            : `/aqua-organizations/${encodeURIComponent(photo.organizationId)}`
+        }
       >
         {photo.organizationName}
       </Link>
