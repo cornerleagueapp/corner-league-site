@@ -310,11 +310,11 @@ export default function AppShell({
   }
 
   return (
-    <div className="relative flex h-screen overflow-hidden bg-black text-white">
+    <div className="consumer-app-shell relative flex overflow-hidden bg-black text-white">
       <button
         type="button"
         onClick={() => setIsSidebarOpen((value) => !value)}
-        className="fixed left-4 top-3 z-[1010] rounded-2xl border border-cyan-300/15 bg-[#07111F]/95 p-2 text-white shadow-[0_18px_45px_rgba(0,0,0,0.35)] backdrop-blur transition hover:border-cyan-300/30 hover:bg-cyan-300/10 md:hidden"
+        className="consumer-menu-toggle fixed z-[1010] rounded-2xl border border-cyan-300/15 bg-[#07111F]/95 p-2 text-white shadow-[0_18px_45px_rgba(0,0,0,0.35)] backdrop-blur transition hover:border-cyan-300/30 hover:bg-cyan-300/10 md:hidden"
         aria-label={isSidebarOpen ? "Close main menu" : "Open main menu"}
       >
         <svg

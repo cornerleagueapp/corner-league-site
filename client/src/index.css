@@ -164,3 +164,61 @@
   color: hsl(0, 0%, 100%);
   transform: translateY(-1px);
 }
+/* Paint the Safari canvas and overscroll areas with the site color, even
+   before React has content. Keep document pages free to grow and scroll. */
+:root {
+  color-scheme: dark;
+  --consumer-safe-top: env(safe-area-inset-top, 0px);
+  --consumer-safe-right: env(safe-area-inset-right, 0px);
+  --consumer-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --consumer-safe-left: env(safe-area-inset-left, 0px);
+}
+
+html,
+body,
+#root {
+  background-color: #030913;
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+#root {
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+.consumer-app-shell {
+  box-sizing: border-box;
+  height: 100vh;
+  height: 100dvh;
+  padding: var(--consumer-safe-top) var(--consumer-safe-right)
+    var(--consumer-safe-bottom) var(--consumer-safe-left);
+}
+
+.consumer-menu-toggle {
+  top: calc(0.75rem + var(--consumer-safe-top));
+  left: calc(1rem + var(--consumer-safe-left));
+}
+
+.consumer-safe-sidebar {
+  box-sizing: border-box;
+  height: 100vh;
+  height: 100dvh;
+  padding-top: var(--consumer-safe-top);
+  padding-left: var(--consumer-safe-left);
+}
+
+.consumer-public-nav-safe {
+  padding-top: var(--consumer-safe-top);
+  padding-left: var(--consumer-safe-left);
+  padding-right: var(--consumer-safe-right);
+}
+
+.consumer-document-page {
+  min-height: 100vh;
+  min-height: 100svh;
+  padding-bottom: var(--consumer-safe-bottom);
+}

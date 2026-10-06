@@ -210,7 +210,7 @@ export default function PublicTopNav({
         "relative z-[100] min-w-0 max-w-full overflow-visible",
         "border-b border-cyan-300/10 bg-[#030913]/95 backdrop-blur-xl",
         "shadow-[0_18px_50px_rgba(0,0,0,0.35)]",
-        sticky ? "sticky top-0" : "",
+        sticky ? "consumer-public-nav-safe sticky top-0" : "",
       ].join(" ")}
     >
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-[linear-gradient(90deg,transparent_0%,rgba(34,211,238,0.45)_45%,rgba(255,107,53,0.35)_70%,transparent_100%)]" />

@@ -576,7 +576,7 @@ export default function SidebarPanel({
       ) : null}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-[1000] flex h-dvh flex-col border-r border-cyan-300/10 bg-[#030913] shadow-[0_30px_90px_rgba(0,0,0,0.55)] transition-[width,transform] duration-150 ease-out ${
+        className={`consumer-safe-sidebar fixed inset-y-0 left-0 z-[1000] flex h-dvh flex-col border-r border-cyan-300/10 bg-[#030913] shadow-[0_30px_90px_rgba(0,0,0,0.55)] transition-[width,transform] duration-150 ease-out ${
           effectiveCollapsed ? "md:w-[88px]" : "md:w-72"
         } w-[86vw] max-w-[330px] ${
           isOpen ? "translate-x-0" : "-translate-x-full"
