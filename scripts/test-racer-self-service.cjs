@@ -27,7 +27,9 @@ function compile(relative) {
     if (name === "@/hooks/useAuth") return { useAuth: () => auth };
     if (name === "@/hooks/useMyRacerProfile")
       return { useMyRacerProfile: () => identity };
-    if (name === "wouter") return { useLocation: () => ["/", () => undefined] };
+    if (name === "wouter")
+      return { useSearch: () => "", useLocation: () => ["/", () => undefined] };
+    if (name === "./sport-athlete-profiles") return { default: () => null };
     if (name === "@tanstack/react-query")
       return {
         useQuery: (options) => {

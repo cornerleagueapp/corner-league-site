@@ -36,6 +36,10 @@ function compile(file, overrides) {
 const navigation = compile("client/src/lib/sportNavigation.ts", {}),
   livestream = compile("client/src/lib/eventLivestream.ts", {});
 const page = compile("client/src/pages/organizations/public-sport-event.tsx", {
+  "./SandboxContext": { useSandbox: () => null },
+  "@/components/sport-registration/SportEventRegistration": {
+    default: () => null,
+  },
   "@/lib/growthAnalytics": { trackGrowth: () => {} },
   "@/lib/analytics": { trackEvent: () => {} },
   "@/lib/analytics-events": { AnalyticsEvents: {} },

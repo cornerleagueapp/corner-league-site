@@ -1,3 +1,4 @@
+import AthleteAccountLinks from "@/components/sport-registration/AthleteAccountLinks";
 import UserSearchPanel from "@/components/community/UserSearchPanel";
 import { PublicationList } from "@/components/community/Publishing";
 import { useState } from "react";
@@ -105,6 +106,7 @@ export default function UserProfilePage({ username }: { username: string }) {
                 Verified athlete · Racer profile
               </Link>
             )}
+            <AthleteAccountLinks username={person.username} />
             <p className="mt-4 whitespace-pre-wrap break-words text-sm leading-relaxed text-white/70">
               {person.bio}
             </p>

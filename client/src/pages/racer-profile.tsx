@@ -1,3 +1,6 @@
+import SportAthletePublic from "./sport-athlete-public";
+import { isRacingSport } from "@/lib/sportRegistration";
+import { useSearch } from "wouter";
 import OrganizationPhotoGallery from "@/components/OrganizationPhotoGallery";
 import React, { useEffect, useState, useMemo } from "react";
 import { PageSEO } from "@/seo/usePageSEO";
@@ -390,11 +393,11 @@ function RacePodSessionsModal({
   );
 }
 
-export default function RacerProfilePage({
-  idOrSlugParam,
-}: {
-  idOrSlugParam?: string;
-}) {
+export default function RacerProfilePage(props: { idOrSlugParam?: string }) {
+ const sport = new URLSearchParams(useSearch()).get("sport") ?? "";
+ return isRacingSport(sport) && props.idOrSlugParam ? <SportAthletePublic id={props.idOrSlugParam} sportKey={sport} /> : <JetSkiRacerProfilePage {...props} />;
+}
+function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
   const { toast } = useToast();
   const [, navigate] = useLocation();
   const { user, isLoading: authLoading, isAuthenticated } = useAuth();

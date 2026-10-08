@@ -1,3 +1,5 @@
+import PublicSportEventPage from "./public-sport-event";
+import { isRacingSport } from "@/lib/sportRegistration";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useSearch } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
@@ -103,6 +105,12 @@ export default function TestOrganizationPreview() {
       ) : eventId ? (
         schedule ? (
           <PublicRaceSchedulePage eventSlug={eventId} />
+        ) : isRacingSport(data.organization.primarySportKey) ? (
+          <PublicSportEventPage
+            sportKey={data.organization.primarySportKey}
+            organizationId={sandbox.id}
+            eventId={eventId}
+          />
         ) : (
           <OrgEventDetailsPage params={{ id: eventId }} />
         )

@@ -1,3 +1,5 @@
+import { useSandbox, sandboxFetch } from "./SandboxContext";
+import SportEventRegistration from "@/components/sport-registration/SportEventRegistration";
 import { useEffect } from "react";
 import { trackGrowth } from "@/lib/growthAnalytics";
 import { trackEvent } from "@/lib/analytics";
@@ -14,14 +16,21 @@ export async function fetchPublicSportEvent(
   organizationId: string,
   eventId: string,
   signal?: AbortSignal,
+  fetcher: typeof apiFetch = apiFetch,
+  workspaceOverride?: any,
 ) {
   const [orgResponse, eventResponse] = await Promise.all([
-    apiFetch(`/organizations/${encodeURIComponent(organizationId)}`, {
-      skipAuth: true,
-      noRefresh: true,
-      signal,
-    }),
-    apiFetch(`/sport-event/${encodeURIComponent(eventId)}`, {
+    workspaceOverride
+      ? Promise.resolve({
+          ok: true,
+          json: async () => workspaceOverride,
+        } as Response)
+      : fetcher(`/organizations/${encodeURIComponent(organizationId)}`, {
+          skipAuth: true,
+          noRefresh: true,
+          signal,
+        }),
+    fetcher(`/sport-event/${encodeURIComponent(eventId)}`, {
       skipAuth: true,
       noRefresh: true,
       signal,
@@ -60,15 +69,30 @@ export default function PublicSportEventPage({
   organizationId: string;
   eventId: string;
 }) {
+  const sandbox = useSandbox();
   const query = useQuery({
-    queryKey: ["public-sport-event", sportKey, organizationId, eventId],
+    queryKey: [
+      "public-sport-event",
+      sandbox?.id,
+      sandbox?.account,
+      sportKey,
+      organizationId,
+      eventId,
+    ],
     queryFn: ({ signal }) =>
-      fetchPublicSportEvent(sportKey, organizationId, eventId, signal),
+      fetchPublicSportEvent(
+        sportKey,
+        organizationId,
+        eventId,
+        signal,
+        sandbox ? (path) => sandboxFetch(sandbox.id, path) : apiFetch,
+        sandbox?.data,
+      ),
     staleTime: 30_000,
   });
   const data = query.isError ? undefined : query.data;
   useEffect(() => {
-    if (!data) return;
+    if (!data || sandbox) return;
     trackGrowth("Event Viewed", data.event.id);
     trackEvent(AnalyticsEvents.EVENT_DETAILS_VIEWED, {
       event_id: data.event.id,
@@ -91,7 +115,9 @@ export default function PublicSportEventPage({
     }).catch(() => {});
   }, [data?.event.id, sportKey, organizationId]);
   const livestream = eventLivestreamUrl(data?.event.livestreamUrl);
-  const back = sportOrganization(sportKey, organizationId);
+  const back = sandbox
+    ? `/internal/test-organizations/${sandbox.id}`
+    : sportOrganization(sportKey, organizationId);
   return (
     <main className="consumer-document-page bg-[#030913] p-4 py-10 text-white sm:p-8">
       <div className="mx-auto max-w-5xl space-y-6">
@@ -99,7 +125,7 @@ export default function PublicSportEventPage({
           title={data?.event.name ?? "Event"}
           description={data?.event.description}
           canonicalPath={`${back}?event=${encodeURIComponent(eventId)}`}
-          noindex={query.isError}
+          noindex={!!sandbox || query.isError}
         />
         <Link href={back} className="text-cyan-200">
           ← Back to organization
@@ -150,12 +176,20 @@ export default function PublicSportEventPage({
                   </p>
                 </div>
               </section>
+              {data.sport.capabilities?.registration && (
+                <SportEventRegistration
+                  eventId={eventId}
+                  sportKey={sportKey}
+                  organizationId={organizationId}
+                />
+              )}
               {livestream && (
                 <a
                   href={livestream}
-                  onClick={() =>
-                    trackGrowth("Livestream Clicked", data.event.id)
-                  }
+                  onClick={() => {
+                    if (!sandbox)
+                      trackGrowth("Livestream Clicked", data.event.id);
+                  }}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex min-h-12 items-center rounded-full bg-cyan-300 px-6 font-black text-[#06111d]"

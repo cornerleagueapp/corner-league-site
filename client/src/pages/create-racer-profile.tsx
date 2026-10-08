@@ -1,3 +1,5 @@
+import SportAthleteProfiles from "./sport-athlete-profiles";
+import { useSearch } from "wouter";
 import React, { useState } from "react";
 import { useLocation } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
@@ -9,6 +11,10 @@ import { createMyRacerIdentity, searchSelfRacers, type RacerMatch } from "@/lib/
 import { Button } from "@/components/ui/button";
 
 export default function CreateRacerProfilePage() {
+ const params = new URLSearchParams(useSearch());
+ return params.has("athletes") ? <SportAthleteProfiles /> : <JetSkiRacerProfilePage />;
+}
+function JetSkiRacerProfilePage() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const identity = useMyRacerProfile();
   const cache = useQueryClient();
