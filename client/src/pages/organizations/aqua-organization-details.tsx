@@ -26,7 +26,7 @@ type Organization = {
   primarySportKey?: string;
   sportProfile?: {
     label: string;
-    capabilities?: { eventManagement?: boolean };
+    capabilities?: { eventManagement?: boolean; raceResults?: boolean };
   };
   name: string;
   abbreviation?: string | null;
@@ -181,7 +181,11 @@ export default function AquaOrganizationDetailsPage(props: {
       orgId,
       ...(sandbox ? [sandbox.account] : []),
     ],
-    enabled: !!orgId && scheduleOpen,
+    enabled:
+      !!orgId &&
+      (sandbox
+        ? scheduleOpen
+        : !!orgData?.sportProfile?.capabilities?.eventManagement),
     queryFn: async () => {
       const res = await pageFetch(
         `/sport-event/organization/${orgId}?page=1&limit=50&order=ASC&sortBy=startDate`,
@@ -227,9 +231,10 @@ export default function AquaOrganizationDetailsPage(props: {
       ? sandbox.data.organization.primarySportKey
       : (props.expectedSportKey?.replace(/-/g, " ") ?? "Sport"));
   const hasCompetition =
-    !!sandbox ||
-    (org?.sportProfile?.capabilities?.eventManagement ??
-      primarySportKey === "jet-ski");
+    !!org &&
+    (!!sandbox ||
+      (org?.sportProfile?.capabilities?.eventManagement ??
+        primarySportKey === "jet-ski"));
   useEffect(() => {
     if (org && !sandbox && org.primarySportKey)
       rememberSport(org.primarySportKey);
@@ -317,7 +322,7 @@ export default function AquaOrganizationDetailsPage(props: {
 
               <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-300 sm:text-base">
                 {org?.description ||
-                  "View organization details, upcoming race schedule, and future updates in a more refined event-style layout."}
+                  "View organization details, upcoming events, and official updates."}
               </p>
             </div>
 
@@ -346,7 +351,11 @@ export default function AquaOrganizationDetailsPage(props: {
                       Upcoming
                     </div>
                     <div className="text-lg font-bold text-white">
-                      {upcomingCount} events
+                      {eventsLoading
+                        ? "Loading…"
+                        : eventsError
+                          ? "Unavailable"
+                          : `${upcomingCount} events`}
                     </div>
                   </div>
                 </div>
@@ -462,7 +471,7 @@ export default function AquaOrganizationDetailsPage(props: {
                             ? "Loading events…"
                             : upcomingCount > 0
                               ? `${upcomingCount} upcoming event${upcomingCount === 1 ? "" : "s"} available to view`
-                              : "View all organization events and race dates"}
+                              : "View all organization events and dates"}
                         </div>
                       </div>
 
@@ -495,6 +504,8 @@ export default function AquaOrganizationDetailsPage(props: {
           <ScheduleModal
             orgName={org?.name || "Organization"}
             sandboxId={sandbox?.id}
+            sportKey={primarySportKey}
+            organizationId={orgId}
             events={events}
             loading={eventsLoading}
             error={eventsError ? (eventsQueryError as any)?.message : null}
@@ -539,6 +550,8 @@ function InfoCard({
 function ScheduleModal({
   orgName,
   sandboxId,
+  sportKey,
+  organizationId,
   events,
   loading,
   error,
@@ -546,6 +559,8 @@ function ScheduleModal({
 }: {
   orgName: string;
   sandboxId?: string;
+  sportKey?: string;
+  organizationId?: string;
   events: SportEvent[];
   loading: boolean;
   error: string | null;
@@ -579,7 +594,9 @@ function ScheduleModal({
     navigate(
       sandboxId
         ? `/internal/test-organizations/${sandboxId}?event=${encodeURIComponent(eventId)}`
-        : `/aqua-organizations/event-details/${eventId}`,
+        : sportKey && sportKey !== "jet-ski" && organizationId
+          ? `${sportOrganization(sportKey, organizationId)}?event=${encodeURIComponent(eventId)}`
+          : `/aqua-organizations/event-details/${eventId}`,
     );
   }
 
@@ -603,9 +620,7 @@ function ScheduleModal({
               <h2 className="text-lg font-semibold text-white sm:text-xl">
                 {orgName} Schedule
               </h2>
-              <p className="text-sm text-white/50">
-                Upcoming and past race events
-              </p>
+              <p className="text-sm text-white/50">Upcoming and past events</p>
             </div>
 
             <Button
@@ -630,7 +645,7 @@ function ScheduleModal({
             </div>
           ) : events.length === 0 ? (
             <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-5 text-white/70">
-              No race events found for this organization yet.
+              No events found for this organization yet.
             </div>
           ) : (
             <div className="space-y-8">

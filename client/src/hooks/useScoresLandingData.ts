@@ -231,7 +231,7 @@ async function fetchMostViewedEvents(
   range: "7d" | "30d" = "30d",
 ): Promise<ViewedEventRow[]> {
   const res = await apiFetch(
-    `/analytics/events/most-viewed?range=${encodeURIComponent(range)}&limit=5`,
+    `/analytics/events/most-viewed?range=${encodeURIComponent(range)}&limit=5&sportKey=jet-ski`,
     {
       method: "GET",
       skipAuth: true,
@@ -266,7 +266,7 @@ async function fetchMostViewedDivisions(
   range: "7d" | "30d" = "30d",
 ): Promise<ViewedDivisionRow[]> {
   const res = await apiFetch(
-    `/analytics/divisions/most-viewed?range=${encodeURIComponent(range)}&limit=5`,
+    `/analytics/divisions/most-viewed?range=${encodeURIComponent(range)}&limit=5&sportKey=jet-ski`,
     {
       method: "GET",
       skipAuth: true,
@@ -566,13 +566,13 @@ export function useEngagementLeaderboards(range: "7d" | "30d" = "30d") {
   });
 
   const eventsQuery = useQuery({
-    queryKey: ["most-viewed-events", range],
+    queryKey: ["most-viewed-events", "jet-ski", range],
     queryFn: () => fetchMostViewedEvents(range),
     staleTime: 60 * 1000,
   });
 
   const divisionsQuery = useQuery({
-    queryKey: ["most-viewed-divisions", range],
+    queryKey: ["most-viewed-divisions", "jet-ski", range],
     queryFn: () => fetchMostViewedDivisions(range),
     staleTime: 60 * 1000,
   });
