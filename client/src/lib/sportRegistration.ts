@@ -4,17 +4,23 @@ export const racingSportKeys = [
   "boat-racing",
   "onewheel-racing",
   "rc-racing",
+  "track-running",
+  "marathon",
 ] as const;
 export function isRacingSport(key: string): boolean {
   return (racingSportKeys as readonly string[]).includes(key);
 }
 export const sportEquipmentLabels: Record<string, string> = {
+  "track-running": "Footwear or accessibility needs (optional)",
+  marathon: "Footwear or accessibility needs (optional)",
   motocross: "Motorcycle make, model and engine size",
   "boat-racing": "Boat make, model and engine",
   "onewheel-racing": "Board model and setup",
   "rc-racing": "RC vehicle, scale and power system",
 };
 export const sportLabels: Record<string, string> = {
+  "track-running": "Track & running",
+  marathon: "Marathon",
   motocross: "Motocross",
   "boat-racing": "Boat racing",
   "onewheel-racing": "Onewheel racing",
@@ -61,6 +67,7 @@ export type RacingClass = {
   maximumAge: number | null;
   skillLevels: string[];
   enabled: boolean;
+  distanceMeters?: number | null;
 };
 export type SportConfig = {
   eventId: string;
@@ -199,7 +206,7 @@ export function registrationReturnPath(
   path: string | null,
 ): string | undefined {
   return path &&
-    /^\/sports\/(motocross|boat-racing|onewheel-racing|rc-racing)\/organizations\/[a-zA-Z0-9-]+\?event=[a-zA-Z0-9-]+$/.test(
+    /^\/sports\/(motocross|boat-racing|onewheel-racing|rc-racing|track-running|marathon)\/organizations\/[a-zA-Z0-9-]+\?event=[a-zA-Z0-9-]+$/.test(
       path,
     )
     ? path

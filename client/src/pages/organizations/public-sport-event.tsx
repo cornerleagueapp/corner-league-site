@@ -1,3 +1,4 @@
+import SportEventOperations from "@/components/sport-registration/SportEventOperations";
 import { useSandbox, sandboxFetch } from "./SandboxContext";
 import SportEventRegistration from "@/components/sport-registration/SportEventRegistration";
 import { useEffect } from "react";
@@ -176,6 +177,13 @@ export default function PublicSportEventPage({
                   </p>
                 </div>
               </section>
+              {data.sport.capabilities?.raceScheduling && (
+                <SportEventOperations
+                  eventId={eventId}
+                  sportKey={sportKey}
+                  organizationId={organizationId}
+                />
+              )}
               {data.sport.capabilities?.registration && (
                 <SportEventRegistration
                   eventId={eventId}

@@ -37,6 +37,9 @@ const navigation = compile("client/src/lib/sportNavigation.ts", {}),
   livestream = compile("client/src/lib/eventLivestream.ts", {});
 const page = compile("client/src/pages/organizations/public-sport-event.tsx", {
   "./SandboxContext": { useSandbox: () => null },
+  "@/components/sport-registration/SportEventOperations": {
+    default: () => null,
+  },
   "@/components/sport-registration/SportEventRegistration": {
     default: () => null,
   },

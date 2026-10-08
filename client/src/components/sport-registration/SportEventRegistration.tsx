@@ -426,7 +426,10 @@ function RegistrationContent({
                           key={c.id}
                           className="rounded-xl border border-white/15 p-4"
                         >
-                          <legend className="font-bold">{c.name}</legend>
+                          <legend className="font-bold">
+                            {c.name}
+                            {c.distanceMeters ? ` · ${c.distanceMeters}m` : ""}
+                          </legend>
                           <label className="flex min-h-11 items-center gap-3">
                             <input
                               type="checkbox"
