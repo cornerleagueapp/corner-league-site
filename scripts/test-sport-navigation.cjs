@@ -228,6 +228,8 @@ function compile(file, overrides = {}) {
   const shared = compile(
     "client/src/pages/organizations/aqua-organization-details.tsx",
     {
+      "@/components/team-sports/TeamSeasons": { default: () => null },
+      "@/lib/sportRegistration": { isTeamSport: () => false },
       "@/hooks/useSportSelection": { rememberSport: () => {} },
       "@/lib/sportNavigation": navigation,
       "./SandboxContext": {

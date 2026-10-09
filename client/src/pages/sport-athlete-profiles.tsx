@@ -1,3 +1,4 @@
+import TeamRosterInvites from "@/components/team-sports/TeamRosterInvites";
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useSearch, useLocation } from "wouter";
@@ -5,7 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useSportSelection } from "@/hooks/useSportSelection";
 import {
   AthleteInput,
-  isRacingSport,
+  isAthleteSport,
   mySportAthletes,
   RacingRegistration,
   saveSportAthlete,
@@ -59,7 +60,7 @@ export default function SportAthleteProfiles() {
   const visible = [
     ...new Set([
       ...availability.sports
-        .filter((s) => isRacingSport(s.key))
+        .filter((s) => isAthleteSport(s.key))
         .map((s) => s.key),
       ...(profiles.data ?? []).map((p) => p.sportKey),
     ]),
@@ -143,6 +144,7 @@ export default function SportAthleteProfiles() {
               />
             )
           )}
+          <TeamRosterInvites />
           <section className="rounded-2xl border border-white/15 bg-[#07111f] p-5">
             <h2 className="text-xl font-bold">Your sport registrations</h2>
             {registrations.isPending ? (

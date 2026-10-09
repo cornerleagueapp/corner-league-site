@@ -1,3 +1,5 @@
+import TeamSeasons from "@/components/team-sports/TeamSeasons";
+import { isTeamSport } from "@/lib/sportRegistration";
 import { rememberSport } from "@/hooks/useSportSelection";
 import { sportDirectory, sportOrganization } from "@/lib/sportNavigation";
 import { useOrganizationPageApi } from "./SandboxContext";
@@ -185,7 +187,8 @@ export default function AquaOrganizationDetailsPage(props: {
       !!orgId &&
       (sandbox
         ? scheduleOpen
-        : !!orgData?.sportProfile?.capabilities?.eventManagement),
+        : !isTeamSport(orgData?.primarySportKey ?? "") &&
+          !!orgData?.sportProfile?.capabilities?.eventManagement),
     queryFn: async () => {
       const res = await pageFetch(
         `/sport-event/organization/${orgId}?page=1&limit=50&order=ASC&sortBy=startDate`,
@@ -232,6 +235,7 @@ export default function AquaOrganizationDetailsPage(props: {
       : (props.expectedSportKey?.replace(/-/g, " ") ?? "Sport"));
   const hasCompetition =
     !!org &&
+    !isTeamSport(primarySportKey) &&
     (!!sandbox ||
       (org?.sportProfile?.capabilities?.eventManagement ??
         primarySportKey === "jet-ski"));
@@ -490,6 +494,9 @@ export default function AquaOrganizationDetailsPage(props: {
                 </div>
               )}
             </div>
+            {isTeamSport(primarySportKey) && (
+              <TeamSeasons organizationId={org.id} sportKey={primarySportKey} />
+            )}
             <OrganizationPosts key={org.id} organizationId={org.id} />
           </>
         )}

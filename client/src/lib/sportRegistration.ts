@@ -10,7 +10,26 @@ export const racingSportKeys = [
 export function isRacingSport(key: string): boolean {
   return (racingSportKeys as readonly string[]).includes(key);
 }
+export const teamSportKeys = [
+  "baseball",
+  "american-football",
+  "basketball",
+  "soccer",
+  "hockey",
+] as const;
+export function isTeamSport(key: string): boolean {
+  return (teamSportKeys as readonly string[]).includes(key);
+}
+export function isAthleteSport(key: string): boolean {
+  return isRacingSport(key) || isTeamSport(key);
+}
 export const sportEquipmentLabels: Record<string, string> = {
+  ...Object.fromEntries(
+    teamSportKeys.map((key) => [
+      key,
+      "Equipment or accessibility needs (optional)",
+    ]),
+  ),
   "track-running": "Footwear or accessibility needs (optional)",
   marathon: "Footwear or accessibility needs (optional)",
   motocross: "Motorcycle make, model and engine size",
@@ -19,6 +38,11 @@ export const sportEquipmentLabels: Record<string, string> = {
   "rc-racing": "RC vehicle, scale and power system",
 };
 export const sportLabels: Record<string, string> = {
+  baseball: "Baseball",
+  "american-football": "Football (American)",
+  basketball: "Basketball",
+  soccer: "Soccer",
+  hockey: "Hockey",
   "track-running": "Track & running",
   marathon: "Marathon",
   motocross: "Motocross",
@@ -121,7 +145,9 @@ export async function mySportAthletes(): Promise<SportAthlete[]> {
   );
   if (
     !Array.isArray(profiles) ||
-    profiles.some((p) => !isRacingSport(p.sportKey) || typeof p.id !== "string")
+    profiles.some(
+      (p) => !isAthleteSport(p.sportKey) || typeof p.id !== "string",
+    )
   )
     throw new Error("Invalid athlete profile response.");
   return profiles;

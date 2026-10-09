@@ -1,5 +1,5 @@
 import SportAthletePublic from "./sport-athlete-public";
-import { isRacingSport } from "@/lib/sportRegistration";
+import { isAthleteSport } from "@/lib/sportRegistration";
 import { useSearch } from "wouter";
 import OrganizationPhotoGallery from "@/components/OrganizationPhotoGallery";
 import React, { useEffect, useState, useMemo } from "react";
@@ -394,8 +394,12 @@ function RacePodSessionsModal({
 }
 
 export default function RacerProfilePage(props: { idOrSlugParam?: string }) {
- const sport = new URLSearchParams(useSearch()).get("sport") ?? "";
- return isRacingSport(sport) && props.idOrSlugParam ? <SportAthletePublic id={props.idOrSlugParam} sportKey={sport} /> : <JetSkiRacerProfilePage {...props} />;
+  const sport = new URLSearchParams(useSearch()).get("sport") ?? "";
+  return isAthleteSport(sport) && props.idOrSlugParam ? (
+    <SportAthletePublic id={props.idOrSlugParam} sportKey={sport} />
+  ) : (
+    <JetSkiRacerProfilePage {...props} />
+  );
 }
 function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
   const { toast } = useToast();
@@ -442,7 +446,6 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
     status?: "pending" | "approved" | "rejected";
     claimId?: string;
   } | null>(null);
-
 
   const seasonMotoWins = useMemo(() => {
     return history.filter(
@@ -1490,8 +1493,6 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
               latestSession={latestRacePodSession}
               onClick={() => setRacePodSessionsOpen(true)}
             />
-
-
           </div>
 
           <div className="order-1 space-y-4 lg:order-2 lg:col-span-2">
@@ -1544,7 +1545,10 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
               ) : null}
             </Card>
 
-            <OrganizationPhotoGallery athleteId={racer.athleteId} canRemoveTag={isOwner} />
+            <OrganizationPhotoGallery
+              athleteId={racer.athleteId}
+              canRemoveTag={isOwner}
+            />
 
             <Card className="overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)] sm:p-6">
               <div className="mb-4 text-lg font-semibold text-white">

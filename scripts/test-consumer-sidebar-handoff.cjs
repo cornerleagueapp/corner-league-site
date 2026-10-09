@@ -31,6 +31,19 @@ function compile(relative) {
   compiled.paths = module.paths;
   const load = compiled.require.bind(compiled);
   compiled.require = (name) => {
+    if (name === "@/hooks/useSportSelection")
+      return {
+        useSportSelection: () => ({
+          sportKey: "jet-ski",
+          sport: { label: "Jet ski" },
+          isJetSki: true,
+        }),
+      };
+    if (name === "@/lib/sportNavigation")
+      return {
+        sportDirectory: () => "/aqua-organizations",
+        sportHub: () => "/scores/aqua",
+      };
     if (name === "wouter")
       return {
         useLocation: () => ["/", () => undefined],

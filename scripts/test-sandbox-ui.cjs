@@ -67,7 +67,11 @@ const api = {
 };
 const mocks = {
   "./public-sport-event": { default: () => null },
-  "@/lib/sportRegistration": { isRacingSport: () => false },
+  "@/lib/sportRegistration": {
+    isRacingSport: () => false,
+    isTeamSport: () => false,
+  },
+  "@/components/team-sports/TeamSeasons": { default: () => null },
   "@/hooks/useSportSelection": {
     rememberSport: () => {
       throw new Error("Private preview changed public sport");
