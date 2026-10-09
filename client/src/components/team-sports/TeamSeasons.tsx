@@ -6,6 +6,8 @@ import {
   listTeamSeasons,
   readTeamSeason,
   PublicTeamSeason,
+  seasonView,
+  pageItems,
 } from "@/lib/teamSports";
 export default function TeamSeasons({
   organizationId,
@@ -102,7 +104,7 @@ function SeasonBrowser({
           {!list.data.items.length && (
             <p className="text-slate-300">No published seasons yet.</p>
           )}
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4">
             <button
               disabled={page === 1}
               className="min-h-11 disabled:opacity-40"
@@ -135,7 +137,7 @@ function SeasonBrowser({
             </button>
           </p>
         ) : (
-          <SeasonDetails data={season.data} sandbox={!!sandboxId} />
+          <SeasonDetails key={id} data={season.data} sandbox={!!sandboxId} />
         ))}
     </section>
   );
@@ -147,9 +149,16 @@ export function SeasonDetails({
   data: PublicTeamSeason;
   sandbox?: boolean;
 }) {
+  const [division, setDivision] = useState(""),
+    [status, setStatus] = useState("all"),
+    [teamPage, setTeamPage] = useState(1),
+    [gamePage, setGamePage] = useState(1);
+  const view = seasonView(d, division, status),
+    teams = pageItems(view.teams, teamPage, 6),
+    games = pageItems(view.games, gamePage, 10);
   const name = (id: string) => d.teams.find((t) => t.id === id)?.name ?? "Team";
   return (
-    <div className="space-y-6">
+    <div className="min-w-0 space-y-6">
       <div>
         <h3 className="text-xl font-bold">
           {d.leagueName} · {d.name}
@@ -158,10 +167,29 @@ export function SeasonDetails({
           {d.startsOn} – {d.endsOn} · Published season
         </p>
       </div>
+      <label className="block space-y-2">
+        Division
+        <select
+          className="block w-full min-h-11 rounded-xl border border-white/20 bg-[#07111f] p-3"
+          value={division}
+          onChange={(e) => {
+            setDivision(e.target.value);
+            setTeamPage(1);
+            setGamePage(1);
+          }}
+        >
+          <option value="">All divisions</option>
+          {d.divisions.map((v) => (
+            <option key={v.id} value={v.id}>
+              {v.name}
+            </option>
+          ))}
+        </select>
+      </label>
       <div>
         <h4 className="mb-3 text-lg font-bold">Teams & players</h4>
         <div className="grid gap-4 md:grid-cols-2">
-          {d.teams.map((t) => (
+          {teams.items.map((t) => (
             <article
               key={t.id}
               className="rounded-xl border border-white/10 p-4"
@@ -198,16 +226,44 @@ export function SeasonDetails({
             </article>
           ))}
         </div>
+        {!view.teams.length && <p>No teams in this division yet.</p>}
+        <Pages
+          label="teams"
+          page={teams.page}
+          pages={teams.pages}
+          onChange={setTeamPage}
+        />
       </div>
       <div>
         <h4 className="mb-3 text-lg font-bold">
           Games & {d.scoreLabel.toLowerCase()}
         </h4>
-        {!d.games.length && (
-          <p className="text-slate-400">Games have not been published yet.</p>
+        <label className="mb-3 block">
+          Game status
+          <select
+            className="ml-2 min-h-11 rounded-xl border border-white/20 bg-[#07111f] p-2"
+            value={status}
+            onChange={(e) => {
+              setStatus(e.target.value);
+              setGamePage(1);
+            }}
+          >
+            <option value="all">All games</option>
+            <option value="scheduled">Scheduled / in progress</option>
+            <option value="final">Final</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </label>
+        <p className="mb-3 text-sm text-slate-400">
+          Game start times use your device’s local time zone.
+        </p>
+        {!view.games.length && (
+          <p className="text-slate-400">
+            No published games match these filters.
+          </p>
         )}
         <div className="space-y-3">
-          {d.games.map((g) => {
+          {games.items.map((g) => {
             const r = d.results.find((r) => r.gameId === g.id);
             return (
               <article
@@ -218,8 +274,10 @@ export function SeasonDetails({
                   {name(g.homeTeamId)} vs {name(g.awayTeamId)}
                 </h5>
                 <p className="text-sm text-slate-300">
-                  {new Date(g.startsAt).toLocaleString()} ·{" "}
-                  {g.venue || "Venue to be announced"}
+                  <time dateTime={g.startsAt}>
+                    {new Date(g.startsAt).toLocaleString()}
+                  </time>{" "}
+                  · {g.venue || "Venue to be announced"}
                 </p>
                 <p className="mt-2 font-bold">
                   {g.status === "cancelled"
@@ -250,16 +308,44 @@ export function SeasonDetails({
           })}
         </div>
       </div>
+      <Pages
+        label="games"
+        page={games.page}
+        pages={games.pages}
+        onChange={setGamePage}
+      />
       <div>
         <h4 className="mb-3 text-lg font-bold">Standings</h4>
         <p className="mb-3 text-sm text-slate-400">
           Final games only. Ordered by standings points, score difference and
           scores for; teams with equal values remain tied.
         </p>
-        {d.standings.map((s) => (
+        {view.standings.map((s) => (
           <div key={s.divisionId} className="mb-5">
             <h5 className="mb-2 font-bold">{s.name}</h5>
-            <div className="overflow-x-auto">
+            <ul
+              className="space-y-3 sm:hidden"
+              aria-label={`${s.name} standings`}
+            >
+              {s.rows.map((r) => (
+                <li
+                  key={r.teamId}
+                  className="rounded-xl border border-white/10 p-3"
+                >
+                  <p className="font-bold">
+                    {r.name} · {r.points} points
+                  </p>
+                  <p className="text-sm text-slate-300">
+                    Played {r.played} · W {r.wins} · D {r.draws} · L {r.losses}
+                  </p>
+                  <p className="text-sm text-slate-300">
+                    {d.scoreLabel}: {r.scoredFor} for · {r.scoredAgainst}{" "}
+                    against · Difference {r.difference}
+                  </p>
+                </li>
+              ))}
+            </ul>
+            <div className="min-w-0 max-w-full overflow-x-auto hidden sm:block">
               <table className="w-full text-left text-sm">
                 <caption className="sr-only">{s.name} standings</caption>
                 <thead>
@@ -314,5 +400,43 @@ export function SeasonDetails({
         ))}
       </div>
     </div>
+  );
+}
+
+function Pages({
+  label,
+  page,
+  pages,
+  onChange,
+}: {
+  label: string;
+  page: number;
+  pages: number;
+  onChange: (n: number) => void;
+}) {
+  if (pages <= 1) return null;
+  return (
+    <nav
+      aria-label={`${label} pages`}
+      className="mt-3 flex flex-wrap items-center gap-4"
+    >
+      <button
+        className="min-h-11 disabled:opacity-40"
+        disabled={page === 1}
+        onClick={() => onChange(page - 1)}
+      >
+        Previous {label}
+      </button>
+      <span>
+        Page {page} of {pages}
+      </span>
+      <button
+        className="min-h-11 disabled:opacity-40"
+        disabled={page === pages}
+        onClick={() => onChange(page + 1)}
+      >
+        Next {label}
+      </button>
+    </nav>
   );
 }

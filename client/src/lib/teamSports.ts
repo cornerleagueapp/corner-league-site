@@ -99,10 +99,19 @@ export async function listTeamSeasons(
     ? sandboxSportData<TeamSeasonList>(sandbox, path)
     : publicSportData<TeamSeasonList>(path));
   if (
+    !d ||
     d.organizationId !== org ||
     d.sportKey !== sport ||
     !Array.isArray(d.items) ||
-    !Number.isFinite(d.total)
+    !Number.isInteger(d.total) ||
+    d.total < 0 ||
+    d.items.some(
+      (item) =>
+        !item ||
+        typeof item.id !== "string" ||
+        typeof item.name !== "string" ||
+        typeof item.leagueName !== "string",
+    )
   )
     throw new Error("Season list does not match this organization.");
   return d;
@@ -114,15 +123,51 @@ export function validatePublicTeamSeason(
   sport: string,
 ) {
   if (
+    !d ||
     d.id !== id ||
     d.organizationId !== org ||
     d.sportKey !== sport ||
     ![d.divisions, d.teams, d.games, d.results, d.standings].every(
       Array.isArray,
     ) ||
-    d.teams.some((t) => !Array.isArray(t.players)) ||
-    d.results.some((r) => !Array.isArray(r.periods)) ||
-    d.standings.some((s) => !Array.isArray(s.rows))
+    typeof d.scoreLabel !== "string" ||
+    typeof d.periodLabel !== "string" ||
+    d.divisions.some(
+      (v) => !v || typeof v.id !== "string" || typeof v.name !== "string",
+    ) ||
+    d.teams.some(
+      (t) =>
+        !t ||
+        typeof t.name !== "string" ||
+        !Array.isArray(t.players) ||
+        t.players.some(
+          (p) =>
+            !p || typeof p.profileId !== "string" || typeof p.name !== "string",
+        ),
+    ) ||
+    d.games.some(
+      (g) =>
+        !g ||
+        !Number.isFinite(Date.parse(g.startsAt)) ||
+        !d.teams.some((t) => t.id === g.homeTeamId) ||
+        !d.teams.some((t) => t.id === g.awayTeamId),
+    ) ||
+    d.results.some(
+      (r) =>
+        !r ||
+        !Array.isArray(r.periods) ||
+        !Number.isInteger(r.homeScore) ||
+        r.homeScore < 0 ||
+        !Number.isInteger(r.awayScore) ||
+        r.awayScore < 0 ||
+        r.periods.some((p) => !p || typeof p.label !== "string"),
+    ) ||
+    d.standings.some(
+      (s) =>
+        !s ||
+        !Array.isArray(s.rows) ||
+        s.rows.some((r) => !r || typeof r.name !== "string"),
+    )
   )
     throw new Error("Season data does not match this organization.");
   return d;
@@ -163,4 +208,40 @@ export async function respondToTeamInvitation(
       { refreshOn401: true },
     ),
   );
+}
+
+export function seasonView(
+  d: PublicTeamSeason,
+  division: string,
+  status: string,
+) {
+  const teams = d.teams.filter((t) => !division || t.divisionId === division),
+    ids = new Set(teams.map((t) => t.id));
+  const games = d.games
+    .filter((g) => ids.has(g.homeTeamId) && ids.has(g.awayTeamId))
+    .filter(
+      (g) =>
+        status === "all" ||
+        (status === "cancelled"
+          ? g.status === "cancelled"
+          : status === "final"
+            ? g.status !== "cancelled" &&
+              d.results.some((r) => r.gameId === g.id && r.status === "final")
+            : g.status === "scheduled" &&
+              !d.results.some(
+                (r) => r.gameId === g.id && r.status === "final",
+              )),
+    );
+  return {
+    teams,
+    games,
+    standings: d.standings.filter(
+      (s) => !division || s.divisionId === division,
+    ),
+  };
+}
+export function pageItems<T>(items: T[], requested: number, size: number) {
+  const pages = Math.max(1, Math.ceil(items.length / size)),
+    page = Math.max(1, Math.min(requested, pages));
+  return { items: items.slice((page - 1) * size, page * size), page, pages };
 }
