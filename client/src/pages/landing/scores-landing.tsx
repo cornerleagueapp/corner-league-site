@@ -30,9 +30,18 @@ function scrollToSection(targetId: string) {
 }
 
 export default function ScoresLandingPage() {
-  const {sportKey, isJetSki, isLoading} = useSportSelection();
-  if (isLoading) return <p role="status" className="p-8 text-slate-300">Loading sports…</p>;
-  return isJetSki ? <JetSkiLandingPage /> : <SportOrganizationsPage sportKey={sportKey} />;
+  const { sportKey, isJetSki, isLoading } = useSportSelection();
+  if (isLoading)
+    return (
+      <p role="status" className="p-8 text-slate-300">
+        Loading sports…
+      </p>
+    );
+  return isJetSki ? (
+    <JetSkiLandingPage />
+  ) : (
+    <SportOrganizationsPage sportKey={sportKey} />
+  );
 }
 function JetSkiLandingPage() {
   const [selectedOrgId, setSelectedOrgId] = useState<string>("all");
@@ -287,26 +296,6 @@ function JetSkiLandingPage() {
           </div>
         </section>
       </main>
-
-      <footer className="mt-20 border-t border-cyan-300/10 bg-[#02050A]/70 py-8">
-        <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 text-sm uppercase tracking-[0.18em] text-white/45 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-          <div className="font-black text-white/70">Corner League Sports</div>
-
-          <div className="flex flex-wrap gap-6">
-            <Link className="transition hover:text-cyan-200" href="/contact">
-              Contact Us
-            </Link>
-            <Link className="transition hover:text-cyan-200" href="/terms">
-              Terms of Use
-            </Link>
-            <Link className="transition hover:text-cyan-200" href="/terms">
-              Privacy Policy
-            </Link>
-          </div>
-
-          <div>© 2026 Corner League, Inc.</div>
-        </div>
-      </footer>
     </div>
   );
 }

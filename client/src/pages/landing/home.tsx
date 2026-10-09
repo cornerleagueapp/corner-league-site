@@ -1,3 +1,4 @@
+import SiteFooter from "@/components/SiteFooter";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
@@ -45,14 +46,6 @@ const sportsImages = [
   "https://storage.googleapis.com/cl-beta-428221-app-assets/homePageAssets/36.webp",
 ];
 
-const footerLinks = [
-  "Why Corner League",
-  "Clubs",
-  "Insights",
-  // "Olympic AI",
-  "Contact Us",
-  "Terms/Privacy",
-];
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
   const [location] = useLocation();
@@ -428,90 +421,7 @@ export default function Home() {
         </section>
       </main>
 
-      {/* FOOTER */}
-      <footer className="relative z-10 mt-10 border-t border-gray-700/50 bg-black/40 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <nav className="flex flex-col md:flex-row md:justify-between items-center gap-6 md:gap-8 lg:gap-12">
-            <div className="order-1 md:order-1">
-              <a
-                href="https://corner-league.ghost.io/about/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm font-medium text-gray-400 hover:text-white tracking-wider uppercase"
-              >
-                <div className="text-center md:text-left">
-                  <div>From One Fan</div>
-                  <div>To the Next</div>
-                </div>
-              </a>
-            </div>
-
-            <div className="order-2 md:order-2 flex flex-wrap justify-center gap-6 md:gap-8 lg:gap-12">
-              {footerLinks
-                .filter((link) => link !== "Why Corner League")
-                .map((link, index) => {
-                  if (link === "Clubs") {
-                    return (
-                      <Link
-                        key={index}
-                        href="/clubs"
-                        className="text-sm font-medium text-gray-400 hover:text-white tracking-wider uppercase"
-                      >
-                        {link}
-                      </Link>
-                    );
-                  }
-                  // if (link === "Olympic AI") {
-                  //   return (
-                  //     <a
-                  //       key={index}
-                  //       href="https://www.olympicai.io/"
-                  //       target="_blank"
-                  //       rel="noopener noreferrer"
-                  //       className="text-sm font-medium text-gray-400 hover:text-white tracking-wider uppercase"
-                  //     >
-                  //       {link}
-                  //     </a>
-                  //   );
-                  // }
-                  if (link === "Insights") {
-                    return (
-                      <a
-                        key={index}
-                        href="https://corner-league.ghost.io/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm font-medium text-gray-400 hover:text-white tracking-wider uppercase"
-                      >
-                        {link}
-                      </a>
-                    );
-                  }
-                  if (link === "Contact Us") {
-                    return (
-                      <Link
-                        key={index}
-                        href="/contact"
-                        className="text-sm font-medium text-gray-400 hover:text-white tracking-wider uppercase"
-                      >
-                        {link}
-                      </Link>
-                    );
-                  }
-                  return (
-                    <Link
-                      key={index}
-                      href="/terms"
-                      className="text-sm font-medium text-gray-400 hover:text-white tracking-wider uppercase"
-                    >
-                      {link}
-                    </Link>
-                  );
-                })}
-            </div>
-          </nav>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 import { clearTokens } from "@/lib/token";
+import SiteFooter from "@/components/SiteFooter";
 import PublicTopNav from "@/components/navigation/PublicTopNav";
 
 const keyToPath: Record<string, string> = {
@@ -131,9 +132,12 @@ function activeKeyFromPath(pathnameWithQuery: string): string {
     return "my";
   }
 
-  if (pathname === "/community" || pathname.startsWith("/community/")) return "community-forum";
-  if (pathname === "/articles" || pathname.startsWith("/articles/")) return "community-articles";
-  if (pathname === "/writer" || pathname.startsWith("/writer/")) return "writer-studio";
+  if (pathname === "/community" || pathname.startsWith("/community/"))
+    return "community-forum";
+  if (pathname === "/articles" || pathname.startsWith("/articles/"))
+    return "community-articles";
+  if (pathname === "/writer" || pathname.startsWith("/writer/"))
+    return "writer-studio";
 
   if (pathname === "/messages") {
     return "messages";
@@ -436,6 +440,7 @@ export default function AppShell({
 
         <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden">
           {children}
+          {location !== "/messages" && <SiteFooter />}
         </div>
       </div>
 
