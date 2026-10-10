@@ -1,0 +1,325 @@
+.admissions-page {
+  color: #edf6fa;
+  max-width: 1100px;
+  margin: auto;
+  padding: 32px 20px 64px;
+  min-width: 0;
+}
+.admissions-heading {
+  background:
+    radial-gradient(ellipse at top right, #163c50, transparent 65%), #071421;
+  border: 1px solid #234454;
+  border-radius: 28px;
+  padding: clamp(24px, 5vw, 48px);
+  margin-bottom: 24px;
+}
+.admissions-eyebrow,
+.admission-card-label {
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 11px;
+  font-weight: 800;
+  color: #67e8f9;
+}
+.admissions-heading h1 {
+  font-size: clamp(28px, 5vw, 48px);
+  font-weight: 900;
+  line-height: 1.12;
+  margin: 12px 0;
+}
+.admissions-heading p,
+.admission-note {
+  color: #a7bbc7;
+  line-height: 1.7;
+}
+.admission-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 14px;
+  margin: 24px 0;
+}
+.admission-facts span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.admissions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 24px;
+}
+.admission-card {
+  background: #0b1826;
+  border: 1px solid #274451;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 16px 40px #0002;
+  min-width: 0;
+}
+.admission-cover {
+  width: 100%;
+  height: 190px;
+  object-fit: cover;
+}
+.admission-cover-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: linear-gradient(130deg, #13394b, #071725 80%);
+  color: #67e8f9;
+}
+.admission-cover-fallback span {
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+.admission-card-body {
+  padding: 24px;
+}
+.admission-card h2,
+.admission-print-pass h2 {
+  font-size: 23px;
+  font-weight: 800;
+  margin: 12px 0;
+}
+.admission-card p {
+  line-height: 1.7;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.admission-price {
+  font-size: 32px;
+  font-weight: 800;
+  margin: 18px 0;
+}
+.admission-price small {
+  font-size: 12px;
+  font-weight: 400;
+  margin-left: 10px;
+  color: #a7bbc7;
+}
+.admission-primary {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  border-radius: 99px;
+  padding: 12px 24px;
+  background: #67e8f9;
+  color: #071421;
+  font-weight: 800;
+  margin-top: 16px;
+  text-decoration: none;
+}
+.admission-primary:hover {
+  background: #a5f3fc;
+}
+.admission-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.admission-muted {
+  color: #a7bbc7;
+  font-size: 12px;
+}
+.admission-quantity {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.admission-quantity select {
+  min-height: 44px;
+  background: #102536;
+  border: 1px solid #315563;
+  border-radius: 12px;
+  padding: 8px 20px;
+  color: white;
+}
+.admission-error {
+  background: #421e26;
+  border: 1px solid #9e4c5b;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 16px 0;
+}
+.admission-empty,
+.admission-success {
+  border: 1px solid #274451;
+  border-radius: 24px;
+  background: #0b1826;
+  padding: 40px;
+  margin: 20px 0;
+  line-height: 1.8;
+}
+.admission-empty h2,
+.admission-success h2 {
+  font-size: 22px;
+  font-weight: 800;
+}
+.admission-success {
+  display: flex;
+  gap: 20px;
+  color: #b8f5d8;
+}
+.admission-note {
+  font-size: 13px;
+  margin-top: 24px;
+}
+.admission-link {
+  color: #67e8f9;
+  text-decoration: underline;
+  min-height: 44px;
+}
+.admission-status {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  border-radius: 99px;
+  padding: 6px 12px;
+  background: #163d32;
+  color: #b9f4d0;
+}
+.admission-status.cancelled {
+  background: #461e26;
+  color: #ffc3cf;
+}
+.admission-status.checked_in {
+  background: #203c51;
+  color: #c6e7ff;
+}
+.admission-pass-panel {
+  border: 1px solid #67e8f955;
+  border-radius: 24px;
+  padding: 20px;
+  margin-bottom: 32px;
+  background: #071421;
+}
+.admission-pass-tools {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.admission-print-pass {
+  background: #fffdf8;
+  color: #092031;
+  border-radius: 20px;
+  overflow: hidden;
+  max-width: 480px;
+  margin: auto;
+}
+.admission-print-pass .admissions-eyebrow {
+  color: #16677a;
+}
+.admission-pass-info {
+  padding: 24px;
+  text-align: center;
+}
+.admission-qr {
+  background: white;
+  margin: 20px auto;
+  padding: 8px;
+  max-width: 300px;
+  min-height: 140px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.admission-qr img {
+  width: 256px;
+  height: 256px;
+  max-width: 100%;
+  object-fit: contain;
+}
+.admission-print-pass .admission-muted {
+  color: #546b77;
+  overflow-wrap: anywhere;
+}
+.admission-pagination {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  justify-content: center;
+  margin: 24px 0;
+}
+.admission-pagination button {
+  min-height: 44px;
+  color: #67e8f9;
+}
+.admission-pagination button:disabled {
+  opacity: 0.4;
+}
+.admissions-page button:focus-visible,
+.admissions-page a:focus-visible,
+.admissions-page select:focus-visible {
+  outline: 3px solid #67e8f9;
+  outline-offset: 4px;
+}
+@media print {
+  @page {
+    size: auto;
+    margin: 10mm;
+  }
+  body.admission-print-mode {
+    background: white !important;
+  }
+  body.admission-print-mode * {
+    visibility: hidden !important;
+  }
+  body.admission-print-mode
+    *:has(.admission-print-pass)
+    > *:not(:has(.admission-print-pass)):not(.admission-print-pass) {
+    display: none !important;
+  }
+  body.admission-print-mode *:has(.admission-print-pass) {
+    position: static !important;
+    display: block !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: white !important;
+    overflow: visible !important;
+    transform: none !important;
+  }
+  body.admission-print-mode .admission-print-pass,
+  body.admission-print-mode .admission-print-pass * {
+    visibility: visible !important;
+    overflow: visible !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  body.admission-print-mode .admission-print-pass {
+    position: static !important;
+    color: #092031;
+    width: 100%;
+    max-width: 480px;
+    margin: auto;
+    box-shadow: none;
+    border: 1px solid #ccc;
+    border-radius: 0;
+    break-inside: avoid;
+  }
+  body.admission-print-mode .admission-print-pass .admission-cover {
+    height: 160px;
+  }
+  body.admission-print-mode .admission-pass-info {
+    padding: 16px;
+  }
+  body.admission-print-mode .admission-print-pass h2 {
+    font-size: 22px;
+  }
+  body.admission-print-mode .admission-qr {
+    margin: 12px auto;
+  }
+}

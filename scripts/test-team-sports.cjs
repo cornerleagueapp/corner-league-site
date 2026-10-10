@@ -113,6 +113,7 @@ let sandbox = null,
   search = "?season=season",
   location = "/sports/soccer/organizations/org";
 const component = compile("client/src/components/team-sports/TeamSeasons.tsx", {
+  "@/components/admissions/AdmissionOffer": { AdmissionOffer: () => null },
   "@/lib/teamSports": team,
   "@/pages/organizations/SandboxContext": { useSandbox: () => sandbox },
   wouter: {

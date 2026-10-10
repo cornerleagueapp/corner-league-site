@@ -1,3 +1,4 @@
+import { AdmissionPage, MyTicketsPage } from '@/pages/admissions/admissions';
 import { clearCommunityCache } from "@/lib/socialCache";
 // src/App.tsx
 import {
@@ -215,6 +216,7 @@ function PrivateRouter() {
           <Route path="/explore" component={ExploreFeedPage} />
           <Route path="/messages" component={MessagesPage} />
           <Route path="/notifications" component={NotificationsPage} />
+          <Route path="/tickets" component={MyTicketsPage} />
           <Route path="/settings" component={Settings} />
           <Route path="/racepod" component={RacePodPage} />
 
@@ -387,6 +389,7 @@ function Router() {
       </Route>
       <Route path="/home" component={Home} />
       <Route path="/about" component={Home} />
+      <Route path="/admissions/:key">{p=><AppShell><AdmissionPage eventKey={decodeURIComponent(p.key)}/></AppShell>}</Route>
       <Route path="/contact" component={ContactPage} />
       <Route path="/terms" component={TermsPage} />
       <Route path="/auth" component={AuthPage} />

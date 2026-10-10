@@ -1,3 +1,4 @@
+import { AdmissionOffer } from '@/components/admissions/AdmissionOffer';
 import { useOrganizationPageApi } from "./SandboxContext";
 import { trackGrowth } from "@/lib/growthAnalytics";
 import React from "react";
@@ -455,6 +456,7 @@ export default function OrgEventDetailsPage(props: { params: { id: string } }) {
               </div>
 
               <div className="flex flex-col gap-3 sm:flex-row lg:flex-col lg:items-end">
+                {data?.id && <AdmissionOffer eventKey={`event:${data.id}`} sandbox={!!sandbox} />}
                 {eventLivestreamUrl(data?.livestreamUrl) && (
                   <a
                     href={eventLivestreamUrl(data?.livestreamUrl)!}

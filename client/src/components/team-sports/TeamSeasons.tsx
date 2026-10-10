@@ -1,3 +1,4 @@
+import { AdmissionOffer } from "@/components/admissions/AdmissionOffer";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useSearch, useLocation } from "wouter";
@@ -286,6 +287,12 @@ export function SeasonDetails({
                       ? `${r.homeScore} – ${r.awayScore} · ${r.status === "final" ? "Final" : "In progress"}`
                       : "Scheduled"}
                 </p>
+                {g.status !== "cancelled" && (
+                  <AdmissionOffer
+                    eventKey={`game:${d.id}:${g.id}`}
+                    sandbox={sandbox}
+                  />
+                )}
                 {r?.tiebreakWinnerId && (
                   <p>Tiebreak winner: {name(r.tiebreakWinnerId)}</p>
                 )}
