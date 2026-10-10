@@ -171,13 +171,15 @@ function People({
       ) : (
         <>
           {query.data.items.map((person) => (
-            <Link
-              key={person.id}
-              href={`/profile/${encodeURIComponent(person.username)}`}
-              className="flex min-h-11 items-center border-b border-white/10 py-3 font-semibold text-cyan-100"
-            >
-              @{person.username}
-            </Link>
+            <div key={person.id} className="border-b border-white/10 py-3">
+              <Link
+                href={`/profile/${encodeURIComponent(person.username)}`}
+                className="flex min-h-11 items-center border-b border-white/10 py-3 font-semibold text-cyan-100"
+              >
+                @{person.username}
+              </Link>
+              <UserSocialControls targetId={person.id} />
+            </div>
           ))}
           {!query.data.items.length && (
             <p className="text-white/55">No users yet.</p>

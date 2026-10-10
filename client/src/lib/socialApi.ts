@@ -34,6 +34,12 @@ export type Page<T> = {
   hasNextPage: boolean;
 };
 export type Preferences = {
+  emailFollows: boolean;
+  emailLikes: boolean;
+  emailComments: boolean;
+  emailPosts: boolean;
+  emailMessages: boolean;
+
   follows: boolean;
   likes: boolean;
   comments: boolean;
@@ -213,7 +219,19 @@ export function parsePreferences(value: unknown): Preferences {
     !["everyone", "following", "nobody"].includes(p.allowMessages)
   )
     throw new Error("Unable to read preferences. Please refresh.");
-  return p;
+  const result = { ...p };
+  for (const key of [
+    "emailFollows",
+    "emailLikes",
+    "emailComments",
+    "emailPosts",
+    "emailMessages",
+  ] as const) {
+    if (p[key] !== undefined && typeof p[key] !== "boolean")
+      throw new Error("Unable to read email preferences. Please refresh.");
+    result[key] = p[key] ?? false;
+  }
+  return result;
 }
 export async function loadPreferences() {
   return parsePreferences(await socialRequest("GET", "me/preferences"));

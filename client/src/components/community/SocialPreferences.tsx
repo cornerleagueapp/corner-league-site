@@ -28,7 +28,8 @@ export default function SocialPreferences() {
     <section className={socialBox}>
       <h2 className="text-xl font-bold">Notifications & messages</h2>
       <p className="mt-2 text-sm text-white/60">
-        Choose your in-app alerts and who can send you a direct message.
+        Choose your in-app alerts, optional emails and who can send you a direct
+        message.
       </p>
       {query.isPending ? (
         <p role="status" className="mt-4">
@@ -68,6 +69,39 @@ export default function SocialPreferences() {
               />
             </label>
           ))}
+          <fieldset className="border-t border-white/10 pt-4">
+            <legend className="font-semibold">Email notifications</legend>
+            <p className="mb-3 text-xs text-white/60">
+              Emails are off by default. Enable the matching in-app alert above
+              to receive emails for new activity. Message emails never include
+              the message body. Ticket receipts are separate.
+            </p>
+            {(
+              [
+                ["emailFollows", "New followers"],
+                ["emailLikes", "Likes on my posts"],
+                ["emailComments", "Comments on my posts"],
+                ["emailPosts", "Updates from users and athletes I follow"],
+                ["emailMessages", "New direct messages"],
+              ] as const
+            ).map(([key, label]) => (
+              <label
+                key={key}
+                className="flex min-h-11 items-center justify-between gap-4"
+              >
+                <span className="text-sm text-white/85">{label}</span>
+                <input
+                  type="checkbox"
+                  checked={query.data[key]}
+                  disabled={change.isPending}
+                  onChange={(event) =>
+                    change.mutate({ [key]: event.target.checked })
+                  }
+                  className="h-5 w-5 accent-cyan-300"
+                />
+              </label>
+            ))}
+          </fieldset>
           <label className="block border-t border-white/10 pt-4 text-sm">
             Who can message me?
             <select
@@ -92,6 +126,11 @@ export default function SocialPreferences() {
             conversations.
           </p>
         </div>
+      )}
+      {change.isSuccess && (
+        <p role="status" className="mt-3 text-sm text-cyan-100">
+          Preferences saved.
+        </p>
       )}
       {change.isError && <SocialFailure error={change.error} />}
     </section>

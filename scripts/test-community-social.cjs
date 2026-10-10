@@ -126,6 +126,23 @@ function compile(relative) {
     () => api.parsePreferences({ likes: "false" }),
     /Unable to read preferences/,
   );
+  const prefs = {
+    follows: true,
+    likes: true,
+    comments: true,
+    posts: true,
+    messages: true,
+    allowMessages: "everyone",
+  };
+  assert.equal(api.parsePreferences(prefs).emailFollows, false);
+  assert.equal(
+    api.parsePreferences({ ...prefs, emailMessages: true }).emailMessages,
+    true,
+  );
+  assert.throws(
+    () => api.parsePreferences({ ...prefs, emailFollows: "true" }),
+    /Unable to read email preferences/,
+  );
   payload = { status: true, data: { items: "bad", unreadCount: 1 } };
   await assert.rejects(api.loadNotifications(1), /Unable to read this list/);
   payload = {
