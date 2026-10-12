@@ -1,3 +1,4 @@
+import { OrderOperations } from "./OrderOperations";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -856,7 +857,7 @@ function OrderDetail({
               onChange={(e) => setKind(e.target.value as typeof kind)}
             >
               <option value="support">Support / cancellation / issue</option>
-              <option value="return">Return request</option>
+              <option value="return">Entire order return request</option>
             </select>
           </label>
           <label>
@@ -889,6 +890,7 @@ function OrderDetail({
           </button>
         </div>
       ) : null}
+      <OrderOperations order={o} base={base} busy={busy} act={act} />
       {o.cases?.map((c) => (
         <CustomerCase
           key={c.id}
@@ -932,6 +934,12 @@ function CustomerCase({
         {c.kind} • {c.status}
       </h4>
       <p>{c.reason}</p>
+      {c.selection?.map((l) => (
+        <p key={l.variantId} className="text-xs">
+          Item {l.variantId.slice(0, 8)} × {l.quantity} •{" "}
+          {c.resolution ?? "refund"}
+        </p>
+      ))}
       {c.messages.map((m) => (
         <p key={m.id} className="whitespace-pre-wrap text-sm">
           <strong>{m.staff ? "Seller" : "You"}:</strong> {m.text}

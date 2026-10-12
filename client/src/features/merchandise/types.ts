@@ -39,6 +39,8 @@ export type Product = {
   variants: Variant[];
 };
 export type Case = {
+  selection?: { variantId: string; quantity: number }[] | null;
+  resolution?: "refund" | "exchange";
   id: string;
   kind: "support" | "return";
   status: "open" | "approved" | "denied" | "received" | "closed";
