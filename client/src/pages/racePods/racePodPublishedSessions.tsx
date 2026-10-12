@@ -211,7 +211,7 @@ function MiniRouteMap({
   }, [points]);
 
   return (
-    <div className="relative h-[220px] overflow-hidden rounded-[24px] border border-cyan-300/10 bg-[radial-gradient(circle_at_center,rgba(34,211,238,0.10),transparent_35%),linear-gradient(135deg,rgba(7,17,31,0.96),rgba(3,9,19,0.98))]">
+    <div className="relative h-[220px] overflow-hidden rounded-[24px] border border-cl-accent/10 cl-panel-wash">
       <div className="absolute inset-0 opacity-[0.06] [background-image:linear-gradient(rgba(255,255,255,0.22)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.22)_1px,transparent_1px)] [background-size:32px_32px]" />
 
       {path ? (
@@ -241,13 +241,13 @@ function MiniRouteMap({
       ) : (
         <div className="relative z-10 grid h-full place-items-center text-center">
           <div>
-            <div className="mx-auto grid h-12 w-12 place-items-center rounded-full border border-cyan-300/20 bg-cyan-300/10">
-              <Route className="h-5 w-5 text-cyan-100" />
+            <div className="mx-auto grid h-12 w-12 place-items-center rounded-full border border-cl-accent/20 bg-cl-accent/10">
+              <Route className="h-5 w-5 text-cl-accent" />
             </div>
-            <div className="mt-3 text-sm font-bold text-white">
+            <div className="mt-3 text-sm font-bold text-cl-ink">
               Route Preview
             </div>
-            <div className="mt-1 text-xs text-white/40">
+            <div className="mt-1 text-xs text-cl-muted">
               GPS path unavailable
             </div>
           </div>
@@ -281,30 +281,30 @@ function PublishedSessionCard({
     <button
       type="button"
       onClick={() => navigate(`/racepod/sessions/${sessionId}`)}
-      className="group min-w-0 overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-4 text-left shadow-[0_24px_70px_rgba(0,0,0,0.26)] transition hover:-translate-y-1 hover:border-cyan-300/25 hover:bg-cyan-300/[0.045] sm:p-5"
+      className="group min-w-0 overflow-hidden rounded-[30px] border border-cl-accent/10 bg-cl-surface p-4 text-left shadow-cl-panel transition hover:-translate-y-1 hover:border-cl-accent/25 hover:bg-cl-accent/[0.045] sm:p-5"
     >
       <MiniRouteMap points={routePoints} />
 
       <div className="mt-5">
         <div className="mb-3 flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200">
+          <span className="inline-flex items-center gap-2 rounded-full border border-cl-accent/20 bg-cl-accent/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-cl-accent">
             <Radio className="h-3.5 w-3.5" />
             Published Replay
           </span>
 
           {session.publishedAt ? (
-            <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-white/45">
+            <span className="rounded-full border border-cl-border bg-cl-subtle px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-cl-muted">
               {formatDate(session.publishedAt)}
             </span>
           ) : null}
         </div>
 
-        <h3 className="line-clamp-2 text-xl font-black uppercase leading-tight tracking-[-0.02em] text-white">
+        <h3 className="line-clamp-2 text-xl font-black uppercase leading-tight tracking-[-0.02em] text-cl-ink">
           {getSessionTitle(session)}
         </h3>
 
         <div className="mt-4 flex items-center gap-3">
-          <div className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-full border border-cyan-300/15 bg-cyan-300/10">
+          <div className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-full border border-cl-accent/[0.15] bg-cl-accent/10">
             {athleteImage ? (
               <img
                 src={athleteImage}
@@ -312,16 +312,16 @@ function PublishedSessionCard({
                 className="h-full w-full object-cover"
               />
             ) : (
-              <UserCircle2 className="h-6 w-6 text-cyan-100" />
+              <UserCircle2 className="h-6 w-6 text-cl-accent" />
             )}
           </div>
 
           <div className="min-w-0">
-            <div className="truncate text-sm font-black text-white">
+            <div className="truncate text-sm font-black text-cl-ink">
               {athleteName || getUserName(session)}
             </div>
 
-            <div className="truncate text-xs text-white/40">
+            <div className="truncate text-xs text-cl-muted">
               {athleteName
                 ? `Claimed athlete profile • ${getUserName(session)}`
                 : "Corner League user"}
@@ -330,56 +330,56 @@ function PublishedSessionCard({
         </div>
 
         {claimedAthletes.length > 1 ? (
-          <div className="mt-3 rounded-2xl border border-cyan-300/10 bg-cyan-300/[0.045] px-3 py-2 text-xs text-cyan-100/75">
+          <div className="mt-3 rounded-2xl border border-cl-accent/10 bg-cl-accent/[0.045] px-3 py-2 text-xs text-cl-accent">
             +{claimedAthletes.length - 1} more claimed athlete profile
             {claimedAthletes.length - 1 === 1 ? "" : "s"}
           </div>
         ) : null}
 
         <div className="mt-5 grid grid-cols-2 gap-3">
-          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
-            <div className="text-[10px] font-black uppercase tracking-[0.14em] text-white/35">
+          <div className="rounded-2xl border border-cl-border bg-cl-subtle p-3">
+            <div className="text-[10px] font-black uppercase tracking-[0.14em] text-cl-muted">
               Distance
             </div>
-            <div className="mt-1 text-lg font-black text-white">
+            <div className="mt-1 text-lg font-black text-cl-ink">
               {numberOrDash(session.distanceMiles, " mi")}
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
-            <div className="text-[10px] font-black uppercase tracking-[0.14em] text-white/35">
+          <div className="rounded-2xl border border-cl-border bg-cl-subtle p-3">
+            <div className="text-[10px] font-black uppercase tracking-[0.14em] text-cl-muted">
               Max Speed
             </div>
-            <div className="mt-1 text-lg font-black text-white">
+            <div className="mt-1 text-lg font-black text-cl-ink">
               {numberOrDash(session.maxSpeedMph, " mph")}
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
-            <div className="text-[10px] font-black uppercase tracking-[0.14em] text-white/35">
+          <div className="rounded-2xl border border-cl-border bg-cl-subtle p-3">
+            <div className="text-[10px] font-black uppercase tracking-[0.14em] text-cl-muted">
               Avg Speed
             </div>
-            <div className="mt-1 text-lg font-black text-white">
+            <div className="mt-1 text-lg font-black text-cl-ink">
               {numberOrDash(session.avgSpeedMph, " mph")}
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
-            <div className="text-[10px] font-black uppercase tracking-[0.14em] text-white/35">
+          <div className="rounded-2xl border border-cl-border bg-cl-subtle p-3">
+            <div className="text-[10px] font-black uppercase tracking-[0.14em] text-cl-muted">
               Duration
             </div>
-            <div className="mt-1 text-lg font-black text-white">
+            <div className="mt-1 text-lg font-black text-cl-ink">
               {formatDuration(session.durationSeconds)}
             </div>
           </div>
         </div>
 
         <div className="mt-5 flex items-center justify-between gap-3">
-          <div className="text-xs text-white/40">
+          <div className="text-xs text-cl-muted">
             {session.pointCount ?? 0} GPS points
           </div>
 
-          <div className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-cyan-200">
+          <div className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-cl-accent">
             View Replay
             <ChevronRight className="h-4 w-4 transition group-hover:translate-x-1" />
           </div>
@@ -469,11 +469,11 @@ export default function RacePodPublishedSessionsPage() {
   }, [query, sessions]);
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-[#030913] text-white">
+    <div className="relative min-h-screen overflow-x-hidden bg-cl-canvas text-cl-ink">
       <div className="pointer-events-none fixed inset-0 z-0">
-        <div className="absolute inset-0 bg-[#030913]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.13),transparent_30%),radial-gradient(circle_at_82%_18%,rgba(255,107,53,0.10),transparent_28%),radial-gradient(circle_at_50%_55%,rgba(7,17,31,0.82),transparent_58%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(3,9,19,0.20)_0%,rgba(3,9,19,0.76)_52%,rgba(3,9,19,0.98)_100%)]" />
+        <div className="absolute inset-0 bg-cl-canvas" />
+        <div className="absolute inset-0 cl-panel-wash" />
+        <div className="absolute inset-0 cl-panel-wash" />
         <div className="absolute inset-0 opacity-[0.035] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:72px_72px]" />
       </div>
 
@@ -481,60 +481,60 @@ export default function RacePodPublishedSessionsPage() {
         <button
           type="button"
           onClick={() => navigate("/scores/aqua")}
-          className="mb-5 inline-flex items-center gap-2 rounded-full border border-cyan-300/15 bg-cyan-300/10 px-4 py-2 text-sm font-bold text-cyan-100 transition hover:bg-cyan-300 hover:text-[#06111d]"
+          className="mb-5 inline-flex items-center gap-2 rounded-full border border-cl-accent/[0.15] bg-cl-accent/10 px-4 py-2 text-sm font-bold text-cl-accent transition hover:bg-cl-accent hover:text-cl-contrast"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Aqua Hub
         </button>
 
-        <section className="overflow-hidden rounded-[38px] border border-cyan-300/10 bg-[linear-gradient(135deg,rgba(34,211,238,0.12)_0%,rgba(7,17,31,0.94)_48%,rgba(255,107,53,0.10)_100%)] p-6 shadow-[0_34px_100px_rgba(0,0,0,0.46)] sm:p-8 lg:p-10">
+        <section className="overflow-hidden rounded-[38px] border border-cl-accent/10 cl-panel-wash p-6 shadow-cl-panel sm:p-8 lg:p-10">
           <div className="grid gap-8 lg:grid-cols-[1fr_360px] lg:items-end">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/25 bg-cyan-300/10 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.22em] text-cyan-200">
+              <div className="inline-flex items-center gap-2 rounded-full border border-cl-accent/25 bg-cl-accent/10 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.22em] text-cl-accent">
                 <Sparkles className="h-3.5 w-3.5" />
                 Public RacePod Replays
               </div>
 
-              <h1 className="mt-6 max-w-4xl bg-[linear-gradient(90deg,#FFFFFF_0%,#7CF4FF_50%,#FF7849_100%)] bg-clip-text text-4xl font-black uppercase italic tracking-[0.04em] text-transparent sm:text-6xl lg:text-7xl">
+              <h1 className="mt-6 max-w-4xl text-cl-accent text-4xl font-black uppercase italic tracking-[0.04em] sm:text-6xl lg:text-7xl">
                 Shared AQUA Sessions
               </h1>
 
-              <p className="mt-5 max-w-2xl text-base leading-8 text-slate-300">
+              <p className="mt-5 max-w-2xl text-base leading-8 text-cl-muted">
                 Explore published RacePod sessions from the Aqua community. View
                 route replays, speed data, claimed athlete profiles, and
                 shareable activity cards.
               </p>
 
-              <div className="mt-6 flex flex-wrap gap-2 text-xs text-white/55">
-                <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5">
+              <div className="mt-6 flex flex-wrap gap-2 text-xs text-cl-muted">
+                <span className="rounded-full border border-cl-border bg-cl-subtle px-3 py-1.5">
                   Published sessions:{" "}
-                  <span className="font-bold text-white">
+                  <span className="font-bold text-cl-ink">
                     {sessions.length}
                   </span>
                 </span>
 
-                <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5">
-                  Sport: <span className="font-bold text-white">Aqua</span>
+                <span className="rounded-full border border-cl-border bg-cl-subtle px-3 py-1.5">
+                  Sport: <span className="font-bold text-cl-ink">Aqua</span>
                 </span>
 
-                <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5">
+                <span className="rounded-full border border-cl-border bg-cl-subtle px-3 py-1.5">
                   Replay links
                 </span>
               </div>
             </div>
 
-            <div className="rounded-[28px] border border-cyan-300/10 bg-black/25 p-4">
-              <div className="mb-3 text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300/70">
+            <div className="rounded-[28px] border border-cl-accent/10 bg-cl-surface p-4">
+              <div className="mb-3 text-[10px] font-black uppercase tracking-[0.18em] text-cl-accent">
                 Search Replays
               </div>
 
-              <div className="flex h-12 items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-4">
-                <Search className="h-4 w-4 text-white/35" />
+              <div className="flex h-12 items-center gap-3 rounded-2xl border border-cl-border bg-cl-subtle px-4">
+                <Search className="h-4 w-4 text-cl-muted" />
                 <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search racer, user, session..."
-                  className="h-full min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/25"
+                  className="h-full min-w-0 flex-1 bg-transparent text-sm text-cl-ink outline-none placeholder:text-cl-muted"
                 />
               </div>
             </div>
@@ -543,13 +543,13 @@ export default function RacePodPublishedSessionsPage() {
 
         <section className="mt-8">
           {loading ? (
-            <div className="rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-8 text-center text-white/55 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
+            <div className="rounded-[30px] border border-cl-accent/10 bg-cl-surface p-8 text-center text-cl-muted shadow-cl-panel">
               Loading published RacePod sessions…
             </div>
           ) : error ? (
-            <div className="rounded-[30px] border border-red-400/20 bg-red-500/10 p-8 text-red-100">
+            <div className="rounded-[30px] border border-red-400/20 bg-red-500/10 p-8 text-cl-danger">
               <div className="font-black">Could not load RacePod sessions</div>
-              <div className="mt-2 text-sm text-red-100/75">{error}</div>
+              <div className="mt-2 text-sm text-cl-danger">{error}</div>
             </div>
           ) : filteredSessions.length ? (
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
@@ -561,16 +561,16 @@ export default function RacePodPublishedSessionsPage() {
               ))}
             </div>
           ) : (
-            <div className="rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-8 text-center shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
-              <div className="mx-auto grid h-14 w-14 place-items-center rounded-full border border-cyan-300/20 bg-cyan-300/10">
-                <Radio className="h-6 w-6 text-cyan-100" />
+            <div className="rounded-[30px] border border-cl-accent/10 bg-cl-surface p-8 text-center shadow-cl-panel">
+              <div className="mx-auto grid h-14 w-14 place-items-center rounded-full border border-cl-accent/20 bg-cl-accent/10">
+                <Radio className="h-6 w-6 text-cl-accent" />
               </div>
 
-              <h2 className="mt-5 text-2xl font-black text-white">
+              <h2 className="mt-5 text-2xl font-black text-cl-ink">
                 No published RacePod sessions yet
               </h2>
 
-              <p className="mx-auto mt-2 max-w-xl text-sm leading-7 text-white/50">
+              <p className="mx-auto mt-2 max-w-xl text-sm leading-7 text-cl-muted">
                 Once racers publish their RacePod sessions, they will appear
                 here for fans, clubs, sponsors, and other racers to view.
               </p>
@@ -578,7 +578,7 @@ export default function RacePodPublishedSessionsPage() {
               <button
                 type="button"
                 onClick={() => navigate("/racepod")}
-                className="mt-5 inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-cyan-300 px-5 text-xs font-black uppercase tracking-[0.14em] text-[#06111d] transition hover:bg-cyan-200"
+                className="mt-5 inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-cl-accent px-5 text-xs font-black uppercase tracking-[0.14em] text-cl-contrast transition hover:bg-cl-accent"
               >
                 Open RacePod Dashboard
                 <ChevronRight className="h-4 w-4" />

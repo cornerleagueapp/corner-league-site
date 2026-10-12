@@ -19,7 +19,7 @@ import {
   sportLabels,
 } from "@/lib/sportRegistration";
 const inputClass =
-  "mt-2 w-full rounded-xl border border-white/20 bg-[#07111f] p-3 text-white";
+  "mt-2 w-full rounded-xl border border-cl-border bg-cl-surface p-3 text-cl-ink";
 export default function SportEventRegistration({
   eventId,
   sportKey,
@@ -252,7 +252,7 @@ function RegistrationContent({
   return (
     <section
       aria-label="Event registration"
-      className="rounded-2xl border border-cyan-300/20 bg-[#07111f] p-6 text-white"
+      className="rounded-2xl border border-cl-accent/20 bg-cl-surface p-6 text-cl-ink"
     >
       <h2 className="text-2xl font-black">Event registration</h2>
       {sandbox && (
@@ -299,7 +299,7 @@ function RegistrationContent({
             type="button"
             disabled={busy}
             onClick={() => void saveTestAthlete()}
-            className="min-h-11 text-cyan-200 underline"
+            className="min-h-11 text-cl-accent underline"
           >
             Save test athlete
           </button>
@@ -324,12 +324,12 @@ function RegistrationContent({
           </button>
         </div>
       ) : !data?.settings ? (
-        <p className="mt-3 text-slate-300">
+        <p className="mt-3 text-cl-muted">
           Registration has not been published yet.
         </p>
       ) : (
         <>
-          <p className="mt-3 text-slate-300">
+          <p className="mt-3 text-cl-muted">
             {data.open
               ? "Registration is open."
               : "Registration is currently closed."}{" "}
@@ -339,7 +339,7 @@ function RegistrationContent({
           {result ? (
             <div
               role="status"
-              className="mt-5 rounded-xl border border-cyan-200/30 p-4"
+              className="mt-5 rounded-xl border border-cl-accent/30 p-4"
             >
               <h3 className="font-bold">
                 {result.status === "confirmed"
@@ -358,7 +358,7 @@ function RegistrationContent({
               {!sandbox && (
                 <Link
                   href="/create-racer-profile?athletes=1"
-                  className="mt-4 inline-block text-cyan-200 underline"
+                  className="mt-4 inline-block text-cl-accent underline"
                 >
                   View your sport profiles and registrations
                 </Link>
@@ -374,7 +374,7 @@ function RegistrationContent({
                         ? `/auth?next=${encodeURIComponent(returnTo)}`
                         : "/auth"
                     }
-                    className="mt-5 inline-flex rounded-full bg-cyan-300 px-5 py-3 font-bold text-slate-950"
+                    className="mt-5 inline-flex rounded-full bg-cl-accent px-5 py-3 font-bold text-cl-contrast"
                   >
                     Sign in to register
                   </Link>
@@ -398,7 +398,7 @@ function RegistrationContent({
                   ) : (
                     <Link
                       href={profileEditor}
-                      className="mt-5 inline-flex rounded-full bg-cyan-300 px-5 py-3 font-bold text-slate-950"
+                      className="mt-5 inline-flex rounded-full bg-cl-accent px-5 py-3 font-bold text-cl-contrast"
                     >
                       Create your {sportLabels[sportKey]} athlete profile
                     </Link>
@@ -411,7 +411,7 @@ function RegistrationContent({
                       {!sandbox && (
                         <Link
                           href={profileEditor}
-                          className="text-cyan-200 underline"
+                          className="text-cl-accent underline"
                         >
                           Edit profile
                         </Link>
@@ -424,7 +424,7 @@ function RegistrationContent({
                       return (
                         <fieldset
                           key={c.id}
-                          className="rounded-xl border border-white/15 p-4"
+                          className="rounded-xl border border-cl-border p-4"
                         >
                           <legend className="font-bold">
                             {c.name}
@@ -444,10 +444,10 @@ function RegistrationContent({
                               {full ? " · Full" : ""}
                             </span>
                           </label>
-                          <p className="text-sm text-slate-300">
+                          <p className="text-sm text-cl-muted">
                             {c.description}
                           </p>
-                          <p className="mt-2 text-sm text-slate-400">
+                          <p className="mt-2 text-sm text-cl-muted">
                             Skills: {c.skillLevels.join(", ")} · Age{" "}
                             {c.minimumAge ?? "any"}–{c.maximumAge ?? "any"}
                             {c.capacity !== null
@@ -502,7 +502,7 @@ function RegistrationContent({
                       Estimated total: {(total / 100).toFixed(2)}{" "}
                       {data.settings.currency}
                     </p>
-                    <div className="max-h-60 overflow-y-auto whitespace-pre-wrap rounded-xl border border-white/15 p-4 text-sm text-slate-300">
+                    <div className="max-h-60 overflow-y-auto whitespace-pre-wrap rounded-xl border border-cl-border p-4 text-sm text-cl-muted">
                       {data.settings.termsText}
                     </div>
                     <label className="flex min-h-11 items-center gap-3">
@@ -527,7 +527,7 @@ function RegistrationContent({
                         !entries.length ||
                         (total > 0 && !data.settings.allowCash)
                       }
-                      className="min-h-12 rounded-full bg-cyan-300 px-6 font-black text-slate-950 disabled:opacity-50"
+                      className="min-h-12 rounded-full bg-cl-accent px-6 font-black text-cl-contrast disabled:opacity-50"
                     >
                       {busy
                         ? "Submitting…"
@@ -543,7 +543,7 @@ function RegistrationContent({
         </>
       )}
       {data?.settings?.publicRoster && (
-        <div className="mt-8 border-t border-white/10 pt-5">
+        <div className="mt-8 border-t border-cl-border pt-5">
           <h3 className="font-bold">
             Confirmed athletes · {roster.data?.total ?? "…"}
           </h3>

@@ -1,3 +1,5 @@
+import { useSportSelection } from "@/hooks/useSportSelection";
+import { sportThemeStyle } from "@/lib/sportTheme";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "wouter";
 import SidebarPanel, { useAppSidebarSections } from "@/components/sidebarPanel";
@@ -171,6 +173,7 @@ export default function AppShell({
   });
 
   const [location, navigate] = useLocation();
+  const { sportKey } = useSportSelection();
 
   const organizationAdminMatch = location.match(
     /^\/organizations\/([^/]+)\/admin(?:\/|$)/,
@@ -314,11 +317,20 @@ export default function AppShell({
   }
 
   return (
-    <div className="consumer-app-shell relative flex overflow-hidden bg-black text-white">
+    <div
+      className="consumer-app-shell relative flex overflow-hidden bg-black text-white"
+      data-consumer-sport={sportKey}
+      style={sportThemeStyle(sportKey)}
+    >
+      <a className="consumer-skip-link" href="#consumer-main">
+        Skip to content
+      </a>
       <button
         type="button"
         onClick={() => setIsSidebarOpen((value) => !value)}
-        className="consumer-menu-toggle fixed z-[1010] rounded-2xl border border-cyan-300/15 bg-[#07111F]/95 p-2 text-white shadow-[0_18px_45px_rgba(0,0,0,0.35)] backdrop-blur transition hover:border-cyan-300/30 hover:bg-cyan-300/10 md:hidden"
+        className="cl-dark consumer-menu-toggle fixed z-[1010] rounded-2xl border border-cl-accent/[0.15] bg-cl-surface/95 p-2 text-white shadow-[0_18px_45px_rgba(0,0,0,0.35)] backdrop-blur transition hover:border-cl-accent/30 hover:bg-cl-accent/10 md:hidden"
+        aria-expanded={isSidebarOpen}
+        aria-controls="consumer-sidebar"
         aria-label={isSidebarOpen ? "Close main menu" : "Open main menu"}
       >
         <svg
@@ -438,7 +450,11 @@ export default function AppShell({
       >
         <PublicTopNav sticky={false} />
 
-        <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden">
+        <div
+          id="consumer-main"
+          tabIndex={-1}
+          className="consumer-content min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden"
+        >
           {children}
           {location !== "/messages" && <SiteFooter />}
         </div>
@@ -469,7 +485,7 @@ export default function AppShell({
             role="dialog"
             aria-modal="true"
             aria-labelledby="logout-title"
-            className="relative z-10 w-full max-w-sm rounded-[30px] border border-cyan-300/10 bg-[#07111F] p-5 shadow-[0_30px_90px_rgba(0,0,0,0.5)]"
+            className="cl-dark relative z-10 w-full max-w-sm rounded-[30px] border border-cyan-300/10 bg-[#07111F] p-5 shadow-[0_30px_90px_rgba(0,0,0,0.5)]"
           >
             <div className="text-[10px] font-black uppercase tracking-[0.22em] text-[#FFB199]">
               Account

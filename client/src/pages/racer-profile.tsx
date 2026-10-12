@@ -145,7 +145,7 @@ function RacePodReplayStatCard({
   onClick: () => void;
 }) {
   return (
-    <Card className="overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
+    <Card className="overflow-hidden rounded-[30px] border border-cl-accent/10 bg-cl-surface p-5 shadow-cl-panel">
       <button
         type="button"
         onClick={onClick}
@@ -153,22 +153,22 @@ function RacePodReplayStatCard({
         className="group w-full text-left disabled:cursor-not-allowed disabled:opacity-70"
       >
         <div className="mb-3 flex items-center justify-between gap-3">
-          <div className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.16em] text-cyan-300/80">
+          <div className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.16em] text-cl-accent">
             <Radio className="h-4 w-4" />
             RacePod Replays
           </div>
 
-          <div className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-cyan-300/15 bg-cyan-300/10 text-cyan-100 transition group-hover:bg-cyan-300 group-hover:text-[#06111d]">
+          <div className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-cl-accent/15 bg-cl-accent/10 text-cl-accent transition group-hover:bg-cl-accent group-hover:text-cl-contrast">
             <ChevronRight className="h-4 w-4" />
           </div>
         </div>
 
         {loading ? (
-          <p className="text-sm text-white/60">Loading RacePod sessions…</p>
+          <p className="text-sm text-cl-muted">Loading RacePod sessions…</p>
         ) : count === 0 ? (
           <div>
-            <div className="text-3xl font-black text-white">0</div>
-            <p className="mt-2 text-sm leading-6 text-white/55">
+            <div className="text-3xl font-black text-cl-ink">0</div>
+            <p className="mt-2 text-sm leading-6 text-cl-muted">
               No published RacePod replay sessions yet.
             </p>
           </div>
@@ -177,12 +177,12 @@ function RacePodReplayStatCard({
             <div className="grid grid-cols-2 gap-3">
               <MiniStat label="Published Replays" value={count} />
 
-              <div className="rounded-[20px] border border-white/10 bg-white/[0.04] p-3">
-                <div className="text-[10px] font-black uppercase tracking-[0.14em] text-white/35">
+              <div className="rounded-[20px] border border-cl-border bg-cl-subtle p-3">
+                <div className="text-[10px] font-black uppercase tracking-[0.14em] text-cl-muted">
                   Top Speed
                 </div>
 
-                <div className="mt-1 text-lg font-black text-white">
+                <div className="mt-1 text-lg font-black text-cl-ink">
                   {latestSession?.maxSpeedMph
                     ? `${latestSession.maxSpeedMph} mph`
                     : "—"}
@@ -190,18 +190,18 @@ function RacePodReplayStatCard({
               </div>
             </div>
 
-            <div className="mt-4 rounded-[20px] border border-white/10 bg-white/[0.04] p-3">
-              <div className="text-[10px] font-black uppercase tracking-[0.16em] text-white/35">
+            <div className="mt-4 rounded-[20px] border border-cl-border bg-cl-subtle p-3">
+              <div className="text-[10px] font-black uppercase tracking-[0.16em] text-cl-muted">
                 Latest Replay
               </div>
 
-              <div className="mt-1 truncate text-sm font-semibold text-white">
+              <div className="mt-1 truncate text-sm font-semibold text-cl-ink">
                 {latestSession
                   ? getRacePodSessionTitle(latestSession)
                   : "RacePod Replay"}
               </div>
 
-              <div className="mt-1 text-xs text-white/45">
+              <div className="mt-1 text-xs text-cl-muted">
                 {latestSession
                   ? formatRacePodDate(
                       latestSession.publishedAt || latestSession.startedAt,
@@ -210,7 +210,7 @@ function RacePodReplayStatCard({
               </div>
             </div>
 
-            <div className="mt-4 inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-cyan-200">
+            <div className="mt-4 inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-cl-accent">
               View replay sessions
               <ChevronRight className="h-4 w-4 transition group-hover:translate-x-1" />
             </div>
@@ -254,24 +254,24 @@ function RacePodSessionsModal({
       <button
         type="button"
         aria-label="Close RacePod replay sessions"
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+        className="cl-dark absolute inset-0 bg-black/70 backdrop-blur-sm"
         onClick={onClose}
       />
 
-      <div className="relative z-10 flex max-h-[88vh] w-full max-w-3xl flex-col overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F] shadow-[0_30px_90px_rgba(0,0,0,0.5)]">
-        <div className="border-b border-white/10 bg-[linear-gradient(180deg,rgba(7,17,31,0.98)_0%,rgba(4,10,19,0.98)_100%)] px-5 py-5">
+      <div className="relative z-10 flex max-h-[88vh] w-full max-w-3xl flex-col overflow-hidden rounded-[30px] border border-cl-accent/10 bg-cl-surface shadow-cl-panel">
+        <div className="border-b border-cl-border cl-panel-wash px-5 py-5">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-cyan-300/15 bg-cyan-300/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-cyan-200">
+              <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-cl-accent/15 bg-cl-accent/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-cl-accent">
                 <Radio className="h-3.5 w-3.5" />
                 RacePod Replays
               </div>
 
-              <h2 className="text-2xl font-black text-white">
+              <h2 className="text-2xl font-black text-cl-ink">
                 {racerName} RacePod Sessions
               </h2>
 
-              <p className="mt-1 text-sm text-white/55">
+              <p className="mt-1 text-sm text-cl-muted">
                 Scroll and select a published replay to view the full session.
               </p>
             </div>
@@ -279,7 +279,7 @@ function RacePodSessionsModal({
             <button
               type="button"
               onClick={onClose}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white hover:bg-white/10"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-cl-border bg-cl-subtle text-cl-ink hover:bg-cl-subtle"
               aria-label="Close RacePod sessions modal"
             >
               <XIcon className="h-5 w-5" />
@@ -289,20 +289,20 @@ function RacePodSessionsModal({
 
         <div className="overflow-y-auto px-5 py-5">
           {loading ? (
-            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6 text-white/70">
+            <div className="rounded-2xl border border-cl-border bg-cl-subtle p-6 text-cl-muted">
               Loading RacePod replay sessions…
             </div>
           ) : sessions.length === 0 ? (
-            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6 text-center">
-              <div className="mx-auto grid h-12 w-12 place-items-center rounded-full border border-cyan-300/20 bg-cyan-300/10">
-                <Radio className="h-5 w-5 text-cyan-100" />
+            <div className="rounded-2xl border border-cl-border bg-cl-subtle p-6 text-center">
+              <div className="mx-auto grid h-12 w-12 place-items-center rounded-full border border-cl-accent/20 bg-cl-accent/10">
+                <Radio className="h-5 w-5 text-cl-accent" />
               </div>
 
-              <div className="mt-4 text-lg font-black text-white">
+              <div className="mt-4 text-lg font-black text-cl-ink">
                 No published replays yet
               </div>
 
-              <p className="mt-2 text-sm leading-6 text-white/50">
+              <p className="mt-2 text-sm leading-6 text-cl-muted">
                 When this racer publishes RacePod sessions, they will show here.
               </p>
             </div>
@@ -316,32 +316,32 @@ function RacePodSessionsModal({
                     key={sessionId}
                     type="button"
                     onClick={() => onOpenSession(sessionId)}
-                    className="group w-full rounded-[24px] border border-white/10 bg-white/[0.04] p-4 text-left transition hover:border-cyan-300/25 hover:bg-cyan-300/[0.055]"
+                    className="group w-full rounded-[24px] border border-cl-border bg-cl-subtle p-4 text-left transition hover:border-cl-accent/25 hover:bg-cl-accent/[0.055]"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-cyan-200">
+                          <span className="inline-flex items-center gap-2 rounded-full border border-cl-accent/20 bg-cl-accent/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-cl-accent">
                             Published Replay
                           </span>
 
-                          <span className="text-xs text-white/40">
+                          <span className="text-xs text-cl-muted">
                             {formatRacePodDate(
                               session.publishedAt || session.startedAt,
                             )}
                           </span>
                         </div>
 
-                        <div className="mt-3 truncate text-lg font-black text-white">
+                        <div className="mt-3 truncate text-lg font-black text-cl-ink">
                           {getRacePodSessionTitle(session)}
                         </div>
 
                         <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                          <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
-                            <div className="text-[10px] font-black uppercase tracking-[0.12em] text-white/35">
+                          <div className="rounded-2xl border border-cl-border bg-cl-subtle p-3">
+                            <div className="text-[10px] font-black uppercase tracking-[0.12em] text-cl-muted">
                               Distance
                             </div>
-                            <div className="mt-1 text-sm font-black text-white">
+                            <div className="mt-1 text-sm font-black text-cl-ink">
                               {formatRacePodNumber(
                                 session.distanceMiles,
                                 " mi",
@@ -349,36 +349,36 @@ function RacePodSessionsModal({
                             </div>
                           </div>
 
-                          <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
-                            <div className="text-[10px] font-black uppercase tracking-[0.12em] text-white/35">
+                          <div className="rounded-2xl border border-cl-border bg-cl-subtle p-3">
+                            <div className="text-[10px] font-black uppercase tracking-[0.12em] text-cl-muted">
                               Max Speed
                             </div>
-                            <div className="mt-1 text-sm font-black text-white">
+                            <div className="mt-1 text-sm font-black text-cl-ink">
                               {formatRacePodNumber(session.maxSpeedMph, " mph")}
                             </div>
                           </div>
 
-                          <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
-                            <div className="text-[10px] font-black uppercase tracking-[0.12em] text-white/35">
+                          <div className="rounded-2xl border border-cl-border bg-cl-subtle p-3">
+                            <div className="text-[10px] font-black uppercase tracking-[0.12em] text-cl-muted">
                               Duration
                             </div>
-                            <div className="mt-1 text-sm font-black text-white">
+                            <div className="mt-1 text-sm font-black text-cl-ink">
                               {formatRacePodDuration(session.durationSeconds)}
                             </div>
                           </div>
 
-                          <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
-                            <div className="text-[10px] font-black uppercase tracking-[0.12em] text-white/35">
+                          <div className="rounded-2xl border border-cl-border bg-cl-subtle p-3">
+                            <div className="text-[10px] font-black uppercase tracking-[0.12em] text-cl-muted">
                               Points
                             </div>
-                            <div className="mt-1 text-sm font-black text-white">
+                            <div className="mt-1 text-sm font-black text-cl-ink">
                               {session.pointCount ?? 0}
                             </div>
                           </div>
                         </div>
                       </div>
 
-                      <div className="mt-1 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-cyan-300/15 bg-cyan-300/10 text-cyan-100 transition group-hover:bg-cyan-300 group-hover:text-[#06111d]">
+                      <div className="mt-1 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-cl-accent/15 bg-cl-accent/10 text-cl-accent transition group-hover:bg-cl-accent group-hover:text-cl-contrast">
                         <ChevronRight className="h-4 w-4" />
                       </div>
                     </div>
@@ -969,20 +969,20 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
 
   if (loading || authLoading) {
     return (
-      <div className="relative grid min-h-screen place-items-center overflow-hidden bg-[#030913] text-white">
+      <div className="relative grid min-h-screen place-items-center overflow-hidden bg-cl-canvas text-cl-ink">
         <PageSEO title="Racer • Corner League" />
 
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.12),transparent_28%),radial-gradient(circle_at_80%_20%,rgba(255,107,53,0.08),transparent_24%),linear-gradient(180deg,#030913_0%,#07111F_48%,#02050A_100%)]" />
+          <div className="absolute inset-0 cl-panel-wash" />
           <div className="absolute inset-0 opacity-[0.04] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:72px_72px]" />
         </div>
 
-        <div className="relative rounded-[28px] border border-cyan-300/10 bg-[#07111F]/80 px-8 py-7 text-center shadow-[0_24px_70px_rgba(0,0,0,0.36)]">
-          <div className="mx-auto mb-4 h-10 w-10 animate-pulse rounded-full border border-cyan-300/25 bg-cyan-300/10 shadow-[0_0_26px_rgba(34,211,238,0.18)]" />
-          <div className="text-xs font-black uppercase tracking-[0.22em] text-cyan-200/70">
+        <div className="relative rounded-[28px] border border-cl-accent/10 bg-cl-surface px-8 py-7 text-center shadow-cl-panel">
+          <div className="mx-auto mb-4 h-10 w-10 animate-pulse rounded-full border border-cl-accent/25 bg-cl-accent/10 shadow-cl-panel" />
+          <div className="text-xs font-black uppercase tracking-[0.22em] text-cl-accent">
             Loading Racer Profile
           </div>
-          <div className="mt-2 text-sm text-slate-300">
+          <div className="mt-2 text-sm text-cl-muted">
             Pulling athlete data, rankings, and race history…
           </div>
         </div>
@@ -992,27 +992,27 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
 
   if (err || !racer) {
     return (
-      <div className="relative grid min-h-screen place-items-center overflow-hidden bg-[#030913] px-4 text-white">
+      <div className="relative grid min-h-screen place-items-center overflow-hidden bg-cl-canvas px-4 text-cl-ink">
         <PageSEO title="Racer • Corner League" />
 
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.12),transparent_28%),radial-gradient(circle_at_80%_20%,rgba(255,107,53,0.08),transparent_24%),linear-gradient(180deg,#030913_0%,#07111F_48%,#02050A_100%)]" />
+          <div className="absolute inset-0 cl-panel-wash" />
         </div>
 
-        <div className="relative max-w-md rounded-[30px] border border-cyan-300/10 bg-[#07111F]/85 p-7 text-center shadow-[0_24px_70px_rgba(0,0,0,0.36)]">
-          <div className="text-[10px] font-black uppercase tracking-[0.22em] text-[#FFB199]">
+        <div className="relative max-w-md rounded-[30px] border border-cl-accent/10 bg-cl-surface p-7 text-center shadow-cl-panel">
+          <div className="text-[10px] font-black uppercase tracking-[0.22em] text-cl-accent">
             Racer Profile
           </div>
-          <div className="mt-3 text-2xl font-black uppercase text-white">
+          <div className="mt-3 text-2xl font-black uppercase text-cl-ink">
             Couldn’t load this racer
           </div>
-          <div className="mt-3 text-sm leading-7 text-slate-300">
+          <div className="mt-3 text-sm leading-7 text-cl-muted">
             {err || "Not found"}
           </div>
 
           <Button
             onClick={() => window.history.back()}
-            className="mt-6 rounded-full bg-cyan-300 px-6 py-3 text-xs font-black uppercase tracking-[0.16em] text-[#06111d] hover:bg-cyan-200"
+            className="mt-6 rounded-full bg-cl-accent px-6 py-3 text-xs font-black uppercase tracking-[0.16em] text-cl-contrast hover:bg-cl-accent"
           >
             Go Back
           </Button>
@@ -1286,15 +1286,15 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
   }
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-[#030913] text-white">
+    <div className="relative min-h-screen overflow-x-hidden bg-cl-canvas text-cl-ink">
       <PageSEO title={`${title} • Corner League`} />
 
       <div className="pointer-events-none fixed inset-0 z-0">
-        <div className="absolute inset-0 bg-[#030913]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.12),transparent_30%),radial-gradient(circle_at_82%_18%,rgba(255,107,53,0.08),transparent_28%),radial-gradient(circle_at_50%_55%,rgba(7,17,31,0.82),transparent_58%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(3,9,19,0.25)_0%,rgba(3,9,19,0.72)_52%,rgba(3,9,19,0.95)_100%)]" />
+        <div className="absolute inset-0 bg-cl-canvas" />
+        <div className="absolute inset-0 cl-panel-wash" />
+        <div className="absolute inset-0 cl-panel-wash" />
         <div className="absolute inset-0 opacity-[0.035] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:72px_72px]" />
-        <div className="absolute left-1/2 top-0 h-[320px] w-[320px] -translate-x-1/2 rounded-full bg-cyan-400/8 blur-3xl" />
+        <div className="absolute left-1/2 top-0 h-[320px] w-[320px] -translate-x-1/2 rounded-full bg-cl-accent/[0.08] blur-3xl" />
       </div>
 
       <div className="relative z-10 mx-auto max-w-6xl px-3 pb-12 pt-0 sm:px-4 sm:pt-10">
@@ -1340,39 +1340,39 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
           </section>
         )}
 
-        <div className="mt-4 grid grid-cols-2 gap-3 rounded-[24px] border border-cyan-300/10 bg-[#07111F]/80 p-4 sm:grid-cols-4">
+        <div className="mt-4 grid grid-cols-2 gap-3 rounded-[24px] border border-cl-accent/10 bg-cl-surface p-4 sm:grid-cols-4">
           <div>
-            <div className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300/70">
+            <div className="text-[10px] font-black uppercase tracking-[0.18em] text-cl-accent">
               Height
             </div>
-            <div className="mt-2 text-sm text-white/80">
+            <div className="mt-2 text-sm text-cl-ink">
               {formatHeightFromMeters(racer.height)}
             </div>
           </div>
 
           <div>
-            <div className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300/70">
+            <div className="text-[10px] font-black uppercase tracking-[0.18em] text-cl-accent">
               Age
             </div>
-            <div className="mt-2 text-sm text-white/80">
+            <div className="mt-2 text-sm text-cl-ink">
               {formatAgeYearsAndDays(racer.dateOfBirth)}
             </div>
           </div>
 
           <div>
-            <div className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300/70">
+            <div className="text-[10px] font-black uppercase tracking-[0.18em] text-cl-accent">
               Ride
             </div>
-            <div className="mt-2 text-sm text-white/80">
+            <div className="mt-2 text-sm text-cl-ink">
               {racer.boatManufacturers || "Coming soon"}
             </div>
           </div>
 
           <div>
-            <div className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300/70">
+            <div className="text-[10px] font-black uppercase tracking-[0.18em] text-cl-accent">
               Sponsored By
             </div>
-            <div className="mt-2 text-sm text-white/80">
+            <div className="mt-2 text-sm text-cl-ink">
               {sponsors[0]?.name || "Coming soon"}
             </div>
           </div>
@@ -1399,15 +1399,15 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
 
         <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="order-2 space-y-6 lg:order-1 lg:col-span-1">
-            <Card className="overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
-              <div className="mb-3 text-sm font-semibold uppercase tracking-[0.16em] text-cyan-300/80">
+            <Card className="overflow-hidden rounded-[30px] border border-cl-accent/10 bg-cl-surface p-5 shadow-cl-panel">
+              <div className="mb-3 text-sm font-semibold uppercase tracking-[0.16em] text-cl-accent">
                 Sponsors
               </div>
 
               {sponsorsLoading ? (
-                <p className="text-sm text-white/60">Loading sponsors…</p>
+                <p className="text-sm text-cl-muted">Loading sponsors…</p>
               ) : sponsors.length === 0 ? (
-                <p className="text-sm text-white/55">Sponsors coming soon.</p>
+                <p className="text-sm text-cl-muted">Sponsors coming soon.</p>
               ) : (
                 <div className="space-y-3">
                   {sponsors.map((sponsor) => {
@@ -1415,7 +1415,7 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
                     const website = getSponsorWebsite(sponsor);
 
                     const content = (
-                      <div className="flex items-center gap-3 rounded-[20px] border border-white/10 bg-white/[0.04] p-3 transition hover:bg-white/[0.06]">
+                      <div className="flex items-center gap-3 rounded-[20px] border border-cl-border bg-cl-subtle p-3 transition hover:bg-cl-subtle">
                         {logo ? (
                           <img
                             src={logo}
@@ -1423,24 +1423,24 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
                             className="h-10 w-10 rounded-xl object-contain"
                           />
                         ) : (
-                          <div className="grid h-10 w-10 place-items-center rounded-xl bg-cyan-300/10 text-cyan-200">
+                          <div className="grid h-10 w-10 place-items-center rounded-xl bg-cl-accent/10 text-cl-accent">
                             <Sparkles className="h-4 w-4" />
                           </div>
                         )}
 
                         <div className="min-w-0 flex-1">
-                          <div className="truncate text-sm font-semibold text-white">
+                          <div className="truncate text-sm font-semibold text-cl-ink">
                             {sponsor.name}
                           </div>
                           {website ? (
-                            <div className="truncate text-xs text-white/45">
+                            <div className="truncate text-xs text-cl-muted">
                               {website}
                             </div>
                           ) : null}
                         </div>
 
                         {website ? (
-                          <ExternalLink className="h-4 w-4 text-white/40" />
+                          <ExternalLink className="h-4 w-4 text-cl-muted" />
                         ) : null}
                       </div>
                     );
@@ -1462,9 +1462,9 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
               )}
             </Card>
 
-            <Card className="overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
+            <Card className="overflow-hidden rounded-[30px] border border-cl-accent/10 bg-cl-surface p-5 shadow-cl-panel">
               <div className="mb-3 flex items-center justify-between gap-3">
-                <div className="text-sm font-semibold uppercase tracking-[0.16em] text-cyan-300/80">
+                <div className="text-sm font-semibold uppercase tracking-[0.16em] text-cl-accent">
                   World Finals
                 </div>
 
@@ -1472,14 +1472,14 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
                   <Button
                     type="button"
                     onClick={() => setWorldFinalsOpen(true)}
-                    className="rounded-full border border-cyan-300/25 bg-cyan-300/10 px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-cyan-100 hover:bg-cyan-300 hover:text-[#06111d]"
+                    className="rounded-full border border-cl-accent/25 bg-cl-accent/10 px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-cl-accent hover:bg-cl-accent hover:text-cl-contrast"
                   >
                     Edit
                   </Button>
                 ) : null}
               </div>
 
-              <div className="grid grid-cols-2 gap-3 text-white/80">
+              <div className="grid grid-cols-2 gap-3 text-cl-ink">
                 <MiniStat
                   label="Career WF Wins"
                   value={racer.careerWorldFinalsWins ?? 0}
@@ -1496,13 +1496,13 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
           </div>
 
           <div className="order-1 space-y-4 lg:order-2 lg:col-span-2">
-            <Card className="overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)] sm:p-6">
+            <Card className="overflow-hidden rounded-[30px] border border-cl-accent/10 bg-cl-surface p-5 shadow-cl-panel sm:p-6">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <div className="mb-2 text-lg font-semibold text-white">
+                  <div className="mb-2 text-lg font-semibold text-cl-ink">
                     Racer Gallery
                   </div>
-                  <p className="text-sm leading-7 text-slate-300">
+                  <p className="text-sm leading-7 text-cl-muted">
                     Videos, photos, highlights, sponsor content, and race
                     moments.
                   </p>
@@ -1510,7 +1510,7 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
 
                 <Button
                   onClick={() => setGalleryOpen(true)}
-                  className="rounded-full border border-cyan-300/25 bg-cyan-300/10 px-5 py-3 text-xs font-black uppercase tracking-[0.16em] text-cyan-100 hover:bg-cyan-300 hover:text-[#06111d]"
+                  className="rounded-full border border-cl-accent/25 bg-cl-accent/10 px-5 py-3 text-xs font-black uppercase tracking-[0.16em] text-cl-accent hover:bg-cl-accent hover:text-cl-contrast"
                 >
                   <Play className="mr-2 h-4 w-4" />
                   View Racer Gallery
@@ -1524,19 +1524,19 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
                       key={item.id}
                       type="button"
                       onClick={() => setGalleryOpen(true)}
-                      className="relative aspect-[4/3] overflow-hidden rounded-[18px] border border-white/10 bg-black"
+                      className="relative aspect-[4/3] overflow-hidden rounded-[18px] border border-cl-border bg-cl-canvas"
                     >
                       <img
                         src={getGalleryThumb(item)}
                         alt={item.title || "Racer media"}
                         className="h-full w-full object-cover opacity-80"
                       />
-                      <div className="absolute inset-0 bg-black/10" />
-                      <div className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-black/55">
+                      <div className="absolute inset-0 bg-cl-subtle" />
+                      <div className="cl-dark absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-black/55">
                         {item.type === "video" ? (
-                          <Play className="h-3.5 w-3.5 text-white" />
+                          <Play className="h-3.5 w-3.5 text-cl-ink" />
                         ) : (
-                          <ImageIcon className="h-3.5 w-3.5 text-white" />
+                          <ImageIcon className="h-3.5 w-3.5 text-cl-ink" />
                         )}
                       </div>
                     </button>
@@ -1550,27 +1550,27 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
               canRemoveTag={isOwner}
             />
 
-            <Card className="overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)] sm:p-6">
-              <div className="mb-4 text-lg font-semibold text-white">
+            <Card className="overflow-hidden rounded-[30px] border border-cl-accent/10 bg-cl-surface p-5 shadow-cl-panel sm:p-6">
+              <div className="mb-4 text-lg font-semibold text-cl-ink">
                 Performance Timeline
               </div>
 
               {historyLoading ? (
-                <p className="text-sm text-slate-300">Loading race history…</p>
+                <p className="text-sm text-cl-muted">Loading race history…</p>
               ) : history.length === 0 ? (
-                <p className="text-sm leading-7 text-slate-300">
+                <p className="text-sm leading-7 text-cl-muted">
                   No personal race results found yet.
                 </p>
               ) : (
                 <div
-                  className={`overflow-x-auto rounded-[24px] border border-white/10 bg-black/25 [scrollbar-width:thin] [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-cyan-300/20 ${
+                  className={`overflow-x-auto rounded-[24px] border border-cl-border bg-cl-subtle [scrollbar-width:thin] [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-cl-accent/20 ${
                     hasTimelineOverflow
                       ? "max-h-[540px] overflow-y-auto pr-1"
                       : ""
                   }`}
                 >
                   <table className="w-full min-w-[760px] text-sm">
-                    <thead className="bg-white/[0.04] text-white/70">
+                    <thead className="bg-cl-subtle text-cl-muted">
                       <tr>
                         <th className="px-4 py-3 text-left font-medium">
                           Event
@@ -1601,29 +1601,29 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
                             key={item.resultId}
                             className={`border-t ${
                               isOverall
-                                ? "border-cyan-400/15 bg-cyan-400/[0.045]"
-                                : "border-white/10"
+                                ? "border-cl-accent/15 bg-cl-accent/[0.045]"
+                                : "border-cl-border"
                             }`}
                           >
-                            <td className="px-4 py-3 text-white">
+                            <td className="px-4 py-3 text-cl-ink">
                               <div className="flex items-start gap-3">
                                 {isOverall ? (
-                                  <span className="mt-1 rounded-full border border-cyan-300/20 bg-cyan-400/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-cyan-300">
+                                  <span className="mt-1 rounded-full border border-cl-accent/20 bg-cl-accent/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-cl-accent">
                                     Overall
                                   </span>
                                 ) : (
-                                  <span className="mt-1 rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/55">
+                                  <span className="mt-1 rounded-full border border-cl-border bg-cl-subtle px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-cl-muted">
                                     Moto
                                   </span>
                                 )}
 
                                 <div>
                                   <div
-                                    className={`font-medium ${isOverall ? "text-cyan-100" : "text-white"}`}
+                                    className={`font-medium ${isOverall ? "text-cl-accent" : "text-cl-ink"}`}
                                   >
                                     {item.eventName || "Unknown Event"}
                                   </div>
-                                  <div className="text-xs text-white/50">
+                                  <div className="text-xs text-cl-muted">
                                     {item.eventStartDate
                                       ? new Date(
                                           item.eventStartDate,
@@ -1635,36 +1635,36 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
                             </td>
 
                             <td
-                              className={`px-4 py-3 ${isOverall ? "text-cyan-100" : "text-white/85"}`}
+                              className={`px-4 py-3 ${isOverall ? "text-cl-accent" : "text-cl-ink"}`}
                             >
                               {item.divisionName || item.matchName || "—"}
                             </td>
 
                             <td className="px-4 py-3">
                               {isOverall ? (
-                                <span className="inline-flex rounded-full border border-cyan-300/20 bg-cyan-400/10 px-2.5 py-1 text-xs font-medium text-cyan-200">
+                                <span className="inline-flex rounded-full border border-cl-accent/20 bg-cl-accent/10 px-2.5 py-1 text-xs font-medium text-cl-accent">
                                   Overall
                                 </span>
                               ) : (
-                                <span className="inline-flex rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-xs font-medium text-white/75">
+                                <span className="inline-flex rounded-full border border-cl-border bg-cl-subtle px-2.5 py-1 text-xs font-medium text-cl-muted">
                                   Moto {item.motoSequence}
                                 </span>
                               )}
                             </td>
 
                             <td
-                              className={`px-4 py-3 font-medium ${isOverall ? "text-cyan-100" : "text-white/85"}`}
+                              className={`px-4 py-3 font-medium ${isOverall ? "text-cl-accent" : "text-cl-ink"}`}
                             >
                               {item.position ?? "—"}
                             </td>
 
                             <td
-                              className={`px-4 py-3 font-medium ${isOverall ? "text-cyan-100" : "text-white/85"}`}
+                              className={`px-4 py-3 font-medium ${isOverall ? "text-cl-accent" : "text-cl-ink"}`}
                             >
                               {item.score ?? "—"}
                             </td>
 
-                            <td className="px-4 py-3 text-white/85">
+                            <td className="px-4 py-3 text-cl-ink">
                               {item.status ?? "—"}
                             </td>
                           </tr>
@@ -1681,19 +1681,19 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
 
       {lightboxUrl && (
         <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70"
+          className="cl-dark fixed inset-0 z-[60] flex items-center justify-center bg-black/70"
           onClick={() => setLightboxUrl(null)}
         >
           <button
             onClick={() => setLightboxUrl(null)}
-            className="absolute right-4 top-4 grid h-9 w-9 place-items-center rounded-full bg-white text-black"
+            className="absolute right-4 top-4 grid h-9 w-9 place-items-center rounded-full bg-cl-surface text-cl-ink"
             aria-label="Close image"
           >
             <XIcon size={18} />
           </button>
           <img
             src={lightboxUrl}
-            className="max-h-[85vh] max-w-[92vw] rounded-xl border border-white/10 object-contain"
+            className="max-h-[85vh] max-w-[92vw] rounded-xl border border-cl-border object-contain"
             onClick={(e) => e.stopPropagation()}
           />
         </div>

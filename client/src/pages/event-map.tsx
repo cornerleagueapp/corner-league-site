@@ -6,7 +6,7 @@ export default function EventMapPage() {
   const { allEvents } = useScoresLandingData();
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-[#030913] px-3 py-6 text-white sm:px-6 lg:px-8">
+    <div className="relative min-h-screen overflow-x-hidden bg-cl-canvas px-3 py-6 text-cl-ink sm:px-6 lg:px-8">
       <PageSEO
         title="Event Map • Corner League Sports"
         description="Explore jet ski racing event coverage across the country."

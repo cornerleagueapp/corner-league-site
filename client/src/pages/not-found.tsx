@@ -5,15 +5,15 @@ import logoPath from "@assets/CL_Logo.png";
 
 export default function NotFound() {
   return (
-    <div className="relative min-h-screen bg-black text-white overflow-hidden">
+    <div className="relative min-h-screen bg-cl-canvas text-cl-ink overflow-hidden">
       {/* Soft glow background */}
-      <div className="pointer-events-none absolute -top-32 -left-32 h-96 w-96 rounded-full bg-fuchsia-600/20 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-32 -right-32 h-[28rem] w-[28rem] rounded-full bg-purple-500/20 blur-3xl" />
+      <div className="pointer-events-none absolute -top-32 -left-32 h-96 w-96 rounded-full bg-cl-accent/20 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-32 -right-32 h-[28rem] w-[28rem] rounded-full bg-cl-accent/20 blur-3xl" />
 
       {/* Return Home (top-left) */}
       <div className="absolute top-4 left-1/2 -translate-x-1/2 sm:left-6 sm:translate-x-0 sm:top-6 z-20">
         <Link href="/">
-          <a className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-2 text-sm font-medium hover:bg-white/10">
+          <a className="inline-flex items-center gap-2 rounded-full border border-cl-border bg-cl-subtle px-3 py-2 text-sm font-medium hover:bg-cl-subtle">
             <ArrowLeft className="h-4 w-4" />
             Return Home
           </a>
@@ -28,7 +28,7 @@ export default function NotFound() {
             <img
               src={logoPath}
               alt="Corner League Logo"
-              className="h-20 w-20 md:h-24 md:w-24 object-contain"
+              className="cl-logo-tile h-20 w-20 md:h-24 md:w-24 object-contain"
             />
             {/* Subtle ring/glow */}
             <div
@@ -46,24 +46,22 @@ export default function NotFound() {
               "0 0 20px rgba(192,132,252,0.6), 0 0 40px rgba(168,85,247,0.5), 0 0 80px rgba(147,51,234,0.35)",
           }}
         >
-          <span className="bg-gradient-to-r from-fuchsia-400 via-purple-400 to-violet-500 bg-clip-text text-transparent">
-            404
-          </span>
+          <span className="text-cl-accent ">404</span>
         </h1>
-        <p className="mt-4 text-lg text-white/70">Page not found.</p>
-        <p className="mt-1 text-sm text-white/50">
+        <p className="mt-4 text-lg text-cl-muted">Page not found.</p>
+        <p className="mt-1 text-sm text-cl-muted">
           The page you’re looking for moved, was removed, or never existed.
         </p>
 
         {/* Quick actions */}
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
           <Link href="/clubs">
-            <a className="rounded-full bg-white px-5 py-2 text-black hover:bg-gray-200">
+            <a className="rounded-full bg-cl-surface px-5 py-2 text-cl-ink hover:bg-cl-subtle">
               Explore Clubs
             </a>
           </Link>
           <Link href="/auth">
-            <a className="rounded-full border border-white/15 bg-white/5 px-5 py-2 hover:bg-white/10">
+            <a className="rounded-full border border-cl-border bg-cl-subtle px-5 py-2 hover:bg-cl-subtle">
               Sign In
             </a>
           </Link>
@@ -72,7 +70,7 @@ export default function NotFound() {
         {/* Sitemap */}
         <div className="mt-14 w-full">
           <div className="mx-auto max-w-3xl">
-            <div className="mb-3 text-xs uppercase tracking-wider text-white/50">
+            <div className="mb-3 text-xs uppercase tracking-wider text-cl-muted">
               Site Map
             </div>
             <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
@@ -81,14 +79,14 @@ export default function NotFound() {
                 href="https://corner-league.ghost.io/about/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/85 hover:bg-white/10"
+                className="rounded-full border border-cl-border bg-cl-subtle px-4 py-2 text-sm text-cl-ink hover:bg-cl-subtle"
               >
                 Why Corner League
               </a>
 
               {/* Clubs */}
               <Link href="/clubs">
-                <a className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/85 hover:bg-white/10">
+                <a className="rounded-full border border-cl-border bg-cl-subtle px-4 py-2 text-sm text-cl-ink hover:bg-cl-subtle">
                   Clubs
                 </a>
               </Link>
@@ -98,7 +96,7 @@ export default function NotFound() {
                 href="https://corner-league.ghost.io/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/85 hover:bg-white/10"
+                className="rounded-full border border-cl-border bg-cl-subtle px-4 py-2 text-sm text-cl-ink hover:bg-cl-subtle"
               >
                 Insights
               </a>
@@ -108,21 +106,21 @@ export default function NotFound() {
                 href="https://www.olympicai.io/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/85 hover:bg-white/10"
+                className="rounded-full border border-cl-border bg-cl-subtle px-4 py-2 text-sm text-cl-ink hover:bg-cl-subtle"
               >
                 Olympic AI
               </a>
 
               {/* Contact */}
               <Link href="/contact">
-                <a className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/85 hover:bg-white/10">
+                <a className="rounded-full border border-cl-border bg-cl-subtle px-4 py-2 text-sm text-cl-ink hover:bg-cl-subtle">
                   Contact Us
                 </a>
               </Link>
 
               {/* Terms/Privacy */}
               <Link href="/terms">
-                <a className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/85 hover:bg-white/10">
+                <a className="rounded-full border border-cl-border bg-cl-subtle px-4 py-2 text-sm text-cl-ink hover:bg-cl-subtle">
                   Terms / Privacy
                 </a>
               </Link>
@@ -132,7 +130,7 @@ export default function NotFound() {
       </div>
 
       {/* Bottom gradient line for flair */}
-      <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-[90%] -translate-x-1/2 bg-gradient-to-r from-transparent via-purple-400/60 to-transparent" />
+      <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-[90%] -translate-x-1/2 bg-gradient-to-r from-transparent via-cl-accent/60 to-transparent" />
     </div>
   );
 }

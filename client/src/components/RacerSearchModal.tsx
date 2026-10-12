@@ -353,29 +353,29 @@ export default function RacerSearchModal({
       <div className="relative z-10 flex h-full items-start justify-center p-3 pt-4 sm:p-4 md:mx-auto md:mt-16 md:h-auto md:max-w-2xl md:px-4">
         <div
           className={cn(
-            "box-border flex h-[calc(100vh-16px)] w-[calc(100vw-24px)] min-w-0 max-w-full flex-col overflow-hidden border border-white/10 bg-[#07131f] text-white shadow-2xl",
+            "box-border flex h-[calc(100vh-16px)] w-[calc(100vw-24px)] min-w-0 max-w-full flex-col overflow-hidden border border-cl-border bg-cl-canvas text-cl-ink shadow-2xl",
             "rounded-[24px] md:h-auto md:max-h-[82vh] md:w-full md:rounded-[28px]",
-            "bg-[linear-gradient(180deg,rgba(8,24,39,0.98)_0%,rgba(5,17,29,0.98)_100%)]",
+            "cl-panel-wash",
           )}
         >
-          <div className="sticky top-0 z-10 border-b border-white/10 bg-[linear-gradient(180deg,rgba(8,24,39,0.98)_0%,rgba(6,19,31,0.98)_100%)] px-3 py-4 sm:px-4 md:px-5">
+          <div className="sticky top-0 z-10 border-b border-cl-border cl-panel-wash px-3 py-4 sm:px-4 md:px-5">
             <div className="mb-3 flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/15 bg-cyan-400/8 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-300">
-                  <span className="h-1.5 w-1.5 rounded-full bg-cyan-300" />
+                <div className="inline-flex items-center gap-2 rounded-full border border-cl-accent/[0.15] bg-cl-accent/[0.08] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-cl-accent">
+                  <span className="h-1.5 w-1.5 rounded-full bg-cl-accent" />
                   Aqua Search
                 </div>
-                <h2 className="mt-3 text-lg font-semibold text-white sm:text-xl">
+                <h2 className="mt-3 text-lg font-semibold text-cl-ink sm:text-xl">
                   Find a Racer
                 </h2>
-                <p className="mt-1 text-sm text-white/55">
+                <p className="mt-1 text-sm text-cl-muted">
                   Search by racer name.
                 </p>
               </div>
 
               <button
                 onClick={onClose}
-                className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/80 transition hover:bg-white/10 hover:text-white"
+                className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-cl-border bg-cl-subtle text-cl-ink transition hover:bg-cl-subtle hover:text-cl-ink"
                 aria-label="Close search"
               >
                 <X className="h-4 w-4" />
@@ -383,13 +383,13 @@ export default function RacerSearchModal({
             </div>
 
             <div className="relative min-w-0">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35" />
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-cl-muted" />
               <input
                 autoFocus
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Search racers..."
-                className="h-12 w-full min-w-0 rounded-2xl border border-white/10 bg-white/[0.05] pl-10 pr-4 text-sm text-white outline-none placeholder:text-white/35 transition focus:border-cyan-300/30 focus:bg-white/[0.07]"
+                className="h-12 w-full min-w-0 rounded-2xl border border-cl-border bg-cl-subtle pl-10 pr-4 text-sm text-cl-ink outline-none placeholder:text-cl-muted transition focus:border-cl-accent/30 focus:bg-cl-subtle"
               />
             </div>
           </div>
@@ -399,20 +399,20 @@ export default function RacerSearchModal({
             className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden px-2.5 py-3 sm:px-3 md:px-4 md:py-4"
           >
             {qNorm.length < MIN_QUERY_LENGTH ? (
-              <div className="flex min-h-[40vh] flex-col items-center justify-center rounded-[24px] border border-dashed border-white/10 bg-white/[0.03] px-5 text-center">
-                <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-cyan-400/15 bg-cyan-400/8 text-cyan-300">
+              <div className="flex min-h-[40vh] flex-col items-center justify-center rounded-[24px] border border-dashed border-cl-border bg-cl-subtle px-5 text-center">
+                <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-cl-accent/[0.15] bg-cl-accent/[0.08] text-cl-accent">
                   <Search className="h-5 w-5" />
                 </div>
-                <div className="text-base font-semibold text-white">
+                <div className="text-base font-semibold text-cl-ink">
                   Start searching
                 </div>
-                <div className="mt-2 max-w-md text-sm leading-7 text-white/55">
+                <div className="mt-2 max-w-md text-sm leading-7 text-cl-muted">
                   Type at least {MIN_QUERY_LENGTH} characters to search racers
                   by name, hometown, or manufacturer.
                 </div>
               </div>
             ) : error ? (
-              <div className="flex min-h-[40vh] items-center justify-center rounded-[24px] border border-red-500/25 bg-red-500/10 px-6 text-center text-red-300">
+              <div className="flex min-h-[40vh] items-center justify-center rounded-[24px] border border-red-500/25 bg-red-500/10 px-6 text-center text-cl-danger">
                 {error}
               </div>
             ) : loading && all.length === 0 ? (
@@ -420,28 +420,28 @@ export default function RacerSearchModal({
                 {Array.from({ length: 6 }).map((_, i) => (
                   <div
                     key={i}
-                    className="flex min-w-0 items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3"
+                    className="flex min-w-0 items-center gap-3 rounded-2xl border border-cl-border bg-cl-subtle p-3"
                   >
-                    <div className="h-11 w-11 shrink-0 animate-pulse rounded-full bg-white/10" />
+                    <div className="h-11 w-11 shrink-0 animate-pulse rounded-full bg-cl-subtle" />
                     <div className="min-w-0 flex-1">
-                      <div className="h-4 w-40 animate-pulse rounded bg-white/10" />
-                      <div className="mt-2 h-3 w-40 max-w-full animate-pulse rounded bg-white/5 sm:w-56" />
+                      <div className="h-4 w-40 animate-pulse rounded bg-cl-subtle" />
+                      <div className="mt-2 h-3 w-40 max-w-full animate-pulse rounded bg-cl-subtle sm:w-56" />
                     </div>
                   </div>
                 ))}
               </div>
             ) : filtered.length === 0 ? (
-              <div className="flex min-h-[40vh] flex-col items-center justify-center rounded-[24px] border border-white/10 bg-white/[0.03] px-6 text-center">
-                <div className="text-base font-semibold text-white">
+              <div className="flex min-h-[40vh] flex-col items-center justify-center rounded-[24px] border border-cl-border bg-cl-subtle px-6 text-center">
+                <div className="text-base font-semibold text-cl-ink">
                   No racers found
                 </div>
-                <div className="mt-2 max-w-md text-sm leading-7 text-white/55">
+                <div className="mt-2 max-w-md text-sm leading-7 text-cl-muted">
                   Try a different name, manufacturer, or location.
                 </div>
               </div>
             ) : (
               <>
-                <div className="mb-3 px-1 text-xs uppercase tracking-[0.16em] text-white/45">
+                <div className="mb-3 px-1 text-xs uppercase tracking-[0.16em] text-cl-muted">
                   {filtered.length} match{filtered.length === 1 ? "" : "es"}
                 </div>
 
@@ -450,7 +450,7 @@ export default function RacerSearchModal({
                     <button
                       key={`${String(r.id)}-${i}`}
                       onClick={() => onSelectRacer(r)}
-                      className="group flex w-full min-w-0 items-center gap-3 rounded-[22px] border border-white/10 bg-white/[0.04] p-3 text-left transition hover:border-cyan-300/25 hover:bg-white/[0.06]"
+                      className="group flex w-full min-w-0 items-center gap-3 rounded-[22px] border border-cl-border bg-cl-subtle p-3 text-left transition hover:border-cl-accent/25 hover:bg-cl-subtle"
                     >
                       <img
                         src={r.racerImage || stockAvatar}
@@ -458,15 +458,15 @@ export default function RacerSearchModal({
                           const img = e.currentTarget as HTMLImageElement;
                           if (img.src !== stockAvatar) img.src = stockAvatar;
                         }}
-                        className="h-12 w-12 shrink-0 rounded-full border border-white/10 object-cover"
+                        className="h-12 w-12 shrink-0 rounded-full border border-cl-border object-cover"
                       />
 
                       <div className="min-w-0 flex-1">
-                        <div className="truncate text-sm font-semibold text-white sm:text-base">
+                        <div className="truncate text-sm font-semibold text-cl-ink sm:text-base">
                           {r.racerName}
                         </div>
 
-                        <div className="mt-1 truncate text-xs text-white/60 sm:text-sm">
+                        <div className="mt-1 truncate text-xs text-cl-muted sm:text-sm">
                           {(r.location || "").toString()}
                           {r.boatManufacturers
                             ? ` • ${r.boatManufacturers}`
@@ -474,7 +474,7 @@ export default function RacerSearchModal({
                         </div>
                       </div>
 
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-cyan-300 transition group-hover:border-cyan-300/25 group-hover:bg-cyan-400/8">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-cl-border bg-cl-subtle text-cl-accent transition group-hover:border-cl-accent/25 group-hover:bg-cl-accent/[0.08]">
                         <ChevronRight className="h-4 w-4" />
                       </div>
                     </button>
@@ -482,7 +482,7 @@ export default function RacerSearchModal({
                 </div>
 
                 {loadingMore && (
-                  <div className="py-5 text-center text-xs uppercase tracking-[0.14em] text-white/45">
+                  <div className="py-5 text-center text-xs uppercase tracking-[0.14em] text-cl-muted">
                     Loading more…
                   </div>
                 )}

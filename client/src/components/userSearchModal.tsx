@@ -25,10 +25,10 @@ function extractUsers(payload: any, usedLimit: number) {
   const users: UserLite[] = Array.isArray(payload?.users)
     ? payload.users
     : Array.isArray(payload?.data?.users)
-    ? payload.data.users
-    : Array.isArray(payload?.data)
-    ? payload.data
-    : [];
+      ? payload.data.users
+      : Array.isArray(payload?.data)
+        ? payload.data
+        : [];
 
   const meta = payload?.meta ?? payload?.data?.meta ?? {};
   const hasMoreExplicit =
@@ -105,7 +105,7 @@ export default function UserSearchModal({
         return { users: [], hasMore: false };
       }
     },
-    []
+    [],
   );
 
   // Initial load
@@ -173,7 +173,7 @@ export default function UserSearchModal({
     return all.filter((u) =>
       [u.username, u.firstName, u.lastName]
         .filter(Boolean)
-        .some((t) => String(t).toLowerCase().includes(qNorm))
+        .some((t) => String(t).toLowerCase().includes(qNorm)),
     );
   }, [qNorm, all]);
 
@@ -192,22 +192,22 @@ export default function UserSearchModal({
       <div className="relative z-10 mx-auto md:mt-20 md:max-w-xl">
         <div
           className={cn(
-            "bg-[#0b0f18] border border-white/10 rounded-none md:rounded-xl w-full",
-            "fixed inset-0 md:static md:h-auto"
+            "bg-cl-canvas border border-cl-border rounded-none md:rounded-xl w-full",
+            "fixed inset-0 md:static md:h-auto",
           )}
         >
-          <div className="p-4 border-b border-white/10 sticky top-0 bg-[#0b0f18]">
+          <div className="p-4 border-b border-cl-border sticky top-0 bg-cl-canvas">
             <div className="flex items-center gap-2">
               <input
                 autoFocus
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Search users…"
-                className="flex-1 h-10 rounded-lg bg-white/5 border border-white/10 px-3 text-sm outline-none placeholder:text-white/40 focus:bg-white/7 text-white"
+                className="flex-1 h-10 rounded-lg bg-cl-subtle border border-cl-border px-3 text-sm outline-none placeholder:text-cl-muted focus:bg-cl-subtle text-cl-ink"
               />
               <button
                 onClick={onClose}
-                className="h-9 px-3 rounded-md border border-white/10 text-white/80 hover:text-white"
+                className="h-9 px-3 rounded-md border border-cl-border text-cl-ink hover:text-cl-ink"
               >
                 Close
               </button>
@@ -219,13 +219,13 @@ export default function UserSearchModal({
             className="p-2 max-h-[calc(100vh-60px)] md:max-h-[calc(100vh-60px)] overflow-y-auto"
           >
             {qEmpty ? (
-              <div className="py-12 text-center text-white/60">
+              <div className="py-12 text-center text-cl-muted">
                 Start typing to search users…
               </div>
             ) : error ? (
-              <div className="py-12 text-center text-red-400">{error}</div>
+              <div className="py-12 text-center text-cl-danger">{error}</div>
             ) : filtered.length === 0 ? (
-              <div className="py-12 text-center text-white/60">
+              <div className="py-12 text-center text-cl-muted">
                 No users found.
               </div>
             ) : (
@@ -234,7 +234,7 @@ export default function UserSearchModal({
                   <button
                     key={String(u.id)}
                     onClick={() => onSelectUser(u)}
-                    className="w-full flex items-center gap-3 p-3 rounded-lg border border-white/10 bg-white/5 hover:bg-white/7 text-left"
+                    className="w-full flex items-center gap-3 p-3 rounded-lg border border-cl-border bg-cl-subtle hover:bg-cl-subtle text-left"
                   >
                     <img
                       src={u.profilePicture || stockAvatar}
@@ -246,10 +246,10 @@ export default function UserSearchModal({
                       className="h-9 w-9 rounded-full object-cover"
                     />
                     <div className="min-w-0">
-                      <div className="text-sm font-medium text-white truncate">
+                      <div className="text-sm font-medium text-cl-ink truncate">
                         {(u.firstName || "") + " " + (u.lastName || "")}
                       </div>
-                      <div className="text-xs text-white/70 truncate">
+                      <div className="text-xs text-cl-muted truncate">
                         @{u.username}
                       </div>
                     </div>
@@ -261,7 +261,7 @@ export default function UserSearchModal({
                     <button
                       onClick={loadMore}
                       disabled={loadingMore}
-                      className="px-4 py-2 rounded-md border border-white/10 text-white/90 bg-white/5 hover:bg-white/7 disabled:opacity-60"
+                      className="px-4 py-2 rounded-md border border-cl-border text-cl-ink bg-cl-subtle hover:bg-cl-subtle disabled:opacity-60"
                     >
                       {loadingMore ? "Loading…" : "Load more"}
                     </button>

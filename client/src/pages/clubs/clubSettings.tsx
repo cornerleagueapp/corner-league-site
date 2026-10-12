@@ -25,7 +25,7 @@ export default function ClubSettings() {
     queryFn: async () => {
       const json = await apiRequest<any>(
         "GET",
-        `/clubs/${clubId}/details?user_id=${user?.id ?? ""}`
+        `/clubs/${clubId}/details?user_id=${user?.id ?? ""}`,
       );
       return json?.data as ClubDetails;
     },
@@ -38,7 +38,7 @@ export default function ClubSettings() {
     queryFn: async () => {
       const json = await apiRequest<any>(
         "GET",
-        `/clubs/${clubId}/is-member?userId=${user?.id ?? ""}`
+        `/clubs/${clubId}/is-member?userId=${user?.id ?? ""}`,
       );
       return !!json?.data?.isMember;
     },
@@ -57,7 +57,7 @@ export default function ClubSettings() {
   else if (isMember) statusText = "You are a member of the club";
 
   return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center p-6">
+    <div className="min-h-screen bg-cl-canvas text-cl-ink flex items-center justify-center p-6">
       <PageSEO
         title="Club Settings"
         description="Manage club settings on Corner League."
@@ -69,7 +69,7 @@ export default function ClubSettings() {
         <div className="relative text-center mb-8">
           <Link
             href={`/clubs/${clubId}`}
-            className="absolute top-0 right-0 text-gray-400 hover:text-white transition-colors"
+            className="absolute top-0 right-0 text-cl-muted hover:text-cl-ink transition-colors"
             aria-label="Close settings"
             title="Back"
           >
@@ -88,30 +88,30 @@ export default function ClubSettings() {
             </svg>
           </Link>
           <h1 className="text-3xl font-bold mb-2">Club Settings</h1>
-          <p className="text-gray-400">
+          <p className="text-cl-muted">
             {loadingDetails ? "Loading club…" : details?.clubName || "Club"}
           </p>
         </div>
 
         {/* Status card */}
-        <div className="bg-gray-800 border border-gray-600 rounded-md p-4 mb-6">
+        <div className="bg-cl-subtle border border-cl-border rounded-md p-4 mb-6">
           <div className="text-lg">
             <span
               className={
                 isOwner
-                  ? "text-green-400"
+                  ? "text-cl-success"
                   : isMember
-                  ? "text-blue-300"
-                  : "text-orange-300"
+                    ? "text-cl-accent"
+                    : "text-cl-accent"
               }
             >
               {statusText}
             </span>
           </div>
           {!user?.id && (
-            <p className="text-sm text-gray-400 mt-2">
+            <p className="text-sm text-cl-muted mt-2">
               You’re not signed in.{" "}
-              <Link href="/auth" className="underline hover:text-white">
+              <Link href="/auth" className="underline hover:text-cl-ink">
                 Sign in
               </Link>{" "}
               to manage membership.
@@ -120,11 +120,11 @@ export default function ClubSettings() {
         </div>
 
         {/* Future settings form area (intentionally empty for now) */}
-        <div className="bg-gray-800 border border-gray-600 rounded-md p-6">
+        <div className="bg-cl-subtle border border-cl-border rounded-md p-6">
           {isOwner ? (
             <ClubEditForm clubId={clubId} />
           ) : (
-            <p className="text-gray-400">
+            <p className="text-cl-muted">
               Only the owner or a co-owner can edit this club.
             </p>
           )}

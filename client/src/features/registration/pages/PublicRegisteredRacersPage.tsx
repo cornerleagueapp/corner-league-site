@@ -249,7 +249,7 @@ export default function PublicRegisteredRacersPage({
     return (
       <RegistrationLayout hideHeader>
         <div className="grid min-h-[70vh] place-items-center">
-          <Loader2 className="h-8 w-8 animate-spin text-cyan-200" />
+          <Loader2 className="h-8 w-8 animate-spin text-cl-accent" />
         </div>
       </RegistrationLayout>
     );
@@ -267,14 +267,14 @@ export default function PublicRegisteredRacersPage({
         backLabel="All Events"
       >
         <div className="rounded-[28px] border border-red-300/15 bg-red-950/20 p-8 text-center">
-          <p className="text-sm leading-6 text-red-100/70">
+          <p className="text-sm leading-6 text-cl-danger">
             Return to the event directory and select another race event.
           </p>
 
           <button
             type="button"
             onClick={() => navigate("/registration/events")}
-            className="mt-5 inline-flex min-h-11 items-center justify-center rounded-full bg-cyan-300 px-5 text-[10px] font-black uppercase tracking-[0.14em] text-[#06111d] transition hover:bg-cyan-200"
+            className="mt-5 inline-flex min-h-11 items-center justify-center rounded-full bg-cl-accent px-5 text-[10px] font-black uppercase tracking-[0.14em] text-cl-contrast transition hover:bg-cl-accent"
           >
             Browse Events
           </button>
@@ -307,7 +307,7 @@ export default function PublicRegisteredRacersPage({
             onClick={() =>
               navigate(`/registration/events/${event.slug}/register`)
             }
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#FF6B35] px-5 text-[10px] font-black uppercase tracking-[0.14em] text-white transition hover:bg-[#ff7c4d] disabled:cursor-not-allowed disabled:bg-white/15 disabled:text-white/35"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-cl-accent px-5 text-[10px] font-black uppercase tracking-[0.14em] text-cl-contrast transition hover:bg-cl-accent disabled:cursor-not-allowed disabled:bg-cl-subtle disabled:text-cl-muted"
           >
             Register Now
             <ArrowRight className="h-4 w-4" />
@@ -317,53 +317,53 @@ export default function PublicRegisteredRacersPage({
     >
       <div className="space-y-5">
         <section className="grid gap-3 sm:grid-cols-3">
-          <div className="rounded-[22px] border border-cyan-300/10 bg-[#07111F]/78 p-4">
-            <Users className="h-5 w-5 text-cyan-200" />
+          <div className="rounded-[22px] border border-cl-accent/10 bg-cl-surface p-4">
+            <Users className="h-5 w-5 text-cl-accent" />
 
-            <p className="mt-3 text-2xl font-black text-white">
+            <p className="mt-3 text-2xl font-black text-cl-ink">
               {registrations.length}
             </p>
 
-            <p className="mt-1 text-[9px] font-black uppercase tracking-[0.13em] text-white/35">
+            <p className="mt-1 text-[9px] font-black uppercase tracking-[0.13em] text-cl-muted">
               Confirmed Racers
             </p>
           </div>
 
-          <div className="rounded-[22px] border border-cyan-300/10 bg-[#07111F]/78 p-4">
-            <Flag className="h-5 w-5 text-[#FFB199]" />
+          <div className="rounded-[22px] border border-cl-accent/10 bg-cl-surface p-4">
+            <Flag className="h-5 w-5 text-cl-accent" />
 
-            <p className="mt-3 text-2xl font-black text-white">
+            <p className="mt-3 text-2xl font-black text-cl-ink">
               {groupedByClass.length}
             </p>
 
-            <p className="mt-1 text-[9px] font-black uppercase tracking-[0.13em] text-white/35">
+            <p className="mt-1 text-[9px] font-black uppercase tracking-[0.13em] text-cl-muted">
               Active Classes
             </p>
           </div>
 
-          <div className="rounded-[22px] border border-cyan-300/10 bg-[#07111F]/78 p-4">
-            <CalendarDays className="h-5 w-5 text-cyan-200" />
+          <div className="rounded-[22px] border border-cl-accent/10 bg-cl-surface p-4">
+            <CalendarDays className="h-5 w-5 text-cl-accent" />
 
-            <p className="mt-3 text-2xl font-black text-white">
+            <p className="mt-3 text-2xl font-black text-cl-ink">
               {enabledEventDays.length}
             </p>
 
-            <p className="mt-1 text-[9px] font-black uppercase tracking-[0.13em] text-white/35">
+            <p className="mt-1 text-[9px] font-black uppercase tracking-[0.13em] text-cl-muted">
               Event Days
             </p>
           </div>
         </section>
 
-        <section className="rounded-[26px] border border-cyan-300/10 bg-[#07111F]/82 p-4 sm:p-5">
+        <section className="rounded-[26px] border border-cl-accent/10 bg-cl-surface p-4 sm:p-5">
           <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto_auto]">
             <label className="relative">
-              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35" />
+              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-cl-muted" />
 
               <input
                 value={query}
                 onChange={(inputEvent) => setQuery(inputEvent.target.value)}
                 placeholder="Search racer, number, team, or location..."
-                className="h-12 w-full rounded-[16px] border border-white/10 bg-white/[0.045] pl-11 pr-10 text-sm text-white outline-none placeholder:text-white/30 focus:border-cyan-300/30"
+                className="h-12 w-full rounded-[16px] border border-cl-border bg-cl-subtle pl-11 pr-10 text-sm text-cl-ink outline-none placeholder:text-cl-muted focus:border-cl-accent/30"
               />
 
               {query ? (
@@ -371,7 +371,7 @@ export default function PublicRegisteredRacersPage({
                   type="button"
                   onClick={() => setQuery("")}
                   aria-label="Clear racer search"
-                  className="absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full text-white/35 hover:bg-white/10 hover:text-white"
+                  className="absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full text-cl-muted hover:bg-cl-subtle hover:text-cl-ink"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -381,7 +381,7 @@ export default function PublicRegisteredRacersPage({
             <select
               value={classId}
               onChange={(selectEvent) => setClassId(selectEvent.target.value)}
-              className="h-12 rounded-[16px] border border-white/10 bg-[#0A1422] px-4 text-sm text-white outline-none focus:border-cyan-300/30"
+              className="h-12 rounded-[16px] border border-cl-border bg-cl-canvas px-4 text-sm text-cl-ink outline-none focus:border-cl-accent/30"
             >
               <option value="all">All Classes</option>
 
@@ -397,7 +397,7 @@ export default function PublicRegisteredRacersPage({
             <select
               value={dayId}
               onChange={(selectEvent) => setDayId(selectEvent.target.value)}
-              className="h-12 rounded-[16px] border border-white/10 bg-[#0A1422] px-4 text-sm text-white outline-none focus:border-cyan-300/30"
+              className="h-12 rounded-[16px] border border-cl-border bg-cl-canvas px-4 text-sm text-cl-ink outline-none focus:border-cl-accent/30"
             >
               <option value="all">All Days</option>
 
@@ -411,14 +411,14 @@ export default function PublicRegisteredRacersPage({
         </section>
 
         {groupedByClass.length === 0 ? (
-          <div className="rounded-[28px] border border-dashed border-white/10 bg-[#07111F]/65 px-5 py-14 text-center">
-            <Users className="mx-auto h-8 w-8 text-white/20" />
+          <div className="rounded-[28px] border border-dashed border-cl-border bg-cl-surface px-5 py-14 text-center">
+            <Users className="mx-auto h-8 w-8 text-cl-muted" />
 
-            <h2 className="mt-4 text-xl font-black uppercase text-white">
+            <h2 className="mt-4 text-xl font-black uppercase text-cl-ink">
               No racers found
             </h2>
 
-            <p className="mt-2 text-sm text-white/40">
+            <p className="mt-2 text-sm text-cl-muted">
               Try changing the racer search, class, or event day filter.
             </p>
           </div>
@@ -428,16 +428,16 @@ export default function PublicRegisteredRacersPage({
               <section key={group.eventClass.id}>
                 <div className="mb-4 flex items-end justify-between gap-3">
                   <div>
-                    <p className="text-[9px] font-black uppercase tracking-[0.15em] text-cyan-200/55">
+                    <p className="text-[9px] font-black uppercase tracking-[0.15em] text-cl-accent">
                       Race Class
                     </p>
 
-                    <h2 className="mt-2 text-2xl font-black uppercase text-white">
+                    <h2 className="mt-2 text-2xl font-black uppercase text-cl-ink">
                       {group.eventClass.name}
                     </h2>
                   </div>
 
-                  <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-[9px] font-black uppercase tracking-[0.12em] text-white/55">
+                  <span className="rounded-full border border-cl-border bg-cl-subtle px-3 py-2 text-[9px] font-black uppercase tracking-[0.12em] text-cl-muted">
                     {group.registrations.length} Racer
                     {group.registrations.length === 1 ? "" : "s"}
                   </span>

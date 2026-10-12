@@ -1,0 +1,160 @@
+:root {
+  --cl-sport-accent: 14 105 122;
+  --cl-sport-bright: 103 232 249;
+  --cl-canvas: 247 244 236;
+  --cl-surface: 255 253 248;
+  --cl-subtle: 239 235 226;
+  --cl-ink: 24 38 47;
+  --cl-muted: 81 98 108;
+  --cl-border: 211 218 214;
+  --cl-accent: var(--cl-sport-accent);
+  --cl-accent-contrast: 255 255 255;
+  --cl-danger: 159 18 57;
+  --cl-success: 22 101 52;
+  --cl-warning: 133 77 14;
+}
+
+/* Keep navigation and media areas dark without changing content colors. */
+.cl-dark {
+  color-scheme: dark;
+  --cl-canvas: 3 9 19;
+  --cl-surface: 7 17 31;
+  --cl-subtle: 19 35 49;
+  --cl-ink: 243 247 249;
+  --cl-muted: 183 198 209;
+  --cl-border: 48 67 83;
+  --cl-accent: var(--cl-sport-bright);
+  --cl-accent-contrast: 6 17 29;
+  --cl-danger: 254 205 211;
+  --cl-success: 134 239 172;
+  --cl-warning: 253 230 138;
+}
+
+.consumer-content {
+  color-scheme: light;
+  background: rgb(var(--cl-canvas));
+  color: rgb(var(--cl-ink));
+  scrollbar-color: rgb(var(--cl-border)) rgb(var(--cl-canvas));
+  scroll-behavior: smooth;
+}
+.consumer-content :where(h1, h2, h3) {
+  text-wrap: balance;
+}
+.consumer-content :where(button, a, input, select, textarea):focus-visible,
+.consumer-app-shell > .consumer-menu-toggle:focus-visible,
+.consumer-safe-sidebar :where(button, a):focus-visible,
+.consumer-app-shell > div > header :where(button, a):focus-visible {
+  outline: 3px solid rgb(var(--cl-accent));
+  outline-offset: 3px;
+}
+.consumer-content :where(input, textarea, select) {
+  accent-color: rgb(var(--cl-sport-accent));
+}
+.cl-panel-wash {
+  background: linear-gradient(
+    135deg,
+    rgb(var(--cl-accent) / 0.06),
+    rgb(var(--cl-surface)) 58%
+  );
+}
+.cl-canvas-wash {
+  background:
+    radial-gradient(
+      ellipse at top left,
+      rgb(var(--cl-sport-accent) / 0.045),
+      transparent 45%
+    ),
+    rgb(var(--cl-canvas));
+}
+.cl-title-accent {
+  color: rgb(var(--cl-accent));
+}
+.cl-media-caption {
+  color: #fff;
+}
+.cl-media-caption .text-cl-ink,
+.cl-media-caption .text-cl-muted {
+  color: #fff;
+}
+.consumer-skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 1200;
+  transform: translateY(-200%);
+  border-radius: 12px;
+  padding: 12px 18px;
+  background: rgb(var(--cl-surface));
+  color: rgb(var(--cl-ink));
+}
+.consumer-skip-link:focus {
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .consumer-content {
+    scroll-behavior: auto;
+  }
+  .consumer-app-shell *,
+  .consumer-app-shell *::before,
+  .consumer-app-shell *::after {
+    scroll-behavior: auto;
+    transition-duration: 0.01ms;
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+  }
+}
+
+/* Standard controls and body-level portals use the same semantic palette. */
+:root,
+.cl-dark {
+  --background: rgb(var(--cl-canvas));
+  --foreground: rgb(var(--cl-ink));
+  --card: rgb(var(--cl-surface));
+  --card-foreground: rgb(var(--cl-ink));
+  --popover: rgb(var(--cl-surface));
+  --popover-foreground: rgb(var(--cl-ink));
+  --primary: rgb(var(--cl-accent));
+  --primary-foreground: rgb(var(--cl-accent-contrast));
+  --secondary: rgb(var(--cl-subtle));
+  --secondary-foreground: rgb(var(--cl-ink));
+  --muted: rgb(var(--cl-subtle));
+  --muted-foreground: rgb(var(--cl-muted));
+  --accent: rgb(var(--cl-subtle));
+  --accent-foreground: rgb(var(--cl-ink));
+  --border: rgb(var(--cl-border));
+  --input: rgb(var(--cl-border));
+  --ring: rgb(var(--cl-accent));
+  --destructive: rgb(var(--cl-danger));
+  --destructive-foreground: rgb(var(--cl-accent-contrast));
+}
+:root {
+  color-scheme: light;
+}
+html,
+body,
+#root {
+  background-color: rgb(var(--cl-canvas));
+  color: rgb(var(--cl-ink));
+}
+body
+  :where(button, a, input, select, textarea, [role="combobox"]):focus-visible {
+  outline: 3px solid rgb(var(--cl-accent));
+  outline-offset: 3px;
+}
+.cl-logo-tile {
+  background: #030913;
+  border-radius: 1rem;
+  padding: 0.5rem;
+}
+.footer-link:hover {
+  color: rgb(var(--cl-accent));
+}
+@media (prefers-reduced-motion: reduce) {
+  .consumer-document-page *,
+  .consumer-document-page *::before,
+  .consumer-document-page *::after {
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+    transition-duration: 0.01ms;
+  }
+}

@@ -54,7 +54,7 @@ export default function AquaScoresSection({
             <button
               type="button"
               onClick={onBackToHub}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white hover:bg-white/10 transition"
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-cl-border bg-cl-subtle text-cl-ink hover:bg-cl-subtle transition"
               aria-label="Back to AQUA hub"
               title="Back to AQUA hub"
             >
@@ -63,10 +63,10 @@ export default function AquaScoresSection({
           )}
 
           <div>
-            <h2 className="text-xl font-semibold text-white/90">
+            <h2 className="text-xl font-semibold text-cl-ink">
               IJSBA World Finals, Lake Havasu
             </h2>
-            <h3 className="text-sm font-semibold text-white/60">
+            <h3 className="text-sm font-semibold text-cl-muted">
               October 6th - 12th
             </h3>
           </div>
@@ -74,7 +74,7 @@ export default function AquaScoresSection({
 
         <button
           onClick={onOpenRacerSearch}
-          className="h-9 w-9 grid place-items-center rounded-full bg-white/10 border border-white/10 hover:bg-white/15"
+          className="h-9 w-9 grid place-items-center rounded-full bg-cl-subtle border border-cl-border hover:bg-cl-subtle"
           aria-label="Search racers"
           title="Search racers"
         >
@@ -461,17 +461,17 @@ export default function AquaScoresSection({
           labelHide="Hide Sunday's Results"
         >
           <div className="space-y-4">
-            <div className="mt-3 space-y-6 rounded-xl border border-white/10 bg-white/5 p-4">
-              <h4 className="text-base font-semibold text-white">
+            <div className="mt-3 space-y-6 rounded-xl border border-cl-border bg-cl-subtle p-4">
+              <h4 className="text-base font-semibold text-cl-ink">
                 AI Analysis — Sunday Recap
               </h4>
 
               {/* Big winners / class champions */}
               <section className="space-y-2">
-                <h5 className="text-sm font-semibold text-white/90">
+                <h5 className="text-sm font-semibold text-cl-ink">
                   Big winners / class champions
                 </h5>
-                <ul className="list-disc pl-5 text-sm text-white/80 space-y-1">
+                <ul className="list-disc pl-5 text-sm text-cl-ink space-y-1">
                   <li>
                     <span className="font-semibold">
                       Junior Ski 10–12 Lites (Race 1):
@@ -555,10 +555,10 @@ export default function AquaScoresSection({
 
               {/* Races of the day */}
               <section className="space-y-2">
-                <h5 className="text-sm font-semibold text-white/90">
+                <h5 className="text-sm font-semibold text-cl-ink">
                   Races of the day
                 </h5>
-                <ul className="list-disc pl-5 text-sm text-white/80 space-y-1">
+                <ul className="list-disc pl-5 text-sm text-cl-ink space-y-1">
                   <li>
                     <span className="font-semibold">Pro Ski GP:</span> Best
                     drama. Girello’s rebound from{" "}
@@ -591,10 +591,10 @@ export default function AquaScoresSection({
 
               {/* Quiet climbers & clutch rides */}
               <section className="space-y-2">
-                <h5 className="text-sm font-semibold text-white/90">
+                <h5 className="text-sm font-semibold text-cl-ink">
                   Quiet climbers & clutch rides
                 </h5>
-                <ul className="list-disc pl-5 text-sm text-white/80 space-y-1">
+                <ul className="list-disc pl-5 text-sm text-cl-ink space-y-1">
                   <li>
                     <span className="font-semibold">
                       Luke Blanton (Vintage X2):
@@ -621,10 +621,10 @@ export default function AquaScoresSection({
 
               {/* Heartbreakers */}
               <section className="space-y-2">
-                <h5 className="text-sm font-semibold text-white/90">
+                <h5 className="text-sm font-semibold text-cl-ink">
                   Heartbreakers / what hurt
                 </h5>
-                <ul className="list-disc pl-5 text-sm text-white/80 space-y-1">
+                <ul className="list-disc pl-5 text-sm text-cl-ink space-y-1">
                   <li>
                     <span className="font-semibold">
                       Sabrina Cook (Women Ski Stock):
@@ -658,10 +658,8 @@ export default function AquaScoresSection({
 
               {/* Takeaways */}
               <section className="space-y-2">
-                <h5 className="text-sm font-semibold text-white/90">
-                  Takeaways
-                </h5>
-                <ul className="list-disc pl-5 text-sm text-white/80 space-y-1">
+                <h5 className="text-sm font-semibold text-cl-ink">Takeaways</h5>
+                <ul className="list-disc pl-5 text-sm text-cl-ink space-y-1">
                   <li>
                     Today rewarded{" "}
                     <span className="font-medium">
@@ -702,7 +700,7 @@ export default function AquaScoresSection({
       {/* Chat toggle */}
       <div>
         <button
-          className="px-4 py-2 rounded-xl border border-white/20 text-white/90 hover:bg-white/10 transition"
+          className="px-4 py-2 rounded-xl border border-cl-border text-cl-ink hover:bg-cl-subtle transition"
           onClick={() => setShowAquaChat((v) => !v)}
         >
           {showAquaChat ? "Hide Chatroom" : "Join Live Chatroom"}

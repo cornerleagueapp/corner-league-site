@@ -20,13 +20,13 @@ function AthletePage({
     retry: false,
   });
   return (
-    <section className="rounded-3xl border border-white/10 bg-white/[0.035] p-5">
+    <section className="rounded-3xl border border-cl-border bg-cl-subtle p-5">
       <div className="mb-5 flex items-center justify-between gap-3">
         <div>
           <h2 className="flex items-center gap-2 text-lg font-bold">
-            <Heart className="h-5 w-5 text-cyan-200" /> Following athletes
+            <Heart className="h-5 w-5 text-cl-accent" /> Following athletes
           </h2>
-          <p className="mt-1 text-sm text-white/55">
+          <p className="mt-1 text-sm text-cl-muted">
             {query.data
               ? `${query.data.total} athletes · Results and profiles in one place`
               : "Your connection to the competition"}
@@ -37,7 +37,7 @@ function AthletePage({
           aria-label="Refresh followed athletes"
           disabled={query.isFetching}
           onClick={() => void query.refetch()}
-          className="rounded-full border border-white/10 p-3"
+          className="rounded-full border border-cl-border p-3"
         >
           <RefreshCw
             className={`h-4 w-4 ${query.isFetching ? "animate-spin" : ""}`}
@@ -45,11 +45,11 @@ function AthletePage({
         </button>
       </div>
       {query.isPending ? (
-        <p role="status" className="text-sm text-white/60">
+        <p role="status" className="text-sm text-cl-muted">
           Loading athletes…
         </p>
       ) : query.isError ? (
-        <div role="alert" className="text-sm text-rose-200">
+        <div role="alert" className="text-sm text-cl-danger">
           Unable to load athletes.{" "}
           <button
             type="button"
@@ -62,8 +62,8 @@ function AthletePage({
       ) : (
         <>
           {!query.data.items.length && (
-            <div className="rounded-2xl border border-dashed border-white/15 p-6 text-center">
-              <p className="text-white/65">
+            <div className="rounded-2xl border border-dashed border-cl-border p-6 text-center">
+              <p className="text-cl-muted">
                 {isOwn
                   ? "Follow an athlete from their racer page to find them here."
                   : "No followed athletes yet."}
@@ -71,7 +71,7 @@ function AthletePage({
               {isOwn && (
                 <Link
                   href="/scores/aqua?search=racers"
-                  className="mt-3 inline-flex min-h-11 items-center font-bold text-cyan-200"
+                  className="mt-3 inline-flex min-h-11 items-center font-bold text-cl-accent"
                 >
                   Find racers
                 </Link>
@@ -82,7 +82,7 @@ function AthletePage({
             {query.data.items.map((athlete) => (
               <article
                 key={athlete.athleteId}
-                className="flex min-w-0 gap-3 rounded-2xl border border-white/10 bg-black/15 p-4"
+                className="flex min-w-0 gap-3 rounded-2xl border border-cl-border bg-cl-subtle p-4"
               >
                 <img
                   src={athlete.imageUrl || stockAvatar}
@@ -104,14 +104,14 @@ function AthletePage({
                       />
                     )}
                   </p>
-                  <p className="mt-1 text-xs text-white/55">
+                  <p className="mt-1 text-xs text-cl-muted">
                     {athlete.sportKey === "jet-ski" ? "Jet Ski" : "Athlete"}
                     {athlete.location ? ` · ${athlete.location}` : ""}
                   </p>
                   {athlete.profileUrl && (
                     <Link
                       href={athlete.profileUrl}
-                      className="mt-2 inline-flex min-h-11 items-center text-sm font-bold text-cyan-200"
+                      className="mt-2 inline-flex min-h-11 items-center text-sm font-bold text-cl-accent"
                     >
                       View results & profile →
                     </Link>
@@ -130,7 +130,7 @@ function AthletePage({
               >
                 Previous
               </button>
-              <span className="text-sm text-white/55">Page {page}</span>
+              <span className="text-sm text-cl-muted">Page {page}</span>
               <button
                 type="button"
                 disabled={!query.data.hasNextPage}

@@ -5,13 +5,13 @@ import SocialPostFeed, {
 export default function FeedPage() {
   const [feed, setFeed] = useState<"following" | "all">("following");
   return (
-    <main className="mx-auto max-w-3xl space-y-6 p-4 py-8 text-white">
+    <main className="mx-auto max-w-3xl space-y-6 p-4 py-8 text-cl-ink">
       <header>
-        <p className="text-xs font-bold uppercase tracking-widest text-cyan-200">
+        <p className="text-xs font-bold uppercase tracking-widest text-cl-accent">
           Corner League community
         </p>
         <h1 className="mt-2 text-3xl font-black">Your feed</h1>
-        <p className="mt-2 text-white/55">
+        <p className="mt-2 text-cl-muted">
           People, athletes, and the stories behind the competition.
         </p>
       </header>

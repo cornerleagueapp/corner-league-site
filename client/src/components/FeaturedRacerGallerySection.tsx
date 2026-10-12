@@ -93,11 +93,11 @@ function GalleryTile({
     <button
       type="button"
       onClick={() => navigate("/scores/aqua/gallery")}
-      className={`group relative min-w-0 overflow-hidden rounded-[24px] border border-cyan-300/10 bg-[#07111F]/80 text-left shadow-[0_18px_50px_rgba(0,0,0,0.26)] transition hover:-translate-y-1 hover:border-cyan-300/30 ${
+      className={`group relative min-w-0 overflow-hidden rounded-[24px] border border-cl-accent/10 bg-cl-surface text-left shadow-cl-panel transition hover:-translate-y-1 hover:border-cl-accent/30 ${
         large ? "min-h-[360px] sm:min-h-[420px]" : "min-h-[220px]"
       }`}
     >
-      <div className="absolute inset-0 bg-black">
+      <div className="absolute inset-0 bg-cl-canvas">
         {mediaUrl ? (
           <img
             src={mediaUrl}
@@ -106,15 +106,15 @@ function GalleryTile({
             loading="lazy"
           />
         ) : (
-          <div className="grid h-full w-full place-items-center bg-[#06111d]">
-            <ImageIcon className="h-10 w-10 text-cyan-100/60" />
+          <div className="grid h-full w-full place-items-center bg-cl-surface">
+            <ImageIcon className="h-10 w-10 text-cl-accent" />
           </div>
         )}
 
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(3,9,19,0.12)_0%,rgba(3,9,19,0.28)_42%,rgba(3,9,19,0.92)_100%)]" />
+        <div className="absolute inset-0 cl-panel-wash" />
       </div>
 
-      <div className="absolute left-3 top-3 z-10 inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/45 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-white backdrop-blur-md">
+      <div className="absolute left-3 top-3 z-10 inline-flex items-center gap-2 rounded-full border border-cl-border bg-cl-subtle px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-cl-ink backdrop-blur-md">
         {isVideo(item) ? (
           <Play className="h-3.5 w-3.5" />
         ) : (
@@ -125,7 +125,7 @@ function GalleryTile({
 
       <div className="absolute inset-x-0 bottom-0 z-10 p-4 sm:p-5">
         <div className="flex items-center gap-3">
-          <div className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full border border-cyan-300/25 bg-cyan-300/15">
+          <div className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full border border-cl-accent/25 bg-cl-accent/15">
             {athleteImage ? (
               <img
                 src={athleteImage}
@@ -134,22 +134,22 @@ function GalleryTile({
                 loading="lazy"
               />
             ) : (
-              <UserCircle2 className="h-5 w-5 text-cyan-100" />
+              <UserCircle2 className="h-5 w-5 text-cl-accent" />
             )}
           </div>
 
           <div className="min-w-0">
-            <div className="truncate text-sm font-black text-white">
+            <div className="truncate text-sm font-black text-cl-ink">
               {athleteName}
             </div>
-            <div className="truncate text-xs text-white/50">
+            <div className="truncate text-xs text-cl-muted">
               Featured racer gallery
             </div>
           </div>
         </div>
 
         <h3
-          className={`mt-3 line-clamp-2 font-black uppercase leading-tight text-white ${
+          className={`mt-3 line-clamp-2 font-black uppercase leading-tight text-cl-ink ${
             large ? "text-2xl sm:text-3xl" : "text-lg"
           }`}
         >
@@ -157,7 +157,7 @@ function GalleryTile({
         </h3>
 
         {large && item.caption ? (
-          <p className="mt-2 line-clamp-2 text-sm leading-6 text-white/70">
+          <p className="mt-2 line-clamp-2 text-sm leading-6 text-cl-muted">
             {item.caption}
           </p>
         ) : null}
@@ -213,13 +213,13 @@ export default function FeaturedRacerGallerySection({
 
   if (loading) {
     return (
-      <section className="mt-10 rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)] sm:p-7">
+      <section className="mt-10 rounded-[30px] border border-cl-accent/10 bg-cl-surface p-5 shadow-cl-panel sm:p-7">
         <div className="animate-pulse">
-          <div className="h-5 w-44 rounded-full bg-cyan-300/10" />
-          <div className="mt-4 h-9 w-72 max-w-full rounded bg-white/10" />
+          <div className="h-5 w-44 rounded-full bg-cl-accent/10" />
+          <div className="mt-4 h-9 w-72 max-w-full rounded bg-cl-subtle" />
           <div className="mt-5 grid gap-4 md:grid-cols-3">
-            <div className="h-72 rounded-[24px] bg-white/[0.04] md:col-span-2" />
-            <div className="h-72 rounded-[24px] bg-white/[0.04]" />
+            <div className="h-72 rounded-[24px] bg-cl-subtle md:col-span-2" />
+            <div className="h-72 rounded-[24px] bg-cl-subtle" />
           </div>
         </div>
       </section>
@@ -228,26 +228,26 @@ export default function FeaturedRacerGallerySection({
 
   if (!items.length) {
     return (
-      <section className="mt-10 overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[linear-gradient(135deg,rgba(34,211,238,0.10)_0%,rgba(7,17,31,0.96)_48%,rgba(255,107,53,0.08)_100%)] p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)] sm:p-7">
+      <section className="mt-10 overflow-hidden rounded-[30px] border border-cl-accent/10 cl-panel-wash p-5 shadow-cl-panel sm:p-7">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-cyan-200">
+            <div className="inline-flex items-center gap-2 rounded-full border border-cl-accent/20 bg-cl-accent/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-cl-accent">
               <Sparkles className="h-3.5 w-3.5" />
               Featured Gallery
             </div>
 
-            <h2 className="mt-4 text-3xl font-black uppercase tracking-[-0.03em] text-white">
+            <h2 className="mt-4 text-3xl font-black uppercase tracking-[-0.03em] text-cl-ink">
               Racer Gallery Coming Soon
             </h2>
 
-            <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-300">
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-cl-muted">
               Featured racer photos and videos will appear here once athletes
               publish featured media from their profiles.
             </p>
           </div>
 
           <Link href="/scores/aqua/gallery">
-            <button className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-5 text-xs font-black uppercase tracking-[0.16em] text-cyan-100 transition hover:bg-cyan-300 hover:text-[#06111d]">
+            <button className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-cl-accent/20 bg-cl-accent/10 px-5 text-xs font-black uppercase tracking-[0.16em] text-cl-accent transition hover:bg-cl-accent hover:text-cl-contrast">
               Open Gallery
               <ChevronRight className="h-4 w-4" />
             </button>
@@ -258,29 +258,27 @@ export default function FeaturedRacerGallerySection({
   }
 
   return (
-    <section className="mt-10 overflow-hidden rounded-[34px] border border-cyan-300/10 bg-[linear-gradient(135deg,rgba(34,211,238,0.10)_0%,rgba(7,17,31,0.96)_48%,rgba(255,107,53,0.08)_100%)] p-4 shadow-[0_28px_80px_rgba(0,0,0,0.34)] sm:p-6 lg:p-7">
+    <section className="mt-10 overflow-hidden rounded-[34px] border border-cl-accent/10 cl-panel-wash p-4 shadow-cl-panel sm:p-6 lg:p-7">
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-cyan-200">
+          <div className="inline-flex items-center gap-2 rounded-full border border-cl-accent/20 bg-cl-accent/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-cl-accent">
             <Sparkles className="h-3.5 w-3.5" />
             Featured Racer Gallery
           </div>
 
-          <h2 className="mt-4 text-3xl font-black uppercase leading-[0.95] tracking-[-0.04em] text-white sm:text-4xl">
+          <h2 className="mt-4 text-3xl font-black uppercase leading-[0.95] tracking-[-0.04em] text-cl-ink sm:text-4xl">
             Photos, Videos &{" "}
-            <span className="bg-[linear-gradient(90deg,#19E3FF_0%,#FF7849_100%)] bg-clip-text text-transparent">
-              Race Day Moments
-            </span>
+            <span className="cl-title-accent">Race Day Moments</span>
           </h2>
 
-          <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-300">
+          <p className="mt-3 max-w-2xl text-sm leading-7 text-cl-muted">
             Featured media from claimed racer profiles — highlights, sponsor
             content, race photos, and behind-the-scenes moments.
           </p>
         </div>
 
         <Link href="/scores/aqua/gallery">
-          <button className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-5 text-xs font-black uppercase tracking-[0.16em] text-cyan-100 transition hover:bg-cyan-300 hover:text-[#06111d]">
+          <button className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-cl-accent/20 bg-cl-accent/10 px-5 text-xs font-black uppercase tracking-[0.16em] text-cl-accent transition hover:bg-cl-accent hover:text-cl-contrast">
             View All
             <ChevronRight className="h-4 w-4" />
           </button>

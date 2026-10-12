@@ -262,61 +262,58 @@ export default function Settings() {
   };
 
   return (
-    <div className="relative min-h-dvh overflow-x-hidden bg-[#030913] text-white">
+    <div className="relative min-h-dvh overflow-x-hidden bg-cl-canvas text-cl-ink">
       <div className="pointer-events-none fixed inset-0 -z-10">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.12),transparent_28%),radial-gradient(circle_at_82%_12%,rgba(255,107,53,0.10),transparent_24%),linear-gradient(180deg,#030913_0%,#07111F_48%,#02050A_100%)]" />
+        <div className="absolute inset-0 cl-panel-wash" />
         <div className="absolute inset-0 opacity-[0.04] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:72px_72px]" />
       </div>
 
       <main className="mx-auto w-full max-w-6xl px-4 py-8 pb-24 sm:px-6 sm:py-12 lg:px-8">
-        <section className="relative overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[linear-gradient(180deg,rgba(7,17,31,0.94)_0%,rgba(4,10,19,0.98)_100%)] p-5 shadow-[0_30px_90px_rgba(0,0,0,0.42)] sm:rounded-[38px] sm:p-8">
+        <section className="relative overflow-hidden rounded-[30px] border border-cl-accent/10 cl-panel-wash p-5 shadow-cl-panel sm:rounded-[38px] sm:p-8">
           <div className="pointer-events-none absolute inset-0">
-            <div className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-cyan-400/10 blur-3xl" />
-            <div className="absolute -right-24 bottom-0 h-96 w-96 rounded-full bg-[#FF6B35]/10 blur-3xl" />
+            <div className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-cl-accent/10 blur-3xl" />
+            <div className="absolute -right-24 bottom-0 h-96 w-96 rounded-full bg-cl-accent/10 blur-3xl" />
             <div className="absolute inset-0 opacity-[0.05] [background-image:linear-gradient(rgba(255,255,255,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.18)_1px,transparent_1px)] [background-size:72px_72px]" />
           </div>
 
           <div className="relative flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
             <div className="min-w-0">
               <div className="mb-4 flex flex-wrap items-center gap-2">
-                <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-cyan-200">
-                  <span className="h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_18px_rgba(103,232,249,0.95)]" />
+                <div className="inline-flex items-center gap-2 rounded-full border border-cl-accent/20 bg-cl-accent/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-cl-accent">
+                  <span className="h-2 w-2 rounded-full bg-cl-accent shadow-cl-panel" />
                   Account
                 </div>
 
-                <div className="inline-flex items-center rounded-full border border-[#FF6B35]/20 bg-[#FF6B35]/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-[#FFB199]">
+                <div className="inline-flex items-center rounded-full border border-cl-accent/20 bg-cl-accent/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-cl-accent">
                   Profile Settings
                 </div>
               </div>
 
-              <h1 className="max-w-4xl text-3xl font-black uppercase leading-[0.95] tracking-[-0.04em] text-white sm:text-5xl">
-                Account{" "}
-                <span className="bg-[linear-gradient(90deg,#19E3FF_0%,#7CF4FF_35%,#FF7849_100%)] bg-clip-text text-transparent">
-                  Settings
-                </span>
+              <h1 className="max-w-4xl text-3xl font-black uppercase leading-[0.95] tracking-[-0.04em] text-cl-ink sm:text-5xl">
+                Account <span className="cl-title-accent">Settings</span>
               </h1>
 
-              <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-cl-muted sm:text-base">
                 Update your public profile, username, bio, tags, and profile
                 picture.
               </p>
             </div>
 
-            <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl border border-cyan-300/20 bg-cyan-300/10 text-cyan-200 shadow-[0_0_28px_rgba(34,211,238,0.14)]">
+            <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl border border-cl-accent/20 bg-cl-accent/10 text-cl-accent shadow-cl-panel">
               <SettingsIcon className="h-6 w-6" />
             </div>
           </div>
         </section>
 
         <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[240px_minmax(0,1fr)]">
-          <aside className="rounded-[26px] border border-cyan-300/10 bg-[#07111F]/90 p-3 shadow-[0_20px_60px_rgba(0,0,0,0.26)] lg:self-start">
+          <aside className="rounded-[26px] border border-cl-accent/10 bg-cl-surface p-3 shadow-cl-panel lg:self-start">
             <nav className="flex gap-2 overflow-x-auto lg:flex-col lg:overflow-visible">
               <button
                 onClick={() => setActiveSection("profile")}
                 className={`inline-flex min-w-max items-center gap-2 rounded-full px-4 py-3 text-xs font-black uppercase tracking-[0.14em] transition lg:w-full lg:min-w-0 lg:justify-start lg:rounded-[18px] ${
                   activeSection === "profile"
-                    ? "bg-cyan-300 text-[#06111d] shadow-[0_0_24px_rgba(34,211,238,0.20)]"
-                    : "border border-white/10 bg-white/[0.04] text-white/65 hover:bg-white/10 hover:text-white"
+                    ? "bg-cl-accent text-cl-contrast shadow-cl-panel"
+                    : "border border-cl-border bg-cl-subtle text-cl-muted hover:bg-cl-subtle hover:text-cl-ink"
                 }`}
               >
                 <UserRound className="h-4 w-4" />
@@ -325,7 +322,7 @@ export default function Settings() {
               <button
                 type="button"
                 onClick={() => setActiveSection("notifications")}
-                className="inline-flex min-h-11 items-center rounded-xl border border-white/10 px-4 py-3 text-sm text-cyan-100"
+                className="inline-flex min-h-11 items-center rounded-xl border border-cl-border px-4 py-3 text-sm text-cl-accent"
               >
                 Notifications & messages
               </button>
@@ -337,18 +334,18 @@ export default function Settings() {
               <SocialPreferences key={String(user?.id)} />
             )}
             {activeSection === "profile" && (
-              <div className="overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/90 shadow-[0_28px_80px_rgba(0,0,0,0.32)]">
-                <div className="border-b border-white/10 px-5 py-5 sm:px-6">
+              <div className="overflow-hidden rounded-[30px] border border-cl-accent/10 bg-cl-surface shadow-cl-panel">
+                <div className="border-b border-cl-border px-5 py-5 sm:px-6">
                   <div className="flex items-center gap-3">
-                    <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-cyan-300/20 bg-cyan-300/10 text-cyan-200">
+                    <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-cl-accent/20 bg-cl-accent/10 text-cl-accent">
                       <UserRound className="h-5 w-5" />
                     </div>
 
                     <div>
-                      <div className="text-xs font-black uppercase tracking-[0.22em] text-cyan-300/80">
+                      <div className="text-xs font-black uppercase tracking-[0.22em] text-cl-accent">
                         Profile Information
                       </div>
-                      <p className="mt-1 text-sm text-white/55">
+                      <p className="mt-1 text-sm text-cl-muted">
                         Manage the details shown on your public profile.
                       </p>
                     </div>
@@ -357,7 +354,7 @@ export default function Settings() {
 
                 {loadingProfile ? (
                   <div className="p-6">
-                    <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-6 text-sm text-white/60">
+                    <div className="rounded-[24px] border border-cl-border bg-cl-subtle p-6 text-sm text-cl-muted">
                       Loading profile…
                     </div>
                   </div>
@@ -366,7 +363,7 @@ export default function Settings() {
                     onSubmit={handleProfileSubmit}
                     className="space-y-6 p-5 sm:p-6 md:p-8"
                   >
-                    <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-4">
+                    <div className="rounded-[24px] border border-cl-border bg-cl-subtle p-4">
                       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                         <img
                           src={
@@ -374,19 +371,19 @@ export default function Settings() {
                             "https://placehold.co/96x96/111827/FFFFFF?text=Avatar"
                           }
                           alt="Profile preview"
-                          className="h-20 w-20 rounded-full border border-cyan-300/20 bg-black object-cover shadow-[0_0_28px_rgba(34,211,238,0.12)]"
+                          className="h-20 w-20 rounded-full border border-cl-accent/20 bg-cl-canvas object-cover shadow-cl-panel"
                         />
 
                         <div className="min-w-0 flex-1">
-                          <div className="text-sm font-semibold text-white">
+                          <div className="text-sm font-semibold text-cl-ink">
                             Profile Picture
                           </div>
-                          <p className="mt-1 text-xs leading-5 text-white/50">
+                          <p className="mt-1 text-xs leading-5 text-cl-muted">
                             Upload a clear image that represents your profile.
                           </p>
 
                           <div className="mt-3 flex flex-wrap gap-2">
-                            <label className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-cyan-300/15 bg-cyan-300/10 px-4 text-xs font-black uppercase tracking-[0.14em] text-cyan-100 hover:bg-cyan-300/15">
+                            <label className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-cl-accent/15 bg-cl-accent/10 px-4 text-xs font-black uppercase tracking-[0.14em] text-cl-accent hover:bg-cl-accent/15">
                               <input
                                 type="file"
                                 accept="image/*"
@@ -408,7 +405,7 @@ export default function Settings() {
                                     user?.profilePicture || previewUrl,
                                   );
                                 }}
-                                className="inline-flex h-11 items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 text-xs font-black uppercase tracking-[0.14em] text-white/65 hover:bg-white/10 hover:text-white"
+                                className="inline-flex h-11 items-center gap-2 rounded-full border border-cl-border bg-cl-subtle px-4 text-xs font-black uppercase tracking-[0.14em] text-cl-muted hover:bg-cl-subtle hover:text-cl-ink"
                               >
                                 <X className="h-4 w-4" />
                                 Clear
@@ -494,17 +491,17 @@ export default function Settings() {
                         className="field-input min-h-32 py-3"
                         placeholder="Tell people a bit about yourself…"
                       />
-                      <div className="mt-2 text-right text-xs text-white/40">
+                      <div className="mt-2 text-right text-xs text-cl-muted">
                         {profileForm.bio.length}/240
                       </div>
                     </Field>
 
                     <div>
-                      <label className="mb-2 block text-xs font-bold uppercase tracking-[0.16em] text-white/60">
+                      <label className="mb-2 block text-xs font-bold uppercase tracking-[0.16em] text-cl-muted">
                         Profile Tags
                       </label>
 
-                      <div className="rounded-[18px] border border-white/10 bg-white/[0.04] p-3">
+                      <div className="rounded-[18px] border border-cl-border bg-cl-subtle p-3">
                         <TagsInput
                           value={profileForm.tags}
                           max={2}
@@ -522,11 +519,11 @@ export default function Settings() {
                         />
                       </div>
 
-                      <p className="mt-2 text-xs text-white/45">Max 2 tags.</p>
+                      <p className="mt-2 text-xs text-cl-muted">Max 2 tags.</p>
                     </div>
 
                     {anythingChanged ? (
-                      <div className="rounded-[18px] border border-[#FF6B35]/15 bg-[#FF6B35]/[0.06] px-4 py-3 text-xs leading-6 text-[#FFB199]/80">
+                      <div className="rounded-[18px] border border-cl-accent/15 bg-cl-accent/[0.06] px-4 py-3 text-xs leading-6 text-cl-accent">
                         You have unsaved profile changes.
                       </div>
                     ) : (
@@ -538,11 +535,11 @@ export default function Settings() {
                       </div>
                     )}
 
-                    <div className="flex flex-col gap-3 border-t border-white/10 pt-5 sm:flex-row sm:justify-end">
+                    <div className="flex flex-col gap-3 border-t border-cl-border pt-5 sm:flex-row sm:justify-end">
                       <button
                         type="submit"
                         disabled={saveAllMutation.isPending || !anythingChanged}
-                        className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-cyan-300 px-6 text-xs font-black uppercase tracking-[0.16em] text-[#06111d] shadow-[0_0_28px_rgba(34,211,238,0.25)] transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-cl-accent px-6 text-xs font-black uppercase tracking-[0.16em] text-cl-contrast shadow-cl-panel transition hover:bg-cl-accent disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         {saveAllMutation.isPending ? (
                           <svg
@@ -619,7 +616,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <div className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-white/60">
+      <div className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-cl-muted">
         {label}
       </div>
       {children}

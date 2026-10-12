@@ -96,7 +96,7 @@ function Gallery({
           ? "Organization photo gallery"
           : "Photos tagged by organizations"
       }
-      className="rounded-[28px] border border-cyan-300/10 bg-[#07111F]/80 p-5 text-white sm:p-6"
+      className="rounded-[28px] border border-cl-accent/10 bg-cl-surface p-5 text-cl-ink sm:p-6"
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-lg font-semibold">
@@ -105,7 +105,7 @@ function Gallery({
             : "Tagged Organization Photos"}
         </h2>
       </div>
-      <p className="mt-2 text-sm text-slate-300">
+      <p className="mt-2 text-sm text-cl-muted">
         {scope === "organizations"
           ? "Photos and moments shared by this organization."
           : "Photos shared by organizations featuring this athlete."}{" "}
@@ -127,13 +127,13 @@ function Gallery({
         </p>
       ) : null}
       {query.data && !query.data.items.length ? (
-        <p className="mt-4 text-sm text-slate-400">No published photos yet.</p>
+        <p className="mt-4 text-sm text-cl-muted">No published photos yet.</p>
       ) : null}
       <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {query.data?.items.map((photo) => (
           <article
             key={photo.id}
-            className="overflow-hidden rounded-2xl border border-white/10 bg-black/20"
+            className="overflow-hidden rounded-2xl border border-cl-border bg-cl-subtle"
           >
             <button
               type="button"
@@ -152,12 +152,12 @@ function Gallery({
             <div className="space-y-2 p-3">
               <time
                 dateTime={photo.capturedAt}
-                className="text-xs text-cyan-200"
+                className="text-xs text-cl-accent"
               >
                 {photoDate(photo.capturedAt)}
               </time>
               {photo.album ? (
-                <p className="text-xs text-slate-300">{photo.album}</p>
+                <p className="text-xs text-cl-muted">{photo.album}</p>
               ) : null}
               <p className="line-clamp-2 whitespace-pre-wrap text-sm">
                 {photo.caption}
@@ -192,9 +192,9 @@ function Gallery({
           if (!open && !removing) setSelected(null);
         }}
       >
-        <DialogContent className="max-h-[90vh] max-w-4xl overflow-auto border-white/10 bg-[#07111F] text-white">
+        <DialogContent className="max-h-[90vh] max-w-4xl overflow-auto border-cl-border bg-cl-surface text-cl-ink">
           <DialogTitle>Organization photo</DialogTitle>
-          <DialogDescription className="text-slate-300">
+          <DialogDescription className="text-cl-muted">
             {selected
               ? `${selected.organizationName} · ${photoDate(selected.capturedAt)}`
               : ""}
@@ -236,7 +236,7 @@ function PhotoCredits({ photo }: { photo: GalleryPhoto }) {
   return (
     <div className="space-y-2 text-xs">
       <Link
-        className="text-cyan-200 underline"
+        className="text-cl-accent underline"
         href={
           sandbox
             ? `/internal/test-organizations/${sandbox.id}`
@@ -251,7 +251,7 @@ function PhotoCredits({ photo }: { photo: GalleryPhoto }) {
           return href ? (
             <Link
               key={tag.athleteId}
-              className="rounded-full bg-cyan-300/10 px-2 py-1 text-cyan-100"
+              className="rounded-full bg-cl-accent/10 px-2 py-1 text-cl-accent"
               href={href}
             >
               {tag.name}

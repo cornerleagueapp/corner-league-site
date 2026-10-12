@@ -31,23 +31,23 @@ type LoginResponse = {
 };
 
 const authInputClass =
-  "w-full rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-4 text-sm text-white outline-none placeholder:text-white/40 transition focus:border-cyan-300/35 focus:bg-cyan-300/[0.06] focus:ring-2 focus:ring-cyan-300/10";
+  "w-full rounded-2xl border border-cl-border bg-cl-subtle px-4 py-4 text-sm text-cl-ink outline-none placeholder:text-cl-muted transition focus:border-cl-accent/[0.35] focus:bg-cl-accent/[0.06] focus:ring-2 focus:ring-cl-accent/10";
 
 const authPrimaryButtonClass =
-  "flex w-full items-center justify-center gap-2 rounded-full bg-cyan-300 px-6 py-4 text-xs font-black uppercase tracking-[0.16em] text-[#06111d] shadow-[0_0_28px_rgba(34,211,238,0.25)] transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:bg-white/20 disabled:text-white/40";
+  "flex w-full items-center justify-center gap-2 rounded-full bg-cl-accent px-6 py-4 text-xs font-black uppercase tracking-[0.16em] text-cl-contrast shadow-cl-panel transition hover:bg-cl-accent disabled:cursor-not-allowed disabled:bg-cl-subtle disabled:text-cl-muted";
 
 const authSecondaryButtonClass =
-  "rounded-full border border-white/10 bg-white/[0.05] px-4 py-3 text-xs font-black uppercase tracking-[0.14em] text-white/70 transition hover:border-cyan-300/25 hover:bg-cyan-300/10 hover:text-white";
+  "rounded-full border border-cl-border bg-cl-subtle px-4 py-3 text-xs font-black uppercase tracking-[0.14em] text-cl-muted transition hover:border-cl-accent/25 hover:bg-cl-accent/10 hover:text-cl-ink";
 
 const authChipClass = (active: boolean, tone: "cyan" | "orange" = "cyan") =>
   `rounded-full border px-4 py-2.5 text-xs font-black uppercase tracking-[0.12em] transition ${
     active
       ? tone === "orange"
-        ? "border-[#FF6B35]/30 bg-[#FF6B35] text-white"
-        : "border-cyan-300/30 bg-cyan-300 text-[#06111d]"
+        ? "border-cl-accent/30 bg-cl-accent text-cl-contrast"
+        : "border-cl-accent/30 bg-cl-accent text-cl-contrast"
       : tone === "orange"
-        ? "border-white/10 bg-white/[0.05] text-white/65 hover:border-[#FF6B35]/25 hover:bg-[#FF6B35]/10 hover:text-white"
-        : "border-white/10 bg-white/[0.05] text-white/65 hover:border-cyan-300/25 hover:bg-cyan-300/10 hover:text-white"
+        ? "border-cl-border bg-cl-subtle text-cl-muted hover:border-cl-accent/25 hover:bg-cl-accent/10 hover:text-cl-ink"
+        : "border-cl-border bg-cl-subtle text-cl-muted hover:border-cl-accent/25 hover:bg-cl-accent/10 hover:text-cl-ink"
   }`;
 
 export default function AuthPage() {
@@ -415,15 +415,15 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-x-hidden bg-[#030913] p-3 text-white sm:p-6">
+    <div className="relative flex min-h-screen items-center justify-center overflow-x-hidden bg-cl-canvas p-3 text-cl-ink sm:p-6">
       <PageSEO title="Sign in" canonicalPath="/auth" noindex />
 
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.12),transparent_28%),radial-gradient(circle_at_82%_18%,rgba(255,107,53,0.08),transparent_24%),linear-gradient(180deg,#030913_0%,#07111F_48%,#02050A_100%)]" />
+        <div className="absolute inset-0 cl-panel-wash" />
         <div className="absolute inset-0 opacity-[0.04] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:72px_72px]" />
       </div>
 
-      <div className="relative w-full max-w-md overflow-hidden rounded-[34px] border border-cyan-300/10 bg-[#07111F]/85 p-5 shadow-[0_30px_90px_rgba(0,0,0,0.42)] backdrop-blur sm:p-7">
+      <div className="relative w-full max-w-md overflow-hidden rounded-[34px] border border-cl-accent/10 bg-cl-surface p-5 shadow-cl-panel backdrop-blur sm:p-7">
         {authMethod === "welcome" ? (
           /* Welcome Screen */
           <>
@@ -431,7 +431,7 @@ export default function AuthPage() {
             <div className="mb-5">
               <button
                 onClick={() => setLocation("/")}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] text-white/65 transition hover:border-cyan-300/25 hover:bg-cyan-300/10 hover:text-white"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-cl-border bg-cl-subtle text-cl-muted transition hover:border-cl-accent/25 hover:bg-cl-accent/10 hover:text-cl-ink"
                 aria-label="Back to home"
               >
                 <FaArrowLeft size={16} />
@@ -440,23 +440,23 @@ export default function AuthPage() {
 
             {/* Logo */}
             <div className="text-center">
-              <div className="mx-auto mb-6 grid h-20 w-20 place-items-center rounded-[28px] border border-cyan-300/15 bg-cyan-300/[0.06] shadow-[0_0_38px_rgba(34,211,238,0.12)]">
+              <div className="mx-auto mb-6 grid h-20 w-20 place-items-center rounded-[28px] border border-cl-accent/[0.15] bg-cl-accent/[0.06] shadow-cl-panel">
                 <img
                   src={logoPath}
                   alt="Corner League Logo"
-                  className="h-12 w-12 object-contain"
+                  className="cl-logo-tile h-12 w-12 object-contain"
                 />
               </div>
 
-              <div className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-200/70">
+              <div className="text-[10px] font-black uppercase tracking-[0.24em] text-cl-accent">
                 Corner League Sports
               </div>
 
-              <h1 className="mt-3 text-4xl font-black uppercase tracking-[-0.04em] text-white">
+              <h1 className="mt-3 text-4xl font-black uppercase tracking-[-0.04em] text-cl-ink">
                 Welcome
               </h1>
 
-              <p className="mx-auto mt-4 max-w-xs text-sm leading-7 text-slate-300">
+              <p className="mx-auto mt-4 max-w-xs text-sm leading-7 text-cl-muted">
                 Sign in to follow racers, claim profiles, manage clubs, and
                 access the Corner League racing platform.
               </p>
@@ -467,22 +467,22 @@ export default function AuthPage() {
               {/* Apple */}
               {/* <button
                 onClick={handleAppleLogin}
-                className="w-20 h-20 rounded-full border border-gray-600 hover:border-gray-400 transition-colors duration-300 flex items-center justify-center group"
+                className="w-20 h-20 rounded-full border border-cl-border hover:border-cl-border transition-colors duration-300 flex items-center justify-center group"
               >
                 <FaApple
                   size={28}
-                  className="text-gray-400 group-hover:text-white transition-colors"
+                  className="text-cl-muted group-hover:text-cl-ink transition-colors"
                 />
               </button> */}
 
               {/* Google */}
               {/* <button
                 onClick={handleGoogleLogin}
-                className="w-20 h-20 rounded-full border border-gray-600 hover:border-gray-400 transition-colors duration-300 flex items-center justify-center group"
+                className="w-20 h-20 rounded-full border border-cl-border hover:border-cl-border transition-colors duration-300 flex items-center justify-center group"
               >
                 <FaGoogle
                   size={24}
-                  className="text-gray-400 group-hover:text-white transition-colors"
+                  className="text-cl-muted group-hover:text-cl-ink transition-colors"
                 />
               </button> */}
 
@@ -490,7 +490,7 @@ export default function AuthPage() {
               <div className="mt-8">
                 <button
                   onClick={() => setAuthMethod("email")}
-                  className="flex w-full items-center justify-center gap-3 rounded-full bg-cyan-300 px-6 py-4 text-xs font-black uppercase tracking-[0.16em] text-[#06111d] shadow-[0_0_28px_rgba(34,211,238,0.25)] transition hover:bg-cyan-200"
+                  className="flex w-full items-center justify-center gap-3 rounded-full bg-cl-accent px-6 py-4 text-xs font-black uppercase tracking-[0.16em] text-cl-contrast shadow-cl-panel transition hover:bg-cl-accent"
                 >
                   <FaEnvelope size={16} />
                   Continue With Email
@@ -499,7 +499,7 @@ export default function AuthPage() {
             </div>
 
             {/* Terms */}
-            <p className="mt-6 px-4 text-center text-xs leading-6 text-white/45">
+            <p className="mt-6 px-4 text-center text-xs leading-6 text-cl-muted">
               By continuing, you agree to our Terms and Privacy Policy.
             </p>
           </>
@@ -510,7 +510,7 @@ export default function AuthPage() {
             <div className="mb-5">
               <button
                 onClick={() => setAuthMethod("welcome")}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] text-white/65 transition hover:border-cyan-300/25 hover:bg-cyan-300/10 hover:text-white"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-cl-border bg-cl-subtle text-cl-muted transition hover:border-cl-accent/25 hover:bg-cl-accent/10 hover:text-cl-ink"
                 aria-label="Back to welcome"
               >
                 <FaArrowLeft size={16} />
@@ -519,36 +519,36 @@ export default function AuthPage() {
 
             {/* Header */}
             <div className="mb-8 text-center">
-              <div className="mx-auto mb-5 grid h-16 w-16 place-items-center rounded-[24px] border border-cyan-300/15 bg-cyan-300/[0.06]">
+              <div className="mx-auto mb-5 grid h-16 w-16 place-items-center rounded-[24px] border border-cl-accent/[0.15] bg-cl-accent/[0.06]">
                 <img
                   src={logoPath}
                   alt="Corner League Logo"
-                  className="h-10 w-10 object-contain"
+                  className="cl-logo-tile h-10 w-10 object-contain"
                 />
               </div>
 
-              <div className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-200/70">
+              <div className="text-[10px] font-black uppercase tracking-[0.24em] text-cl-accent">
                 Corner League Sports
               </div>
 
-              <h1 className="mt-3 text-3xl font-black uppercase tracking-[-0.03em] text-white">
+              <h1 className="mt-3 text-3xl font-black uppercase tracking-[-0.03em] text-cl-ink">
                 {isLogin ? "Sign In" : "Create Account"}
               </h1>
 
-              <p className="mt-3 text-sm leading-7 text-slate-300">
+              <p className="mt-3 text-sm leading-7 text-cl-muted">
                 {isLogin
                   ? "Sign in to access clubs, racer profiles, and Corner League tools."
                   : "Create your account to follow the sport, claim profiles, and join the platform."}
               </p>
 
               {!isLogin && (
-                <p className="mt-3 text-xs leading-6 text-white/45">
+                <p className="mt-3 text-xs leading-6 text-cl-muted">
                   This login works for{" "}
-                  <span className="font-semibold text-white/70">
+                  <span className="font-semibold text-cl-muted">
                     Olympic AI
                   </span>{" "}
                   and the
-                  <span className="font-semibold text-white/70">
+                  <span className="font-semibold text-cl-muted">
                     {" "}
                     Corner League Mobile App
                   </span>
@@ -558,7 +558,7 @@ export default function AuthPage() {
             </div>
 
             {!isLogin ? (
-              <label className="mb-5 flex items-start gap-3 rounded-2xl border border-cyan-300/20 bg-cyan-300/5 p-4 text-sm text-slate-200">
+              <label className="mb-5 flex items-start gap-3 rounded-2xl border border-cl-accent/20 bg-cl-accent/5 p-4 text-sm text-cl-muted">
                 <input
                   type="checkbox"
                   checked={organizerSignup}
@@ -577,20 +577,20 @@ export default function AuthPage() {
                 href={ORGANIZATION_SIGNUP_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mb-5 block text-sm font-semibold text-cyan-200"
+                className="mb-5 block text-sm font-semibold text-cl-accent"
               >
                 Organizing sports? Create your own Org
               </a>
             )}
             {/* Auth Toggle */}
-            <div className="mb-8 grid grid-cols-2 overflow-hidden rounded-full border border-white/10 bg-white/[0.04] p-1">
+            <div className="mb-8 grid grid-cols-2 overflow-hidden rounded-full border border-cl-border bg-cl-subtle p-1">
               <button
                 type="button"
                 onClick={() => setIsLogin(true)}
                 className={`rounded-full px-4 py-3 text-xs font-black uppercase tracking-[0.16em] transition ${
                   isLogin
-                    ? "bg-cyan-300 text-[#06111d] shadow-[0_0_22px_rgba(34,211,238,0.2)]"
-                    : "text-white/55 hover:text-white"
+                    ? "bg-cl-accent text-cl-contrast shadow-cl-panel"
+                    : "text-cl-muted hover:text-cl-ink"
                 }`}
               >
                 Sign In
@@ -601,8 +601,8 @@ export default function AuthPage() {
                 onClick={() => setIsLogin(false)}
                 className={`rounded-full px-4 py-3 text-xs font-black uppercase tracking-[0.16em] transition ${
                   !isLogin
-                    ? "bg-cyan-300 text-[#06111d] shadow-[0_0_22px_rgba(34,211,238,0.2)]"
-                    : "text-white/55 hover:text-white"
+                    ? "bg-cl-accent text-cl-contrast shadow-cl-panel"
+                    : "text-cl-muted hover:text-cl-ink"
                 }`}
               >
                 Sign Up
@@ -652,14 +652,14 @@ export default function AuthPage() {
                     <button
                       type="button"
                       onClick={() => setShowForgot((v) => !v)}
-                      className="text-xs font-bold uppercase tracking-[0.14em] text-white/45 underline-offset-4 hover:text-cyan-200 hover:underline"
+                      className="text-xs font-bold uppercase tracking-[0.14em] text-cl-muted underline-offset-4 hover:text-cl-accent hover:underline"
                     >
                       {showForgot ? "Hide Reset" : "Forgot Password?"}
                     </button>
                   </div>
 
                   {showForgot && (
-                    <div className="rounded-[24px] border border-cyan-300/10 bg-black/25 p-4">
+                    <div className="rounded-[24px] border border-cl-accent/10 bg-cl-surface p-4">
                       <input
                         type="email"
                         value={forgotEmail}
@@ -709,7 +709,7 @@ export default function AuthPage() {
                         </button>
                       </div>
 
-                      <p className="mt-3 text-xs leading-6 text-white/45">
+                      <p className="mt-3 text-xs leading-6 text-cl-muted">
                         We’ll send a secure link from Firebase to reset your
                         password.
                       </p>
@@ -728,7 +728,7 @@ export default function AuthPage() {
                           firstName: e.target.value,
                         })
                       }
-                      className="w-full px-4 py-4 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
+                      className="w-full px-4 py-4 bg-cl-subtle border border-cl-border rounded-lg text-cl-ink placeholder-cl-muted focus:outline-none focus:ring-2 focus:ring-cl-accent focus:border-transparent"
                       placeholder="First name"
                       required
                     />
@@ -741,14 +741,16 @@ export default function AuthPage() {
                           lastName: e.target.value,
                         })
                       }
-                      className="w-full px-4 py-4 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
+                      className="w-full px-4 py-4 bg-cl-subtle border border-cl-border rounded-lg text-cl-ink placeholder-cl-muted focus:outline-none focus:ring-2 focus:ring-cl-accent focus:border-transparent"
                       placeholder="Last name"
                       required
                     />
                   </div>
 
                   {usernameError && (
-                    <p className="mb-1 text-xs text-red-300">{usernameError}</p>
+                    <p className="mb-1 text-xs text-cl-danger">
+                      {usernameError}
+                    </p>
                   )}
                   <input
                     type="text"
@@ -770,7 +772,7 @@ export default function AuthPage() {
                   />
 
                   {emailError && (
-                    <p className="mb-1 text-xs text-red-300">{emailError}</p>
+                    <p className="mb-1 text-xs text-cl-danger">{emailError}</p>
                   )}
                   <input
                     type="email"
@@ -793,7 +795,7 @@ export default function AuthPage() {
 
                   {/* SPORTS (>=1) */}
                   <div>
-                    <label className="block text-sm text-gray-400 mb-2">
+                    <label className="block text-sm text-cl-muted mb-2">
                       Select your sports (at least one)
                     </label>
                     <div className="flex flex-wrap gap-2">
@@ -816,13 +818,15 @@ export default function AuthPage() {
                       })}
                     </div>
                     {sportsError && (
-                      <p className="mb-1 text-xs text-red-300">{sportsError}</p>
+                      <p className="mb-1 text-xs text-cl-danger">
+                        {sportsError}
+                      </p>
                     )}
                   </div>
 
                   {/* TAGS (optional, up to 2) */}
                   <div>
-                    <label className="block text-sm text-gray-400 mb-2">
+                    <label className="block text-sm text-cl-muted mb-2">
                       Profile tags (choose 1–2)
                     </label>
                     <div className="flex flex-wrap gap-2">
@@ -846,16 +850,18 @@ export default function AuthPage() {
                         );
                       })}
                     </div>
-                    <p className="mt-2 text-xs text-gray-500">
+                    <p className="mt-2 text-xs text-cl-muted">
                       {selectedTags.length}/2 selected
                     </p>
                     {tagsError && (
-                      <p className="mb-1 text-xs text-red-300">{tagsError}</p>
+                      <p className="mb-1 text-xs text-cl-danger">{tagsError}</p>
                     )}
                   </div>
 
                   {passwordError && (
-                    <p className="mb-1 text-xs text-red-300">{passwordError}</p>
+                    <p className="mb-1 text-xs text-cl-danger">
+                      {passwordError}
+                    </p>
                   )}
                   <input
                     type="password"
@@ -867,16 +873,16 @@ export default function AuthPage() {
                       })
                     }
                     onBlur={validatePassword}
-                    className={`w-full px-4 py-4 bg-gray-900 border rounded-lg ${
-                      passwordError ? "border-red-500" : "border-gray-700"
-                    } text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent`}
+                    className={`w-full px-4 py-4 bg-cl-subtle border rounded-lg ${
+                      passwordError ? "border-red-500" : "border-cl-border"
+                    } text-cl-ink placeholder-cl-muted focus:outline-none focus:ring-2 focus:ring-cl-accent focus:border-transparent`}
                     placeholder="Create a password"
                     required
                   />
 
                   {!passwordsMatch &&
                     registerData.confirmPassword.length > 0 && (
-                      <p className="text-red-500 text-xs mb-1">
+                      <p className="text-cl-danger text-xs mb-1">
                         Passwords do not match.
                       </p>
                     )}
@@ -889,11 +895,11 @@ export default function AuthPage() {
                         confirmPassword: e.target.value,
                       })
                     }
-                    className={`w-full px-4 py-4 bg-gray-900 border rounded-lg ${
+                    className={`w-full px-4 py-4 bg-cl-subtle border rounded-lg ${
                       !passwordsMatch && registerData.confirmPassword
                         ? "border-red-500"
-                        : "border-gray-700"
-                    } text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent`}
+                        : "border-cl-border"
+                    } text-cl-ink placeholder-cl-muted focus:outline-none focus:ring-2 focus:ring-cl-accent focus:border-transparent`}
                     placeholder="Confirm your password"
                     required
                   />
@@ -911,7 +917,7 @@ export default function AuthPage() {
               )}
 
               {/* Terms */}
-              <p className="text-center text-xs text-gray-500 mt-8">
+              <p className="text-center text-xs text-cl-muted mt-8">
                 By {isLogin ? "signing in" : "creating an account"}, you agree
                 to our Terms and Privacy Policy.
               </p>

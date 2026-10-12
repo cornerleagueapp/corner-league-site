@@ -114,19 +114,19 @@ function Conversation({ threadId, name }: { threadId: string; name?: string }) {
               </button>
             )}
             {!query.data.items.length && (
-              <p className="py-6 text-center text-white/50">
+              <p className="py-6 text-center text-cl-muted">
                 Start the conversation.
               </p>
             )}
             {query.data.items.map((message) => (
               <article
                 key={message.id}
-                className={`max-w-[90%] rounded-2xl p-3 ${message.senderId === String(user?.id) ? "ml-auto bg-cyan-300/15" : "mr-auto bg-white/5"}`}
+                className={`max-w-[90%] rounded-2xl p-3 ${message.senderId === String(user?.id) ? "ml-auto bg-cl-accent/15" : "mr-auto bg-cl-subtle"}`}
               >
-                <p className="whitespace-pre-wrap break-words text-sm text-white/90">
+                <p className="whitespace-pre-wrap break-words text-sm text-cl-ink">
                   {message.content}
                 </p>
-                <p className="mt-2 text-[10px] text-white/45">
+                <p className="mt-2 text-[10px] text-cl-muted">
                   {message.senderId === String(user?.id) ? "You · " : ""}
                   {new Date(message.createdAt).toLocaleString()}
                 </p>
@@ -211,10 +211,10 @@ export default function MessagesPage() {
     (thread) => thread.id === selected,
   )?.peer;
   return (
-    <main className="mx-auto max-w-6xl space-y-5 p-4 py-8 text-white">
+    <main className="mx-auto max-w-6xl space-y-5 p-4 py-8 text-cl-ink">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-bold uppercase tracking-widest text-cyan-200">
+          <p className="text-xs font-bold uppercase tracking-widest text-cl-accent">
             Corner League community
           </p>
           <h1 className="mt-2 text-3xl font-black">Messages</h1>
@@ -244,14 +244,14 @@ export default function MessagesPage() {
           ) : (
             <>
               {!threads.data.items.length && (
-                <p className="text-sm text-white/50">No messages yet.</p>
+                <p className="text-sm text-cl-muted">No messages yet.</p>
               )}
               {threads.data.items.map((thread) => (
                 <button
                   key={thread.id}
                   onClick={() => select(thread.id)}
                   aria-pressed={thread.id === selected}
-                  className={`mb-2 w-full rounded-xl border p-3 text-left ${thread.id === selected ? "border-cyan-300/35 bg-cyan-300/10" : "border-white/10"}`}
+                  className={`mb-2 w-full rounded-xl border p-3 text-left ${thread.id === selected ? "border-cl-accent/35 bg-cl-accent/10" : "border-cl-border"}`}
                 >
                   <span className="flex items-center justify-between gap-2">
                     <span className="truncate font-bold">
@@ -260,13 +260,13 @@ export default function MessagesPage() {
                     {thread.unreadCount > 0 && (
                       <span
                         aria-label={`${thread.unreadCount} unread messages`}
-                        className="rounded-full bg-cyan-300 px-2 text-xs font-bold text-black"
+                        className="rounded-full bg-cl-accent px-2 text-xs font-bold text-cl-contrast"
                       >
                         {thread.unreadCount}
                       </span>
                     )}
                   </span>
-                  <span className="mt-1 block truncate text-xs text-white/50">
+                  <span className="mt-1 block truncate text-xs text-cl-muted">
                     {thread.lastMessage || "Start a conversation"}
                   </span>
                 </button>
@@ -287,7 +287,7 @@ export default function MessagesPage() {
           />
         ) : (
           <section
-            className={`${socialBox} grid min-h-80 place-items-center text-center text-white/50`}
+            className={`${socialBox} grid min-h-80 place-items-center text-center text-cl-muted`}
           >
             Choose a conversation or start a new one.
           </section>

@@ -71,7 +71,7 @@ export default function Clubs() {
     window.dispatchEvent(
       new CustomEvent<"discover" | "my">("clubs:activeTab", {
         detail: activeView,
-      })
+      }),
     );
   }, [activeView]);
 
@@ -105,9 +105,9 @@ export default function Clubs() {
   const discoverClubsRaw = useMemo(
     () =>
       allPublicRaw.filter(
-        (c: any) => !userClubsRaw.some((m: any) => m?.id === c?.id)
+        (c: any) => !userClubsRaw.some((m: any) => m?.id === c?.id),
       ),
-    [allPublicRaw, userClubsRaw]
+    [allPublicRaw, userClubsRaw],
   );
 
   // ---------- SORT (alphabetical by name) ----------
@@ -115,13 +115,13 @@ export default function Clubs() {
     [...arr].sort((a, b) =>
       (a?.name || "").localeCompare(b?.name || "", undefined, {
         sensitivity: "base",
-      })
+      }),
     );
 
   const myClubsSorted = useMemo(() => sortByName(userClubsRaw), [userClubsRaw]);
   const discoverSorted = useMemo(
     () => sortByName(discoverClubsRaw),
-    [discoverClubsRaw]
+    [discoverClubsRaw],
   );
 
   // ---------- FILTER (search across name/desc/owner) ----------
@@ -145,17 +145,17 @@ export default function Clubs() {
 
   const myClubsFiltered = useMemo(
     () => myClubsSorted.filter(matches),
-    [myClubsSorted, s]
+    [myClubsSorted, s],
   );
   const discoverFiltered = useMemo(
     () => discoverSorted.filter(matches),
-    [discoverSorted, s]
+    [discoverSorted, s],
   );
 
   // ---------- PAGINATE (Discover only) ----------
   const discoverVisible = useMemo(
     () => discoverFiltered.slice(0, visibleDiscover),
-    [discoverFiltered, visibleDiscover]
+    [discoverFiltered, visibleDiscover],
   );
 
   // What to render in the grid
@@ -219,7 +219,7 @@ export default function Clubs() {
         isPrivate: club.isPrivate,
         streamingSource: club.streamingSource || "nfl",
         ownerId: club.ownerId,
-      })
+      }),
     );
     navigate(`/clubs/${club.id}`);
   };
@@ -229,7 +229,7 @@ export default function Clubs() {
     discoverFiltered.length > discoverVisible.length;
 
   return (
-    <div className="min-h-screen bg-black text-white flex relative">
+    <div className="min-h-screen bg-cl-canvas text-cl-ink flex relative">
       <PageSEO
         title="Clubs"
         description="Discover public clubs or manage your own on Corner League. Join live communities for your favorite teams."
@@ -240,10 +240,10 @@ export default function Clubs() {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col">
         {/* Top Header */}
-        <div className="p-6 pt-16 md:pt-6 border-b border-gray-700 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="p-6 pt-16 md:pt-6 border-b border-cl-border flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold">Clubs</h1>
-            <p className="text-gray-400 mt-1">
+            <p className="text-cl-muted mt-1">
               {activeView === "discover" ? "Discover and join" : "Your clubs"}
             </p>
           </div>
@@ -253,7 +253,7 @@ export default function Clubs() {
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
                 <svg
-                  className="h-4 w-4 text-gray-400"
+                  className="h-4 w-4 text-cl-muted"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -272,14 +272,14 @@ export default function Clubs() {
                 placeholder={`Search ${
                   activeView === "discover" ? "discover" : "my"
                 } clubs…`}
-                className="w-full pl-9 pr-9 py-2 rounded-md bg-[#111111] border border-gray-700 text-sm text-gray-100 placeholder-gray-500
-                           focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
+                className="w-full pl-9 pr-9 py-2 rounded-md bg-cl-canvas border border-cl-border text-sm text-cl-muted placeholder-cl-muted
+                           focus:outline-none focus:ring-2 focus:ring-cl-accent focus:border-cl-border"
               />
               {search && (
                 <button
                   aria-label="Clear search"
                   onClick={() => setSearch("")}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 text-gray-400 hover:text-gray-200"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 text-cl-muted hover:text-cl-muted"
                 >
                   ×
                 </button>
@@ -288,7 +288,7 @@ export default function Clubs() {
           </div>
 
           <Link href="/create-club">
-            <button className="px-4 py-2 hover:bg-gray-300 font-medium rounded-md transition-colors text-[#000000] bg-[#f7f7f7]">
+            <button className="px-4 py-2 hover:bg-cl-subtle font-medium rounded-md transition-colors text-cl-ink bg-cl-surface">
               Add Club
             </button>
           </Link>
@@ -301,13 +301,13 @@ export default function Clubs() {
               {Array.from({ length: 8 }).map((_, i) => (
                 <div
                   key={i}
-                  className="rounded-xl border border-gray-800 bg-[#161616] animate-pulse"
+                  className="rounded-xl border border-cl-border bg-cl-canvas animate-pulse"
                 >
-                  <div className="h-40 w-full bg-gray-800/70" />
+                  <div className="h-40 w-full bg-cl-subtle" />
                   <div className="p-4 space-y-3">
-                    <div className="h-4 w-2/3 bg-gray-800/70 rounded" />
-                    <div className="h-3 w-1/2 bg-gray-800/70 rounded" />
-                    <div className="h-3 w-1/3 bg-gray-800/70 rounded" />
+                    <div className="h-4 w-2/3 bg-cl-subtle rounded" />
+                    <div className="h-3 w-1/2 bg-cl-subtle rounded" />
+                    <div className="h-3 w-1/3 bg-cl-subtle rounded" />
                   </div>
                 </div>
               ))}
@@ -337,10 +337,10 @@ export default function Clubs() {
                       onKeyDown={(e) =>
                         (e.key === "Enter" || e.key === " ") && openClub(club)
                       }
-                      className="group cursor-pointer overflow-hidden rounded-xl border border-gray-700 bg-[#161616] hover:border-gray-500 transition"
+                      className="group cursor-pointer overflow-hidden rounded-xl border border-cl-border bg-cl-canvas hover:border-cl-border transition"
                       aria-label={`Open ${club.name}`}
                     >
-                      <div className="h-40 w-full bg-gray-800">
+                      <div className="h-40 w-full bg-cl-subtle">
                         {img ? (
                           <img
                             src={img}
@@ -349,7 +349,7 @@ export default function Clubs() {
                             loading="lazy"
                           />
                         ) : (
-                          <div className="h-full w-full flex items-center justify-center text-gray-500 text-sm">
+                          <div className="h-full w-full flex items-center justify-center text-cl-muted text-sm">
                             No image
                           </div>
                         )}
@@ -357,21 +357,21 @@ export default function Clubs() {
 
                       <div className="p-4">
                         <div className="flex items-start justify-between">
-                          <h3 className="text-white font-medium truncate pr-2">
+                          <h3 className="text-cl-ink font-medium truncate pr-2">
                             {club.name}
                           </h3>
                           <span
                             className={`ml-2 inline-block h-2 w-2 rounded-full ${
-                              isActive ? "bg-green-500" : "bg-gray-500"
+                              isActive ? "bg-green-500" : "bg-cl-subtle"
                             }`}
                           />
                         </div>
-                        <div className="mt-1 text-sm text-gray-400 truncate">
+                        <div className="mt-1 text-sm text-cl-muted truncate">
                           {owner}
                         </div>
-                        <div className="mt-3 flex justify-between text-xs text-gray-400">
+                        <div className="mt-3 flex justify-between text-xs text-cl-muted">
                           <span>Members</span>
-                          <span className="text-blue-400">
+                          <span className="text-cl-accent">
                             {members}/{max}
                           </span>
                         </div>
@@ -386,7 +386,7 @@ export default function Clubs() {
                 <div className="mt-8 flex justify-center">
                   <button
                     onClick={() => setVisibleDiscover((n) => n + 20)}
-                    className="px-4 py-2 rounded-md border border-gray-700 bg-[#121212] hover:bg-[#1a1a1a] text-gray-100"
+                    className="px-4 py-2 rounded-md border border-cl-border bg-cl-canvas hover:bg-cl-canvas text-cl-muted"
                   >
                     Load more
                   </button>
@@ -394,9 +394,9 @@ export default function Clubs() {
               )}
             </>
           ) : (
-            <div className="bg-gray-900 rounded-lg border border-gray-700 h-full flex items-center justify-center">
+            <div className="bg-cl-subtle rounded-lg border border-cl-border h-full flex items-center justify-center">
               <div className="text-center">
-                <div className="text-gray-500 mb-4">
+                <div className="text-cl-muted mb-4">
                   <svg
                     className="w-16 h-16 mx-auto"
                     fill="none"
@@ -411,19 +411,19 @@ export default function Clubs() {
                     />
                   </svg>
                 </div>
-                <h3 className="text-xl font-medium text-gray-300 mb-2">
+                <h3 className="text-xl font-medium text-cl-muted mb-2">
                   {search
                     ? "No clubs match your search"
                     : activeView === "discover"
-                    ? "No Public Clubs"
-                    : "No Clubs Yet"}
+                      ? "No Public Clubs"
+                      : "No Clubs Yet"}
                 </h3>
-                <p className="text-gray-500">
+                <p className="text-cl-muted">
                   {search
                     ? "Try a different name or keyword."
                     : activeView === "discover"
-                    ? "Create your first public club or wait for others to go live"
-                    : "Join or create a club to get started"}
+                      ? "Create your first public club or wait for others to go live"
+                      : "Join or create a club to get started"}
                 </p>
               </div>
             </div>
@@ -433,7 +433,7 @@ export default function Clubs() {
 
       {/* Delete Confirmation Modal */}
       {deleteConfirmation.show && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-cl-canvas bg-opacity-50 flex items-center justify-center z-50 p-4">
           {/* ...modal content unchanged... */}
         </div>
       )}

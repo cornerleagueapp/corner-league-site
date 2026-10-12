@@ -39,11 +39,10 @@ type PublicTopNavProps = {
 const tabBase =
   "rounded-full px-4 py-2.5 text-[11px] font-black uppercase tracking-[0.16em] transition duration-200 xl:px-5 xl:py-3 xl:text-xs xl:tracking-[0.18em]";
 
-const activeTabClass =
-  "bg-cyan-300 text-[#06111d] shadow-[0_0_26px_rgba(34,211,238,0.26)]";
+const activeTabClass = "bg-cl-accent text-cl-contrast shadow-cl-panel";
 
 const inactiveTabClass =
-  "border border-white/10 bg-white/[0.04] text-white/65 hover:border-cyan-300/25 hover:bg-cyan-300/10 hover:text-white";
+  "border border-cl-border bg-cl-subtle text-cl-muted hover:border-cl-accent/25 hover:bg-cl-accent/10 hover:text-cl-ink";
 
 function scrollToSection(targetId: string) {
   const element = document.getElementById(targetId);
@@ -68,7 +67,12 @@ export default function PublicTopNav({
   onSportChange,
 }: PublicTopNavProps) {
   const { user, isAuthenticated } = useAuth();
-  const { sports, sport: activeSport, selectSport, isJetSki } = useSportSelection();
+  const {
+    sports,
+    sport: activeSport,
+    selectSport,
+    isJetSki,
+  } = useSportSelection();
   const notifications = useUnreadNotifications();
   const [location, navigate] = useLocation();
 
@@ -83,7 +87,7 @@ export default function PublicTopNav({
   const isLandingPage = location === "/";
 
   const selectedSport = selectedSportKey
-    ? sports.find(sport => sport.key === selectedSportKey)
+    ? sports.find((sport) => sport.key === selectedSportKey)
     : activeSport;
 
   const username = String((user as any)?.username ?? "").trim();
@@ -205,13 +209,13 @@ export default function PublicTopNav({
   return (
     <header
       className={[
-        "relative z-[100] min-w-0 max-w-full overflow-visible",
-        "border-b border-cyan-300/10 bg-[#030913]/95 backdrop-blur-xl",
-        "shadow-[0_18px_50px_rgba(0,0,0,0.35)]",
+        "cl-dark relative z-[100] min-w-0 max-w-full overflow-visible",
+        "border-b border-cl-accent/10 bg-cl-canvas backdrop-blur-xl",
+        "shadow-cl-panel",
         sticky ? "consumer-public-nav-safe sticky top-0" : "",
       ].join(" ")}
     >
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-[linear-gradient(90deg,transparent_0%,rgba(34,211,238,0.45)_45%,rgba(255,107,53,0.35)_70%,transparent_100%)]" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-cl-accent/30" />
 
       <div className="flex min-h-[68px] w-full min-w-0 items-center px-3 py-3 pl-[76px] sm:px-5 sm:pl-[84px] md:px-6 md:pl-6 lg:px-8">
         {/* {isLandingPage ? (
@@ -235,7 +239,7 @@ export default function PublicTopNav({
           </nav>
         ) : null} */}
 
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-cyan-300/15 bg-cyan-300/[0.06]">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-cl-accent/15 bg-cl-accent/[0.06]">
           <img
             src={cornerLeagueLogo}
             alt="Corner League"
@@ -255,7 +259,7 @@ export default function PublicTopNav({
 
                   setSportsOpen((current) => !current);
                 }}
-                className="inline-flex h-11 max-w-[126px] items-center gap-2 overflow-hidden rounded-full border border-white/10 bg-white/[0.05] px-3 text-[10px] font-black uppercase tracking-[0.12em] text-white transition duration-200 hover:border-cyan-300/25 hover:bg-cyan-300/10 hover:text-cyan-50 sm:max-w-none sm:px-4 sm:text-xs sm:tracking-[0.18em]"
+                className="inline-flex h-11 max-w-[126px] items-center gap-2 overflow-hidden rounded-full border border-cl-border bg-cl-subtle px-3 text-[10px] font-black uppercase tracking-[0.12em] text-cl-ink transition duration-200 hover:border-cl-accent/25 hover:bg-cl-accent/10 hover:text-cl-accent sm:max-w-none sm:px-4 sm:text-xs sm:tracking-[0.18em]"
               >
                 <span className="block min-w-0 truncate">
                   {selectedSport?.label ?? "Select Sport"}
@@ -271,7 +275,7 @@ export default function PublicTopNav({
               {sportsOpen ? (
                 <div
                   role="menu"
-                  className="absolute right-0 z-[250] mt-3 w-[min(82vw,260px)] overflow-hidden rounded-2xl border border-cyan-300/10 bg-[#07111F]/98 shadow-[0_24px_70px_rgba(0,0,0,0.55)] backdrop-blur-xl"
+                  className="absolute right-0 z-[250] mt-3 w-[min(82vw,260px)] overflow-hidden rounded-2xl border border-cl-accent/10 bg-cl-surface shadow-cl-panel backdrop-blur-xl"
                 >
                   {sports.map((sport) => {
                     const selected = sport.key === selectedSport?.key;
@@ -287,10 +291,10 @@ export default function PublicTopNav({
                         onClick={() => handleSportSelect(sport)}
                         className={`flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-sm transition ${
                           disabled
-                            ? "cursor-not-allowed text-white/25"
+                            ? "cursor-not-allowed text-cl-muted"
                             : selected
-                              ? "bg-cyan-300/10 text-cyan-100"
-                              : "text-white/75 hover:bg-white/[0.05] hover:text-white"
+                              ? "bg-cl-accent/10 text-cl-accent"
+                              : "text-cl-muted hover:bg-cl-subtle hover:text-cl-ink"
                         }`}
                       >
                         <span className="min-w-0 truncate uppercase tracking-[0.12em]">
@@ -298,9 +302,9 @@ export default function PublicTopNav({
                         </span>
 
                         {selected ? (
-                          <Check className="h-4 w-4 shrink-0 text-cyan-200" />
+                          <Check className="h-4 w-4 shrink-0 text-cl-accent" />
                         ) : disabled ? (
-                          <span className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-1 text-[8px] font-black uppercase tracking-[0.12em] text-white/30">
+                          <span className="rounded-full border border-cl-border bg-cl-subtle px-2 py-1 text-[8px] font-black uppercase tracking-[0.12em] text-cl-muted">
                             Soon
                           </span>
                         ) : null}
@@ -322,7 +326,7 @@ export default function PublicTopNav({
 
                   setAccountOpen((current) => !current);
                 }}
-                className="inline-flex h-11 max-w-[126px] items-center gap-2 overflow-hidden rounded-full border border-[#FF6B35]/20 bg-[#FF6B35]/10 px-3 text-[10px] font-black uppercase tracking-[0.12em] text-[#FFB199] transition duration-200 hover:border-[#FF7849]/40 hover:bg-[#FF6B35]/20 hover:text-white sm:max-w-none sm:px-4 sm:text-xs sm:tracking-[0.18em]"
+                className="inline-flex h-11 max-w-[126px] items-center gap-2 overflow-hidden rounded-full border border-cl-accent/20 bg-cl-accent/10 px-3 text-[10px] font-black uppercase tracking-[0.12em] text-cl-accent transition duration-200 hover:border-cl-accent/40 hover:bg-cl-accent/20 hover:text-cl-ink sm:max-w-none sm:px-4 sm:text-xs sm:tracking-[0.18em]"
               >
                 <span className="block min-w-0 truncate">Account</span>
                 <NotificationCount count={notifications.data?.unreadCount} />
@@ -337,7 +341,7 @@ export default function PublicTopNav({
               {accountOpen ? (
                 <div
                   role="menu"
-                  className="absolute right-0 z-[250] mt-3 w-[min(88vw,290px)] overflow-hidden rounded-[22px] border border-[#FF6B35]/25 bg-[#07111F] p-2 shadow-[0_28px_90px_rgba(0,0,0,0.85)] ring-1 ring-black/40"
+                  className="absolute right-0 z-[250] mt-3 w-[min(88vw,290px)] overflow-hidden rounded-[22px] border border-cl-accent/25 bg-cl-surface p-2 shadow-cl-panel ring-1 ring-black/40"
                 >
                   <div className="mb-2 flex items-center gap-3 rounded-[16px] border border-emerald-300/10 bg-emerald-300/[0.055] px-3 py-3">
                     <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-emerald-300/15 bg-emerald-300/10 text-emerald-200">
@@ -349,7 +353,7 @@ export default function PublicTopNav({
                         Signed in
                       </p>
 
-                      <p className="mt-1 truncate text-xs text-white/45">
+                      <p className="mt-1 truncate text-xs text-cl-muted">
                         {(user as any)?.email || username || "Account active"}
                       </p>
                     </div>
@@ -359,9 +363,9 @@ export default function PublicTopNav({
                     type="button"
                     role="menuitem"
                     onClick={() => navigateFromAccount(profileHref)}
-                    className="flex w-full items-center gap-3 rounded-[15px] px-3 py-3 text-left text-sm font-bold text-white/70 transition hover:bg-white/[0.06] hover:text-white"
+                    className="flex w-full items-center gap-3 rounded-[15px] px-3 py-3 text-left text-sm font-bold text-cl-muted transition hover:bg-cl-subtle hover:text-cl-ink"
                   >
-                    <CircleUserRound className="h-4 w-4 shrink-0 text-cyan-200" />
+                    <CircleUserRound className="h-4 w-4 shrink-0 text-cl-accent" />
                     Your Profile
                   </button>
 
@@ -369,9 +373,9 @@ export default function PublicTopNav({
                     type="button"
                     role="menuitem"
                     onClick={() => navigateFromAccount("/notifications")}
-                    className="flex w-full items-center gap-3 rounded-[15px] px-3 py-3 text-left text-sm font-bold text-white/70 transition hover:bg-white/[0.06] hover:text-white"
+                    className="flex w-full items-center gap-3 rounded-[15px] px-3 py-3 text-left text-sm font-bold text-cl-muted transition hover:bg-cl-subtle hover:text-cl-ink"
                   >
-                    <Bell className="h-4 w-4 shrink-0 text-cyan-200" />
+                    <Bell className="h-4 w-4 shrink-0 text-cl-accent" />
                     <span>Notifications</span>
                     <span className="ml-auto">
                       <NotificationCount
@@ -382,34 +386,34 @@ export default function PublicTopNav({
                   <MyRacerProfileLink onNavigate={navigateFromAccount} />
 
                   {isJetSki && (
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onClick={() => navigateFromAccount("/racepod")}
-                    className="flex w-full items-center gap-3 rounded-[15px] px-3 py-3 text-left text-sm font-bold text-white/70 transition hover:bg-white/[0.06] hover:text-white"
-                  >
-                    <Wifi className="h-4 w-4 shrink-0 text-cyan-200" />
-                    RacePod
-                  </button>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => navigateFromAccount("/racepod")}
+                      className="flex w-full items-center gap-3 rounded-[15px] px-3 py-3 text-left text-sm font-bold text-cl-muted transition hover:bg-cl-subtle hover:text-cl-ink"
+                    >
+                      <Wifi className="h-4 w-4 shrink-0 text-cl-accent" />
+                      RacePod
+                    </button>
                   )}
 
                   <button
                     type="button"
                     role="menuitem"
                     onClick={() => navigateFromAccount("/settings")}
-                    className="flex w-full items-center gap-3 rounded-[15px] px-3 py-3 text-left text-sm font-bold text-white/70 transition hover:bg-white/[0.06] hover:text-white"
+                    className="flex w-full items-center gap-3 rounded-[15px] px-3 py-3 text-left text-sm font-bold text-cl-muted transition hover:bg-cl-subtle hover:text-cl-ink"
                   >
-                    <Settings className="h-4 w-4 shrink-0 text-cyan-200" />
+                    <Settings className="h-4 w-4 shrink-0 text-cl-accent" />
                     Account Settings
                   </button>
 
-                  <div className="my-2 h-px bg-white/10" />
+                  <div className="my-2 h-px bg-cl-subtle" />
 
                   <button
                     type="button"
                     role="menuitem"
                     onClick={handleLogout}
-                    className="flex w-full items-center gap-3 rounded-[15px] px-3 py-3 text-left text-sm font-bold text-[#FFB199] transition hover:bg-[#FF6B35]/10 hover:text-white"
+                    className="flex w-full items-center gap-3 rounded-[15px] px-3 py-3 text-left text-sm font-bold text-cl-accent transition hover:bg-cl-accent/10 hover:text-cl-ink"
                   >
                     <LogOut className="h-4 w-4 shrink-0" />
                     Logout
@@ -421,7 +425,7 @@ export default function PublicTopNav({
             <button
               type="button"
               onClick={handleLogin}
-              className="inline-flex h-11 max-w-[126px] items-center justify-center overflow-hidden rounded-full border border-[#FF6B35]/20 bg-[#FF6B35]/10 px-3 text-[10px] font-black uppercase tracking-[0.12em] text-[#FFB199] transition duration-200 hover:border-[#FF7849]/40 hover:bg-[#FF6B35]/20 hover:text-white sm:max-w-none sm:px-4 sm:text-xs sm:tracking-[0.18em]"
+              className="inline-flex h-11 max-w-[126px] items-center justify-center overflow-hidden rounded-full border border-cl-accent/20 bg-cl-accent/10 px-3 text-[10px] font-black uppercase tracking-[0.12em] text-cl-accent transition duration-200 hover:border-cl-accent/40 hover:bg-cl-accent/20 hover:text-cl-ink sm:max-w-none sm:px-4 sm:text-xs sm:tracking-[0.18em]"
             >
               <span className="block truncate">Sign In</span>
             </button>

@@ -27,25 +27,25 @@ function SportDirectory({ sportKey }: { sportKey: string }) {
   const rows = query.data?.organizations ?? [];
   const label = query.data?.sport?.label ?? "Sport";
   return (
-    <main className="consumer-document-page bg-[#030913] text-white px-3 py-10 sm:px-6">
+    <main className="consumer-document-page bg-cl-canvas text-cl-ink px-3 py-10 sm:px-6">
       <PageSEO
         title={`${label} organizations • Corner League`}
         canonicalPath={`/sports/${sportKey}`}
       />
       <div className="mx-auto max-w-6xl space-y-8">
-        <header className="rounded-[30px] border border-cyan-300/15 bg-[linear-gradient(120deg,#0c2835,#07111f_65%)] p-6 sm:p-10">
-          <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-200">
+        <header className="rounded-[30px] border border-cl-accent/15 cl-panel-wash p-6 sm:p-10">
+          <p className="text-xs font-black uppercase tracking-[0.2em] text-cl-accent">
             Corner League Sports
           </p>
           <h1 className="mt-4 break-words text-3xl font-black uppercase sm:text-5xl">
             {label} Organizations
           </h1>
-          <p className="mt-4 max-w-2xl leading-7 text-slate-300">
+          <p className="mt-4 max-w-2xl leading-7 text-cl-muted">
             Find organizations, read their official updates, and explore their
             photo galleries.
           </p>
           {query.data && (
-            <p className="mt-4 text-sm text-cyan-200">
+            <p className="mt-4 text-sm text-cl-accent">
               {query.data.meta.itemCount} organizations
             </p>
           )}
@@ -59,7 +59,7 @@ function SportDirectory({ sportKey }: { sportKey: string }) {
           >
             <p>Unable to load organizations for this sport.</p>
             <button
-              className="mt-4 min-h-11 rounded-full border border-white/20 px-5"
+              className="mt-4 min-h-11 rounded-full border border-cl-border px-5"
               onClick={() => void query.refetch()}
             >
               Try again
@@ -68,7 +68,7 @@ function SportDirectory({ sportKey }: { sportKey: string }) {
         ) : (
           <>
             {!rows.length ? (
-              <p className="rounded-2xl border border-white/10 p-6 text-slate-300">
+              <p className="rounded-2xl border border-cl-border p-6 text-cl-muted">
                 No organizations are currently available for this sport.
               </p>
             ) : (
@@ -77,9 +77,9 @@ function SportDirectory({ sportKey }: { sportKey: string }) {
                   <Link
                     key={org.id}
                     href={sportOrganization(sportKey, org.id)}
-                    className="group rounded-[24px] border border-cyan-300/10 bg-[#07111f] p-6 transition hover:border-cyan-300/40"
+                    className="group rounded-[24px] border border-cl-accent/10 bg-cl-surface p-6 transition hover:border-cl-accent/40"
                   >
-                    <div className="mb-5 flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/5">
+                    <div className="mb-5 flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl border border-cl-border bg-cl-subtle">
                       {org.logoUrl ? (
                         <img
                           src={org.logoUrl}
@@ -88,7 +88,7 @@ function SportDirectory({ sportKey }: { sportKey: string }) {
                           className="h-full w-full object-contain p-2"
                         />
                       ) : (
-                        <span className="text-xl font-black text-cyan-200">
+                        <span className="text-xl font-black text-cl-accent">
                           {org.name.slice(0, 2).toUpperCase()}
                         </span>
                       )}
@@ -96,11 +96,11 @@ function SportDirectory({ sportKey }: { sportKey: string }) {
                     <h2 className="break-words text-xl font-black">
                       {org.name}
                     </h2>
-                    <p className="mt-3 line-clamp-3 leading-7 text-slate-300">
+                    <p className="mt-3 line-clamp-3 leading-7 text-cl-muted">
                       {org.description ||
                         "Explore this organization’s news and gallery."}
                     </p>
-                    <p className="mt-5 text-sm font-bold text-cyan-200">
+                    <p className="mt-5 text-sm font-bold text-cl-accent">
                       View organization →
                     </p>
                   </Link>
@@ -113,7 +113,7 @@ function SportDirectory({ sportKey }: { sportKey: string }) {
                 className="flex items-center gap-5"
               >
                 <button
-                  className="min-h-11 rounded-full border border-white/15 px-5 disabled:opacity-40"
+                  className="min-h-11 rounded-full border border-cl-border px-5 disabled:opacity-40"
                   disabled={page === 1}
                   onClick={() => setPage((p) => p - 1)}
                 >
@@ -121,7 +121,7 @@ function SportDirectory({ sportKey }: { sportKey: string }) {
                 </button>
                 <span>Page {page}</span>
                 <button
-                  className="min-h-11 rounded-full border border-white/15 px-5 disabled:opacity-40"
+                  className="min-h-11 rounded-full border border-cl-border px-5 disabled:opacity-40"
                   disabled={!query.data?.meta.hasNextPage}
                   onClick={() => setPage((p) => p + 1)}
                 >

@@ -4,15 +4,21 @@ import React, { useState } from "react";
 import { useLocation } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
+import { useMyRacerProfile } from "@/hooks/useMyRacerProfile";
 import {
-  useMyRacerProfile,
-} from "@/hooks/useMyRacerProfile";
-import { createMyRacerIdentity, searchSelfRacers, type RacerMatch } from "@/lib/selfRacerLookup";
+  createMyRacerIdentity,
+  searchSelfRacers,
+  type RacerMatch,
+} from "@/lib/selfRacerLookup";
 import { Button } from "@/components/ui/button";
 
 export default function CreateRacerProfilePage() {
- const params = new URLSearchParams(useSearch());
- return params.has("athletes") ? <SportAthleteProfiles /> : <JetSkiRacerProfilePage />;
+  const params = new URLSearchParams(useSearch());
+  return params.has("athletes") ? (
+    <SportAthleteProfiles />
+  ) : (
+    <JetSkiRacerProfilePage />
+  );
 }
 function JetSkiRacerProfilePage() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -30,7 +36,7 @@ function JetSkiRacerProfilePage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const input =
-    "w-full rounded-xl border border-white/15 bg-[#07111f] px-4 py-3 text-white focus:border-cyan-300";
+    "w-full rounded-xl border border-cl-border bg-cl-canvas px-4 py-3 text-cl-ink focus:border-cl-accent";
   const find = async () => {
     setBusy(true);
     setError("");
@@ -50,7 +56,11 @@ function JetSkiRacerProfilePage() {
     setError("");
     try {
       const result = await createMyRacerIdentity({
-        name: name.trim(), nickname, origin, bio, skillLevel,
+        name: name.trim(),
+        nickname,
+        origin,
+        bio,
+        skillLevel,
       });
       cache.setQueryData(["/athletes/me/racer-profile", user?.id], result);
       await cache.invalidateQueries({ queryKey: ["/auth/me"] });
@@ -66,13 +76,13 @@ function JetSkiRacerProfilePage() {
     }
   };
   return (
-    <main className="mx-auto max-w-3xl space-y-6 px-4 py-10 text-white">
+    <main className="mx-auto max-w-3xl space-y-6 px-4 py-10 text-cl-ink">
       <div>
-        <p className="text-xs font-bold uppercase tracking-widest text-cyan-300">
+        <p className="text-xs font-bold uppercase tracking-widest text-cl-accent">
           Jet Ski • Athlete identity
         </p>
         <h1 className="mt-2 text-3xl font-black">Your racer profile</h1>
-        <p className="mt-3 text-slate-400">
+        <p className="mt-3 text-cl-muted">
           One racer profile follows your account across Corner League and helps
           you register for events faster.
         </p>
@@ -91,7 +101,7 @@ function JetSkiRacerProfilePage() {
           <Button onClick={() => identity.refetch()}>Try again</Button>
         </div>
       ) : identity.data?.profile ? (
-        <section className="space-y-4 rounded-2xl border border-cyan-300/20 bg-white/5 p-6">
+        <section className="space-y-4 rounded-2xl border border-cl-accent/20 bg-cl-subtle p-6">
           <h2 className="text-xl font-bold">{identity.data.profile.name}</h2>
           <p>
             {identity.data.profile.isVerifiedAthlete
@@ -112,7 +122,7 @@ function JetSkiRacerProfilePage() {
           )}
         </section>
       ) : identity.data?.pendingClaim ? (
-        <section className="space-y-3 rounded-2xl border border-white/15 p-6">
+        <section className="space-y-3 rounded-2xl border border-cl-border p-6">
           <h2 className="text-xl font-bold">
             Claim pending: {identity.data.pendingClaim.name}
           </h2>
@@ -123,11 +133,11 @@ function JetSkiRacerProfilePage() {
         </section>
       ) : (
         <>
-          <section className="space-y-4 rounded-2xl border border-white/15 bg-white/5 p-6">
+          <section className="space-y-4 rounded-2xl border border-cl-border bg-cl-subtle p-6">
             <h2 className="text-xl font-bold">
               Already raced with Corner League?
             </h2>
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-cl-muted">
               Find your existing profile first to keep your results history.
               Open it and use the claim button if it belongs to you.
             </p>
@@ -152,7 +162,7 @@ function JetSkiRacerProfilePage() {
               results.map((racer) => (
                 <a
                   key={racer.id}
-                  className="block rounded-xl border border-white/10 p-3 text-cyan-200"
+                  className="block rounded-xl border border-cl-border p-3 text-cl-accent"
                   href={racer.profileUrl}
                 >
                   {racer.name} —{" "}
@@ -162,10 +172,10 @@ function JetSkiRacerProfilePage() {
           </section>
           <form
             onSubmit={create}
-            className="space-y-4 rounded-2xl border border-white/15 bg-white/5 p-6"
+            className="space-y-4 rounded-2xl border border-cl-border bg-cl-subtle p-6"
           >
             <h2 className="text-xl font-bold">Create your racer profile</h2>
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-cl-muted">
               This creates a public Jet Ski racer profile linked to your current
               account. Identity verification is reviewed separately. Additional
               sports will be available later.
@@ -228,7 +238,7 @@ function JetSkiRacerProfilePage() {
       {error && (
         <p
           role="alert"
-          className="rounded-xl border border-red-400/25 bg-red-500/10 p-4 text-red-200"
+          className="rounded-xl border border-red-400/25 bg-red-500/10 p-4 text-cl-danger"
         >
           {error}
         </p>

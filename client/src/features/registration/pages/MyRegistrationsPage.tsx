@@ -122,29 +122,29 @@ export default function MyRegistrationsPage() {
       backLabel="Registration Home"
     >
       {loading ? (
-        <div className="grid min-h-[420px] place-items-center rounded-[28px] border border-cyan-200/[0.12] bg-[#071321]">
-          <Loader2 className="h-8 w-8 animate-spin text-cyan-200" />
+        <div className="grid min-h-[420px] place-items-center rounded-[28px] border border-cl-accent/[0.12] bg-cl-canvas">
+          <Loader2 className="h-8 w-8 animate-spin text-cl-accent" />
         </div>
       ) : error ? (
         <div className="rounded-[28px] border border-red-300/20 bg-red-950/20 p-6 text-center">
-          <p className="text-sm text-red-100/75">{error}</p>
+          <p className="text-sm text-cl-danger">{error}</p>
         </div>
       ) : items.length === 0 ? (
-        <div className="rounded-[28px] border border-dashed border-white/[0.13] bg-[#071321] px-5 py-14 text-center">
-          <CalendarDays className="mx-auto h-9 w-9 text-white/25" />
+        <div className="rounded-[28px] border border-dashed border-cl-border bg-cl-canvas px-5 py-14 text-center">
+          <CalendarDays className="mx-auto h-9 w-9 text-cl-muted" />
 
-          <h2 className="mt-4 text-xl font-black uppercase text-white">
+          <h2 className="mt-4 text-xl font-black uppercase text-cl-ink">
             No registrations yet
           </h2>
 
-          <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-white/45">
+          <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-cl-muted">
             Race registrations submitted through Corner League will appear here.
           </p>
 
           <button
             type="button"
             onClick={() => navigate("/registration/events")}
-            className="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-cyan-300 px-5 text-[10px] font-black uppercase tracking-[0.14em] text-[#06111d]"
+            className="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-cl-accent px-5 text-[10px] font-black uppercase tracking-[0.14em] text-cl-contrast"
           >
             Find an Event
             <ArrowRight className="h-4 w-4" />
@@ -160,7 +160,7 @@ export default function MyRegistrationsPage() {
             return (
               <article
                 key={registration.id}
-                className="relative overflow-hidden rounded-[28px] border border-cyan-200/[0.13] bg-[#071321] p-5 shadow-[0_26px_80px_rgba(0,0,0,0.44)] sm:p-6"
+                className="relative overflow-hidden rounded-[28px] border border-cl-accent/[0.13] bg-cl-canvas p-5 shadow-cl-panel sm:p-6"
               >
                 <div className="relative">
                   <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
@@ -169,8 +169,8 @@ export default function MyRegistrationsPage() {
                         <span
                           className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.12em] ${
                             confirmed
-                              ? "border-emerald-300/25 bg-[#103026] text-emerald-200"
-                              : "border-[#FF6B35]/25 bg-[#351B19] text-[#FFB199]"
+                              ? "border-emerald-300/25 bg-cl-canvas text-cl-success"
+                              : "border-cl-accent/25 bg-cl-canvas text-cl-accent"
                           }`}
                         >
                           {confirmed ? (
@@ -182,32 +182,32 @@ export default function MyRegistrationsPage() {
                           {getStatusLabel(registration.status)}
                         </span>
 
-                        <span className="rounded-full border border-white/[0.1] bg-[#0B1929] px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.12em] text-white/55">
+                        <span className="rounded-full border border-cl-border bg-cl-canvas px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.12em] text-cl-muted">
                           {registration.racer.name}
                         </span>
 
-                        <span className="rounded-full border border-white/[0.1] bg-[#0B1929] px-3 py-1.5 font-mono text-[9px] font-bold text-white/45">
+                        <span className="rounded-full border border-cl-border bg-cl-canvas px-3 py-1.5 font-mono text-[9px] font-bold text-cl-muted">
                           {registration.confirmationNumber}
                         </span>
                       </div>
 
-                      <h2 className="mt-4 text-2xl font-black uppercase tracking-[-0.035em] text-white">
+                      <h2 className="mt-4 text-2xl font-black uppercase tracking-[-0.035em] text-cl-ink">
                         {registration.event?.name || "Race Event"}
                       </h2>
 
                       {registration.event?.formattedLocation ? (
-                        <p className="mt-2 text-sm text-slate-400">
+                        <p className="mt-2 text-sm text-cl-muted">
                           {registration.event.formattedLocation}
                         </p>
                       ) : null}
                     </div>
 
-                    <div className="shrink-0 rounded-[20px] border border-white/[0.09] bg-[#0A1828] px-5 py-4 text-left lg:text-right">
-                      <p className="text-[9px] font-black uppercase tracking-[0.12em] text-white/35">
+                    <div className="shrink-0 rounded-[20px] border border-cl-border bg-cl-canvas px-5 py-4 text-left lg:text-right">
+                      <p className="text-[9px] font-black uppercase tracking-[0.12em] text-cl-muted">
                         Registration Total
                       </p>
 
-                      <p className="mt-2 text-2xl font-black text-white">
+                      <p className="mt-2 text-2xl font-black text-cl-ink">
                         {formatCurrency(
                           registration.totalCents,
                           registration.currency || "USD",
@@ -215,7 +215,7 @@ export default function MyRegistrationsPage() {
                       </p>
 
                       {registration.amountPaidCents > 0 ? (
-                        <p className="mt-1 text-[10px] font-bold text-emerald-200/70">
+                        <p className="mt-1 text-[10px] font-bold text-cl-success">
                           Paid{" "}
                           {formatCurrency(
                             registration.amountPaidCents,
@@ -227,12 +227,12 @@ export default function MyRegistrationsPage() {
                   </div>
 
                   <div className="mt-5 grid gap-3 md:grid-cols-3">
-                    <div className="rounded-[20px] border border-white/[0.09] bg-[#0A1828] p-4">
-                      <div className="grid h-9 w-9 place-items-center rounded-xl border border-cyan-300/15 bg-[#0D2633]">
-                        <Flag className="h-4 w-4 text-cyan-200" />
+                    <div className="rounded-[20px] border border-cl-border bg-cl-canvas p-4">
+                      <div className="grid h-9 w-9 place-items-center rounded-xl border border-cl-accent/[0.15] bg-cl-canvas">
+                        <Flag className="h-4 w-4 text-cl-accent" />
                       </div>
 
-                      <p className="mt-3 text-[9px] font-black uppercase tracking-[0.12em] text-white/35">
+                      <p className="mt-3 text-[9px] font-black uppercase tracking-[0.12em] text-cl-muted">
                         Classes
                       </p>
 
@@ -240,7 +240,7 @@ export default function MyRegistrationsPage() {
                         {registration.entries.map((entry) => (
                           <p
                             key={entry.id}
-                            className="text-xs font-bold text-white"
+                            className="text-xs font-bold text-cl-ink"
                           >
                             {getClassName(entry)}
                           </p>
@@ -248,16 +248,16 @@ export default function MyRegistrationsPage() {
                       </div>
                     </div>
 
-                    <div className="rounded-[20px] border border-white/[0.09] bg-[#0A1828] p-4">
-                      <div className="grid h-9 w-9 place-items-center rounded-xl border border-[#FF6B35]/15 bg-[#2B1B1B]">
-                        <ShipWheel className="h-4 w-4 text-[#FFB199]" />
+                    <div className="rounded-[20px] border border-cl-border bg-cl-canvas p-4">
+                      <div className="grid h-9 w-9 place-items-center rounded-xl border border-cl-accent/[0.15] bg-cl-canvas">
+                        <ShipWheel className="h-4 w-4 text-cl-accent" />
                       </div>
 
-                      <p className="mt-3 text-[9px] font-black uppercase tracking-[0.12em] text-white/35">
+                      <p className="mt-3 text-[9px] font-black uppercase tracking-[0.12em] text-cl-muted">
                         Watercraft
                       </p>
 
-                      <p className="mt-2 text-xs font-bold leading-5 text-white">
+                      <p className="mt-2 text-xs font-bold leading-5 text-cl-ink">
                         {registration.watercraft
                           ? `#${registration.watercraft.boatNumber ?? ""} ${
                               registration.watercraft.manufacturer ??
@@ -268,20 +268,20 @@ export default function MyRegistrationsPage() {
                       </p>
                     </div>
 
-                    <div className="rounded-[20px] border border-white/[0.09] bg-[#0A1828] p-4">
-                      <div className="grid h-9 w-9 place-items-center rounded-xl border border-cyan-300/15 bg-[#0D2633]">
+                    <div className="rounded-[20px] border border-cl-border bg-cl-canvas p-4">
+                      <div className="grid h-9 w-9 place-items-center rounded-xl border border-cl-accent/[0.15] bg-cl-canvas">
                         {registration.paymentMethod === "online" ? (
-                          <CreditCard className="h-4 w-4 text-cyan-200" />
+                          <CreditCard className="h-4 w-4 text-cl-accent" />
                         ) : (
-                          <WalletCards className="h-4 w-4 text-[#FFB199]" />
+                          <WalletCards className="h-4 w-4 text-cl-accent" />
                         )}
                       </div>
 
-                      <p className="mt-3 text-[9px] font-black uppercase tracking-[0.12em] text-white/35">
+                      <p className="mt-3 text-[9px] font-black uppercase tracking-[0.12em] text-cl-muted">
                         Payment
                       </p>
 
-                      <p className="mt-2 text-xs font-bold text-white">
+                      <p className="mt-2 text-xs font-bold text-cl-ink">
                         {registration.paymentMethod === "online"
                           ? "Stripe Online Payment"
                           : registration.paymentMethod === "cash"
@@ -289,19 +289,19 @@ export default function MyRegistrationsPage() {
                             : registration.paymentMethod}
                       </p>
 
-                      <p className="mt-1 text-[10px] text-white/35">
+                      <p className="mt-1 text-[10px] text-cl-muted">
                         {registration.paymentStatus}
                       </p>
                     </div>
                   </div>
 
-                  <div className="mt-5 flex flex-col gap-2 border-t border-white/[0.1] pt-5 sm:flex-row sm:justify-end">
+                  <div className="mt-5 flex flex-col gap-2 border-t border-cl-border pt-5 sm:flex-row sm:justify-end">
                     <button
                       type="button"
                       onClick={() =>
                         navigate(`/registration/success/${registration.id}`)
                       }
-                      className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/[0.11] bg-[#0B1929] px-4 text-[9px] font-black uppercase tracking-[0.13em] text-white/65"
+                      className="inline-flex min-h-11 items-center justify-center rounded-full border border-cl-border bg-cl-canvas px-4 text-[9px] font-black uppercase tracking-[0.13em] text-cl-muted"
                     >
                       View Registration
                     </button>
@@ -313,7 +313,7 @@ export default function MyRegistrationsPage() {
                           onClick={() =>
                             navigate(`/registration/events/${eventSlug}`)
                           }
-                          className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/[0.11] bg-[#0B1929] px-4 text-[9px] font-black uppercase tracking-[0.13em] text-white/65"
+                          className="inline-flex min-h-11 items-center justify-center rounded-full border border-cl-border bg-cl-canvas px-4 text-[9px] font-black uppercase tracking-[0.13em] text-cl-muted"
                         >
                           View Event
                         </button>
@@ -323,7 +323,7 @@ export default function MyRegistrationsPage() {
                           onClick={() =>
                             navigate(`/registration/events/${eventSlug}/racers`)
                           }
-                          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-cyan-300 px-4 text-[9px] font-black uppercase tracking-[0.13em] text-[#06111d]"
+                          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-cl-accent px-4 text-[9px] font-black uppercase tracking-[0.13em] text-cl-contrast"
                         >
                           Public Entry List
                           <ArrowRight className="h-4 w-4" />

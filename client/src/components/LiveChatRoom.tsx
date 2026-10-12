@@ -104,7 +104,7 @@ function LiveChatRoom({ roomId, onClose }: LiveChatRoomProps) {
           headers: {
             ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
           },
-        }
+        },
       );
 
       if (res.status === 404) {
@@ -128,7 +128,7 @@ function LiveChatRoom({ roomId, onClose }: LiveChatRoomProps) {
       list.sort(
         (a, b) =>
           new Date(a.createdAt || 0).getTime() -
-          new Date(b.createdAt || 0).getTime()
+          new Date(b.createdAt || 0).getTime(),
       );
 
       return list;
@@ -266,7 +266,7 @@ function LiveChatRoom({ roomId, onClose }: LiveChatRoomProps) {
       groups[key].push(m);
     }
     return Object.entries(groups).sort(
-      ([a], [b]) => new Date(a).getTime() - new Date(b).getTime()
+      ([a], [b]) => new Date(a).getTime() - new Date(b).getTime(),
     );
   }, [messages]);
 
@@ -276,13 +276,13 @@ function LiveChatRoom({ roomId, onClose }: LiveChatRoomProps) {
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <span className="inline-block w-2 h-2 rounded-full bg-red-500" />
-          <span className="text-white/90 text-sm">
+          <span className="text-cl-ink text-sm">
             {connecting ? "Connecting…" : `${userCount} online`}
           </span>
         </div>
         {onClose && (
           <button
-            className="text-white/70 hover:text-white text-sm"
+            className="text-cl-muted hover:text-cl-ink text-sm"
             onClick={onClose}
           >
             Close
@@ -293,10 +293,10 @@ function LiveChatRoom({ roomId, onClose }: LiveChatRoomProps) {
       {/* Messages */}
       <div
         ref={listRef}
-        className="rounded-xl border border-white/10 bg-white/5 p-3 h-[420px] overflow-y-auto"
+        className="rounded-xl border border-cl-border bg-cl-subtle p-3 h-[420px] overflow-y-auto"
       >
         {messages.length === 0 ? (
-          <div className="h-full grid place-items-center text-white/60 text-sm">
+          <div className="h-full grid place-items-center text-cl-muted text-sm">
             No messages yet — say hi 👋
           </div>
         ) : (
@@ -305,9 +305,9 @@ function LiveChatRoom({ roomId, onClose }: LiveChatRoomProps) {
               <div key={dayKey} className="space-y-3">
                 {/* Day separator */}
                 <div className="relative my-2">
-                  <div className="h-px bg-white/10 z-0" />
+                  <div className="h-px bg-cl-subtle z-0" />
                   <div className="pointer-events-none absolute inset-0 flex items-center justify-center z-10">
-                    <span className="px-3 text-xs text-white/70 bg-neutral-900 rounded-full border border-white/10 shadow-sm">
+                    <span className="px-3 text-xs text-cl-muted bg-cl-subtle rounded-full border border-cl-border shadow-sm">
                       {formatDayLabel(dayMsgs[0]?.createdAt)}
                     </span>
                   </div>
@@ -319,7 +319,7 @@ function LiveChatRoom({ roomId, onClose }: LiveChatRoomProps) {
                     .sort(
                       (a, b) =>
                         new Date(a.createdAt || 0).getTime() -
-                        new Date(b.createdAt || 0).getTime()
+                        new Date(b.createdAt || 0).getTime(),
                     )
                     .map((m) => {
                       const profileHref = toProfilePath(m.username);
@@ -346,7 +346,7 @@ function LiveChatRoom({ roomId, onClose }: LiveChatRoomProps) {
                               <a
                                 href={profileHref}
                                 className={
-                                  (isSelf ? "text-amber-400" : "text-white") +
+                                  (isSelf ? "text-cl-warning" : "text-cl-ink") +
                                   " font-semibold hover:underline"
                                 }
                                 aria-current={isSelf ? "true" : undefined}
@@ -355,12 +355,12 @@ function LiveChatRoom({ roomId, onClose }: LiveChatRoomProps) {
                                 {m.username}
                               </a>
                               {m.createdAt && (
-                                <span className="text-[11px] text-white/50">
+                                <span className="text-[11px] text-cl-muted">
                                   {formatTime(m.createdAt)}
                                 </span>
                               )}
                             </div>
-                            <div className="text-white/90 text-sm leading-relaxed break-words mt-0.5">
+                            <div className="text-cl-ink text-sm leading-relaxed break-words mt-0.5">
                               {m.message}
                             </div>
                           </div>
@@ -377,7 +377,7 @@ function LiveChatRoom({ roomId, onClose }: LiveChatRoomProps) {
       {/* Input */}
       <div className="mt-3 flex items-center gap-2">
         <input
-          className="flex-1 px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white placeholder-white/40"
+          className="flex-1 px-3 py-2 rounded-lg bg-black/40 border border-cl-border text-cl-ink placeholder-cl-muted"
           placeholder={unauthenticated ? "Sign in to chat" : "Type a message…"}
           value={currentMessage}
           onChange={(e) => setCurrentMessage(e.target.value)}
@@ -389,14 +389,14 @@ function LiveChatRoom({ roomId, onClose }: LiveChatRoomProps) {
         <button
           onClick={sendMessage}
           disabled={unauthenticated || !currentMessage.trim()}
-          className="px-4 py-2 rounded-lg bg-gradient-to-r from-violet-600 via-fuchsia-600 to-orange-500 text-white disabled:opacity-50"
+          className="px-4 py-2 rounded-lg bg-gradient-to-r from-cl-accent via-cl-accent to-cl-accent text-cl-ink disabled:opacity-50"
         >
           Send
         </button>
       </div>
 
       {unauthenticated && (
-        <p className="mt-2 text-xs text-white/60">
+        <p className="mt-2 text-xs text-cl-muted">
           You must be signed in to send messages.
         </p>
       )}

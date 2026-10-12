@@ -175,10 +175,10 @@ export default function RegistrationShareButton({
 
   const classes =
     variant === "primary"
-      ? "border border-cyan-200/25 bg-cyan-300 text-[#06111d] shadow-[0_0_26px_rgba(34,211,238,0.2)] hover:bg-cyan-200"
+      ? "border border-cl-accent/25 bg-cl-accent text-cl-contrast shadow-cl-panel hover:bg-cl-accent"
       : variant === "icon"
-        ? "border border-white/10 bg-white/[0.05] text-white/70 hover:border-cyan-300/25 hover:bg-cyan-300/10 hover:text-white"
-        : "border border-white/10 bg-white/[0.05] text-white/75 hover:border-cyan-300/25 hover:bg-cyan-300/10 hover:text-white";
+        ? "border border-cl-border bg-cl-subtle text-cl-muted hover:border-cl-accent/25 hover:bg-cl-accent/10 hover:text-cl-ink"
+        : "border border-cl-border bg-cl-subtle text-cl-muted hover:border-cl-accent/25 hover:bg-cl-accent/10 hover:text-cl-ink";
 
   return (
     <button

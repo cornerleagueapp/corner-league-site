@@ -59,14 +59,14 @@ function InlineText({ text, format }: { text: string; format: string }) {
 }
 export function PostBody({ post }: { post: OrgPost }) {
   return (
-    <div className="space-y-3 break-words text-base leading-8 text-slate-200">
+    <div className="space-y-3 break-words text-base leading-8 text-cl-muted">
       {postLines(post.content, post.contentFormat).map((line, i) => {
         const content = (
           <InlineText text={line.text} format={post.contentFormat} />
         );
         if (line.kind === "heading")
           return (
-            <h2 key={i} className="pt-3 text-xl font-bold text-white">
+            <h2 key={i} className="pt-3 text-xl font-bold text-cl-ink">
               {content}
             </h2>
           );
@@ -104,7 +104,7 @@ function PostImage({
         className="max-h-[560px] w-full rounded-xl object-contain"
       />
       {caption && (
-        <figcaption className="mt-2 text-sm text-slate-400">
+        <figcaption className="mt-2 text-sm text-cl-muted">
           {caption}
         </figcaption>
       )}
@@ -146,16 +146,16 @@ export function OrganizationPosts({
   return (
     <section
       aria-label="Organization news and posts"
-      className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-7"
+      className="mt-6 rounded-2xl border border-cl-border bg-cl-subtle p-5 sm:p-7"
     >
       <div className="mb-5 flex items-center justify-between gap-4">
-        <h2 className="text-xl font-bold text-white">News & Updates</h2>
+        <h2 className="text-xl font-bold text-cl-ink">News & Updates</h2>
         <button
           type="button"
           onClick={() => void query.refetch()}
           disabled={query.isFetching}
           aria-label="Refresh organization posts"
-          className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-white/15 px-3 text-sm text-cyan-300 disabled:opacity-50"
+          className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-cl-border px-3 text-sm text-cl-accent disabled:opacity-50"
         >
           <RefreshCw
             className={`h-4 w-4 ${query.isFetching ? "animate-spin" : ""}`}
@@ -164,7 +164,7 @@ export function OrganizationPosts({
         </button>
       </div>
       {query.isLoading && (
-        <p className="text-slate-300" role="status">
+        <p className="text-cl-muted" role="status">
           Loading posts…
         </p>
       )}
@@ -174,7 +174,7 @@ export function OrganizationPosts({
         </p>
       )}
       {query.data && !query.data.articles.length && (
-        <p className="text-slate-400">
+        <p className="text-cl-muted">
           No published posts yet. Official news and announcements will appear
           here.
         </p>
@@ -188,7 +188,7 @@ export function OrganizationPosts({
                 ? `/internal/test-organizations/${sandbox.id}?post=${encodeURIComponent(post.id)}`
                 : `/organization-posts/${post.id}`
             }
-            className="overflow-hidden rounded-xl border border-white/10 bg-slate-950/50 transition hover:border-cyan-300/50"
+            className="overflow-hidden rounded-xl border border-cl-border bg-slate-950/50 transition hover:border-cl-accent/50"
             style={{ borderTop: `3px solid ${postAccent(post.accentColor)}` }}
           >
             {safePostImage(post.headerImageUrl) && (
@@ -200,24 +200,24 @@ export function OrganizationPosts({
               />
             )}
             <div className="space-y-3 p-5">
-              <p className="text-xs font-semibold uppercase tracking-wider text-cyan-300">
+              <p className="text-xs font-semibold uppercase tracking-wider text-cl-accent">
                 {postLabel(post.postType)} · {dateLabel(post.publishedAt)}
               </p>
-              <h3 className="break-words text-xl font-bold text-white">
+              <h3 className="break-words text-xl font-bold text-cl-ink">
                 {post.title}
               </h3>
-              <p className="break-words text-sm leading-6 text-slate-300">
+              <p className="break-words text-sm leading-6 text-cl-muted">
                 {post.summary || post.content.slice(0, 180)}
                 {!post.summary && post.content.length > 180 ? "…" : ""}
               </p>
-              <span className="inline-block text-sm font-semibold text-cyan-300">
+              <span className="inline-block text-sm font-semibold text-cl-accent">
                 Read post →
               </span>
             </div>
           </Link>
         ))}
       </div>
-      <div className="mt-5 flex items-center gap-4 text-sm text-slate-300">
+      <div className="mt-5 flex items-center gap-4 text-sm text-cl-muted">
         {page > 1 && (
           <button className="min-h-11 px-3" onClick={() => setPage(page - 1)}>
             Previous
@@ -258,28 +258,28 @@ export function OrganizationPostPage({ id }: { id: string }) {
   return (
     <main className="mx-auto w-full max-w-4xl px-4 py-10 sm:px-8">
       {query.isLoading && (
-        <p className="text-slate-300" role="status">
+        <p className="text-cl-muted" role="status">
           Loading post…
         </p>
       )}
       {query.isError && (
-        <div className="space-y-4 text-slate-300">
+        <div className="space-y-4 text-cl-muted">
           <PageSEO title="Post unavailable" noindex />
           <p role="alert">This post is unavailable or has returned to draft.</p>
           <button
-            className="min-h-11 rounded-lg border border-white/15 px-4"
+            className="min-h-11 rounded-lg border border-cl-border px-4"
             onClick={() => void query.refetch()}
           >
             Try again
           </button>
-          <Link href="/aqua-organizations" className="block text-cyan-300">
+          <Link href="/aqua-organizations" className="block text-cl-accent">
             Browse organizations
           </Link>
         </div>
       )}
       {post && !query.isError && (
         <article
-          className="space-y-6 rounded-2xl border border-white/10 bg-slate-950/50 p-5 sm:p-8"
+          className="space-y-6 rounded-2xl border border-cl-border bg-slate-950/50 p-5 sm:p-8"
           style={{ borderTop: `4px solid ${postAccent(post.accentColor)}` }}
         >
           <PageSEO
@@ -296,18 +296,18 @@ export function OrganizationPostPage({ id }: { id: string }) {
                 ? `/internal/test-organizations/${sandbox.id}`
                 : `/aqua-organizations/${post.organization?.id}`
             }
-            className="text-sm text-cyan-300"
+            className="text-sm text-cl-accent"
           >
             ← {post.organization?.name || "Organization"}
           </Link>
-          <p className="text-xs font-semibold uppercase tracking-wider text-cyan-300">
+          <p className="text-xs font-semibold uppercase tracking-wider text-cl-accent">
             {postLabel(post.postType)} · {dateLabel(post.publishedAt)}
           </p>
-          <h1 className="break-words text-3xl font-black text-white sm:text-4xl">
+          <h1 className="break-words text-3xl font-black text-cl-ink sm:text-4xl">
             {post.title}
           </h1>
           {post.summary && (
-            <p className="break-words text-lg leading-8 text-slate-300">
+            <p className="break-words text-lg leading-8 text-cl-muted">
               {post.summary}
             </p>
           )}
@@ -322,7 +322,7 @@ export function OrganizationPostPage({ id }: { id: string }) {
             caption={post.articleImageCaption}
             title={post.title}
           />
-          <p className="border-t border-white/10 pt-5 text-sm text-slate-400">
+          <p className="border-t border-cl-border pt-5 text-sm text-cl-muted">
             Published by {post.organization?.name || "the organization"}. Copy
             this page’s address to share this post.
           </p>

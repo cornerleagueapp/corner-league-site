@@ -120,20 +120,20 @@ function StatCard({
   icon: React.ReactNode;
 }) {
   return (
-    <div className="relative overflow-hidden rounded-[24px] border border-cyan-300/10 bg-[#07111F]/80 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
-      <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-cyan-300/10 blur-3xl" />
+    <div className="relative overflow-hidden rounded-[24px] border border-cl-accent/10 bg-cl-surface p-5 shadow-cl-panel">
+      <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-cl-accent/10 blur-3xl" />
       <div className="relative flex items-start justify-between gap-4">
         <div>
-          <div className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-300/70">
+          <div className="text-[10px] font-black uppercase tracking-[0.22em] text-cl-accent">
             {label}
           </div>
-          <div className="mt-2 text-3xl font-black text-white">{value}</div>
+          <div className="mt-2 text-3xl font-black text-cl-ink">{value}</div>
           {helper ? (
-            <div className="mt-1 text-sm text-white/45">{helper}</div>
+            <div className="mt-1 text-sm text-cl-muted">{helper}</div>
           ) : null}
         </div>
 
-        <div className="grid h-11 w-11 place-items-center rounded-2xl border border-cyan-300/15 bg-cyan-300/10 text-cyan-100">
+        <div className="grid h-11 w-11 place-items-center rounded-2xl border border-cl-accent/15 bg-cl-accent/10 text-cl-accent">
           {icon}
         </div>
       </div>
@@ -157,7 +157,7 @@ function RacePodStatusAlert({
         ? "border-amber-300/20 bg-amber-400/10 text-amber-100"
         : severity === "error"
           ? "border-red-300/20 bg-red-500/10 text-red-100"
-          : "border-cyan-300/15 bg-cyan-300/10 text-cyan-100";
+          : "border-cl-accent/15 bg-cl-accent/10 text-cl-accent";
 
   const label =
     status.status === "no_location"
@@ -174,10 +174,10 @@ function RacePodStatusAlert({
         {label}
       </div>
 
-      <p className="mt-2 text-sm leading-6 text-white/75">{status.message}</p>
+      <p className="mt-2 text-sm leading-6 text-cl-muted">{status.message}</p>
 
       {status.receivedAt ? (
-        <div className="mt-2 text-xs text-white/45">
+        <div className="mt-2 text-xs text-cl-muted">
           Last status: {formatDate(status.receivedAt)}
         </div>
       ) : null}
@@ -686,14 +686,14 @@ export default function RacePodPage() {
 
   if (authLoading || loading) {
     return (
-      <div className="relative grid min-h-screen place-items-center overflow-hidden bg-[#030913] text-white">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.12),transparent_30%),radial-gradient(circle_at_82%_18%,rgba(255,107,53,0.08),transparent_28%),linear-gradient(180deg,#030913_0%,#07111F_48%,#02050A_100%)]" />
-        <div className="relative rounded-[28px] border border-cyan-300/10 bg-[#07111F]/80 px-8 py-7 text-center shadow-[0_24px_70px_rgba(0,0,0,0.36)]">
-          <div className="mx-auto mb-4 h-10 w-10 animate-pulse rounded-full border border-cyan-300/25 bg-cyan-300/10" />
-          <div className="text-xs font-black uppercase tracking-[0.22em] text-cyan-200/70">
+      <div className="relative grid min-h-screen place-items-center overflow-hidden bg-cl-canvas text-cl-ink">
+        <div className="pointer-events-none absolute inset-0 cl-panel-wash" />
+        <div className="relative rounded-[28px] border border-cl-accent/10 bg-cl-surface px-8 py-7 text-center shadow-cl-panel">
+          <div className="mx-auto mb-4 h-10 w-10 animate-pulse rounded-full border border-cl-accent/25 bg-cl-accent/10" />
+          <div className="text-xs font-black uppercase tracking-[0.22em] text-cl-accent">
             Loading RacePod
           </div>
-          <div className="mt-2 text-sm text-slate-300">
+          <div className="mt-2 text-sm text-cl-muted">
             Checking device status and telemetry…
           </div>
         </div>
@@ -702,55 +702,57 @@ export default function RacePodPage() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-[#030913] text-white">
+    <div className="relative min-h-screen overflow-x-hidden bg-cl-canvas text-cl-ink">
       <div className="pointer-events-none fixed inset-0 z-0">
-        <div className="absolute inset-0 bg-[#030913]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.12),transparent_30%),radial-gradient(circle_at_82%_18%,rgba(255,107,53,0.08),transparent_28%),radial-gradient(circle_at_50%_55%,rgba(7,17,31,0.82),transparent_58%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(3,9,19,0.25)_0%,rgba(3,9,19,0.72)_52%,rgba(3,9,19,0.95)_100%)]" />
+        <div className="absolute inset-0 bg-cl-canvas" />
+        <div className="absolute inset-0 cl-panel-wash" />
+        <div className="absolute inset-0 cl-panel-wash" />
         <div className="absolute inset-0 opacity-[0.035] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:72px_72px]" />
       </div>
 
       <div className="relative z-10 mx-auto max-w-6xl px-4 pb-12 pt-8 sm:px-6 lg:px-8">
-        <section className="overflow-hidden rounded-[34px] border border-cyan-300/10 bg-[linear-gradient(135deg,rgba(34,211,238,0.10)_0%,rgba(7,17,31,0.92)_48%,rgba(255,107,53,0.08)_100%)] p-6 shadow-[0_30px_90px_rgba(0,0,0,0.42)] sm:p-8">
-          <div className="inline-flex items-center rounded-full border border-cyan-300/25 bg-cyan-300/10 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.22em] text-cyan-200">
+        <section className="overflow-hidden rounded-[34px] border border-cl-accent/10 cl-panel-wash p-6 shadow-cl-panel sm:p-8">
+          <div className="inline-flex items-center rounded-full border border-cl-accent/25 bg-cl-accent/10 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.22em] text-cl-accent">
             Corner League RacePod
           </div>
 
           <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_340px] lg:items-end">
             <div>
-              <h1 className="max-w-3xl bg-[linear-gradient(90deg,#FFFFFF_0%,#7CF4FF_50%,#FF7849_100%)] bg-clip-text text-4xl font-black uppercase italic tracking-[0.04em] text-transparent sm:text-6xl">
+              <h1 className="max-w-3xl cl-title-accent  text-4xl font-black uppercase italic tracking-[0.04em]  sm:text-6xl">
                 Your Data
               </h1>
 
-              <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
+              <p className="mt-4 max-w-2xl text-base leading-7 text-cl-muted">
                 Sync your RacePod, record GPS sessions, review speed and route
                 analytics, and publish premium replay highlights to your racer
                 profile.
               </p>
 
-              <div className="mt-5 flex flex-wrap gap-2 text-xs text-white/55">
-                <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5">
+              <div className="mt-5 flex flex-wrap gap-2 text-xs text-cl-muted">
+                <span className="rounded-full border border-cl-border bg-cl-subtle px-3 py-1.5">
                   Status:{" "}
-                  <span className="font-bold text-white">
+                  <span className="font-bold text-cl-ink">
                     {connected ? "Connected" : "Not activated"}
                   </span>
                 </span>
 
-                <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5">
+                <span className="rounded-full border border-cl-border bg-cl-subtle px-3 py-1.5">
                   Devices:{" "}
-                  <span className="font-bold text-white">{devices.length}</span>
+                  <span className="font-bold text-cl-ink">
+                    {devices.length}
+                  </span>
                 </span>
 
-                <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5">
+                <span className="rounded-full border border-cl-border bg-cl-subtle px-3 py-1.5">
                   Sessions:{" "}
-                  <span className="font-bold text-white">
+                  <span className="font-bold text-cl-ink">
                     {overview?.sessions?.total ?? 0}
                   </span>
                 </span>
 
-                <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5">
+                <span className="rounded-full border border-cl-border bg-cl-subtle px-3 py-1.5">
                   Points:{" "}
-                  <span className="font-bold text-white">
+                  <span className="font-bold text-cl-ink">
                     {overview?.points?.total ?? 0}
                   </span>
                 </span>
@@ -761,7 +763,7 @@ export default function RacePodPage() {
               <button
                 type="button"
                 onClick={() => setShowActivationPanel((value) => !value)}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-[#FF6B35]/25 bg-[#FF6B35]/10 px-5 text-sm font-black uppercase tracking-[0.14em] text-[#FFB199] transition hover:bg-[#FF6B35] hover:text-white"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-cl-accent/25 bg-cl-accent/10 px-5 text-sm font-black uppercase tracking-[0.14em] text-cl-accent transition hover:bg-cl-accent hover:text-cl-contrast"
               >
                 {showActivationPanel ? (
                   <X className="h-4 w-4" />
@@ -774,7 +776,7 @@ export default function RacePodPage() {
               <button
                 type="button"
                 onClick={() => loadOverview()}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-cyan-300/20 bg-cyan-300/10 px-5 text-sm font-black uppercase tracking-[0.14em] text-cyan-100 transition hover:bg-cyan-300 hover:text-[#06111d]"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-cl-accent/20 bg-cl-accent/10 px-5 text-sm font-black uppercase tracking-[0.14em] text-cl-accent transition hover:bg-cl-accent hover:text-cl-contrast"
               >
                 <RefreshCw className="h-4 w-4" />
                 Refresh
@@ -790,26 +792,26 @@ export default function RacePodPage() {
         ) : null}
 
         {showActivationPanel || !connected ? (
-          <section className="mt-6 rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
+          <section className="mt-6 rounded-[30px] border border-cl-accent/10 bg-cl-surface p-6 shadow-cl-panel">
             <div className="grid gap-8 lg:grid-cols-[1fr_380px] lg:items-center">
               <div>
-                <div className="text-[10px] font-black uppercase tracking-[0.22em] text-[#FFB199]">
+                <div className="text-[10px] font-black uppercase tracking-[0.22em] text-cl-accent">
                   Activate Device
                 </div>
 
-                <h2 className="mt-3 text-3xl font-black text-white">
+                <h2 className="mt-3 text-3xl font-black text-cl-ink">
                   {connected ? "Add another RacePod" : "Connect your RacePod"}
                 </h2>
 
-                <p className="mt-3 max-w-2xl text-sm leading-7 text-white/60">
+                <p className="mt-3 max-w-2xl text-sm leading-7 text-cl-muted">
                   Enter the activation code from your RacePod package. You can
                   add multiple devices, rename them, and choose which RacePod
                   records each session.
                 </p>
               </div>
 
-              <div className="rounded-[24px] border border-white/10 bg-black/25 p-4">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-300/70">
+              <div className="rounded-[24px] border border-cl-border bg-cl-subtle p-4">
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-cl-accent">
                   Activation Code
                 </label>
 
@@ -817,14 +819,14 @@ export default function RacePodPage() {
                   value={activationCode}
                   onChange={(e) => setActivationCode(e.target.value)}
                   placeholder="Example: CL-RP-ABC123"
-                  className="mt-3 h-12 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-sm text-white outline-none placeholder:text-white/25 focus:border-cyan-300/30"
+                  className="mt-3 h-12 w-full rounded-2xl border border-cl-border bg-cl-subtle px-4 text-sm text-cl-ink outline-none placeholder:text-cl-muted focus:border-cl-accent/30"
                 />
 
                 <button
                   type="button"
                   onClick={handleActivate}
                   disabled={actionLoading}
-                  className="mt-4 h-12 w-full rounded-2xl bg-cyan-300 px-5 text-sm font-black uppercase tracking-[0.14em] text-[#06111d] transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="mt-4 h-12 w-full rounded-2xl bg-cl-accent px-5 text-sm font-black uppercase tracking-[0.14em] text-cl-contrast transition hover:bg-cl-accent disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {actionLoading ? "Activating..." : "Activate RacePod"}
                 </button>
@@ -865,16 +867,16 @@ export default function RacePodPage() {
               />
             </div>
 
-            <section className="mt-6 rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
+            <section className="mt-6 rounded-[30px] border border-cl-accent/10 bg-cl-surface p-6 shadow-cl-panel">
               <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <div className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-300/70">
+                  <div className="text-[10px] font-black uppercase tracking-[0.22em] text-cl-accent">
                     My Devices
                   </div>
-                  <h2 className="mt-2 text-2xl font-black text-white">
+                  <h2 className="mt-2 text-2xl font-black text-cl-ink">
                     RacePod Garage
                   </h2>
-                  <p className="mt-2 text-sm text-white/45">
+                  <p className="mt-2 text-sm text-cl-muted">
                     Select the device you want to use, rename it, or remove old
                     RacePods from your account.
                   </p>
@@ -883,7 +885,7 @@ export default function RacePodPage() {
                 <button
                   type="button"
                   onClick={() => setShowActivationPanel(true)}
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-cyan-300/20 bg-cyan-300/10 px-4 text-xs font-black uppercase tracking-[0.14em] text-cyan-100 transition hover:bg-cyan-300 hover:text-[#06111d]"
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-cl-accent/20 bg-cl-accent/10 px-4 text-xs font-black uppercase tracking-[0.14em] text-cl-accent transition hover:bg-cl-accent hover:text-cl-contrast"
                 >
                   <Plus className="h-4 w-4" />
                   Add Device
@@ -901,8 +903,8 @@ export default function RacePodPage() {
                       className={cn(
                         "rounded-[24px] border p-4 transition",
                         isSelected
-                          ? "border-cyan-300/35 bg-cyan-300/10"
-                          : "border-white/10 bg-white/[0.035] hover:border-cyan-300/20",
+                          ? "border-cl-accent/35 bg-cl-accent/10"
+                          : "border-cl-border bg-cl-subtle hover:border-cl-accent/20",
                       )}
                     >
                       <div className="flex items-start justify-between gap-3">
@@ -913,26 +915,26 @@ export default function RacePodPage() {
                               onChange={(e) =>
                                 setEditingDeviceName(e.target.value)
                               }
-                              className="h-11 w-full rounded-2xl border border-white/10 bg-black/25 px-4 text-sm font-bold text-white outline-none placeholder:text-white/25 focus:border-cyan-300/30"
+                              className="h-11 w-full rounded-2xl border border-cl-border bg-cl-subtle px-4 text-sm font-bold text-cl-ink outline-none placeholder:text-cl-muted focus:border-cl-accent/30"
                               placeholder="RacePod name"
                               autoFocus
                             />
                           ) : (
                             <>
                               <div className="flex flex-wrap items-center gap-2">
-                                <h3 className="truncate text-lg font-black text-white">
+                                <h3 className="truncate text-lg font-black text-cl-ink">
                                   {getDeviceName(device)}
                                 </h3>
 
                                 {isSelected ? (
-                                  <span className="inline-flex items-center gap-1 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-2 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-cyan-100">
+                                  <span className="inline-flex items-center gap-1 rounded-full border border-cl-accent/20 bg-cl-accent/10 px-2 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-cl-accent">
                                     <CheckCircle2 className="h-3 w-3" />
                                     Selected
                                   </span>
                                 ) : null}
                               </div>
 
-                              <div className="mt-1 font-mono text-[11px] text-white/35">
+                              <div className="mt-1 font-mono text-[11px] text-cl-muted">
                                 {device.id}
                               </div>
                             </>
@@ -946,8 +948,8 @@ export default function RacePodPage() {
                             className={cn(
                               "shrink-0 rounded-full px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] transition",
                               isSelected
-                                ? "border border-cyan-300/20 bg-cyan-300 text-[#06111d]"
-                                : "border border-cyan-300/20 bg-cyan-300/10 text-cyan-100 hover:bg-cyan-300 hover:text-[#06111d]",
+                                ? "border border-cl-accent/20 bg-cl-accent text-cl-contrast"
+                                : "border border-cl-accent/20 bg-cl-accent/10 text-cl-accent hover:bg-cl-accent hover:text-cl-contrast",
                             )}
                           >
                             {isSelected ? "Active" : "Use"}
@@ -955,14 +957,14 @@ export default function RacePodPage() {
                         ) : null}
                       </div>
 
-                      <div className="mt-4 grid gap-2 text-sm text-white/55">
+                      <div className="mt-4 grid gap-2 text-sm text-cl-muted">
                         <div className="flex items-center gap-2">
-                          <Radio className="h-4 w-4 text-cyan-200" />
+                          <Radio className="h-4 w-4 text-cl-accent" />
                           External: {device.externalDeviceId || "—"}
                         </div>
 
                         <div className="flex items-center gap-2">
-                          <MapPinned className="h-4 w-4 text-cyan-200" />
+                          <MapPinned className="h-4 w-4 text-cl-accent" />
                           Last seen: {formatDate(device.lastSeenAt)}
                         </div>
                       </div>
@@ -974,7 +976,7 @@ export default function RacePodPage() {
                               type="button"
                               onClick={() => handleRenameDevice(device)}
                               disabled={actionLoading}
-                              className="inline-flex h-10 items-center justify-center rounded-2xl bg-cyan-300 px-4 text-xs font-black uppercase tracking-[0.12em] text-[#06111d] transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-60"
+                              className="inline-flex h-10 items-center justify-center rounded-2xl bg-cl-accent px-4 text-xs font-black uppercase tracking-[0.12em] text-cl-contrast transition hover:bg-cl-accent disabled:cursor-not-allowed disabled:opacity-60"
                             >
                               Save Name
                             </button>
@@ -983,7 +985,7 @@ export default function RacePodPage() {
                               type="button"
                               onClick={cancelEditingDevice}
                               disabled={actionLoading}
-                              className="inline-flex h-10 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-xs font-black uppercase tracking-[0.12em] text-white/65 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
+                              className="inline-flex h-10 items-center justify-center rounded-2xl border border-cl-border bg-cl-subtle px-4 text-xs font-black uppercase tracking-[0.12em] text-cl-muted transition hover:bg-cl-subtle disabled:cursor-not-allowed disabled:opacity-60"
                             >
                               Cancel
                             </button>
@@ -994,7 +996,7 @@ export default function RacePodPage() {
                               type="button"
                               onClick={() => startEditingDevice(device)}
                               disabled={actionLoading}
-                              className="inline-flex h-10 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-xs font-black uppercase tracking-[0.12em] text-white/65 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
+                              className="inline-flex h-10 items-center justify-center gap-2 rounded-2xl border border-cl-border bg-cl-subtle px-4 text-xs font-black uppercase tracking-[0.12em] text-cl-muted transition hover:bg-cl-subtle disabled:cursor-not-allowed disabled:opacity-60"
                             >
                               <Pencil className="h-4 w-4" />
                               Rename
@@ -1004,7 +1006,7 @@ export default function RacePodPage() {
                               type="button"
                               onClick={() => handleDeleteDevice(device)}
                               disabled={actionLoading || activeSession?.id}
-                              className="inline-flex h-10 items-center justify-center gap-2 rounded-2xl border border-red-400/20 bg-red-500/10 px-4 text-xs font-black uppercase tracking-[0.12em] text-red-200 transition hover:bg-red-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                              className="inline-flex h-10 items-center justify-center gap-2 rounded-2xl border border-red-400/20 bg-red-500/10 px-4 text-xs font-black uppercase tracking-[0.12em] text-red-200 transition hover:bg-red-500 hover:text-cl-ink disabled:cursor-not-allowed disabled:opacity-50"
                             >
                               <Trash2 className="h-4 w-4" />
                               Remove
@@ -1014,7 +1016,7 @@ export default function RacePodPage() {
                       </div>
 
                       {activeSession?.id ? (
-                        <div className="mt-3 rounded-2xl border border-white/10 bg-black/20 px-3 py-2 text-xs text-white/40">
+                        <div className="mt-3 rounded-2xl border border-cl-border bg-cl-subtle px-3 py-2 text-xs text-cl-muted">
                           Device removal is disabled while a RacePod session is
                           active.
                         </div>
@@ -1026,13 +1028,13 @@ export default function RacePodPage() {
             </section>
 
             <section className="mt-6 grid gap-4 lg:grid-cols-[1fr_380px]">
-              <div className="rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
+              <div className="rounded-[30px] border border-cl-accent/10 bg-cl-surface p-6 shadow-cl-panel">
                 <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <div className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-300/70">
+                    <div className="text-[10px] font-black uppercase tracking-[0.22em] text-cl-accent">
                       Session Control
                     </div>
-                    <h2 className="mt-2 text-2xl font-black text-white">
+                    <h2 className="mt-2 text-2xl font-black text-cl-ink">
                       {activeSession ? "Recording Live" : "Start a Session"}
                     </h2>
                   </div>
@@ -1044,14 +1046,14 @@ export default function RacePodPage() {
                   ) : null}
                 </div>
 
-                <div className="mb-4 rounded-2xl border border-white/10 bg-black/25 p-4">
-                  <div className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-300/70">
+                <div className="mb-4 rounded-2xl border border-cl-border bg-cl-subtle p-4">
+                  <div className="text-[10px] font-black uppercase tracking-[0.2em] text-cl-accent">
                     Selected RacePod
                   </div>
-                  <div className="mt-2 text-lg font-black text-white">
+                  <div className="mt-2 text-lg font-black text-cl-ink">
                     {selectedDevice ? getDeviceName(selectedDevice) : "—"}
                   </div>
-                  <div className="mt-1 font-mono text-[11px] text-white/35">
+                  <div className="mt-1 font-mono text-[11px] text-cl-muted">
                     {selectedDevice?.id || "No device selected"}
                   </div>
                 </div>
@@ -1063,7 +1065,7 @@ export default function RacePodPage() {
                     <input
                       value={sessionName}
                       onChange={(e) => setSessionName(e.target.value)}
-                      className="h-12 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-sm text-white outline-none placeholder:text-white/25 focus:border-cyan-300/30"
+                      className="h-12 w-full rounded-2xl border border-cl-border bg-cl-subtle px-4 text-sm text-cl-ink outline-none placeholder:text-cl-muted focus:border-cl-accent/30"
                       placeholder="Session name"
                     />
 
@@ -1071,7 +1073,7 @@ export default function RacePodPage() {
                       type="button"
                       onClick={handleStartSession}
                       disabled={actionLoading || !selectedDevice?.id}
-                      className="mt-4 inline-flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-cyan-300 px-5 text-sm font-black uppercase tracking-[0.14em] text-[#06111d] transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="mt-4 inline-flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-cl-accent px-5 text-sm font-black uppercase tracking-[0.14em] text-cl-contrast transition hover:bg-cl-accent disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       <Play className="h-5 w-5" />
                       {actionLoading
@@ -1088,22 +1090,22 @@ export default function RacePodPage() {
                             Active Recording
                           </div>
 
-                          <div className="mt-2 text-lg font-black text-white">
+                          <div className="mt-2 text-lg font-black text-cl-ink">
                             {activeSession.name ||
                               activeSession.title ||
                               "RacePod Session"}
                           </div>
 
-                          <div className="mt-1 break-all font-mono text-xs text-white/35">
+                          <div className="mt-1 break-all font-mono text-xs text-cl-muted">
                             {activeSession.id}
                           </div>
 
-                          <div className="mt-3 text-sm text-white/50">
+                          <div className="mt-3 text-sm text-cl-muted">
                             Started {formatDate(activeSession.startedAt)}
                           </div>
                         </div>
 
-                        <div className="shrink-0 rounded-2xl border border-emerald-300/20 bg-black/25 px-4 py-3 text-left sm:text-right">
+                        <div className="shrink-0 rounded-2xl border border-emerald-300/20 bg-cl-subtle px-4 py-3 text-left sm:text-right">
                           <div className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-200/70">
                             Timer
                           </div>
@@ -1114,28 +1116,28 @@ export default function RacePodPage() {
                       </div>
 
                       <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                        <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
-                          <div className="text-[10px] font-black uppercase tracking-[0.16em] text-white/35">
+                        <div className="rounded-2xl border border-cl-border bg-cl-subtle p-3">
+                          <div className="text-[10px] font-black uppercase tracking-[0.16em] text-cl-muted">
                             Points Collected
                           </div>
-                          <div className="mt-1 text-xl font-black text-white">
+                          <div className="mt-1 text-xl font-black text-cl-ink">
                             {activeSession.pointCount ??
                               latest?.pointCount ??
                               0}
                           </div>
                         </div>
 
-                        <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
-                          <div className="text-[10px] font-black uppercase tracking-[0.16em] text-white/35">
+                        <div className="rounded-2xl border border-cl-border bg-cl-subtle p-3">
+                          <div className="text-[10px] font-black uppercase tracking-[0.16em] text-cl-muted">
                             Latest Speed
                           </div>
-                          <div className="mt-1 text-xl font-black text-white">
+                          <div className="mt-1 text-xl font-black text-cl-ink">
                             {valueOrDash(latest?.speedMph, " mph")}
                           </div>
                         </div>
                       </div>
 
-                      <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-3 text-xs leading-6 text-white/60">
+                      <div className="mt-4 rounded-2xl border border-cl-border bg-cl-subtle p-3 text-xs leading-6 text-cl-muted">
                         Keep this page open while recording. Stop the session
                         here when you are finished so the replay can be
                         finalized.
@@ -1146,7 +1148,7 @@ export default function RacePodPage() {
                       type="button"
                       onClick={handleStopSession}
                       disabled={actionLoading}
-                      className="mt-4 inline-flex h-14 w-full items-center justify-center gap-2 rounded-2xl border border-[#FF6B35]/25 bg-[#FF6B35]/10 px-5 text-sm font-black uppercase tracking-[0.14em] text-[#FFB199] transition hover:bg-[#FF6B35] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                      className="mt-4 inline-flex h-14 w-full items-center justify-center gap-2 rounded-2xl border border-cl-accent/25 bg-cl-accent/10 px-5 text-sm font-black uppercase tracking-[0.14em] text-cl-accent transition hover:bg-cl-accent hover:text-cl-contrast disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       <Square className="h-5 w-5" />
                       {actionLoading ? "Stopping..." : "Stop Session"}
@@ -1155,26 +1157,26 @@ export default function RacePodPage() {
                 )}
               </div>
 
-              <div className="rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
-                <div className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-300/70">
+              <div className="rounded-[30px] border border-cl-accent/10 bg-cl-surface p-6 shadow-cl-panel">
+                <div className="text-[10px] font-black uppercase tracking-[0.22em] text-cl-accent">
                   Device
                 </div>
 
-                <h2 className="mt-2 text-2xl font-black text-white">
+                <h2 className="mt-2 text-2xl font-black text-cl-ink">
                   {getDeviceName(selectedDevice)}
                 </h2>
 
-                <div className="mt-4 space-y-3 text-sm text-white/55">
+                <div className="mt-4 space-y-3 text-sm text-cl-muted">
                   <div className="flex items-center gap-2">
-                    <Cpu className="h-4 w-4 text-cyan-200" />
+                    <Cpu className="h-4 w-4 text-cl-accent" />
                     Device ID: {selectedDevice?.id || "—"}
                   </div>
                   <div className="flex items-center gap-2">
-                    <Radio className="h-4 w-4 text-cyan-200" />
+                    <Radio className="h-4 w-4 text-cl-accent" />
                     External: {selectedDevice?.externalDeviceId || "—"}
                   </div>
                   <div className="flex items-center gap-2">
-                    <MapPinned className="h-4 w-4 text-cyan-200" />
+                    <MapPinned className="h-4 w-4 text-cl-accent" />
                     Last seen: {formatDate(selectedDevice?.lastSeenAt)}
                   </div>
                 </div>
@@ -1183,7 +1185,7 @@ export default function RacePodPage() {
                   type="button"
                   onClick={handleEmergencyStopDevice}
                   disabled={actionLoading || !selectedDevice?.id}
-                  className="mt-5 inline-flex h-11 w-full items-center justify-center rounded-2xl border border-[#FF6B35]/25 bg-[#FF6B35]/10 px-4 text-xs font-black uppercase tracking-[0.14em] text-[#FFB199] transition hover:bg-[#FF6B35] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                  className="mt-5 inline-flex h-11 w-full items-center justify-center rounded-2xl border border-cl-accent/25 bg-cl-accent/10 px-4 text-xs font-black uppercase tracking-[0.14em] text-cl-accent transition hover:bg-cl-accent hover:text-cl-contrast disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   Emergency Stop RacePod
                 </button>
@@ -1198,19 +1200,19 @@ export default function RacePodPage() {
                     `/racepod/sessions/${encodeURIComponent(lastCompletedSessionId)}`,
                   )
                 }
-                className="mt-4 inline-flex h-12 w-full items-center justify-center rounded-2xl border border-cyan-300/20 bg-cyan-300/10 px-5 text-sm font-black uppercase tracking-[0.14em] text-cyan-100 transition hover:bg-cyan-300 hover:text-[#06111d]"
+                className="mt-4 inline-flex h-12 w-full items-center justify-center rounded-2xl border border-cl-accent/20 bg-cl-accent/10 px-5 text-sm font-black uppercase tracking-[0.14em] text-cl-accent transition hover:bg-cl-accent hover:text-cl-contrast"
               >
                 View Completed Replay
               </button>
             ) : null}
 
-            <section className="mt-6 rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
+            <section className="mt-6 rounded-[30px] border border-cl-accent/10 bg-cl-surface p-6 shadow-cl-panel">
               <div className="mb-4 flex items-center justify-between">
                 <div>
-                  <div className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-300/70">
+                  <div className="text-[10px] font-black uppercase tracking-[0.22em] text-cl-accent">
                     Recent Sessions
                   </div>
-                  <h2 className="mt-2 text-2xl font-black text-white">
+                  <h2 className="mt-2 text-2xl font-black text-cl-ink">
                     RacePod History
                   </h2>
                 </div>
@@ -1221,23 +1223,23 @@ export default function RacePodPage() {
                   recentSessions.map((session) => (
                     <div
                       key={session.id}
-                      className="grid gap-4 rounded-2xl border border-white/10 bg-white/[0.035] p-4 sm:grid-cols-[1fr_auto_auto]"
+                      className="grid gap-4 rounded-2xl border border-cl-border bg-cl-subtle p-4 sm:grid-cols-[1fr_auto_auto]"
                     >
                       <div>
-                        <div className="font-bold text-white">
+                        <div className="font-bold text-cl-ink">
                           {session.name || "Untitled Session"}
                         </div>
-                        <div className="mt-1 font-mono text-[11px] text-white/35">
+                        <div className="mt-1 font-mono text-[11px] text-cl-muted">
                           {session.id}
                         </div>
-                        <div className="mt-2 text-sm text-white/45">
+                        <div className="mt-2 text-sm text-cl-muted">
                           {formatDate(session.startedAt)}
                         </div>
                       </div>
 
-                      <div className="text-sm text-white/60">
+                      <div className="text-sm text-cl-muted">
                         Points:{" "}
-                        <span className="font-bold text-white">
+                        <span className="font-bold text-cl-ink">
                           {session.pointCount ?? 0}
                         </span>
                       </div>
@@ -1248,18 +1250,18 @@ export default function RacePodPage() {
                           onClick={() =>
                             navigate(`/racepod/sessions/${session.id}`)
                           }
-                          className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-2 text-xs font-black uppercase tracking-[0.12em] text-cyan-100 transition hover:bg-cyan-300 hover:text-[#06111d]"
+                          className="rounded-full border border-cl-accent/20 bg-cl-accent/10 px-3 py-2 text-xs font-black uppercase tracking-[0.12em] text-cl-accent transition hover:bg-cl-accent hover:text-cl-contrast"
                         >
                           View
                         </button>
-                        <button className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-black uppercase tracking-[0.12em] text-white/65">
+                        <button className="rounded-full border border-cl-border bg-cl-subtle px-3 py-2 text-xs font-black uppercase tracking-[0.12em] text-cl-muted">
                           <Share2 className="h-4 w-4" />
                         </button>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-8 text-center text-white/45">
+                  <div className="rounded-2xl border border-cl-border bg-cl-subtle p-8 text-center text-cl-muted">
                     No RacePod sessions yet.
                   </div>
                 )}

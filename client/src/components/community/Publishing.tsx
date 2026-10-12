@@ -177,7 +177,7 @@ export function PublicationList({
               loading="lazy"
             />
           )}
-          <div className="flex flex-wrap gap-2 text-xs text-cyan-200">
+          <div className="flex flex-wrap gap-2 text-xs text-cl-accent">
             <span>{publishingLabel(p.sport)}</span>
             {kind === "forum" && <span>· {publishingLabel(p.category)}</span>}
             {!p.published && (
@@ -187,10 +187,10 @@ export function PublicationList({
           <h2 className="text-xl font-bold">
             <Link href={`${publicationRoute(kind)}/${p.id}`}>{p.title}</Link>
           </h2>
-          <p className="whitespace-pre-wrap break-words text-sm text-white/60">
+          <p className="whitespace-pre-wrap break-words text-sm text-cl-muted">
             {p.excerpt}
           </p>
-          <div className="flex flex-wrap items-center gap-3 text-sm text-white/50">
+          <div className="flex flex-wrap items-center gap-3 text-sm text-cl-muted">
             <Link href={`/profile/${encodeURIComponent(p.author.username)}`}>
               By {p.author.username}
             </Link>
@@ -226,7 +226,7 @@ export function PublicationList({
 export function PublishingDirectory({ kind }: { kind: PublicationKind }) {
   const { isAuthenticated } = useAuth();
   return (
-    <main className="mx-auto max-w-4xl space-y-6 p-4 py-8 text-white">
+    <main className="mx-auto max-w-4xl space-y-6 p-4 py-8 text-cl-ink">
       <PageSEO
         title={
           kind === "forum" ? "Community discussions" : "Articles & stories"
@@ -234,13 +234,13 @@ export function PublishingDirectory({ kind }: { kind: PublicationKind }) {
         canonicalPath={publicationRoute(kind)}
       />
       <header className="space-y-3">
-        <p className="text-xs font-bold uppercase tracking-widest text-cyan-200">
+        <p className="text-xs font-bold uppercase tracking-widest text-cl-accent">
           Corner League community
         </p>
         <h1 className="text-3xl font-black">
           {kind === "forum" ? "Community discussions" : "Articles & stories"}
         </h1>
-        <p className="text-white/60">
+        <p className="text-cl-muted">
           {kind === "forum"
             ? "Ask questions, talk equipment, and share ideas across sports."
             : "Stories, guides, and perspectives from the people in the sport."}
@@ -264,11 +264,11 @@ export function PublishingDirectory({ kind }: { kind: PublicationKind }) {
 }
 export function WriterPage() {
   return (
-    <main className="mx-auto max-w-4xl space-y-6 p-4 py-8 text-white">
+    <main className="mx-auto max-w-4xl space-y-6 p-4 py-8 text-cl-ink">
       <PageSEO title="Writer studio" canonicalPath="/writer" noindex />
       <header className="space-y-3">
         <h1 className="text-3xl font-black">Your writer studio</h1>
-        <p className="text-white/60">
+        <p className="text-cl-muted">
           Draft, publish, and manage your articles. Published work also appears
           on your profile.
         </p>
@@ -413,7 +413,7 @@ function PublicationForm({
           required
         />
       </label>
-      <p className="text-xs text-white/55">
+      <p className="text-xs text-cl-muted">
         Formatting: # heading, ## subheading, **bold**, - list item, &gt; quote,
         [label](https://example.com). Include a clear disclosure for affiliate
         links.
@@ -444,7 +444,7 @@ function PublicationForm({
           }}
         />
       </label>
-      <p className="text-xs text-white/50">
+      <p className="text-xs text-cl-muted">
         JPEG, PNG, or WebP · Maximum 8 MB.
       </p>
       {publication?.coverUrl &&
@@ -511,7 +511,7 @@ function PublicationForm({
         </Link>
       </div>
       {fileError && (
-        <p role="alert" className="text-rose-200">
+        <p role="alert" className="text-cl-danger">
           {fileError}
         </p>
       )}
@@ -519,7 +519,7 @@ function PublicationForm({
       {preview && (
         <section
           aria-label="Content preview"
-          className="border-t border-white/10 pt-4"
+          className="border-t border-cl-border pt-4"
         >
           <h2 className="mb-4 text-2xl font-bold">{title}</h2>
           <PublicationBody body={body} />
@@ -544,7 +544,7 @@ export function PublicationEditor({
   });
   if (!isAuthenticated)
     return (
-      <main className="mx-auto max-w-3xl p-4 py-8 text-white">
+      <main className="mx-auto max-w-3xl p-4 py-8 text-cl-ink">
         <SignIn
           next={
             id
@@ -557,7 +557,7 @@ export function PublicationEditor({
       </main>
     );
   return (
-    <main className="mx-auto max-w-3xl space-y-5 p-4 py-8 text-white">
+    <main className="mx-auto max-w-3xl space-y-5 p-4 py-8 text-cl-ink">
       <PageSEO title="Publication editor" noindex />
       <h1 className="text-3xl font-black">
         {id ? "Edit" : kind === "forum" ? "Start a" : "Write an"}{" "}
@@ -628,17 +628,20 @@ function ForumReplies({ id }: { id: string }) {
       {query.isLoading && <p>Loading…</p>}
       {query.isError && <SocialFailure error={query.error} />}
       {query.data?.items.length === 0 && (
-        <p className="text-white/55">Be the first to reply.</p>
+        <p className="text-cl-muted">Be the first to reply.</p>
       )}
       {query.data?.items.map((r) => (
-        <article className="space-y-2 border-t border-white/10 pt-4" key={r.id}>
+        <article
+          className="space-y-2 border-t border-cl-border pt-4"
+          key={r.id}
+        >
           <Link
-            className="text-sm text-cyan-200"
+            className="text-sm text-cl-accent"
             href={`/profile/${encodeURIComponent(r.author.username)}`}
           >
             {r.author.username}
           </Link>
-          <p className="whitespace-pre-wrap break-words text-white/80">
+          <p className="whitespace-pre-wrap break-words text-cl-ink">
             {r.body}
           </p>
           {r.canDelete && (
@@ -721,7 +724,7 @@ export function PublicationPage({
   });
   const p = query.data;
   return (
-    <main className="mx-auto max-w-4xl space-y-5 p-4 py-8 text-white">
+    <main className="mx-auto max-w-4xl space-y-5 p-4 py-8 text-cl-ink">
       <PageSEO
         title={p?.title || "Community publication"}
         canonicalPath={`${publicationRoute(kind)}/${id}`}
@@ -754,12 +757,12 @@ export function PublicationPage({
               Private draft · Only you can see this article.
             </p>
           )}
-          <div className="text-sm text-cyan-200">
+          <div className="text-sm text-cl-accent">
             {publishingLabel(p.sport)}
             {kind === "forum" ? ` · ${publishingLabel(p.category)}` : ""}
           </div>
           <h1 className="break-words text-3xl font-black">{p.title}</h1>
-          <div className="flex flex-wrap gap-3 text-sm text-white/55">
+          <div className="flex flex-wrap gap-3 text-sm text-cl-muted">
             <Link href={`/profile/${encodeURIComponent(p.author.username)}`}>
               By {p.author.username}
             </Link>

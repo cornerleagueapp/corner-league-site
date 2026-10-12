@@ -11,16 +11,16 @@ export default function RacerIdentityCard({
 }) {
   if (!profile && !isOwn) return null;
   return (
-    <section className="rounded-3xl border border-cyan-300/20 bg-cyan-300/[0.06] p-5">
-      <div className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-cyan-200">
+    <section className="rounded-3xl border border-cl-accent/20 bg-cl-accent/[0.06] p-5">
+      <div className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-cl-accent">
         <Trophy className="h-4 w-4" /> Athlete identity
       </div>
       {profile ? (
         <>
-          <p className="break-words text-lg font-bold text-white">
+          <p className="break-words text-lg font-bold text-cl-ink">
             {profile.name}
           </p>
-          <p className="mt-1 text-sm text-white/60">
+          <p className="mt-1 text-sm text-cl-muted">
             {profile.sportKey === "jet-ski" ? "Jet Ski racer" : "Athlete"}
           </p>
           {profile.isVerifiedAthlete && (
@@ -32,26 +32,26 @@ export default function RacerIdentityCard({
           {profile.profileUrl ? (
             <Link
               href={profile.profileUrl}
-              className="mt-4 flex min-h-11 items-center justify-between rounded-xl border border-white/10 px-3 py-2 text-sm font-bold text-cyan-100"
+              className="mt-4 flex min-h-11 items-center justify-between rounded-xl border border-cl-border px-3 py-2 text-sm font-bold text-cl-accent"
             >
               View racer profile
               <ArrowUpRight className="h-4 w-4" />
             </Link>
           ) : (
-            <p className="mt-3 text-sm text-white/60">
+            <p className="mt-3 text-sm text-cl-muted">
               Racer page unavailable.
             </p>
           )}
         </>
       ) : (
         <>
-          <p className="text-sm leading-relaxed text-white/65">
+          <p className="text-sm leading-relaxed text-cl-muted">
             Link your racing identity and keep your results connected to your
             account.
           </p>
           <Link
             href="/create-racer-profile"
-            className="mt-4 inline-flex min-h-11 items-center text-sm font-bold text-cyan-100"
+            className="mt-4 inline-flex min-h-11 items-center text-sm font-bold text-cl-accent"
           >
             Create or claim your racer profile{" "}
             <ArrowUpRight className="ml-2 h-4 w-4" />

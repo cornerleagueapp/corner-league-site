@@ -24,7 +24,9 @@ import SocialPostFeed, {
 import stockAvatar from "@/assets/stockprofilepicture.jpeg";
 export default function UserProfilePage({ username }: { username: string }) {
   const { user } = useAuth();
-  const [tab, setTab] = useState<"athletes" | "posts" | "results" | "articles">("athletes");
+  const [tab, setTab] = useState<"athletes" | "posts" | "results" | "articles">(
+    "athletes",
+  );
   const [people, setPeople] = useState<"followers" | "following" | null>(null);
   const [share, setShare] = useState("");
   const profile = useQuery({
@@ -56,13 +58,13 @@ export default function UserProfilePage({ username }: { username: string }) {
   });
   if (profile.isPending)
     return (
-      <main className="p-6 text-white" role="status">
+      <main className="p-6 text-cl-ink" role="status">
         Loading profile…
       </main>
     );
   if (profile.isError)
     return (
-      <main className="mx-auto max-w-3xl p-6 text-white">
+      <main className="mx-auto max-w-3xl p-6 text-cl-ink">
         <SocialFailure error={profile.error} />
         <button className={socialButton} onClick={() => void profile.refetch()}>
           Retry profile
@@ -73,7 +75,7 @@ export default function UserProfilePage({ username }: { username: string }) {
   const racer = profile.data.racerProfile;
   const isOwn = String(user?.id) === person.id;
   return (
-    <main className="mx-auto max-w-6xl space-y-6 p-4 py-8 text-white">
+    <main className="mx-auto max-w-6xl space-y-6 p-4 py-8 text-cl-ink">
       <PageSEO title={`@${person.username} • Corner League`} />
       <header
         className={`${socialBox} relative overflow-hidden bg-gradient-to-br from-cyan-950/60 via-[#07111f] to-orange-950/30`}
@@ -86,17 +88,17 @@ export default function UserProfilePage({ username }: { username: string }) {
               event.currentTarget.onerror = null;
               event.currentTarget.src = stockAvatar;
             }}
-            className="h-28 w-28 shrink-0 rounded-full border border-cyan-300/25 object-cover"
+            className="h-28 w-28 shrink-0 rounded-full border border-cl-accent/25 object-cover"
           />
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-bold uppercase tracking-widest text-cyan-200">
+            <p className="text-xs font-bold uppercase tracking-widest text-cl-accent">
               Corner League community
             </p>
             <h1 className="mt-2 break-words text-3xl font-black sm:text-4xl">
               {[person.firstName, person.lastName].filter(Boolean).join(" ") ||
                 person.username}
             </h1>
-            <p className="mt-1 text-white/55">@{person.username}</p>
+            <p className="mt-1 text-cl-muted">@{person.username}</p>
             {racer?.isVerifiedAthlete && racer.profileUrl && (
               <Link
                 href={racer.profileUrl}
@@ -107,14 +109,14 @@ export default function UserProfilePage({ username }: { username: string }) {
               </Link>
             )}
             <AthleteAccountLinks username={person.username} />
-            <p className="mt-4 whitespace-pre-wrap break-words text-sm leading-relaxed text-white/70">
+            <p className="mt-4 whitespace-pre-wrap break-words text-sm leading-relaxed text-cl-muted">
               {person.bio}
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               {person.tags.profile.map((tag) => (
                 <span
                   key={tag}
-                  className="rounded-full border border-white/10 px-3 py-1 text-xs text-white/60"
+                  className="rounded-full border border-cl-border px-3 py-1 text-xs text-cl-muted"
                 >
                   {tag}
                 </span>
@@ -175,7 +177,7 @@ export default function UserProfilePage({ username }: { username: string }) {
           </p>
         )}
         {share && (
-          <p role="status" className="mt-3 break-all text-xs text-cyan-200">
+          <p role="status" className="mt-3 break-all text-xs text-cl-accent">
             {share}
           </p>
         )}
@@ -188,15 +190,15 @@ export default function UserProfilePage({ username }: { username: string }) {
           <section className={socialBox}>
             <h2 className="mb-3 font-bold">Favorite teams</h2>
             {teams.isError ? (
-              <p className="text-sm text-white/50">Teams unavailable.</p>
+              <p className="text-sm text-cl-muted">Teams unavailable.</p>
             ) : teams.data?.data?.teams?.length ? (
               teams.data.data.teams.map((team) => (
-                <p key={team.id} className="mb-2 text-sm text-white/70">
+                <p key={team.id} className="mb-2 text-sm text-cl-muted">
                   {team.name}
                 </p>
               ))
             ) : (
-              <p className="text-sm text-white/50">No favorite teams yet.</p>
+              <p className="text-sm text-cl-muted">No favorite teams yet.</p>
             )}
           </section>
         </aside>
@@ -231,7 +233,16 @@ export default function UserProfilePage({ username }: { username: string }) {
           {tab === "posts" && (
             <SocialPostFeed username={username} compose={isOwn} />
           )}
-          {tab === "articles" && (<section className="space-y-4">{isOwn && <Link className={socialButton} href="/writer">Manage your articles</Link>}<PublicationList kind="article" username={username} /></section>)}
+          {tab === "articles" && (
+            <section className="space-y-4">
+              {isOwn && (
+                <Link className={socialButton} href="/writer">
+                  Manage your articles
+                </Link>
+              )}
+              <PublicationList kind="article" username={username} />
+            </section>
+          )}
           {tab === "results" && (
             <section className={socialBox}>
               <h2 className="font-bold">Race results & rankings</h2>
@@ -243,7 +254,7 @@ export default function UserProfilePage({ username }: { username: string }) {
                   View racer results
                 </Link>
               ) : (
-                <p className="mt-3 text-sm text-white/55">
+                <p className="mt-3 text-sm text-cl-muted">
                   No linked racer results yet.
                 </p>
               )}

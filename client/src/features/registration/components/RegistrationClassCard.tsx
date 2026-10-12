@@ -41,16 +41,16 @@ export default function RegistrationClassCard({
       }}
       className={`group relative w-full overflow-hidden rounded-[24px] border p-4 text-left transition sm:p-5 ${
         selected
-          ? "border-cyan-300/35 bg-cyan-300/10 shadow-[0_0_28px_rgba(34,211,238,0.08)]"
-          : "border-white/10 bg-white/[0.035]"
+          ? "border-cl-accent/[0.35] bg-cl-accent/10 shadow-cl-panel"
+          : "border-cl-border bg-cl-subtle"
       } ${
         interactive && !disabled
-          ? "cursor-pointer hover:border-cyan-300/25 hover:bg-cyan-300/[0.06]"
+          ? "cursor-pointer hover:border-cl-accent/25 hover:bg-cl-accent/[0.06]"
           : ""
       } ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
     >
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -right-12 -top-16 h-40 w-40 rounded-full bg-cyan-400/[0.06] blur-3xl" />
+        <div className="absolute -right-12 -top-16 h-40 w-40 rounded-full bg-cl-accent/[0.06] blur-3xl" />
       </div>
 
       <div className="relative">
@@ -59,8 +59,8 @@ export default function RegistrationClassCard({
             <div
               className={`grid h-11 w-11 shrink-0 place-items-center rounded-2xl border ${
                 selected
-                  ? "border-cyan-300/25 bg-cyan-300/15 text-cyan-200"
-                  : "border-white/10 bg-white/[0.04] text-white/45"
+                  ? "border-cl-accent/25 bg-cl-accent/[0.15] text-cl-accent"
+                  : "border-cl-border bg-cl-subtle text-cl-muted"
               }`}
             >
               {selected ? (
@@ -71,12 +71,12 @@ export default function RegistrationClassCard({
             </div>
 
             <div className="min-w-0">
-              <h3 className="break-words text-base font-black uppercase leading-tight text-white sm:text-lg">
+              <h3 className="break-words text-base font-black uppercase leading-tight text-cl-ink sm:text-lg">
                 {eventClass.name}
               </h3>
 
               {eventClass.code ? (
-                <p className="mt-1 text-[9px] font-black uppercase tracking-[0.15em] text-cyan-200/55">
+                <p className="mt-1 text-[9px] font-black uppercase tracking-[0.15em] text-cl-accent">
                   {eventClass.code}
                 </p>
               ) : null}
@@ -84,45 +84,45 @@ export default function RegistrationClassCard({
           </div>
 
           <div className="shrink-0 text-right">
-            <div className="text-lg font-black text-white">
+            <div className="text-lg font-black text-cl-ink">
               {formatCurrency(eventClass.basePriceCents / 100)}
             </div>
 
-            <div className="text-[9px] font-black uppercase tracking-[0.12em] text-white/35">
+            <div className="text-[9px] font-black uppercase tracking-[0.12em] text-cl-muted">
               Entry
             </div>
           </div>
         </div>
 
         {eventClass.description ? (
-          <p className="mt-4 text-sm leading-6 text-slate-400">
+          <p className="mt-4 text-sm leading-6 text-cl-muted">
             {eventClass.description}
           </p>
         ) : null}
 
         <div className="mt-4 flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/20 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.12em] text-white/65">
-            <Users className="h-3 w-3 text-[#FFB199]" />
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-cl-border bg-cl-surface px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.12em] text-cl-muted">
+            <Users className="h-3 w-3 text-cl-accent" />
             {eventClass.confirmedRacerCount} entered
           </span>
 
           {full && eventClass.allowWaitlist ? (
-            <span className="rounded-full border border-amber-300/20 bg-amber-300/10 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.12em] text-amber-200">
+            <span className="rounded-full border border-amber-300/20 bg-amber-300/10 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.12em] text-cl-warning">
               Waitlist Available
             </span>
           ) : full ? (
-            <span className="rounded-full border border-red-300/20 bg-red-300/10 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.12em] text-red-200">
+            <span className="rounded-full border border-red-300/20 bg-red-300/10 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.12em] text-cl-danger">
               Class Full
             </span>
           ) : !eventClass.isRegistrationOpen ? (
-            <span className="rounded-full border border-amber-300/20 bg-amber-300/10 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.12em] text-amber-200">
+            <span className="rounded-full border border-amber-300/20 bg-amber-300/10 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.12em] text-cl-warning">
               Not Open
             </span>
           ) : null}
         </div>
 
         {interactive && !disabled ? (
-          <div className="mt-4 flex items-center justify-end border-t border-white/8 pt-4 text-[10px] font-black uppercase tracking-[0.13em] text-cyan-200">
+          <div className="mt-4 flex items-center justify-end border-t border-cl-border pt-4 text-[10px] font-black uppercase tracking-[0.13em] text-cl-accent">
             {selected ? "Selected" : "Select Class"}
             <ChevronRight className="ml-1.5 h-4 w-4" />
           </div>

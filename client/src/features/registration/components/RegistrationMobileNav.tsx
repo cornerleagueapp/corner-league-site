@@ -65,25 +65,25 @@ export default function RegistrationMobileNav() {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="flex w-full items-center justify-between gap-3 rounded-[20px] border border-cyan-300/10 bg-[#07111F]/95 px-4 py-3 text-left shadow-[0_18px_50px_rgba(0,0,0,0.25)] backdrop-blur-xl"
+          className="flex w-full items-center justify-between gap-3 rounded-[20px] border border-cl-accent/10 bg-cl-surface px-4 py-3 text-left shadow-cl-panel backdrop-blur-xl"
         >
           <span className="flex min-w-0 items-center gap-3">
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-cyan-300/15 bg-cyan-300/10 text-cyan-200">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-cl-accent/[0.15] bg-cl-accent/10 text-cl-accent">
               <ActiveIcon className="h-4 w-4" />
             </span>
 
             <span className="min-w-0">
-              <span className="block text-[9px] font-black uppercase tracking-[0.18em] text-cyan-200/65">
+              <span className="block text-[9px] font-black uppercase tracking-[0.18em] text-cl-accent">
                 Registration
               </span>
 
-              <span className="block truncate text-sm font-black uppercase text-white">
+              <span className="block truncate text-sm font-black uppercase text-cl-ink">
                 {activeItem.label}
               </span>
             </span>
           </span>
 
-          <span className="flex shrink-0 items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-white/55">
+          <span className="flex shrink-0 items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-cl-muted">
             <Menu className="h-4 w-4" />
             Menu
             <ChevronDown className="h-3.5 w-3.5" />
@@ -100,24 +100,24 @@ export default function RegistrationMobileNav() {
             className="absolute inset-0 bg-black/75 backdrop-blur-sm"
           />
 
-          <div className="absolute inset-x-3 bottom-3 max-h-[88vh] overflow-hidden rounded-[28px] border border-cyan-300/10 bg-[#07111F] shadow-[0_30px_100px_rgba(0,0,0,0.6)]">
-            <div className="relative border-b border-white/10 p-5">
+          <div className="absolute inset-x-3 bottom-3 max-h-[88vh] overflow-hidden rounded-[28px] border border-cl-accent/10 bg-cl-canvas shadow-cl-panel">
+            <div className="relative border-b border-cl-border p-5">
               <div className="pointer-events-none absolute inset-0 overflow-hidden">
-                <div className="absolute -left-20 -top-20 h-52 w-52 rounded-full bg-cyan-400/10 blur-3xl" />
-                <div className="absolute -bottom-24 -right-16 h-52 w-52 rounded-full bg-[#FF6B35]/10 blur-3xl" />
+                <div className="absolute -left-20 -top-20 h-52 w-52 rounded-full bg-cl-accent/10 blur-3xl" />
+                <div className="absolute -bottom-24 -right-16 h-52 w-52 rounded-full bg-cl-accent/10 blur-3xl" />
               </div>
 
               <div className="relative flex items-start justify-between gap-4">
                 <div>
-                  <div className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-200">
+                  <div className="text-[10px] font-black uppercase tracking-[0.2em] text-cl-accent">
                     Corner League
                   </div>
 
-                  <h2 className="mt-1 text-xl font-black uppercase tracking-[-0.03em] text-white">
+                  <h2 className="mt-1 text-xl font-black uppercase tracking-[-0.03em] text-cl-ink">
                     Race Registration
                   </h2>
 
-                  <p className="mt-2 text-xs leading-5 text-white/50">
+                  <p className="mt-2 text-xs leading-5 text-cl-muted">
                     Find events, view racers, and manage your race entries.
                   </p>
                 </div>
@@ -125,7 +125,7 @@ export default function RegistrationMobileNav() {
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/10 bg-white/[0.05] text-white/70 transition hover:bg-white/10 hover:text-white"
+                  className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-cl-border bg-cl-subtle text-cl-muted transition hover:bg-cl-subtle hover:text-cl-ink"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -147,15 +147,15 @@ export default function RegistrationMobileNav() {
                     }}
                     className={`flex w-full items-center gap-3 rounded-[20px] border px-3 py-3 text-left transition ${
                       active
-                        ? "border-cyan-300/25 bg-cyan-300/12"
-                        : "border-transparent bg-white/[0.025] hover:border-white/10 hover:bg-white/[0.05]"
+                        ? "border-cl-accent/25 bg-cl-accent/[0.12]"
+                        : "border-transparent bg-cl-subtle hover:border-cl-border hover:bg-cl-subtle"
                     }`}
                   >
                     <span
                       className={`grid h-11 w-11 shrink-0 place-items-center rounded-2xl border ${
                         active
-                          ? "border-cyan-300/20 bg-cyan-300/12 text-cyan-200"
-                          : "border-white/10 bg-white/[0.04] text-white/50"
+                          ? "border-cl-accent/20 bg-cl-accent/[0.12] text-cl-accent"
+                          : "border-cl-border bg-cl-subtle text-cl-muted"
                       }`}
                     >
                       <Icon className="h-4 w-4" />
@@ -163,18 +163,18 @@ export default function RegistrationMobileNav() {
 
                     <span className="min-w-0 flex-1">
                       <span className="flex items-center gap-2">
-                        <span className="truncate text-sm font-black uppercase text-white">
+                        <span className="truncate text-sm font-black uppercase text-cl-ink">
                           {item.label}
                         </span>
 
                         {item.protected ? (
-                          <span className="rounded-full border border-[#FF6B35]/20 bg-[#FF6B35]/10 px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.12em] text-[#FFB199]">
+                          <span className="rounded-full border border-cl-accent/20 bg-cl-accent/10 px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.12em] text-cl-accent">
                             Account
                           </span>
                         ) : null}
                       </span>
 
-                      <span className="mt-1 block text-xs leading-5 text-white/45">
+                      <span className="mt-1 block text-xs leading-5 text-cl-muted">
                         {item.description}
                       </span>
                     </span>
@@ -183,14 +183,14 @@ export default function RegistrationMobileNav() {
               })}
             </nav>
 
-            <div className="border-t border-white/10 p-4">
+            <div className="border-t border-cl-border p-4">
               <button
                 type="button"
                 onClick={() => {
                   setOpen(false);
                   navigate("/registration/events");
                 }}
-                className="flex w-full items-center justify-center gap-2 rounded-full bg-[#FF6B35] px-5 py-3.5 text-[11px] font-black uppercase tracking-[0.15em] text-white shadow-[0_0_24px_rgba(255,107,53,0.18)] transition hover:bg-[#ff7c4d]"
+                className="flex w-full items-center justify-center gap-2 rounded-full bg-cl-accent px-5 py-3.5 text-[11px] font-black uppercase tracking-[0.15em] text-cl-contrast shadow-cl-panel transition hover:bg-cl-accent"
               >
                 Find an event
               </button>

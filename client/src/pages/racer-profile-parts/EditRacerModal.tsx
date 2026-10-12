@@ -27,7 +27,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <div className="mb-1 text-xs text-white/60">{label}</div>
+      <div className="mb-1 text-xs text-cl-muted">{label}</div>
       {children}
     </label>
   );
@@ -50,8 +50,8 @@ function TabButton({
       onClick={onClick}
       className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-black uppercase tracking-[0.12em] transition ${
         active
-          ? "border-cyan-300/40 bg-cyan-300/15 text-cyan-100"
-          : "border-white/10 bg-white/[0.04] text-white/55 hover:bg-white/[0.08] hover:text-white"
+          ? "border-cl-accent/40 bg-cl-accent/[0.15] text-cl-accent"
+          : "border-cl-border bg-cl-subtle text-cl-muted hover:bg-cl-subtle hover:text-cl-ink"
       }`}
     >
       {icon}
@@ -111,11 +111,11 @@ export function EditRacerModal({
   }, [profilePreviewUrl, headerPreviewUrl]);
 
   const inputClass =
-    "h-10 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm text-white outline-none placeholder:text-white/40";
+    "h-10 w-full rounded-md border border-cl-border bg-cl-subtle px-3 text-sm text-cl-ink outline-none placeholder:text-cl-muted";
   const fileClass =
-    "h-10 w-full rounded-md border border-white/10 bg-white/5 px-3 py-1 text-sm text-white outline-none";
+    "h-10 w-full rounded-md border border-cl-border bg-cl-subtle px-3 py-1 text-sm text-cl-ink outline-none";
   const textAreaClass =
-    "w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none placeholder:text-white/40";
+    "w-full rounded-md border border-cl-border bg-cl-subtle px-3 py-2 text-sm text-cl-ink outline-none placeholder:text-cl-muted";
 
   return (
     <div
@@ -123,20 +123,20 @@ export function EditRacerModal({
       onClick={onClose}
     >
       <div
-        className="flex h-[92vh] w-full flex-col overflow-hidden border border-cyan-300/10 bg-[#07111F] shadow-[0_24px_70px_rgba(0,0,0,0.45)] md:max-w-3xl md:rounded-[30px]"
+        className="flex h-[92vh] w-full flex-col overflow-hidden border border-cl-accent/10 bg-cl-canvas shadow-cl-panel md:max-w-3xl md:rounded-[30px]"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-white/10 px-4 py-4 md:px-6">
+        <div className="flex items-center justify-between border-b border-cl-border px-4 py-4 md:px-6">
           <div>
-            <h2 className="text-lg font-semibold text-white">Edit Profile</h2>
-            <p className="mt-1 text-xs text-white/45">
+            <h2 className="text-lg font-semibold text-cl-ink">Edit Profile</h2>
+            <p className="mt-1 text-xs text-cl-muted">
               Update your profile info, media, sponsors, gallery, and socials.
             </p>
           </div>
 
           <button
             aria-label="Close"
-            className="grid h-9 w-9 place-items-center rounded-full border border-white/10 bg-white/10 hover:bg-white/15"
+            className="grid h-9 w-9 place-items-center rounded-full border border-cl-border bg-cl-subtle hover:bg-cl-subtle"
             onClick={onClose}
             disabled={saving}
           >
@@ -144,7 +144,7 @@ export function EditRacerModal({
           </button>
         </div>
 
-        <div className="shrink-0 flex gap-2 overflow-x-auto border-b border-white/10 px-4 py-3 md:px-6">
+        <div className="shrink-0 flex gap-2 overflow-x-auto border-b border-cl-border px-4 py-3 md:px-6">
           <TabButton
             active={activeTab === "profile"}
             icon={<User className="h-4 w-4" />}
@@ -176,13 +176,13 @@ export function EditRacerModal({
             <div className="space-y-4">
               <div className="rounded-[18px] border border-yellow-300/20 bg-yellow-500/10 p-4">
                 <div className="flex gap-3">
-                  <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-yellow-200" />
+                  <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-cl-warning" />
 
                   <div>
-                    <div className="text-sm font-semibold text-yellow-100">
+                    <div className="text-sm font-semibold text-cl-warning">
                       Name changes are not recommended
                     </div>
-                    <p className="mt-1 text-xs leading-5 text-yellow-100/70">
+                    <p className="mt-1 text-xs leading-5 text-cl-warning">
                       This racer name may be linked to rankings, results,
                       analytics, profile claims, and other historical records.
                       Only update it if the current name is incorrect or needs a
@@ -318,8 +318,8 @@ export function EditRacerModal({
           {activeTab === "media" && (
             <div className="space-y-5">
               <div className="grid gap-4 sm:grid-cols-2">
-                <div className="rounded-[22px] border border-cyan-300/10 bg-cyan-300/[0.04] p-4">
-                  <div className="mb-3 text-xs font-black uppercase tracking-[0.18em] text-cyan-200">
+                <div className="rounded-[22px] border border-cl-accent/10 bg-cl-accent/[0.04] p-4">
+                  <div className="mb-3 text-xs font-black uppercase tracking-[0.18em] text-cl-accent">
                     Current Racer Photo
                   </div>
 
@@ -327,16 +327,16 @@ export function EditRacerModal({
                     <img
                       src={profilePreviewUrl}
                       alt="Selected profile preview"
-                      className="h-32 w-32 rounded-full border border-white/10 object-cover"
+                      className="h-32 w-32 rounded-full border border-cl-border object-cover"
                     />
                   ) : profileImageUrl ? (
                     <img
                       src={profileImageUrl}
                       alt="Current racer profile"
-                      className="h-32 w-32 rounded-full border border-white/10 object-cover"
+                      className="h-32 w-32 rounded-full border border-cl-border object-cover"
                     />
                   ) : (
-                    <div className="grid h-32 w-32 place-items-center rounded-full border border-white/10 bg-white/5 text-xs text-white/45">
+                    <div className="grid h-32 w-32 place-items-center rounded-full border border-cl-border bg-cl-subtle text-xs text-cl-muted">
                       No photo
                     </div>
                   )}
@@ -373,8 +373,8 @@ export function EditRacerModal({
                   </div>
                 </div>
 
-                <div className="rounded-[22px] border border-cyan-300/10 bg-cyan-300/[0.04] p-4">
-                  <div className="mb-3 text-xs font-black uppercase tracking-[0.18em] text-cyan-200">
+                <div className="rounded-[22px] border border-cl-accent/10 bg-cl-accent/[0.04] p-4">
+                  <div className="mb-3 text-xs font-black uppercase tracking-[0.18em] text-cl-accent">
                     Current Header Photo
                   </div>
 
@@ -382,16 +382,16 @@ export function EditRacerModal({
                     <img
                       src={headerPreviewUrl}
                       alt="Selected header preview"
-                      className="h-32 w-full rounded-[20px] border border-white/10 object-cover"
+                      className="h-32 w-full rounded-[20px] border border-cl-border object-cover"
                     />
                   ) : headerImageUrl ? (
                     <img
                       src={headerImageUrl}
                       alt="Current header"
-                      className="h-32 w-full rounded-[20px] border border-white/10 object-cover"
+                      className="h-32 w-full rounded-[20px] border border-cl-border object-cover"
                     />
                   ) : (
-                    <div className="grid h-32 w-full place-items-center rounded-[20px] border border-white/10 bg-white/5 text-xs text-white/45">
+                    <div className="grid h-32 w-full place-items-center rounded-[20px] border border-cl-border bg-cl-subtle text-xs text-cl-muted">
                       No header photo
                     </div>
                   )}
@@ -433,13 +433,13 @@ export function EditRacerModal({
 
           {activeTab === "sponsors" && (
             <div className="space-y-4">
-              <div className="rounded-[22px] border border-cyan-300/10 bg-cyan-300/[0.04] p-4">
-                <div className="mb-3 text-xs font-black uppercase tracking-[0.18em] text-cyan-200">
+              <div className="rounded-[22px] border border-cl-accent/10 bg-cl-accent/[0.04] p-4">
+                <div className="mb-3 text-xs font-black uppercase tracking-[0.18em] text-cl-accent">
                   Current Sponsors
                 </div>
 
                 {sponsors.length === 0 ? (
-                  <div className="rounded-[18px] border border-white/10 bg-white/[0.03] p-4 text-sm text-white/50">
+                  <div className="rounded-[18px] border border-cl-border bg-cl-subtle p-4 text-sm text-cl-muted">
                     No sponsors added yet.
                   </div>
                 ) : (
@@ -454,7 +454,7 @@ export function EditRacerModal({
                           href={website || "#"}
                           target={website ? "_blank" : undefined}
                           rel={website ? "noreferrer" : undefined}
-                          className="flex items-center gap-3 rounded-[18px] border border-white/10 bg-white/[0.04] p-3"
+                          className="flex items-center gap-3 rounded-[18px] border border-cl-border bg-cl-subtle p-3"
                           onClick={(e) => {
                             if (!website) e.preventDefault();
                           }}
@@ -466,24 +466,24 @@ export function EditRacerModal({
                               className="h-10 w-10 rounded-xl object-contain"
                             />
                           ) : (
-                            <div className="grid h-10 w-10 place-items-center rounded-xl bg-cyan-300/10 text-cyan-200">
+                            <div className="grid h-10 w-10 place-items-center rounded-xl bg-cl-accent/10 text-cl-accent">
                               <Sparkles className="h-4 w-4" />
                             </div>
                           )}
 
                           <div className="min-w-0 flex-1">
-                            <div className="truncate text-sm font-semibold text-white">
+                            <div className="truncate text-sm font-semibold text-cl-ink">
                               {sponsor.name}
                             </div>
                             {website ? (
-                              <div className="truncate text-xs text-white/45">
+                              <div className="truncate text-xs text-cl-muted">
                                 {website}
                               </div>
                             ) : null}
                           </div>
 
                           {website ? (
-                            <ExternalLink className="h-4 w-4 text-white/35" />
+                            <ExternalLink className="h-4 w-4 text-cl-muted" />
                           ) : null}
                         </a>
                       );
@@ -492,9 +492,9 @@ export function EditRacerModal({
                 )}
               </div>
 
-              <div className="rounded-[22px] border border-cyan-300/10 bg-cyan-300/[0.04] p-4">
+              <div className="rounded-[22px] border border-cl-accent/10 bg-cl-accent/[0.04] p-4">
                 <div className="mb-3 flex items-center justify-between gap-3">
-                  <div className="text-xs font-black uppercase tracking-[0.18em] text-cyan-200">
+                  <div className="text-xs font-black uppercase tracking-[0.18em] text-cl-accent">
                     Add Sponsors
                   </div>
 
@@ -511,7 +511,7 @@ export function EditRacerModal({
                         },
                       ])
                     }
-                    className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-2 text-xs font-bold text-cyan-100 hover:bg-cyan-300/15"
+                    className="inline-flex items-center gap-2 rounded-full border border-cl-accent/20 bg-cl-accent/10 px-3 py-2 text-xs font-bold text-cl-accent hover:bg-cl-accent/[0.15]"
                   >
                     <Plus className="h-4 w-4" />
                     Add Sponsor
@@ -522,10 +522,10 @@ export function EditRacerModal({
                   {sponsorDrafts.map((draft, index) => (
                     <div
                       key={draft.id}
-                      className="rounded-[18px] border border-white/10 bg-white/[0.03] p-4"
+                      className="rounded-[18px] border border-cl-border bg-cl-subtle p-4"
                     >
                       <div className="mb-3 flex items-center justify-between">
-                        <div className="text-xs font-bold uppercase tracking-[0.14em] text-white/50">
+                        <div className="text-xs font-bold uppercase tracking-[0.14em] text-cl-muted">
                           Sponsor #{index + 1}
                         </div>
 
@@ -537,7 +537,7 @@ export function EditRacerModal({
                                 prev.filter((item) => item.id !== draft.id),
                               )
                             }
-                            className="grid h-8 w-8 place-items-center rounded-full border border-red-300/20 bg-red-500/10 text-red-200"
+                            className="grid h-8 w-8 place-items-center rounded-full border border-red-300/20 bg-red-500/10 text-cl-danger"
                             aria-label="Remove sponsor row"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -650,11 +650,11 @@ export function EditRacerModal({
           )}
         </div>
 
-        <div className="shrink-0 flex justify-end gap-2 border-t border-white/10 bg-[#07111F] px-4 py-4 md:px-6">
+        <div className="shrink-0 flex justify-end gap-2 border-t border-cl-border bg-cl-canvas px-4 py-4 md:px-6">
           <Button
             variant="ghost"
             onClick={onClose}
-            className="border border-white/10 bg-transparent text-white hover:bg-white/10"
+            className="border border-cl-border bg-transparent text-cl-ink hover:bg-cl-subtle"
             disabled={saving}
           >
             Cancel
@@ -674,7 +674,7 @@ export function EditRacerModal({
                 setSaving(false);
               }
             }}
-            className="bg-white text-black hover:bg-white/90"
+            className="bg-cl-surface text-cl-ink hover:bg-cl-subtle"
             disabled={saving}
           >
             {saving

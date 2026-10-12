@@ -268,7 +268,7 @@ export default function AquaOrganizationDetailsPage(props: {
   }, [org?.id, primarySportKey]);
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-[#030913] text-white">
+    <div className="relative min-h-screen overflow-x-hidden bg-cl-canvas text-cl-ink">
       <PageSEO
         title={`${org?.name || "Organization"} • Corner League Sports`}
         description={`Official ${sportLabel} organization profile, news and photo gallery.`}
@@ -281,50 +281,50 @@ export default function AquaOrganizationDetailsPage(props: {
       />
 
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.12),transparent_28%),radial-gradient(circle_at_82%_18%,rgba(255,107,53,0.08),transparent_24%),linear-gradient(180deg,#030913_0%,#07111F_48%,#02050A_100%)]" />
+        <div className="absolute inset-0 cl-panel-wash" />
         <div className="absolute inset-0 opacity-[0.04] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:72px_72px]" />
-        <div className="absolute left-1/2 top-0 h-[320px] w-[320px] -translate-x-1/2 rounded-full bg-cyan-400/8 blur-3xl" />
+        <div className="absolute left-1/2 top-0 h-[320px] w-[320px] -translate-x-1/2 rounded-full bg-cl-accent/[0.08] blur-3xl" />
       </div>
 
       <div className="relative mx-auto w-full max-w-[88rem] overflow-x-hidden px-3 pb-10 pt-16 sm:px-6 sm:pt-10 lg:px-8">
         {/* top hero */}
-        <div className="relative overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[linear-gradient(180deg,rgba(7,17,31,0.96)_0%,rgba(4,10,19,0.98)_100%)] shadow-[0_30px_90px_rgba(0,0,0,0.38)] sm:rounded-[38px]">
+        <div className="relative overflow-hidden rounded-[30px] border border-cl-accent/10 cl-panel-wash shadow-cl-panel sm:rounded-[38px]">
           <div className="pointer-events-none absolute inset-0">
-            <div className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-cyan-400/10 blur-3xl" />
-            <div className="absolute -right-24 bottom-0 h-96 w-96 rounded-full bg-[#FF6B35]/10 blur-3xl" />
+            <div className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-cl-accent/10 blur-3xl" />
+            <div className="absolute -right-24 bottom-0 h-96 w-96 rounded-full bg-cl-accent/10 blur-3xl" />
             <div className="absolute inset-0 opacity-[0.05] [background-image:linear-gradient(rgba(255,255,255,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.18)_1px,transparent_1px)] [background-size:72px_72px]" />
           </div>
 
           <div className="relative flex flex-col gap-6 p-5 sm:p-7 lg:flex-row lg:items-end lg:justify-between lg:p-10">
             <div className="min-w-0 max-w-4xl">
               <div className="mb-4 flex flex-wrap items-center gap-2 sm:gap-3">
-                <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200 sm:px-4 sm:text-[11px] sm:tracking-[0.24em]">
-                  <span className="h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_18px_rgba(103,232,249,0.95)]" />
+                <div className="inline-flex items-center gap-2 rounded-full border border-cl-accent/20 bg-cl-accent/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-cl-accent sm:px-4 sm:text-[11px] sm:tracking-[0.24em]">
+                  <span className="h-2 w-2 rounded-full bg-cl-accent shadow-cl-panel" />
                   Organization Details
                 </div>
 
-                <div className="inline-flex items-center gap-2 rounded-full border border-[#FF6B35]/20 bg-[#FF6B35]/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-[#FFB199] sm:px-4 sm:text-[11px] sm:tracking-[0.24em]">
+                <div className="inline-flex items-center gap-2 rounded-full border border-cl-accent/20 bg-cl-accent/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-cl-accent sm:px-4 sm:text-[11px] sm:tracking-[0.24em]">
                   {sportLabel} Organization
                 </div>
               </div>
 
-              <p className="text-xs font-black uppercase tracking-[0.26em] text-cyan-200/65">
+              <p className="text-xs font-black uppercase tracking-[0.26em] text-cl-accent">
                 {sportLabel} • Official Profile
               </p>
 
               <div className="mt-3 flex flex-wrap items-center gap-3">
-                <h1 className="max-w-full break-words text-[2.35rem] font-black uppercase leading-[0.9] tracking-[-0.04em] text-white min-[380px]:text-4xl sm:text-5xl lg:text-6xl">
+                <h1 className="max-w-full break-words text-[2.35rem] font-black uppercase leading-[0.9] tracking-[-0.04em] text-cl-ink min-[380px]:text-4xl sm:text-5xl lg:text-6xl">
                   {org?.name || "Organization"}
                 </h1>
 
                 {org?.abbreviation ? (
-                  <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-cyan-100">
+                  <span className="rounded-full border border-cl-accent/20 bg-cl-accent/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-cl-accent">
                     {org.abbreviation}
                   </span>
                 ) : null}
               </div>
 
-              <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-300 sm:text-base">
+              <p className="mt-4 max-w-3xl text-sm leading-7 text-cl-muted sm:text-base">
                 {org?.description ||
                   "View organization details, upcoming events, and official updates."}
               </p>
@@ -340,21 +340,21 @@ export default function AquaOrganizationDetailsPage(props: {
                       : sportDirectory(primarySportKey),
                   )
                 }
-                className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/[0.05] px-5 py-3 text-xs font-black uppercase tracking-[0.14em] text-white/75 transition hover:border-cyan-300/25 hover:bg-cyan-300/10 hover:text-white"
+                className="inline-flex items-center justify-center rounded-full border border-cl-border bg-cl-subtle px-5 py-3 text-xs font-black uppercase tracking-[0.14em] text-cl-muted transition hover:border-cl-accent/25 hover:bg-cl-accent/10 hover:text-cl-ink"
               >
                 ← Back to Organizations
               </button>
 
               {hasCompetition && (
-                <div className="inline-flex items-center gap-3 rounded-[24px] border border-cyan-300/10 bg-white/[0.04] px-4 py-3 shadow-[0_18px_45px_rgba(0,0,0,0.22)]">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-300/15 bg-cyan-300/10 text-cyan-200">
+                <div className="inline-flex items-center gap-3 rounded-[24px] border border-cl-accent/10 bg-cl-subtle px-4 py-3 shadow-cl-panel">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-cl-accent/15 bg-cl-accent/10 text-cl-accent">
                     <CalendarDays className="h-5 w-5" />
                   </div>
                   <div>
-                    <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">
+                    <div className="text-[10px] uppercase tracking-[0.22em] text-cl-muted">
                       Upcoming
                     </div>
-                    <div className="text-lg font-bold text-white">
+                    <div className="text-lg font-bold text-cl-ink">
                       {eventsLoading
                         ? "Loading…"
                         : eventsError
@@ -369,29 +369,29 @@ export default function AquaOrganizationDetailsPage(props: {
         </div>
 
         {isLoading ? (
-          <div className="mt-8 rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-6 text-slate-300 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
+          <div className="mt-8 rounded-[30px] border border-cl-accent/10 bg-cl-surface p-6 text-cl-muted shadow-cl-panel">
             Loading organization…
           </div>
         ) : isError ? (
-          <div className="mt-8 rounded-[30px] border border-red-400/25 bg-red-500/10 p-6 text-white shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
+          <div className="mt-8 rounded-[30px] border border-red-400/25 bg-red-500/10 p-6 text-cl-ink shadow-cl-panel">
             <div className="mb-1 font-semibold">
               Failed to load organization
             </div>
-            <div className="text-sm text-white/80">
+            <div className="text-sm text-cl-ink">
               {(error as any)?.message ?? "Unknown error"}
             </div>
           </div>
         ) : !org ? (
-          <div className="mt-8 rounded-[30px] border border-white/10 bg-[#07111F]/80 p-6 text-slate-300 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
+          <div className="mt-8 rounded-[30px] border border-cl-border bg-cl-surface p-6 text-cl-muted shadow-cl-panel">
             Organization not found.
           </div>
         ) : (
           <>
             {/* main org card */}
-            <div className="mt-8 overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.3)] sm:p-6">
+            <div className="mt-8 overflow-hidden rounded-[30px] border border-cl-accent/10 bg-cl-surface p-5 shadow-cl-panel sm:p-6">
               <div className="flex flex-col gap-5 lg:flex-row lg:items-start">
                 <div className="flex items-start gap-4">
-                  <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-[26px] border border-cyan-300/10 bg-white/[0.05] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)] sm:h-28 sm:w-28">
+                  <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-[26px] border border-cl-accent/10 bg-cl-subtle shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)] sm:h-28 sm:w-28">
                     {org.logoUrl ? (
                       <img
                         src={org.logoUrl}
@@ -400,7 +400,7 @@ export default function AquaOrganizationDetailsPage(props: {
                         loading="lazy"
                       />
                     ) : (
-                      <span className="text-xs uppercase tracking-[0.16em] text-white/40">
+                      <span className="text-xs uppercase tracking-[0.16em] text-cl-muted">
                         No Logo
                       </span>
                     )}
@@ -408,22 +408,22 @@ export default function AquaOrganizationDetailsPage(props: {
 
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="break-words text-2xl font-black uppercase leading-tight tracking-[-0.02em] text-white sm:text-3xl">
+                      <h2 className="break-words text-2xl font-black uppercase leading-tight tracking-[-0.02em] text-cl-ink sm:text-3xl">
                         {org.name}
                       </h2>
 
                       {org.abbreviation ? (
-                        <span className="rounded-full border border-white/12 bg-white/[0.04] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/70">
+                        <span className="rounded-full border border-cl-border bg-cl-subtle px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-cl-muted">
                           {org.abbreviation}
                         </span>
                       ) : null}
                     </div>
 
-                    <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300">
+                    <p className="mt-3 max-w-3xl text-sm leading-7 text-cl-muted">
                       {org.description || "No description provided."}
                     </p>
 
-                    <p className="mt-4 break-all text-[11px] uppercase tracking-[0.16em] text-white/35">
+                    <p className="mt-4 break-all text-[11px] uppercase tracking-[0.16em] text-cl-muted">
                       ID: {org.id}
                     </p>
                   </div>
@@ -460,17 +460,17 @@ export default function AquaOrganizationDetailsPage(props: {
                       }
                       setScheduleOpen(true);
                     }}
-                    className="group min-w-0 rounded-[24px] border border-cyan-300/10 bg-white/[0.04] p-5 text-left transition hover:border-cyan-300/25 hover:bg-cyan-300/[0.045]"
+                    className="group min-w-0 rounded-[24px] border border-cl-accent/10 bg-cl-subtle p-5 text-left transition hover:border-cl-accent/25 hover:bg-cl-accent/[0.045]"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div>
-                        <div className="mb-2 inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-400/15 bg-cyan-400/8 text-cyan-300">
+                        <div className="mb-2 inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-cl-accent/15 bg-cl-accent/[0.08] text-cl-accent">
                           <CalendarDays className="h-5 w-5" />
                         </div>
-                        <div className="text-lg font-black uppercase tracking-[-0.01em] text-white">
+                        <div className="text-lg font-black uppercase tracking-[-0.01em] text-cl-ink">
                           Schedule
                         </div>
-                        <div className="mt-2 text-sm leading-7 text-slate-300">
+                        <div className="mt-2 text-sm leading-7 text-cl-muted">
                           {eventsLoading && scheduleOpen
                             ? "Loading events…"
                             : upcomingCount > 0
@@ -479,7 +479,7 @@ export default function AquaOrganizationDetailsPage(props: {
                         </div>
                       </div>
 
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-cyan-300 transition group-hover:border-cyan-300/25 group-hover:bg-cyan-400/8">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-cl-border bg-cl-subtle text-cl-accent transition group-hover:border-cl-accent/25 group-hover:bg-cl-accent/[0.08]">
                         <ChevronRight className="h-4 w-4" />
                       </div>
                     </div>
@@ -539,17 +539,17 @@ function InfoCard({
     <div
       className={`min-w-0 rounded-[24px] border p-5 ${
         muted
-          ? "border-white/10 bg-white/[0.04]"
-          : "border-cyan-300/10 bg-cyan-300/[0.04]"
+          ? "border-cl-border bg-cl-subtle"
+          : "border-cl-accent/10 bg-cl-accent/[0.04]"
       }`}
     >
-      <div className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-300/15 bg-cyan-300/10 text-cyan-200">
+      <div className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-cl-accent/15 bg-cl-accent/10 text-cl-accent">
         {icon}
       </div>
-      <div className="break-words text-lg font-black uppercase tracking-[-0.01em] text-white">
+      <div className="break-words text-lg font-black uppercase tracking-[-0.01em] text-cl-ink">
         {title}
       </div>
-      <p className="mt-2 text-sm leading-7 text-slate-300">{description}</p>
+      <p className="mt-2 text-sm leading-7 text-cl-muted">{description}</p>
     </div>
   );
 }
@@ -609,30 +609,30 @@ function ScheduleModal({
 
   return (
     <div
-      className="fixed inset-0 z-[80] flex items-end justify-center bg-black/70 p-0 backdrop-blur-sm sm:items-center sm:p-4"
+      className="cl-dark fixed inset-0 z-[80] flex items-end justify-center bg-black/70 p-0 backdrop-blur-sm sm:items-center sm:p-4"
       onClick={onClose}
     >
       <div
-        className="relative flex h-[92vh] w-full flex-col overflow-hidden rounded-t-[30px] border border-cyan-300/10 bg-[#07111F] shadow-[0_30px_90px_rgba(0,0,0,0.5)] sm:h-auto sm:max-h-[88vh] sm:max-w-5xl sm:rounded-[30px]"
+        className="relative flex h-[92vh] w-full flex-col overflow-hidden rounded-t-[30px] border border-cl-accent/10 bg-cl-surface shadow-cl-panel sm:h-auto sm:max-h-[88vh] sm:max-w-5xl sm:rounded-[30px]"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="border-b border-white/10 bg-[linear-gradient(180deg,rgba(7,17,31,0.98)_0%,rgba(4,10,19,0.98)_100%)] px-4 py-4 sm:px-6">
+        <div className="border-b border-cl-border cl-panel-wash px-4 py-4 sm:px-6">
           {" "}
           <div className="flex items-start justify-between gap-4">
             <div>
-              <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-cyan-200">
-                <span className="h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_12px_rgba(103,232,249,0.9)]" />
+              <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-cl-accent/20 bg-cl-accent/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-cl-accent">
+                <span className="h-1.5 w-1.5 rounded-full bg-cl-accent shadow-cl-panel" />
                 Event Schedule
               </div>
-              <h2 className="text-lg font-semibold text-white sm:text-xl">
+              <h2 className="text-lg font-semibold text-cl-ink sm:text-xl">
                 {orgName} Schedule
               </h2>
-              <p className="text-sm text-white/50">Upcoming and past events</p>
+              <p className="text-sm text-cl-muted">Upcoming and past events</p>
             </div>
 
             <Button
               onClick={onClose}
-              className="rounded-full border border-white/10 bg-white/[0.05] px-4 py-2.5 text-xs font-black uppercase tracking-[0.14em] text-white/70 hover:bg-white/10 hover:text-white"
+              className="rounded-full border border-cl-border bg-cl-subtle px-4 py-2.5 text-xs font-black uppercase tracking-[0.14em] text-cl-muted hover:bg-cl-subtle hover:text-cl-ink"
             >
               <X className="mr-2 h-4 w-4" />
               Close
@@ -642,16 +642,16 @@ function ScheduleModal({
 
         <div className="max-h-[calc(92vh-88px)] overflow-y-auto px-4 py-4 sm:max-h-[72vh] sm:px-6">
           {loading ? (
-            <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-5 text-white/70">
+            <div className="rounded-[24px] border border-cl-border bg-cl-subtle p-5 text-cl-muted">
               Loading schedule…
             </div>
           ) : error ? (
-            <div className="rounded-[24px] border border-red-500/25 bg-red-500/10 p-5 text-white">
+            <div className="rounded-[24px] border border-red-500/25 bg-red-500/10 p-5 text-cl-ink">
               <div className="mb-1 font-semibold">Failed to load schedule</div>
-              <div className="text-sm text-white/80">{error}</div>
+              <div className="text-sm text-cl-ink">{error}</div>
             </div>
           ) : events.length === 0 ? (
-            <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-5 text-white/70">
+            <div className="rounded-[24px] border border-cl-border bg-cl-subtle p-5 text-cl-muted">
               No events found for this organization yet.
             </div>
           ) : (
@@ -696,13 +696,12 @@ function EventSection({
   events: SportEvent[];
   onOpenEvent: (eventId: string) => void;
 }) {
-  const headingClass =
-    tone === "upcoming" ? "text-cyan-200/90" : "text-white/75";
+  const headingClass = tone === "upcoming" ? "text-cl-accent" : "text-cl-muted";
 
   const badgeClass =
     tone === "upcoming"
-      ? "border-cyan-400/20 bg-cyan-400/10 text-cyan-200"
-      : "border-white/15 bg-white/5 text-white/70";
+      ? "border-cl-accent/20 bg-cl-accent/10 text-cl-accent"
+      : "border-cl-border bg-cl-subtle text-cl-muted";
 
   return (
     <div className="space-y-3">
@@ -712,13 +711,13 @@ function EventSection({
         >
           {title}
         </h3>
-        <span className="text-xs text-white/45">
+        <span className="text-xs text-cl-muted">
           {count} event{count === 1 ? "" : "s"}
         </span>
       </div>
 
       {events.length === 0 ? (
-        <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-4 text-sm text-white/55">
+        <div className="rounded-[24px] border border-cl-border bg-cl-subtle p-4 text-sm text-cl-muted">
           {emptyText}
         </div>
       ) : (
@@ -728,7 +727,7 @@ function EventSection({
               key={event.id}
               type="button"
               onClick={() => onOpenEvent(event.id)}
-              className="group min-w-0 w-full rounded-[24px] border border-cyan-300/10 bg-[#07111F]/80 p-5 text-left shadow-[0_16px_40px_rgba(0,0,0,0.22)] transition hover:border-cyan-300/25 hover:bg-cyan-300/[0.045]"
+              className="group min-w-0 w-full rounded-[24px] border border-cl-accent/10 bg-cl-surface p-5 text-left shadow-cl-panel transition hover:border-cl-accent/25 hover:bg-cl-accent/[0.045]"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
@@ -740,39 +739,39 @@ function EventSection({
                     </span>
                   </div>
 
-                  <div className="mt-3 break-words text-base font-black uppercase leading-snug tracking-[-0.01em] text-white sm:text-lg">
+                  <div className="mt-3 break-words text-base font-black uppercase leading-snug tracking-[-0.01em] text-cl-ink sm:text-lg">
                     <span className="line-clamp-2">{event.name}</span>
                   </div>
 
                   {!!event.description && (
-                    <p className="mt-2 line-clamp-2 whitespace-pre-wrap text-sm text-white/65">
+                    <p className="mt-2 line-clamp-2 whitespace-pre-wrap text-sm text-cl-muted">
                       {event.description}
                     </p>
                   )}
                 </div>
 
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-cyan-300 transition group-hover:border-cyan-300/25 group-hover:bg-cyan-400/8">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-cl-border bg-cl-subtle text-cl-accent transition group-hover:border-cl-accent/25 group-hover:bg-cl-accent/[0.08]">
                   <ChevronRight className="h-4 w-4" />
                 </div>
               </div>
 
               <div className="mt-4 grid min-w-0 grid-cols-1 gap-3 text-sm">
-                <div className="flex items-start gap-2 text-white/75">
-                  <CalendarDays className="mt-0.5 h-4 w-4 shrink-0 text-white/45" />
+                <div className="flex items-start gap-2 text-cl-muted">
+                  <CalendarDays className="mt-0.5 h-4 w-4 shrink-0 text-cl-muted" />
                   <div className="min-w-0 break-words">
                     {formatEventDateRange(event.startDate, event.endDate)}
                   </div>
                 </div>
 
-                <div className="flex items-start gap-2 text-white/75">
-                  <Clock3 className="mt-0.5 h-4 w-4 shrink-0 text-white/45" />
+                <div className="flex items-start gap-2 text-cl-muted">
+                  <Clock3 className="mt-0.5 h-4 w-4 shrink-0 text-cl-muted" />
                   <div className="min-w-0 break-words">
                     {formatEventTime(event.startDate, event.endDate)}
                   </div>
                 </div>
 
-                <div className="flex items-start gap-2 text-white/75">
-                  <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-white/45" />
+                <div className="flex items-start gap-2 text-cl-muted">
+                  <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-cl-muted" />
                   <div className="min-w-0 break-words">
                     {event.location || "Location TBD"}
                   </div>

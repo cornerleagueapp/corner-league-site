@@ -205,18 +205,18 @@ export function PollCard({ poll, sourcePage, userId }: PollCardProps) {
 
   return (
     <>
-      <article className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[#080812]/95 p-5 shadow-2xl shadow-black/40">
+      <article className="relative overflow-hidden rounded-[28px] border border-cl-border bg-cl-surface p-5 shadow-2xl shadow-black/40">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,45,85,0.22),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(56,189,248,0.16),transparent_32%)]" />
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#ff2d55] to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cl-accent to-transparent" />
 
         <div className="relative">
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#ff2d55]/30 bg-[#ff2d55]/10 px-3 py-1 text-xs font-black uppercase tracking-[0.22em] text-[#ff7b9a]">
+            <div className="inline-flex items-center gap-2 rounded-full border border-cl-accent/30 bg-cl-accent/10 px-3 py-1 text-xs font-black uppercase tracking-[0.22em] text-cl-accent">
               <Vote size={14} />
               Fan Vote
             </div>
 
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-white/50">
+            <div className="inline-flex items-center gap-2 rounded-full border border-cl-border bg-cl-subtle px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-cl-muted">
               <BarChart3 size={14} />
               {formatPollCategory(poll.category)}
             </div>
@@ -237,36 +237,36 @@ export function PollCard({ poll, sourcePage, userId }: PollCardProps) {
             </div>
           ) : null}
 
-          <h3 className="text-2xl font-black uppercase leading-tight tracking-tight text-white sm:text-3xl">
+          <h3 className="text-2xl font-black uppercase leading-tight tracking-tight text-cl-ink sm:text-3xl">
             {poll.title}
           </h3>
 
           {poll.description ? (
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-white/60">
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-cl-muted">
               {poll.description}
             </p>
           ) : null}
 
           {endLabel ? (
-            <div className="mt-4 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-white/45">
+            <div className="mt-4 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-cl-muted">
               <Clock size={14} />
               Voting closes {endLabel}
             </div>
           ) : null}
 
           {poll.votingMode === "racer_search" ? (
-            <div className="mt-6 rounded-2xl border border-cyan-300/10 bg-cyan-300/[0.04] p-4">
-              <div className="text-sm font-black uppercase tracking-[0.18em] text-white">
+            <div className="mt-6 rounded-2xl border border-cl-accent/10 bg-cl-accent/[0.04] p-4">
+              <div className="text-sm font-black uppercase tracking-[0.18em] text-cl-ink">
                 Select Your Racer
               </div>
 
-              <p className="mt-2 text-sm leading-6 text-white/55">
+              <p className="mt-2 text-sm leading-6 text-cl-muted">
                 Search for the racer you want to vote for, then submit your
                 vote.
               </p>
 
               {selectedRacer ? (
-                <div className="mt-4 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+                <div className="mt-4 flex items-center gap-3 rounded-2xl border border-cl-border bg-cl-subtle p-3">
                   <img
                     src={selectedRacer.image || "/stockprofilepicture.jpeg"}
                     alt={selectedRacer.name}
@@ -274,10 +274,10 @@ export function PollCard({ poll, sourcePage, userId }: PollCardProps) {
                   />
 
                   <div className="min-w-0 flex-1">
-                    <div className="truncate font-black text-white">
+                    <div className="truncate font-black text-cl-ink">
                       {selectedRacer.name}
                     </div>
-                    <div className="truncate text-xs text-white/45">
+                    <div className="truncate text-xs text-cl-muted">
                       {selectedRacer.location || "Selected racer"}
                     </div>
                   </div>
@@ -286,7 +286,7 @@ export function PollCard({ poll, sourcePage, userId }: PollCardProps) {
                     <button
                       type="button"
                       onClick={() => setSelectedRacer(null)}
-                      className="rounded-full border border-white/10 px-3 py-1 text-xs text-white/60 hover:bg-white/10"
+                      className="rounded-full border border-cl-border px-3 py-1 text-xs text-cl-muted hover:bg-cl-subtle"
                     >
                       Change
                     </button>
@@ -306,7 +306,7 @@ export function PollCard({ poll, sourcePage, userId }: PollCardProps) {
                     setAthleteModalOpen(true);
                   }}
                   disabled={hasVoted || isClosed}
-                  className="mt-4 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-5 py-3 text-xs font-black uppercase tracking-[0.18em] text-cyan-100 transition hover:bg-cyan-300/20 disabled:opacity-50"
+                  className="mt-4 rounded-full border border-cl-accent/20 bg-cl-accent/10 px-5 py-3 text-xs font-black uppercase tracking-[0.18em] text-cl-accent transition hover:bg-cl-accent/20 disabled:opacity-50"
                 >
                   Search Racer
                 </button>
@@ -327,11 +327,11 @@ export function PollCard({ poll, sourcePage, userId }: PollCardProps) {
                     className={[
                       "group w-full rounded-2xl border p-4 text-left transition",
                       hasVoted || isClosed
-                        ? "cursor-default border-white/10 bg-white/[0.03]"
-                        : "hover:-translate-y-0.5 hover:border-[#ff2d55]/60 hover:bg-[#ff2d55]/10",
+                        ? "cursor-default border-cl-border bg-cl-subtle"
+                        : "hover:-translate-y-0.5 hover:border-cl-accent/60 hover:bg-cl-accent/10",
                       isSelected
-                        ? "border-[#ff2d55] bg-[#ff2d55]/15 shadow-lg shadow-[#ff2d55]/10"
-                        : "border-white/10 bg-white/[0.04]",
+                        ? "border-cl-accent bg-cl-accent/15 shadow-lg shadow-[#ff2d55]/10"
+                        : "border-cl-border bg-cl-subtle",
                     ].join(" ")}
                   >
                     <div className="flex items-center gap-3">
@@ -342,27 +342,27 @@ export function PollCard({ poll, sourcePage, userId }: PollCardProps) {
                           className="h-12 w-12 rounded-xl object-cover ring-1 ring-white/10"
                         />
                       ) : (
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-black/50 ring-1 ring-white/10">
-                          <Vote size={20} className="text-white/50" />
+                        <div className="cl-dark flex h-12 w-12 items-center justify-center rounded-xl bg-black/50 ring-1 ring-white/10">
+                          <Vote size={20} className="text-cl-muted" />
                         </div>
                       )}
 
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <p className="truncate text-sm font-black uppercase tracking-wide text-white">
+                          <p className="truncate text-sm font-black uppercase tracking-wide text-cl-ink">
                             {option.label}
                           </p>
 
                           {wasSelectedResult ? (
                             <CheckCircle2
                               size={16}
-                              className="text-[#ff7b9a]"
+                              className="text-cl-accent"
                             />
                           ) : null}
                         </div>
 
                         {option.description ? (
-                          <p className="mt-1 line-clamp-2 text-xs leading-5 text-white/45">
+                          <p className="mt-1 line-clamp-2 text-xs leading-5 text-cl-muted">
                             {option.description}
                           </p>
                         ) : null}
@@ -385,16 +385,16 @@ export function PollCard({ poll, sourcePage, userId }: PollCardProps) {
               type="button"
               disabled={voteMutation.isPending}
               onClick={handleVote}
-              className="mt-5 w-full rounded-2xl bg-gradient-to-r from-[#ff2d55] via-[#a855f7] to-[#38bdf8] px-5 py-4 text-sm font-black uppercase tracking-[0.22em] text-white shadow-xl shadow-[#ff2d55]/20 transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60"
+              className="mt-5 w-full rounded-2xl bg-gradient-to-r from-cl-accent via-cl-accent to-cl-accent px-5 py-4 text-sm font-black uppercase tracking-[0.22em] text-cl-ink shadow-xl shadow-[#ff2d55]/20 transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {voteMutation.isPending ? "Submitting Vote..." : "Submit Vote"}
             </button>
           ) : isClosed ? (
-            <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-              <div className="text-sm font-black uppercase tracking-[0.18em] text-white/70">
+            <div className="mt-5 rounded-2xl border border-cl-border bg-cl-subtle p-4">
+              <div className="text-sm font-black uppercase tracking-[0.18em] text-cl-muted">
                 Voting Closed
               </div>
-              <p className="mt-1 text-xs leading-5 text-white/45">
+              <p className="mt-1 text-xs leading-5 text-cl-muted">
                 This poll has ended. Final results are shown below.
               </p>
             </div>
@@ -413,11 +413,11 @@ export function PollCard({ poll, sourcePage, userId }: PollCardProps) {
           {shouldShowResults ? (
             <div className="mt-7">
               <div className="mb-3 flex items-center justify-between">
-                <h4 className="text-sm font-black uppercase tracking-[0.22em] text-white/70">
+                <h4 className="text-sm font-black uppercase tracking-[0.22em] text-cl-muted">
                   Current Results
                 </h4>
 
-                <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/40">
+                <span className="text-xs font-bold uppercase tracking-[0.16em] text-cl-muted">
                   {isResultsLoading
                     ? "Loading..."
                     : `${(results?.totalVotes ?? 0).toLocaleString()} votes`}
@@ -440,7 +440,7 @@ export function PollCard({ poll, sourcePage, userId }: PollCardProps) {
             </div>
           ) : null}
 
-          <p className="mt-5 text-[11px] leading-5 text-white/35">
+          <p className="mt-5 text-[11px] leading-5 text-cl-muted">
             One vote per fan/device. Voting data may be used for Corner League
             community awards, engagement reporting, and sponsor insights.
           </p>

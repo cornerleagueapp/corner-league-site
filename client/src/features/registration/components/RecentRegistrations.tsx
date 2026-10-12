@@ -66,28 +66,28 @@ export default function RecentRegistrations({
     .slice(0, limit);
 
   return (
-    <section className="rounded-[26px] border border-cyan-300/10 bg-[#07111F]/78 p-5">
+    <section className="rounded-[26px] border border-cl-accent/10 bg-cl-surface p-5">
       <div className="flex items-center gap-3">
-        <div className="grid h-10 w-10 place-items-center rounded-2xl border border-[#FF6B35]/15 bg-[#FF6B35]/10">
-          <Users className="h-4 w-4 text-[#FFB199]" />
+        <div className="grid h-10 w-10 place-items-center rounded-2xl border border-cl-accent/[0.15] bg-cl-accent/10">
+          <Users className="h-4 w-4 text-cl-accent" />
         </div>
 
         <div>
-          <p className="text-[9px] font-black uppercase tracking-[0.15em] text-[#FFB199]/70">
+          <p className="text-[9px] font-black uppercase tracking-[0.15em] text-cl-accent">
             Event Activity
           </p>
 
-          <h3 className="mt-1 text-base font-black uppercase text-white">
+          <h3 className="mt-1 text-base font-black uppercase text-cl-ink">
             Recently Registered
           </h3>
         </div>
       </div>
 
       {recent.length === 0 ? (
-        <div className="mt-5 rounded-[18px] border border-dashed border-white/10 bg-black/15 px-4 py-8 text-center">
-          <Users className="mx-auto h-6 w-6 text-white/20" />
+        <div className="mt-5 rounded-[18px] border border-dashed border-cl-border bg-cl-surface px-4 py-8 text-center">
+          <Users className="mx-auto h-6 w-6 text-cl-muted" />
 
-          <p className="mt-3 text-xs leading-5 text-white/40">
+          <p className="mt-3 text-xs leading-5 text-cl-muted">
             Recent confirmed registrations will appear here.
           </p>
         </div>
@@ -96,10 +96,10 @@ export default function RecentRegistrations({
           {recent.map((registration) => (
             <article
               key={registration.registrationId}
-              className="rounded-[18px] border border-white/10 bg-white/[0.03] p-3"
+              className="rounded-[18px] border border-cl-border bg-cl-subtle p-3"
             >
               <div className="flex items-center gap-3">
-                <div className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full border border-cyan-300/15 bg-cyan-300/10 text-xs font-black text-cyan-200">
+                <div className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full border border-cl-accent/[0.15] bg-cl-accent/10 text-xs font-black text-cl-accent">
                   {registration.racer.imageUrl ? (
                     <img
                       src={registration.racer.imageUrl}
@@ -113,21 +113,21 @@ export default function RecentRegistrations({
 
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5">
-                    <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-200" />
+                    <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-cl-success" />
 
-                    <p className="truncate text-xs font-black uppercase text-white">
+                    <p className="truncate text-xs font-black uppercase text-cl-ink">
                       {registration.racer.name}
                     </p>
                   </div>
 
-                  <p className="mt-1 truncate text-[11px] text-white/40">
+                  <p className="mt-1 truncate text-[11px] text-cl-muted">
                     {registration.selectedClasses
                       .map((selection) => selection.className)
                       .join(", ")}
                   </p>
                 </div>
 
-                <div className="flex shrink-0 items-center gap-1 text-[9px] font-bold text-white/35">
+                <div className="flex shrink-0 items-center gap-1 text-[9px] font-bold text-cl-muted">
                   <Clock3 className="h-3 w-3" />
 
                   {formatRelativeTime(registration.registeredAt)}

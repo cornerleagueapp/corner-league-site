@@ -29,7 +29,7 @@ export default function AthleteAccountLinks({
         <Link
           key={p.id}
           href={`/racer/${p.id}?sport=${p.sportKey}`}
-          className="inline-flex min-h-11 items-center rounded-full border border-cyan-300/20 bg-cyan-300/10 px-4 text-sm text-cyan-200"
+          className="inline-flex min-h-11 items-center rounded-full border border-cl-accent/20 bg-cl-accent/10 px-4 text-sm text-cl-accent"
         >
           {sportLabels[p.sportKey]} athlete · Account ownership verified
         </Link>

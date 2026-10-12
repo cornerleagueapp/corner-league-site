@@ -108,21 +108,21 @@ export default function UpcomingEventsCalendar({ events }: Props) {
   const monthIndex = monthDate.getMonth();
 
   return (
-    <div className="relative min-w-0 overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-4 shadow-[0_24px_70px_rgba(0,0,0,0.34)] sm:p-6">
+    <div className="relative min-w-0 overflow-hidden rounded-[30px] border border-cl-accent/10 bg-cl-surface p-4 shadow-cl-panel sm:p-6">
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -left-24 top-0 h-72 w-72 rounded-full bg-cyan-400/10 blur-3xl" />
-        <div className="absolute -right-24 bottom-0 h-80 w-80 rounded-full bg-[#FF6B35]/10 blur-3xl" />
+        <div className="absolute -left-24 top-0 h-72 w-72 rounded-full bg-cl-accent/10 blur-3xl" />
+        <div className="absolute -right-24 bottom-0 h-80 w-80 rounded-full bg-cl-accent/10 blur-3xl" />
         <div className="absolute inset-0 opacity-[0.04] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:64px_64px]" />
       </div>
 
       <div className="relative">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-200/70">
+            <div className="text-[10px] font-black uppercase tracking-[0.22em] text-cl-accent">
               Calendar View
             </div>
 
-            <div className="mt-2 text-2xl font-black uppercase tracking-[-0.03em] text-white sm:text-3xl">
+            <div className="mt-2 text-2xl font-black uppercase tracking-[-0.03em] text-cl-ink sm:text-3xl">
               {formatMonthLabel(monthDate)}
             </div>
           </div>
@@ -136,7 +136,7 @@ export default function UpcomingEventsCalendar({ events }: Props) {
                     new Date(prev.getFullYear(), prev.getMonth() - 1, 1),
                 )
               }
-              className="rounded-full border border-white/10 bg-white/[0.05] px-4 py-3 text-xs font-black uppercase tracking-[0.14em] text-white/75 transition hover:border-cyan-300/25 hover:bg-cyan-300/10 hover:text-white"
+              className="rounded-full border border-cl-border bg-cl-subtle px-4 py-3 text-xs font-black uppercase tracking-[0.14em] text-cl-muted transition hover:border-cl-accent/25 hover:bg-cl-accent/10 hover:text-cl-ink"
             >
               Prev
             </button>
@@ -149,16 +149,16 @@ export default function UpcomingEventsCalendar({ events }: Props) {
                     new Date(prev.getFullYear(), prev.getMonth() + 1, 1),
                 )
               }
-              className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-4 py-3 text-xs font-black uppercase tracking-[0.14em] text-cyan-100 transition hover:border-cyan-200/40 hover:bg-cyan-300 hover:text-[#06111d]"
+              className="rounded-full border border-cl-accent/20 bg-cl-accent/10 px-4 py-3 text-xs font-black uppercase tracking-[0.14em] text-cl-accent transition hover:border-cl-accent/40 hover:bg-cl-accent hover:text-cl-contrast"
             >
               Next
             </button>
           </div>
         </div>
 
-        <div className="overflow-x-auto pb-2 [scrollbar-width:thin] [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-cyan-300/20">
+        <div className="overflow-x-auto pb-2 [scrollbar-width:thin] [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-cl-accent/20">
           <div className="min-w-[720px]">
-            <div className="grid grid-cols-7 gap-2 text-center text-[10px] font-black uppercase tracking-[0.16em] text-white/45">
+            <div className="grid grid-cols-7 gap-2 text-center text-[10px] font-black uppercase tracking-[0.16em] text-cl-muted">
               {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
                 (label) => (
                   <div key={label} className="py-2">
@@ -183,21 +183,21 @@ export default function UpcomingEventsCalendar({ events }: Props) {
                     onClick={() => setSelectedDayKey(key)}
                     className={`min-h-[92px] rounded-2xl border p-2 text-left transition ${
                       isSelected
-                        ? "border-cyan-300/40 bg-cyan-400/[0.1] shadow-[0_0_24px_rgba(34,211,238,0.12)]"
-                        : "border-white/10 bg-white/[0.025] hover:border-cyan-300/20 hover:bg-cyan-300/[0.05]"
+                        ? "border-cl-accent/40 bg-cl-accent/[0.1] shadow-cl-panel"
+                        : "border-cl-border bg-cl-subtle hover:border-cl-accent/20 hover:bg-cl-accent/[0.05]"
                     } ${!inCurrentMonth ? "opacity-35" : ""}`}
                   >
                     <div className="flex items-center justify-between gap-2">
                       <span
                         className={`text-sm font-black ${
-                          isToday ? "text-cyan-300" : "text-white"
+                          isToday ? "text-cl-accent" : "text-cl-ink"
                         }`}
                       >
                         {day.getDate()}
                       </span>
 
                       {eventCount > 0 ? (
-                        <span className="rounded-full border border-[#FF6B35]/20 bg-[#FF6B35]/10 px-2 py-0.5 text-[10px] font-black text-[#FFB199]">
+                        <span className="rounded-full border border-cl-accent/20 bg-cl-accent/10 px-2 py-0.5 text-[10px] font-black text-cl-accent">
                           {eventCount}
                         </span>
                       ) : null}
@@ -211,14 +211,14 @@ export default function UpcomingEventsCalendar({ events }: Props) {
                           .map((event) => (
                             <div
                               key={event.id}
-                              className="truncate rounded-lg border border-white/10 bg-white/[0.05] px-2 py-1 text-[10px] text-white/80"
+                              className="truncate rounded-lg border border-cl-border bg-cl-subtle px-2 py-1 text-[10px] text-cl-ink"
                             >
                               {event.name}
                             </div>
                           ))}
 
                         {eventCount > 2 ? (
-                          <div className="text-[10px] font-bold text-cyan-200/70">
+                          <div className="text-[10px] font-bold text-cl-accent">
                             +{eventCount - 2} more
                           </div>
                         ) : null}
@@ -231,17 +231,17 @@ export default function UpcomingEventsCalendar({ events }: Props) {
           </div>
         </div>
 
-        <div className="mt-6 rounded-[24px] border border-cyan-300/10 bg-black/25 p-4 sm:p-5">
-          <div className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-200/70">
+        <div className="mt-6 rounded-[24px] border border-cl-accent/10 bg-cl-subtle p-4 sm:p-5">
+          <div className="text-[10px] font-black uppercase tracking-[0.2em] text-cl-accent">
             {selectedDayKey ? "Selected Day Events" : "Select a day"}
           </div>
 
           {!selectedDayKey ? (
-            <div className="mt-3 text-sm leading-7 text-slate-300">
+            <div className="mt-3 text-sm leading-7 text-cl-muted">
               Click a day on the calendar to view scheduled events.
             </div>
           ) : selectedEvents.length === 0 ? (
-            <div className="mt-3 text-sm leading-7 text-slate-300">
+            <div className="mt-3 text-sm leading-7 text-cl-muted">
               No events scheduled for this day.
             </div>
           ) : (
@@ -249,14 +249,14 @@ export default function UpcomingEventsCalendar({ events }: Props) {
               {selectedEvents.map((event) => (
                 <div
                   key={event.id}
-                  className="grid min-w-0 gap-4 rounded-2xl border border-white/10 bg-white/[0.04] p-4 transition hover:border-cyan-300/20 hover:bg-cyan-300/[0.05] md:grid-cols-[minmax(0,1fr)_auto] md:items-center"
+                  className="grid min-w-0 gap-4 rounded-2xl border border-cl-border bg-cl-subtle p-4 transition hover:border-cl-accent/20 hover:bg-cl-accent/[0.05] md:grid-cols-[minmax(0,1fr)_auto] md:items-center"
                 >
                   <div className="min-w-0">
-                    <div className="break-words font-black uppercase leading-snug tracking-[0.04em] text-white">
+                    <div className="break-words font-black uppercase leading-snug tracking-[0.04em] text-cl-ink">
                       {event.name}
                     </div>
 
-                    <div className="mt-2 break-words text-sm leading-6 text-white/55">
+                    <div className="mt-2 break-words text-sm leading-6 text-cl-muted">
                       {event.organizationName || "Organization"} •{" "}
                       {event.location || "Location TBD"} •{" "}
                       {formatTime(event.startDate)}
@@ -268,7 +268,7 @@ export default function UpcomingEventsCalendar({ events }: Props) {
                       event.organizationId || "",
                     )}`}
                   >
-                    <button className="w-full rounded-full border border-cyan-300/20 bg-cyan-300/10 px-4 py-3 text-xs font-black uppercase tracking-[0.16em] text-cyan-100 transition hover:border-cyan-200/40 hover:bg-cyan-300 hover:text-[#06111d] md:w-auto">
+                    <button className="w-full rounded-full border border-cl-accent/20 bg-cl-accent/10 px-4 py-3 text-xs font-black uppercase tracking-[0.16em] text-cl-accent transition hover:border-cl-accent/40 hover:bg-cl-accent hover:text-cl-contrast md:w-auto">
                       View Event
                     </button>
                   </Link>

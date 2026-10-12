@@ -58,7 +58,7 @@ export default function Home() {
   };
 
   return (
-    <div className="consumer-document-page bg-black text-white font-sans overflow-x-hidden relative">
+    <div className="consumer-document-page bg-cl-canvas text-cl-ink font-sans overflow-x-hidden relative">
       <PublicTopNav activeTab="home" />
 
       <PageSEO
@@ -146,7 +146,7 @@ export default function Home() {
                 return (
                   <div
                     key={`col-${colIndex}-${imgIndex}`}
-                    className="relative bg-gray-900/20 backdrop-blur-sm rounded-lg overflow-hidden shadow-xl"
+                    className="relative bg-cl-subtle backdrop-blur-sm rounded-lg overflow-hidden shadow-xl"
                     style={{
                       maxHeight: `${imageHeight}px`,
                       minHeight: "200px",
@@ -173,27 +173,25 @@ export default function Home() {
       </div>
 
       {/* HERO */}
-      <div className="hero-overlay relative z-10 min-h-screen flex flex-col">
+      <div className="cl-dark text-cl-ink hero-overlay relative z-10 min-h-screen flex flex-col">
         {/* Center hero text */}
         <div className="flex-1 flex items-center justify-center px-6 py-12">
           <div className="text-center max-w-4xl mx-auto">
             <h1 className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold leading-tight mb-6 tracking-tight">
               Where Every Player Feels{" "}
-              <span className="italic text-fuchsia-400 drop-shadow-[0_0_10px_rgba(217,70,239,0.9)]">
-                PRO
-              </span>
+              <span className="italic text-cl-accent ">PRO</span>
             </h1>
-            <p className="text-lg md:text-xl lg:text-2xl text-gray-300 mb-12 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-lg md:text-xl lg:text-2xl text-cl-muted mb-12 max-w-2xl mx-auto leading-relaxed">
               Corner League is the next-gen sports media platform that turns
               every rec and youth league into its own ESPN.
             </p>
-            <p className="text-lg md:text-xl lg:text-2xl text-gray-300 mb-12 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-lg md:text-xl lg:text-2xl text-cl-muted mb-12 max-w-2xl mx-auto leading-relaxed">
               Using AI to provide players their pro-style stats, game recaps,
               highlights, and leaderboards that make every game feel
               unforgettable and legendary!
             </p>
             {isAuthenticated && (
-              <p className="text-lg md:text-xl text-gray-300 mb-8 text-center">
+              <p className="text-lg md:text-xl text-cl-muted mb-8 text-center">
                 Welcome, {user?.firstName ?? user?.email}!
               </p>
             )}
@@ -203,7 +201,7 @@ export default function Home() {
                   <Link href="/welcome">
                     <Button
                       size="lg"
-                      className="px-8 py-4 text-lg font-semibold text-black bg-white hover:bg-gray-100 rounded-full"
+                      className="px-8 py-4 text-lg font-semibold text-cl-ink bg-cl-surface hover:bg-cl-subtle rounded-full"
                     >
                       My Scores
                     </Button>
@@ -212,7 +210,7 @@ export default function Home() {
                     variant="outline"
                     size="lg"
                     onClick={handleLogout}
-                    className="px-8 py-4 text-lg font-semibold text-white border-white/30 bg-transparent hover:bg-white/10 rounded-full"
+                    className="px-8 py-4 text-lg font-semibold text-cl-ink border-cl-border bg-transparent hover:bg-cl-subtle rounded-full"
                   >
                     Logout
                   </Button>
@@ -223,14 +221,14 @@ export default function Home() {
                     variant="outline"
                     size="lg"
                     onClick={handleLogin}
-                    className="px-8 py-4 text-lg font-semibold text-black border-white/30 hover:bg-white/10 rounded-full"
+                    className="px-8 py-4 text-lg font-semibold text-cl-ink border-cl-border hover:bg-cl-subtle rounded-full"
                   >
                     Log in
                   </Button>
                   <Button
                     size="lg"
                     onClick={handleLogin}
-                    className="px-8 py-4 text-lg font-semibold text-black bg-white hover:bg-gray-100 rounded-full"
+                    className="px-8 py-4 text-lg font-semibold text-cl-ink bg-cl-surface hover:bg-cl-subtle rounded-full"
                   >
                     Join
                   </Button>
@@ -244,7 +242,7 @@ export default function Home() {
       {/* Partner logo slider (pure CSS marquee) */}
       <section className="px-5 relative z-10">
         <div className="mx-auto max-w-6xl">
-          <div className="logo-carousel rounded-xl bg-white/[0.03] border border-white/10 py-5">
+          <div className="cl-dark logo-carousel rounded-xl bg-cl-canvas border border-cl-border py-5">
             <div className="logo-viewport">
               <div className="logo-track">
                 {/* Group 1 */}
@@ -351,10 +349,10 @@ export default function Home() {
 
       <main className="relative z-10">
         {/* IJSBA Partner highlight – two-column with video */}
-        <Section className="bg-gradient-to-b from-white/5 via-white/[0.03] to-transparent">
+        <Section className="bg-gradient-to-b from-cl-surface/5 via-cl-surface/[0.03] to-transparent">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
             <div className="order-1 lg:order-2 lg:col-span-6 xl:col-span-5">
-              <div className="relative aspect-[4/3] md:aspect-[16/10] rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
+              <div className="relative aspect-[4/3] md:aspect-[16/10] rounded-2xl overflow-hidden border border-cl-border shadow-2xl">
                 <video
                   src={partnerPromo}
                   autoPlay
@@ -373,7 +371,7 @@ export default function Home() {
               <h2 className="mt-3 text-3xl md:text-4xl font-semibold">
                 Proud Partner of the IJSBA World Finals
               </h2>
-              <p className="mt-3 text-white/70 text-base leading-relaxed max-w-2xl lg:max-w-none mx-auto lg:mx-0">
+              <p className="mt-3 text-cl-muted text-base leading-relaxed max-w-2xl lg:max-w-none mx-auto lg:mx-0">
                 Corner League is an official partner of the IJSBA World Finals
                 in Lake Havasu. Follow live coverage, join event chatrooms, and
                 explore racer profiles built just for AQUA sports.
@@ -381,12 +379,12 @@ export default function Home() {
 
               <div className="mt-5 flex flex-col sm:flex-row gap-3 sm:justify-start justify-center">
                 <Link href="/scores" className="sm:flex-1 sm:max-w-[240px]">
-                  <Button className="w-full bg-white text-black hover:bg-white/90 rounded-full px-6">
+                  <Button className="w-full bg-cl-surface text-cl-ink hover:bg-cl-subtle rounded-full px-6">
                     See Event Hub
                   </Button>
                 </Link>
                 <Link href="/scores" className="sm:flex-1 sm:max-w-[240px]">
-                  <Button className="w-full bg-black text-white border border-white/20 hover:bg-black/90 rounded-full px-6">
+                  <Button className="w-full bg-cl-canvas text-cl-ink border border-cl-border hover:bg-black/90 rounded-full px-6">
                     Join the Chat
                   </Button>
                 </Link>
@@ -399,19 +397,19 @@ export default function Home() {
 
         {/* Partner / Sponsor banner */}
         <section className="px-5">
-          <div className="mx-auto max-w-6xl rounded-2xl border border-white/10 bg-gradient-to-r from-fuchsia-600/20 via-violet-600/20 to-amber-500/20 p-5 sm:p-6 md:p-8">
+          <div className="mx-auto max-w-6xl rounded-2xl border border-cl-border bg-gradient-to-r from-cl-accent/20 via-cl-accent/20 to-amber-500/20 p-5 sm:p-6 md:p-8">
             <div className="flex flex-col md:flex-row items-start md:items-center gap-3 md:gap-6">
               <div className="text-left">
                 <h3 className="text-xl md:text-2xl font-semibold">
                   Partner or Sponsor with Corner League
                 </h3>
-                <p className="mt-1 text-white/80 text-sm md:text-base">
+                <p className="mt-1 text-cl-ink text-sm md:text-base">
                   Want to reach passionate sports communities? Let’s team up.
                 </p>
               </div>
               <div className="md:ml-auto">
                 <Link href="/contact">
-                  <Button className="bg-white text-black hover:bg-white/90 rounded-full px-6">
+                  <Button className="bg-cl-surface text-cl-ink hover:bg-cl-subtle rounded-full px-6">
                     Get in touch
                   </Button>
                 </Link>
@@ -444,7 +442,7 @@ function Section({
 
 function Badge({ children }: { children: React.ReactNode }) {
   return (
-    <span className="inline-flex items-center px-3 py-1 rounded-full border border-white/15 bg-white/5 text-[11px] font-medium tracking-wide">
+    <span className="inline-flex items-center px-3 py-1 rounded-full border border-cl-border bg-cl-subtle text-[11px] font-medium tracking-wide">
       {children}
     </span>
   );
@@ -458,9 +456,9 @@ function FeatureItem({
   children: React.ReactNode;
 }) {
   return (
-    <li className="rounded-xl border border-white/10 bg-white/[0.04] p-4">
+    <li className="rounded-xl border border-cl-border bg-cl-subtle p-4">
       <div className="text-sm font-semibold">{title}</div>
-      <div className="mt-1 text-xs text-white/70 leading-relaxed">
+      <div className="mt-1 text-xs text-cl-muted leading-relaxed">
         {children}
       </div>
     </li>

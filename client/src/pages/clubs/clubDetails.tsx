@@ -170,7 +170,7 @@ export default function ClubDetails() {
 
   // ----- UI -----
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-cl-canvas text-cl-ink">
       <PageSEO
         title={details?.clubName ?? "Club"}
         description={(
@@ -182,10 +182,10 @@ export default function ClubDetails() {
         image={details?.clubImage || "https://cornerleague.com/og/club.png"}
       />
       {/* Header */}
-      <div className="px-4 sm:px-6 py-4 border-b border-gray-800">
+      <div className="px-4 sm:px-6 py-4 border-b border-cl-border">
         <div className="mx-auto max-w-6xl flex items-center justify-between">
           <Link href="/clubs">
-            <button className="text-gray-300 hover:text-white px-3 py-2 rounded-md hover:bg-gray-800">
+            <button className="text-cl-muted hover:text-cl-ink px-3 py-2 rounded-md hover:bg-cl-subtle">
               ← Back
             </button>
           </Link>
@@ -198,7 +198,7 @@ export default function ClubDetails() {
             <button
               onClick={() => setInfoOpen(true)}
               aria-label="Club settings"
-              className="px-3 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+              className="px-3 py-2 rounded-full bg-cl-subtle hover:bg-cl-subtle transition-colors"
               title="Club info"
             >
               <img
@@ -213,7 +213,7 @@ export default function ClubDetails() {
 
       <div className="px-4 sm:px-6">
         <div className="mx-auto max-w-6xl">
-          <div className="mt-4 rounded-2xl border border-white/10 bg-gradient-to-r from-purple-600/30 via-pink-500/20 to-orange-400/20 p-5">
+          <div className="mt-4 rounded-2xl border border-cl-border bg-gradient-to-r from-cl-accent/30 via-pink-500/20 to-cl-accent/20 p-5">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <div className="text-2xl font-semibold">
@@ -221,7 +221,7 @@ export default function ClubDetails() {
                     ? "Loading..."
                     : (details?.clubName ?? "Club")}
                 </div>
-                <div className="mt-1 text-sm text-gray-200/80">
+                <div className="mt-1 text-sm text-cl-muted">
                   {details?.memberCount ?? 0} members
                 </div>
               </div>
@@ -231,7 +231,7 @@ export default function ClubDetails() {
                   <button
                     onClick={() => leaveMutation.mutate()}
                     disabled={leaveMutation.isPending}
-                    className="px-4 py-2 rounded-full bg-red-600 hover:bg-red-700 disabled:opacity-60"
+                    className="px-4 py-2 rounded-full bg-red-600 text-white hover:bg-red-700 disabled:opacity-60"
                   >
                     {leaveMutation.isPending ? "Leaving..." : "Leave"}
                   </button>
@@ -239,7 +239,7 @@ export default function ClubDetails() {
                   <button
                     onClick={() => joinMutation.mutate()}
                     disabled={joinMutation.isPending}
-                    className="px-4 py-2 rounded-full bg-white text-black hover:bg-gray-200 disabled:opacity-60"
+                    className="px-4 py-2 rounded-full bg-cl-surface text-cl-ink hover:bg-cl-subtle disabled:opacity-60"
                   >
                     {joinMutation.isPending ? "Joining..." : "Join"}
                   </button>
@@ -260,7 +260,7 @@ export default function ClubDetails() {
                   <div className="font-medium">
                     {details.owner.firstName} {details.owner.lastName}
                   </div>
-                  <div className="text-xs text-white/60">Owner</div>
+                  <div className="text-xs text-cl-muted">Owner</div>
                 </div>
               </div>
             )}
@@ -279,8 +279,8 @@ export default function ClubDetails() {
                   onClick={() => setActiveTab(name)}
                   className={`whitespace-nowrap px-4 py-2 rounded-full border ${
                     activeTab === name
-                      ? "bg-white text-black border-white"
-                      : "bg-transparent text-white/85 border-white/10 hover:bg-white/5"
+                      ? "bg-cl-surface text-cl-ink border-cl-border"
+                      : "bg-transparent text-cl-ink border-cl-border hover:bg-cl-subtle"
                   }`}
                 >
                   {name}
@@ -292,15 +292,15 @@ export default function ClubDetails() {
           {/* --- Desktop/Tablet: sticky left sidebar tabs --- */}
           <aside className="hidden lg:block">
             <div className="sticky top-24">
-              <div className="rounded-2xl border border-white/10 p-2">
+              <div className="rounded-2xl border border-cl-border p-2">
                 {allTabs.map((name) => (
                   <button
                     key={name}
                     onClick={() => setActiveTab(name)}
                     className={`w-full text-left px-4 py-2 rounded-xl mb-2 last:mb-0 border ${
                       activeTab === name
-                        ? "bg-white text-black border-white"
-                        : "bg-transparent text-white/85 border-white/10 hover:bg-white/5"
+                        ? "bg-cl-surface text-cl-ink border-cl-border"
+                        : "bg-transparent text-cl-ink border-cl-border hover:bg-cl-subtle"
                     }`}
                   >
                     {name}
@@ -323,7 +323,7 @@ export default function ClubDetails() {
             )}
 
             {activeTab === "Chat" && (
-              <div className="rounded-xl border border-gray-800 bg-[#121212] p-6 text-white/80">
+              <div className="rounded-xl border border-cl-border bg-cl-canvas p-6 text-cl-ink">
                 Club live chat coming soon…
               </div>
             )}

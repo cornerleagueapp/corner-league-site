@@ -7,10 +7,10 @@ type WatercraftStepProps = {
 };
 
 const inputClassName =
-  "h-12 w-full rounded-[16px] border border-white/10 bg-white/[0.045] px-4 text-sm text-white outline-none placeholder:text-white/30 transition focus:border-cyan-300/30 focus:bg-cyan-300/[0.05] focus:ring-2 focus:ring-cyan-300/10";
+  "h-12 w-full rounded-[16px] border border-cl-border bg-cl-subtle px-4 text-sm text-cl-ink outline-none placeholder:text-cl-muted transition focus:border-cl-accent/30 focus:bg-cl-accent/[0.05] focus:ring-2 focus:ring-cl-accent/10";
 
 const labelClassName =
-  "mb-2 block text-[10px] font-black uppercase tracking-[0.13em] text-white/50";
+  "mb-2 block text-[10px] font-black uppercase tracking-[0.13em] text-cl-muted";
 
 export function isWatercraftInformationComplete(
   watercraft: RegistrationWatercraft,
@@ -29,25 +29,25 @@ export default function WatercraftStep({
   return (
     <div className="space-y-5">
       <div>
-        <div className="text-[9px] font-black uppercase tracking-[0.18em] text-cyan-200/60">
+        <div className="text-[9px] font-black uppercase tracking-[0.18em] text-cl-accent">
           Step 4 of 6
         </div>
 
-        <h2 className="mt-2 text-2xl font-black uppercase tracking-[-0.035em] text-white sm:text-3xl">
+        <h2 className="mt-2 text-2xl font-black uppercase tracking-[-0.035em] text-cl-ink sm:text-3xl">
           Watercraft information
         </h2>
 
-        <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-400">
+        <p className="mt-2 max-w-2xl text-sm leading-7 text-cl-muted">
           Add the race number and watercraft being used for the selected
           entries.
         </p>
       </div>
 
-      <div className="rounded-[20px] border border-cyan-300/12 bg-cyan-300/[0.045] p-4">
+      <div className="rounded-[20px] border border-cl-accent/[0.12] bg-cl-accent/[0.045] p-4">
         <div className="flex items-start gap-3">
-          <Info className="mt-0.5 h-4 w-4 shrink-0 text-cyan-200" />
+          <Info className="mt-0.5 h-4 w-4 shrink-0 text-cl-accent" />
 
-          <p className="text-xs leading-6 text-white/50">
+          <p className="text-xs leading-6 text-cl-muted">
             The first demo supports one primary watercraft for all selected
             classes. Per-class and backup-watercraft assignment can be added
             when the production registration rules are finalized.
@@ -55,18 +55,18 @@ export default function WatercraftStep({
         </div>
       </div>
 
-      <div className="rounded-[26px] border border-cyan-300/10 bg-[#07111F]/82 p-4 sm:p-5">
+      <div className="rounded-[26px] border border-cl-accent/10 bg-cl-surface p-4 sm:p-5">
         <div className="mb-5 flex items-center gap-3">
-          <div className="grid h-11 w-11 place-items-center rounded-2xl border border-cyan-300/15 bg-cyan-300/10 text-cyan-200">
+          <div className="grid h-11 w-11 place-items-center rounded-2xl border border-cl-accent/[0.15] bg-cl-accent/10 text-cl-accent">
             <ShipWheel className="h-5 w-5" />
           </div>
 
           <div>
-            <h3 className="text-sm font-black uppercase text-white">
+            <h3 className="text-sm font-black uppercase text-cl-ink">
               Primary race watercraft
             </h3>
 
-            <p className="mt-1 text-xs text-white/40">
+            <p className="mt-1 text-xs text-cl-muted">
               Used for the selected race classes.
             </p>
           </div>
@@ -77,7 +77,7 @@ export default function WatercraftStep({
             <span className={labelClassName}>Boat number *</span>
 
             <div className="relative">
-              <Hash className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/30" />
+              <Hash className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-cl-muted" />
 
               <input
                 value={watercraft.boatNumber}
@@ -140,7 +140,7 @@ export default function WatercraftStep({
           </label>
         </div>
 
-        <label className="mt-5 flex cursor-pointer items-start gap-3 rounded-[20px] border border-white/10 bg-white/[0.03] p-4">
+        <label className="mt-5 flex cursor-pointer items-start gap-3 rounded-[20px] border border-cl-border bg-cl-subtle p-4">
           <input
             type="checkbox"
             checked={watercraft.useForAllClasses}
@@ -149,15 +149,15 @@ export default function WatercraftStep({
                 useForAllClasses: event.target.checked,
               })
             }
-            className="mt-1 h-4 w-4 rounded border-white/20 bg-black accent-cyan-300"
+            className="mt-1 h-4 w-4 rounded border-cl-border bg-cl-canvas accent-cl-accent"
           />
 
           <span>
-            <span className="block text-sm font-bold text-white">
+            <span className="block text-sm font-bold text-cl-ink">
               Use this watercraft for all selected classes
             </span>
 
-            <span className="mt-1 block text-xs leading-5 text-white/40">
+            <span className="mt-1 block text-xs leading-5 text-cl-muted">
               This option is required for the current demo registration
               workflow.
             </span>
@@ -165,11 +165,11 @@ export default function WatercraftStep({
         </label>
       </div>
 
-      <div className="rounded-[20px] border border-white/10 bg-white/[0.025] p-4">
+      <div className="rounded-[20px] border border-cl-border bg-cl-subtle p-4">
         <div className="flex items-start gap-3">
-          <Wrench className="mt-0.5 h-4 w-4 shrink-0 text-[#FFB199]" />
+          <Wrench className="mt-0.5 h-4 w-4 shrink-0 text-cl-accent" />
 
-          <p className="text-xs leading-6 text-white/45">
+          <p className="text-xs leading-6 text-cl-muted">
             Organizers will be able to update a racer’s watercraft or move the
             entry into another class if a boat changes or breaks before the
             race.

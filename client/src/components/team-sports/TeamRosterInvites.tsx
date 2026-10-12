@@ -50,9 +50,9 @@ function Invitations({ account }: { account: string }) {
     }
   }
   return (
-    <section className="space-y-4 rounded-2xl border border-white/15 bg-[#07111f] p-5">
+    <section className="space-y-4 rounded-2xl border border-cl-border bg-cl-surface p-5">
       <h2 className="text-xl font-bold">Your teams & invitations</h2>
-      <p className="text-slate-300">
+      <p className="text-cl-muted">
         Accept an invitation to join a team. Your name, number and position can
         appear on its published roster. You can leave later. Only one active
         team per sport season is supported.
@@ -69,12 +69,12 @@ function Invitations({ account }: { account: string }) {
       ) : (
         <>
           {!query.data.items.length && (
-            <p className="text-slate-400">No team invitations yet.</p>
+            <p className="text-cl-muted">No team invitations yet.</p>
           )}
           {query.data.items.map((r) => (
             <article
               key={r.id}
-              className="space-y-3 border-t border-white/10 pt-4"
+              className="space-y-3 border-t border-cl-border pt-4"
             >
               <h3 className="font-bold">
                 {r.teamName} · {r.seasonName}
@@ -92,7 +92,7 @@ function Invitations({ account }: { account: string }) {
                   <button
                     key={action}
                     disabled={busy}
-                    className="min-h-11 rounded-xl border border-white/20 px-5 capitalize disabled:opacity-40"
+                    className="min-h-11 rounded-xl border border-cl-border px-5 capitalize disabled:opacity-40"
                     onClick={() =>
                       setPending({
                         id: r.id,
@@ -105,7 +105,7 @@ function Invitations({ account }: { account: string }) {
                   </button>
                 ))}
                 <Link
-                  className="inline-flex min-h-11 items-center text-cyan-200 underline"
+                  className="inline-flex min-h-11 items-center text-cl-accent underline"
                   href={`/sports/${r.sportKey}/organizations/${r.organizationId}?season=${r.seasonId}`}
                 >
                   View published season
@@ -142,9 +142,9 @@ function Invitations({ account }: { account: string }) {
           role="dialog"
           aria-modal="true"
           aria-label="Confirm roster response"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-5"
+          className="cl-dark fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-5"
         >
-          <div className="max-w-md space-y-5 rounded-2xl border border-white/20 bg-[#07111f] p-6">
+          <div className="max-w-md space-y-5 rounded-2xl border border-cl-border bg-cl-surface p-6">
             <p>
               Confirm {pending.action} for {pending.team}?
             </p>
@@ -159,7 +159,7 @@ function Invitations({ account }: { account: string }) {
               </button>
               <button
                 disabled={busy}
-                className="min-h-11 text-cyan-200"
+                className="min-h-11 text-cl-accent"
                 onClick={() => void respond()}
               >
                 {busy ? "Saving…" : "Confirm"}

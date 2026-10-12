@@ -82,7 +82,7 @@ export default function ArcadePage() {
 
   if (canPlayArcade === null) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-black text-white">
+      <div className="flex min-h-screen items-center justify-center bg-cl-canvas text-cl-ink">
         Loading Corner League Arcade...
       </div>
     );
@@ -90,19 +90,19 @@ export default function ArcadePage() {
 
   if (!canPlayArcade) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-black px-6 text-white">
-        <div className="w-full max-w-md rounded-2xl border border-white/15 bg-white/5 p-8 text-center shadow-2xl">
+      <div className="flex min-h-screen items-center justify-center bg-cl-canvas px-6 text-cl-ink">
+        <div className="w-full max-w-md rounded-2xl border border-cl-border bg-cl-subtle p-8 text-center shadow-2xl">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-yellow-400/40 bg-yellow-400/10 text-2xl">
             🕹️
           </div>
 
           <h1 className="mt-5 text-2xl font-bold">Corner League Arcade</h1>
 
-          <p className="mt-3 text-sm leading-6 text-white/70">
+          <p className="mt-3 text-sm leading-6 text-cl-muted">
             Games are only able to be played on a computer.
           </p>
 
-          <p className="mt-2 text-xs text-white/45">
+          <p className="mt-2 text-xs text-cl-muted">
             Please open this page on a device with a screen width of at least
             1024 pixels.
           </p>
@@ -113,11 +113,11 @@ export default function ArcadePage() {
 
   if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-black px-4 text-white">
+      <div className="flex min-h-screen items-center justify-center bg-cl-canvas px-4 text-cl-ink">
         <div className="max-w-md rounded-2xl border border-red-500/40 bg-red-950/30 p-6 text-center">
           <h1 className="text-2xl font-bold">Arcade Error</h1>
 
-          <p className="mt-2 text-sm text-red-100">{error}</p>
+          <p className="mt-2 text-sm text-cl-danger">{error}</p>
         </div>
       </div>
     );
@@ -125,7 +125,7 @@ export default function ArcadePage() {
 
   if (mode === "loading" || !course) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-black text-white">
+      <div className="flex min-h-screen items-center justify-center bg-cl-canvas text-cl-ink">
         Loading Corner League Arcade...
       </div>
     );

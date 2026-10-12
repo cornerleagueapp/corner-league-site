@@ -1,4 +1,5 @@
-import { AdmissionPage, MyTicketsPage } from '@/pages/admissions/admissions';
+import ConsumerTheme from "@/components/ConsumerTheme";
+import { AdmissionPage, MyTicketsPage } from "@/pages/admissions/admissions";
 import { clearCommunityCache } from "@/lib/socialCache";
 // src/App.tsx
 import {
@@ -389,7 +390,13 @@ function Router() {
       </Route>
       <Route path="/home" component={Home} />
       <Route path="/about" component={Home} />
-      <Route path="/admissions/:key">{p=><AppShell><AdmissionPage eventKey={decodeURIComponent(p.key)}/></AppShell>}</Route>
+      <Route path="/admissions/:key">
+        {(p) => (
+          <AppShell>
+            <AdmissionPage eventKey={decodeURIComponent(p.key)} />
+          </AppShell>
+        )}
+      </Route>
       <Route path="/contact" component={ContactPage} />
       <Route path="/terms" component={TermsPage} />
       <Route path="/auth" component={AuthPage} />
@@ -876,6 +883,7 @@ function AuthSessionManager() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
+      <ConsumerTheme />
       <BootSanitizeTokens />
       <AnalyticsBoot />
       <AnalyticsIdentity />

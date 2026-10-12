@@ -36,18 +36,18 @@ export default function TagsInput({
   };
 
   return (
-    <div className="rounded-md border border-white/10 bg-gray-800 p-2">
+    <div className="rounded-md border border-cl-border bg-cl-subtle p-2">
       <div className="flex flex-wrap gap-2">
         {value.map((t) => (
           <span
             key={t}
-            className="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-white/10 text-sm"
+            className="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-cl-subtle text-sm"
           >
             {t}
             <button
               type="button"
               onClick={() => remove(t)}
-              className="text-white/70 hover:text-white"
+              className="text-cl-muted hover:text-cl-ink"
               aria-label={`Remove ${t}`}
             >
               ×
@@ -66,7 +66,7 @@ export default function TagsInput({
             }
           }}
           placeholder={placeholder}
-          className="flex-1 min-w-[160px] bg-transparent outline-none text-sm placeholder:text-white/40"
+          className="flex-1 min-w-[160px] bg-transparent outline-none text-sm placeholder:text-cl-muted"
         />
       </div>
     </div>

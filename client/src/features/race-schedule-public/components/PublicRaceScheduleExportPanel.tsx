@@ -155,7 +155,7 @@ function downloadPng(day: PublicRaceScheduleDayResponse, racers: boolean) {
 
 export function PublicRaceScheduleExportPanel({ day }: Props) {
   const cls =
-    "inline-flex h-10 items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 text-[9px] font-black uppercase tracking-[0.12em] text-slate-200 transition hover:border-cyan-300/20 hover:bg-cyan-300/[0.06]";
+    "inline-flex h-10 items-center gap-2 rounded-full border border-cl-border bg-cl-subtle px-4 text-[9px] font-black uppercase tracking-[0.12em] text-cl-muted transition hover:border-cl-accent/20 hover:bg-cl-accent/[0.06]";
   return (
     <div className="flex flex-wrap gap-2">
       <button className={cls} onClick={() => printDocument(day, false)}>

@@ -40,7 +40,7 @@ export default function UserPicker({
       onCancel={onClose}
       onClose={onClose}
       aria-labelledby="message-user-title"
-      className="w-[min(95vw,540px)] max-h-[85vh] overflow-y-auto rounded-3xl border border-white/15 bg-[#07111f] p-0 text-white backdrop:bg-black/70"
+      className="cl-dark w-[min(95vw,540px)] max-h-[85vh] overflow-y-auto rounded-3xl border border-cl-border bg-cl-surface p-0 text-cl-ink backdrop:bg-black/70"
     >
       <section className={socialBox}>
         <div className="flex items-center justify-between gap-2">
@@ -84,17 +84,17 @@ export default function UserPicker({
         ) : (
           <>
             {!query.data?.items.length && (
-              <p className="py-6 text-white/60">No matching users.</p>
+              <p className="py-6 text-cl-muted">No matching users.</p>
             )}
             {query.data?.items.map((person) => (
               <button
                 key={person.id}
                 type="button"
-                className="mb-2 w-full rounded-xl border border-white/10 p-3 text-left hover:bg-white/10"
+                className="mb-2 w-full rounded-xl border border-cl-border p-3 text-left hover:bg-cl-subtle"
                 onClick={() => onSelectUser(person)}
               >
                 <strong>@{person.username}</strong>
-                <span className="ml-2 text-sm text-white/50">
+                <span className="ml-2 text-sm text-cl-muted">
                   {person.firstName} {person.lastName}
                 </span>
               </button>

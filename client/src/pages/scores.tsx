@@ -66,7 +66,7 @@ function ResponsiveFrame({
   return (
     <div className="w-full">
       <div
-        className="h-full w-full overflow-hidden rounded-2xl border border-cyan-400/15 bg-[#07131d] shadow-[0_18px_50px_rgba(0,0,0,0.28)]"
+        className="h-full w-full overflow-hidden rounded-2xl border border-cl-accent/15 bg-cl-surface shadow-cl-panel"
         style={{ height: effectiveHeight }}
       >
         <iframe
@@ -113,7 +113,7 @@ function TabDropdown({
       {/* <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between gap-2 rounded-xl border border-white/30 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10 sm:text-base"
+        className="flex w-full items-center justify-between gap-2 rounded-xl border border-cl-border bg-cl-subtle px-4 py-2 text-sm font-semibold text-cl-ink transition hover:bg-cl-subtle sm:text-base"
       >
         <span>{TAB_LABELS[active]}</span>
         <ChevronDown
@@ -125,7 +125,7 @@ function TabDropdown({
       </button> */}
 
       {open && (
-        <div className="absolute right-0 z-30 mt-2 w-full origin-top-right rounded-xl border border-white/15 bg-black/90 shadow-xl backdrop-blur-md sm:w-48">
+        <div className="absolute right-0 z-30 mt-2 w-full origin-top-right rounded-xl border border-cl-border bg-cl-surface shadow-xl backdrop-blur-md sm:w-48">
           <div className="py-1">
             {TAB_ORDER.filter((key) => key !== active).map((key) => (
               <button
@@ -135,7 +135,7 @@ function TabDropdown({
                   onChange(key);
                   setOpen(false);
                 }}
-                className="block w-full px-4 py-2 text-left text-sm text-white/90 hover:bg-white/10"
+                className="block w-full px-4 py-2 text-left text-sm text-cl-ink hover:bg-cl-subtle"
               >
                 {TAB_LABELS[key]}
               </button>
@@ -239,9 +239,7 @@ export default function ScoresPage() {
       case "MLB":
         return (
           <div className="space-y-6">
-            <h2 className="text-xl font-semibold text-white/90">
-              MLB Playoffs
-            </h2>
+            <h2 className="text-xl font-semibold text-cl-ink">MLB Playoffs</h2>
             <ResponsiveFrame
               src={MLB_PLAYOFFS_URL}
               title="MLB Playoffs"
@@ -251,7 +249,7 @@ export default function ScoresPage() {
               maxHeight={500}
             />
 
-            <h2 className="pt-4 text-xl font-semibold text-white/90">
+            <h2 className="pt-4 text-xl font-semibold text-cl-ink">
               MLB Season Scores
             </h2>
             <ResponsiveFrame
@@ -267,7 +265,7 @@ export default function ScoresPage() {
       case "NFL":
         return (
           <div className="space-y-6">
-            <h2 className="text-xl font-semibold text-white/90">NFL Scores</h2>
+            <h2 className="text-xl font-semibold text-cl-ink">NFL Scores</h2>
             <ResponsiveFrame
               src={NFL_SCORES_URL}
               title="NFL Season Scores"
@@ -281,7 +279,7 @@ export default function ScoresPage() {
       case "NBA":
         return (
           <div className="space-y-6">
-            <h2 className="text-xl font-semibold text-white/90">NBA Scores</h2>
+            <h2 className="text-xl font-semibold text-cl-ink">NBA Scores</h2>
             <ResponsiveFrame
               src={NBA_SCORES_URL}
               title="NBA Season Scores"
@@ -295,7 +293,7 @@ export default function ScoresPage() {
       case "NHL":
         return (
           <div className="space-y-6">
-            <h2 className="text-xl font-semibold text-white/90">NHL Scores</h2>
+            <h2 className="text-xl font-semibold text-cl-ink">NHL Scores</h2>
             <ResponsiveFrame
               src={NHL_SCORES_URL}
               title="NHL Season Scores"
@@ -309,9 +307,7 @@ export default function ScoresPage() {
       case "NCAAF":
         return (
           <div className="space-y-6">
-            <h2 className="text-xl font-semibold text-white/90">
-              NCAAF Scores
-            </h2>
+            <h2 className="text-xl font-semibold text-cl-ink">NCAAF Scores</h2>
             <ResponsiveFrame
               src={NCAAF_SCORES_URL}
               title="NCAAF Season Scores"
@@ -336,26 +332,26 @@ export default function ScoresPage() {
   ]);
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-black">
+    <div className="relative min-h-screen overflow-x-hidden bg-cl-canvas">
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.05),_transparent_22%),radial-gradient(circle_at_80%_18%,_rgba(59,130,246,0.03),_transparent_18%),linear-gradient(to_bottom,_#000000_0%,_#02070b_42%,_#000000_100%)]" />
+        <div className="absolute inset-0 cl-canvas-wash" />
         <div className="absolute inset-0 opacity-[0.025] [background-image:linear-gradient(rgba(255,255,255,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.12)_1px,transparent_1px)] [background-size:72px_72px]" />
-        <div className="absolute left-1/2 top-0 h-[260px] w-[260px] -translate-x-1/2 rounded-full bg-cyan-400/4 blur-3xl" />
+        <div className="absolute left-1/2 top-0 h-[260px] w-[260px] -translate-x-1/2 rounded-full bg-cl-accent/[0.04] blur-3xl" />
       </div>
 
       <div className="relative mx-auto max-w-7xl overflow-x-hidden p-6">
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-[11px] text-center uppercase tracking-[0.18em] text-cyan-300/75">
+            <p className="text-[11px] text-center uppercase tracking-[0.18em] text-cl-accent">
               Live Sports Hub
             </p>
-            <h1 className="text-center text-2xl font-bold text-white sm:text-left">
+            <h1 className="text-center text-2xl font-bold text-cl-ink sm:text-left">
               Live Scores
             </h1>
           </div>
 
           {/* <div className="flex flex-col items-stretch gap-1 sm:items-end">
-            <span className="text-[11px] uppercase tracking-[0.16em] text-white/60">
+            <span className="text-[11px] uppercase tracking-[0.16em] text-cl-muted">
               Sport
             </span>
             <TabDropdown active={active} onChange={handleTabChange} />
@@ -364,7 +360,7 @@ export default function ScoresPage() {
 
         {content}
 
-        <p className="mt-6 text-xs text-white/50">
+        <p className="mt-6 text-xs text-cl-muted">
           Note: These embedded widgets are provided by Sportradar and may take a
           moment to load. Heights are set generously for readability.
         </p>

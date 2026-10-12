@@ -33,7 +33,7 @@ export default function ScoresLandingPage() {
   const { sportKey, isJetSki, isLoading } = useSportSelection();
   if (isLoading)
     return (
-      <p role="status" className="p-8 text-slate-300">
+      <p role="status" className="p-8 text-cl-muted">
         Loading sports…
       </p>
     );
@@ -68,7 +68,7 @@ function JetSkiLandingPage() {
   // const latestStories = stories.slice(0, 4);
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#030913] text-white">
+    <div className="min-h-screen overflow-x-hidden bg-cl-canvas text-cl-ink">
       <PageSEO
         title="Corner League Sports | Jet Ski Racing Results, Rankings & Events"
         description="The digital home for jet ski racing: live results, rankings, racer profiles, event coverage, and sponsor-ready data from the Corner League Sports platform."
@@ -76,46 +76,44 @@ function JetSkiLandingPage() {
       />
 
       <div className="pointer-events-none fixed inset-0 -z-10">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.11),transparent_26%),radial-gradient(circle_at_78%_10%,rgba(255,107,53,0.09),transparent_22%),linear-gradient(180deg,#030913_0%,#07111F_48%,#02050A_100%)]" />
+        <div className="absolute inset-0 cl-panel-wash" />
         <div className="absolute inset-0 opacity-[0.035] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:72px_72px]" />
       </div>
 
       <main className="mx-auto max-w-7xl px-3 pb-20 pt-20 sm:px-6 md:pt-10 lg:px-8">
         <section
           id="home-section"
-          className="relative min-w-0 overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[linear-gradient(180deg,rgba(7,17,31,0.94)_0%,rgba(4,10,19,0.98)_100%)] px-4 py-8 shadow-[0_30px_90px_rgba(0,0,0,0.42)] sm:rounded-[38px] sm:px-8 sm:py-12 lg:px-10"
+          className="relative min-w-0 overflow-hidden rounded-[30px] border border-cl-accent/10 cl-panel-wash px-4 py-8 shadow-cl-panel sm:rounded-[38px] sm:px-8 sm:py-12 lg:px-10"
         >
           <div className="pointer-events-none absolute inset-0">
-            <div className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-cyan-400/10 blur-3xl" />
-            <div className="absolute -right-24 bottom-0 h-96 w-96 rounded-full bg-[#FF6B35]/10 blur-3xl" />
+            <div className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-cl-accent/10 blur-3xl" />
+            <div className="absolute -right-24 bottom-0 h-96 w-96 rounded-full bg-cl-accent/10 blur-3xl" />
             <div className="absolute inset-0 opacity-[0.05] [background-image:linear-gradient(rgba(255,255,255,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.18)_1px,transparent_1px)] [background-size:72px_72px]" />
           </div>
 
           <div className="relative grid min-w-0 gap-10 lg:grid-cols-[1.08fr_0.92fr] lg:items-center">
             <div className="min-w-0">
               <div className="mb-5 flex flex-wrap items-center gap-2 sm:gap-3">
-                <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200 sm:px-4 sm:text-[11px] sm:tracking-[0.24em]">
-                  <span className="h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_18px_rgba(103,232,249,0.95)]" />
+                <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-cl-accent/20 bg-cl-accent/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-cl-accent sm:px-4 sm:text-[11px] sm:tracking-[0.24em]">
+                  <span className="h-2 w-2 rounded-full bg-cl-accent shadow-cl-panel" />
                   Corner League Sports
                 </div>
 
-                <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-[#FF6B35]/20 bg-[#FF6B35]/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-[#FFB199] sm:px-4 sm:text-[11px] sm:tracking-[0.24em]">
+                <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-cl-accent/20 bg-cl-accent/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-cl-accent sm:px-4 sm:text-[11px] sm:tracking-[0.24em]">
                   2026 Season
                 </div>
               </div>
 
-              <div className="text-xs font-black uppercase tracking-[0.28em] text-cyan-200/65">
+              <div className="text-xs font-black uppercase tracking-[0.28em] text-cl-accent">
                 Jet Ski Racing Media + Data Hub
               </div>
 
-              <h1 className="mt-4 max-w-4xl text-[2.8rem] font-black uppercase leading-[0.86] tracking-[-0.065em] text-white min-[380px]:text-5xl sm:text-6xl lg:text-7xl">
+              <h1 className="mt-4 max-w-4xl text-[2.8rem] font-black uppercase leading-[0.86] tracking-[-0.065em] text-cl-ink min-[380px]:text-5xl sm:text-6xl lg:text-7xl">
                 The Digital Home For{" "}
-                <span className="bg-[linear-gradient(90deg,#19E3FF_0%,#7CF4FF_35%,#FF7849_100%)] bg-clip-text text-transparent">
-                  Jet Ski Racing
-                </span>
+                <span className="cl-title-accent">Jet Ski Racing</span>
               </h1>
 
-              <p className="mt-6 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg">
+              <p className="mt-6 max-w-2xl text-base leading-8 text-cl-muted sm:text-lg">
                 Live results, rankings, racer profiles, event coverage, and
                 sponsor-ready data for the jet ski racing community — all in one
                 modern sports hub.
@@ -126,7 +124,7 @@ function JetSkiLandingPage() {
                   {/* <Link href="/welcome"> */}
                   <button
                     type="button"
-                    className="w-full rounded-full bg-cyan-300 px-6 py-4 text-xs font-black uppercase tracking-[0.16em] text-[#06111d] shadow-[0_0_28px_rgba(34,211,238,0.25)] transition duration-200 hover:-translate-y-0.5 hover:bg-cyan-200 sm:w-auto sm:tracking-[0.18em]"
+                    className="w-full rounded-full bg-cl-accent px-6 py-4 text-xs font-black uppercase tracking-[0.16em] text-cl-contrast shadow-cl-panel transition duration-200 hover:-translate-y-0.5 hover:bg-cl-accent sm:w-auto sm:tracking-[0.18em]"
                   >
                     View Racing Hub
                   </button>
@@ -135,36 +133,36 @@ function JetSkiLandingPage() {
                 <button
                   type="button"
                   onClick={() => scrollToSection("partner-with-us")}
-                  className="w-full rounded-full border border-[#FF6B35]/20 bg-[#FF6B35]/10 px-6 py-4 text-xs font-black uppercase tracking-[0.16em] text-[#FFB199] transition duration-200 hover:-translate-y-0.5 hover:border-[#FF7849]/40 hover:bg-[#FF6B35]/20 hover:text-white sm:w-auto sm:tracking-[0.18em]"
+                  className="w-full rounded-full border border-cl-accent/20 bg-cl-accent/10 px-6 py-4 text-xs font-black uppercase tracking-[0.16em] text-cl-accent transition duration-200 hover:-translate-y-0.5 hover:border-cl-accent/40 hover:bg-cl-accent/20 hover:text-cl-ink sm:w-auto sm:tracking-[0.18em]"
                 >
                   Sponsors Learn More
                 </button>
               </div>
 
               <div className="mt-8 grid gap-3 sm:grid-cols-3">
-                <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-4">
-                  <div className="text-2xl font-black text-white">
+                <div className="rounded-[24px] border border-cl-border bg-cl-subtle p-4">
+                  <div className="text-2xl font-black text-cl-ink">
                     {organizations.length}
                   </div>
-                  <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.2em] text-white/45">
+                  <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.2em] text-cl-muted">
                     Organizations
                   </div>
                 </div>
 
-                <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-4">
-                  <div className="text-2xl font-black text-white">
+                <div className="rounded-[24px] border border-cl-border bg-cl-subtle p-4">
+                  <div className="text-2xl font-black text-cl-ink">
                     {allEvents.length}
                   </div>
-                  <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.2em] text-white/45">
+                  <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.2em] text-cl-muted">
                     Events Tracked
                   </div>
                 </div>
 
-                <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-4">
-                  <div className="text-2xl font-black text-white">
+                <div className="rounded-[24px] border border-cl-border bg-cl-subtle p-4">
+                  <div className="text-2xl font-black text-cl-ink">
                     {upcomingEvents.length}
                   </div>
-                  <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.2em] text-white/45">
+                  <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.2em] text-cl-muted">
                     Upcoming
                   </div>
                 </div>
@@ -172,10 +170,10 @@ function JetSkiLandingPage() {
             </div>
 
             <div className="relative min-w-0">
-              <div className="pointer-events-none absolute -left-2 -top-2 h-16 w-16 border-l-[3px] border-t-[3px] border-cyan-300/70" />
-              <div className="pointer-events-none absolute -bottom-2 -right-2 h-16 w-16 border-b-[3px] border-r-[3px] border-[#FF6B35]/70" />
+              <div className="pointer-events-none absolute -left-2 -top-2 h-16 w-16 border-l-[3px] border-t-[3px] border-cl-accent/70" />
+              <div className="pointer-events-none absolute -bottom-2 -right-2 h-16 w-16 border-b-[3px] border-r-[3px] border-cl-accent/70" />
 
-              <div className="relative overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#06111d] p-3 shadow-[0_28px_80px_rgba(0,0,0,0.45)]">
+              <div className="relative overflow-hidden rounded-[30px] border border-cl-accent/10 bg-cl-surface p-3 shadow-cl-panel">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.1),transparent_38%),radial-gradient(circle_at_bottom_right,rgba(255,107,53,0.1),transparent_30%)]" />
 
                 <img
@@ -186,20 +184,20 @@ function JetSkiLandingPage() {
                 />
 
                 <div className="relative mt-3 grid grid-cols-2 gap-3">
-                  <div className="rounded-[22px] border border-cyan-300/10 bg-cyan-300/[0.06] p-4">
-                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-200/70">
+                  <div className="rounded-[22px] border border-cl-accent/10 bg-cl-accent/[0.06] p-4">
+                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-cl-accent">
                       Platform
                     </div>
-                    <div className="mt-1 text-sm font-black uppercase tracking-[0.12em] text-white">
+                    <div className="mt-1 text-sm font-black uppercase tracking-[0.12em] text-cl-ink">
                       Results + Rankings
                     </div>
                   </div>
 
-                  <div className="rounded-[22px] border border-[#FF6B35]/15 bg-[#FF6B35]/[0.07] p-4">
-                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#FFB199]/80">
+                  <div className="rounded-[22px] border border-cl-accent/15 bg-cl-accent/[0.07] p-4">
+                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-cl-accent">
                       For Brands
                     </div>
-                    <div className="mt-1 text-sm font-black uppercase tracking-[0.12em] text-white">
+                    <div className="mt-1 text-sm font-black uppercase tracking-[0.12em] text-cl-ink">
                       Sponsor Data
                     </div>
                   </div>
@@ -237,19 +235,19 @@ function JetSkiLandingPage() {
 
         <section
           id="sponsors-section"
-          className="mt-10 scroll-mt-24 overflow-hidden rounded-[30px] border border-[#FF6B35]/15 bg-[linear-gradient(135deg,rgba(255,107,53,0.12)_0%,rgba(7,17,31,0.96)_42%,rgba(34,211,238,0.09)_100%)] p-5 shadow-[0_28px_80px_rgba(0,0,0,0.36)] sm:p-8"
+          className="mt-10 scroll-mt-24 overflow-hidden rounded-[30px] border border-cl-accent/15 cl-panel-wash p-5 shadow-cl-panel sm:p-8"
         >
           <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
             <div>
-              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[#FF6B35]/20 bg-[#FF6B35]/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-[#FFB199]">
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-cl-accent/20 bg-cl-accent/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-cl-accent">
                 Sponsor Intelligence
               </div>
 
-              <h2 className="max-w-3xl text-3xl font-black uppercase leading-[0.95] tracking-[-0.04em] text-white sm:text-5xl">
+              <h2 className="max-w-3xl text-3xl font-black uppercase leading-[0.95] tracking-[-0.04em] text-cl-ink sm:text-5xl">
                 Built To Help Brands Understand The Sport
               </h2>
 
-              <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-300 sm:text-base">
+              <p className="mt-4 max-w-3xl text-sm leading-7 text-cl-muted sm:text-base">
                 Corner League gives sponsors and event partners a clearer view
                 of racer visibility, event engagement, audience interest, and
                 marketable stories inside jet ski racing.
@@ -257,38 +255,38 @@ function JetSkiLandingPage() {
             </div>
 
             <Link id="partner-with-us" href="/contact" className="scroll-mt-28">
-              <button className="w-full rounded-full bg-[#FF6B35] px-6 py-4 text-xs font-black uppercase tracking-[0.18em] text-white transition duration-200 hover:-translate-y-0.5 hover:bg-[#FF7849] sm:w-auto">
+              <button className="w-full rounded-full bg-cl-accent px-6 py-4 text-xs font-black uppercase tracking-[0.18em] text-cl-contrast transition duration-200 hover:-translate-y-0.5 hover:bg-cl-accent sm:w-auto">
                 Partner With Us
               </button>
             </Link>
           </div>
 
           <div className="mt-7 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-5">
-              <div className="text-sm font-black uppercase tracking-[0.16em] text-white">
+            <div className="rounded-[24px] border border-cl-border bg-cl-subtle p-5">
+              <div className="text-sm font-black uppercase tracking-[0.16em] text-cl-ink">
                 Racer Visibility
               </div>
-              <p className="mt-3 text-sm leading-7 text-slate-300">
+              <p className="mt-3 text-sm leading-7 text-cl-muted">
                 Profile views, rankings movement, fan interest, and athlete
                 storylines.
               </p>
             </div>
 
-            <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-5">
-              <div className="text-sm font-black uppercase tracking-[0.16em] text-white">
+            <div className="rounded-[24px] border border-cl-border bg-cl-subtle p-5">
+              <div className="text-sm font-black uppercase tracking-[0.16em] text-cl-ink">
                 Event Reach
               </div>
-              <p className="mt-3 text-sm leading-7 text-slate-300">
+              <p className="mt-3 text-sm leading-7 text-cl-muted">
                 Event page views, schedule engagement, organization traction,
                 and results interest.
               </p>
             </div>
 
-            <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-5">
-              <div className="text-sm font-black uppercase tracking-[0.16em] text-white">
+            <div className="rounded-[24px] border border-cl-border bg-cl-subtle p-5">
+              <div className="text-sm font-black uppercase tracking-[0.16em] text-cl-ink">
                 Brand Signals
               </div>
-              <p className="mt-3 text-sm leading-7 text-slate-300">
+              <p className="mt-3 text-sm leading-7 text-cl-muted">
                 Sponsor clicks, fan voting, polls, partner activations, and
                 audience insights.
               </p>
