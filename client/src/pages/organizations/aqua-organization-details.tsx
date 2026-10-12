@@ -1,3 +1,4 @@
+import { OrganizationShop } from "@/features/merchandise/OrganizationShop";
 import TeamSeasons from "@/components/team-sports/TeamSeasons";
 import { isTeamSport } from "@/lib/sportRegistration";
 import { rememberSport } from "@/hooks/useSportSelection";
@@ -130,6 +131,9 @@ export default function AquaOrganizationDetailsPage(props: {
   const [, navigate] = useLocation();
   const orgId = props?.params?.id;
   const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [shopping, setShopping] = useState(
+    () => new URLSearchParams(window.location.search).get("shop") === "1",
+  );
 
   const {
     data: orgData,
@@ -368,144 +372,171 @@ export default function AquaOrganizationDetailsPage(props: {
           </div>
         </div>
 
-        {isLoading ? (
-          <div className="mt-8 rounded-[30px] border border-cl-accent/10 bg-cl-surface p-6 text-cl-muted shadow-cl-panel">
-            Loading organization…
-          </div>
-        ) : isError ? (
-          <div className="mt-8 rounded-[30px] border border-red-400/25 bg-red-500/10 p-6 text-cl-ink shadow-cl-panel">
-            <div className="mb-1 font-semibold">
-              Failed to load organization
-            </div>
-            <div className="text-sm text-cl-ink">
-              {(error as any)?.message ?? "Unknown error"}
-            </div>
-          </div>
-        ) : !org ? (
-          <div className="mt-8 rounded-[30px] border border-cl-border bg-cl-surface p-6 text-cl-muted shadow-cl-panel">
-            Organization not found.
-          </div>
+        {org?.id && !sandbox ? (
+          <nav aria-label="Organization sections" className="mt-6 flex gap-3">
+            <Button
+              variant={shopping ? "outline" : "default"}
+              aria-pressed={!shopping}
+              onClick={() => setShopping(false)}
+            >
+              Organization
+            </Button>
+            <Button
+              variant={shopping ? "default" : "outline"}
+              aria-pressed={shopping}
+              onClick={() => setShopping(true)}
+            >
+              Shop
+            </Button>
+          </nav>
+        ) : null}
+        {shopping && org?.id && !sandbox ? (
+          <OrganizationShop key={org.id} organizationId={org.id} />
         ) : (
           <>
-            {/* main org card */}
-            <div className="mt-8 overflow-hidden rounded-[30px] border border-cl-accent/10 bg-cl-surface p-5 shadow-cl-panel sm:p-6">
-              <div className="flex flex-col gap-5 lg:flex-row lg:items-start">
-                <div className="flex items-start gap-4">
-                  <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-[26px] border border-cl-accent/10 bg-cl-subtle shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)] sm:h-28 sm:w-28">
-                    {org.logoUrl ? (
-                      <img
-                        src={org.logoUrl}
-                        alt={`${org.name} logo`}
-                        className="h-full w-full object-contain p-3"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <span className="text-xs uppercase tracking-[0.16em] text-cl-muted">
-                        No Logo
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="break-words text-2xl font-black uppercase leading-tight tracking-[-0.02em] text-cl-ink sm:text-3xl">
-                        {org.name}
-                      </h2>
-
-                      {org.abbreviation ? (
-                        <span className="rounded-full border border-cl-border bg-cl-subtle px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-cl-muted">
-                          {org.abbreviation}
-                        </span>
-                      ) : null}
-                    </div>
-
-                    <p className="mt-3 max-w-3xl text-sm leading-7 text-cl-muted">
-                      {org.description || "No description provided."}
-                    </p>
-
-                    <p className="mt-4 break-all text-[11px] uppercase tracking-[0.16em] text-cl-muted">
-                      ID: {org.id}
-                    </p>
-                  </div>
+            {isLoading ? (
+              <div className="mt-8 rounded-[30px] border border-cl-accent/10 bg-cl-surface p-6 text-cl-muted shadow-cl-panel">
+                Loading organization…
+              </div>
+            ) : isError ? (
+              <div className="mt-8 rounded-[30px] border border-red-400/25 bg-red-500/10 p-6 text-cl-ink shadow-cl-panel">
+                <div className="mb-1 font-semibold">
+                  Failed to load organization
+                </div>
+                <div className="text-sm text-cl-ink">
+                  {(error as any)?.message ?? "Unknown error"}
                 </div>
               </div>
-
-              {/* info blocks */}
-              {hasCompetition && (
-                <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (!sandbox) {
-                        trackEvent(
-                          AnalyticsEvents.ORGANIZATION_SCHEDULE_OPENED,
-                          {
-                            organization_id: org?.id ?? orgId,
-                            organization_name: org?.name ?? null,
-                            sport: primarySportKey,
-                            page_type: "organization_details",
-                          },
-                        );
-
-                        void trackContentEngagementToBackend({
-                          contentType: "organization",
-                          action: "organization_schedule_opened",
-                          contentId: org?.id ?? orgId,
-                          contentName: org?.name ?? null,
-                          organizationId: org?.id ?? orgId,
-                          organizationName: org?.name ?? null,
-                          sport: primarySportKey,
-                          sourcePage: "organization_details",
-                        }).catch(() => {});
-                      }
-                      setScheduleOpen(true);
-                    }}
-                    className="group min-w-0 rounded-[24px] border border-cl-accent/10 bg-cl-subtle p-5 text-left transition hover:border-cl-accent/25 hover:bg-cl-accent/[0.045]"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <div className="mb-2 inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-cl-accent/15 bg-cl-accent/[0.08] text-cl-accent">
-                          <CalendarDays className="h-5 w-5" />
-                        </div>
-                        <div className="text-lg font-black uppercase tracking-[-0.01em] text-cl-ink">
-                          Schedule
-                        </div>
-                        <div className="mt-2 text-sm leading-7 text-cl-muted">
-                          {eventsLoading && scheduleOpen
-                            ? "Loading events…"
-                            : upcomingCount > 0
-                              ? `${upcomingCount} upcoming event${upcomingCount === 1 ? "" : "s"} available to view`
-                              : "View all organization events and dates"}
-                        </div>
+            ) : !org ? (
+              <div className="mt-8 rounded-[30px] border border-cl-border bg-cl-surface p-6 text-cl-muted shadow-cl-panel">
+                Organization not found.
+              </div>
+            ) : (
+              <>
+                {/* main org card */}
+                <div className="mt-8 overflow-hidden rounded-[30px] border border-cl-accent/10 bg-cl-surface p-5 shadow-cl-panel sm:p-6">
+                  <div className="flex flex-col gap-5 lg:flex-row lg:items-start">
+                    <div className="flex items-start gap-4">
+                      <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-[26px] border border-cl-accent/10 bg-cl-subtle shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)] sm:h-28 sm:w-28">
+                        {org.logoUrl ? (
+                          <img
+                            src={org.logoUrl}
+                            alt={`${org.name} logo`}
+                            className="h-full w-full object-contain p-3"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <span className="text-xs uppercase tracking-[0.16em] text-cl-muted">
+                            No Logo
+                          </span>
+                        )}
                       </div>
 
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-cl-border bg-cl-subtle text-cl-accent transition group-hover:border-cl-accent/25 group-hover:bg-cl-accent/[0.08]">
-                        <ChevronRight className="h-4 w-4" />
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h2 className="break-words text-2xl font-black uppercase leading-tight tracking-[-0.02em] text-cl-ink sm:text-3xl">
+                            {org.name}
+                          </h2>
+
+                          {org.abbreviation ? (
+                            <span className="rounded-full border border-cl-border bg-cl-subtle px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-cl-muted">
+                              {org.abbreviation}
+                            </span>
+                          ) : null}
+                        </div>
+
+                        <p className="mt-3 max-w-3xl text-sm leading-7 text-cl-muted">
+                          {org.description || "No description provided."}
+                        </p>
+
+                        <p className="mt-4 break-all text-[11px] uppercase tracking-[0.16em] text-cl-muted">
+                          ID: {org.id}
+                        </p>
                       </div>
                     </div>
-                  </button>
+                  </div>
 
-                  <InfoCard
-                    icon={<Trophy className="h-5 w-5" />}
-                    title="Race Results"
-                    description="Past podiums, standings, and results modules can plug into this area later."
-                    muted
-                  />
+                  {/* info blocks */}
+                  {hasCompetition && (
+                    <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!sandbox) {
+                            trackEvent(
+                              AnalyticsEvents.ORGANIZATION_SCHEDULE_OPENED,
+                              {
+                                organization_id: org?.id ?? orgId,
+                                organization_name: org?.name ?? null,
+                                sport: primarySportKey,
+                                page_type: "organization_details",
+                              },
+                            );
+
+                            void trackContentEngagementToBackend({
+                              contentType: "organization",
+                              action: "organization_schedule_opened",
+                              contentId: org?.id ?? orgId,
+                              contentName: org?.name ?? null,
+                              organizationId: org?.id ?? orgId,
+                              organizationName: org?.name ?? null,
+                              sport: primarySportKey,
+                              sourcePage: "organization_details",
+                            }).catch(() => {});
+                          }
+                          setScheduleOpen(true);
+                        }}
+                        className="group min-w-0 rounded-[24px] border border-cl-accent/10 bg-cl-subtle p-5 text-left transition hover:border-cl-accent/25 hover:bg-cl-accent/[0.045]"
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div>
+                            <div className="mb-2 inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-cl-accent/15 bg-cl-accent/[0.08] text-cl-accent">
+                              <CalendarDays className="h-5 w-5" />
+                            </div>
+                            <div className="text-lg font-black uppercase tracking-[-0.01em] text-cl-ink">
+                              Schedule
+                            </div>
+                            <div className="mt-2 text-sm leading-7 text-cl-muted">
+                              {eventsLoading && scheduleOpen
+                                ? "Loading events…"
+                                : upcomingCount > 0
+                                  ? `${upcomingCount} upcoming event${upcomingCount === 1 ? "" : "s"} available to view`
+                                  : "View all organization events and dates"}
+                            </div>
+                          </div>
+
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-cl-border bg-cl-subtle text-cl-accent transition group-hover:border-cl-accent/25 group-hover:bg-cl-accent/[0.08]">
+                            <ChevronRight className="h-4 w-4" />
+                          </div>
+                        </div>
+                      </button>
+
+                      <InfoCard
+                        icon={<Trophy className="h-5 w-5" />}
+                        title="Race Results"
+                        description="Past podiums, standings, and results modules can plug into this area later."
+                        muted
+                      />
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-            {isTeamSport(primarySportKey) && (
-              <TeamSeasons organizationId={org.id} sportKey={primarySportKey} />
+                {isTeamSport(primarySportKey) && (
+                  <TeamSeasons
+                    organizationId={org.id}
+                    sportKey={primarySportKey}
+                  />
+                )}
+                <OrganizationPosts key={org.id} organizationId={org.id} />
+              </>
             )}
-            <OrganizationPosts key={org.id} organizationId={org.id} />
+
+            {org?.id ? (
+              <div className="mt-6">
+                <OrganizationPhotoGallery organizationId={org.id} />
+              </div>
+            ) : null}
           </>
         )}
-
-        {org?.id ? (
-          <div className="mt-6">
-            <OrganizationPhotoGallery organizationId={org.id} />
-          </div>
-        ) : null}
 
         {scheduleOpen && (
           <ScheduleModal
