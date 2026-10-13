@@ -1,3 +1,4 @@
+import EventRequirements from "@/components/participation/EventRequirements";
 import SportEventOperations from "@/components/sport-registration/SportEventOperations";
 import PublicEventPlan from "@/components/competition/PublicEventPlan";
 import { useSandbox, sandboxFetch } from "./SandboxContext";
@@ -186,6 +187,11 @@ export default function PublicSportEventPage({
                   organizationId={organizationId}
                 />
               )}
+              <EventRequirements
+                eventId={eventId}
+                organizationId={organizationId}
+                sportKey={sportKey}
+              />
               <PublicEventPlan
                 eventId={eventId}
                 organizationId={organizationId}

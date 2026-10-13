@@ -1,3 +1,4 @@
+import EventRequirements from "@/components/participation/EventRequirements";
 import { AdmissionOffer } from "@/components/admissions/AdmissionOffer";
 import PublicEventPlan from "@/components/competition/PublicEventPlan";
 import { useOrganizationPageApi } from "./SandboxContext";
@@ -573,6 +574,11 @@ export default function OrgEventDetailsPage(props: { params: { id: string } }) {
               </div>
             </Card>
 
+            <EventRequirements
+              eventId={eventId}
+              organizationId={orgIdFromQuery || undefined}
+              sportKey="jet-ski"
+            />
             <PublicEventPlan
               eventId={eventId}
               organizationId={orgIdFromQuery || undefined}
