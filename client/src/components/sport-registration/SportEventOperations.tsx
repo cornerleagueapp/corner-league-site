@@ -1,3 +1,4 @@
+import GolfEventResults from "./GolfEventResults";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { publicSportData, sandboxSportData } from "@/lib/sportRegistration";
@@ -9,6 +10,8 @@ type Participant = {
   number: string;
 };
 type Heat = {
+  checkpoints?: { id: string; label: string; distanceMeters: number }[];
+  holePars?: number[];
   id: string;
   classId: string;
   className: string;
@@ -21,6 +24,10 @@ type Heat = {
   participants: Participant[];
 };
 type Finish = Participant & {
+  splits?: { checkpointId: string; elapsedMs: number }[];
+  holeScores?: { hole: number; strokes: number }[];
+  grossStrokes?: number | null;
+  toPar?: number | null;
   status: string;
   position: number | null;
   laps: number;
@@ -37,6 +44,20 @@ export type PublicOperations = {
   workflow: string;
   schedule: Heat[];
   results: { heatId: string; rows: Finish[] }[];
+  golfStandings?: {
+    classId: string;
+    className: string;
+    rows: {
+      profileId: string;
+      name: string;
+      completedRounds: number;
+      totalRounds: number;
+      grossStrokes: number;
+      toPar: number;
+      eligible: boolean;
+      position: number | null;
+    }[];
+  }[];
   standings: {
     classId: string;
     className: string;
@@ -144,13 +165,19 @@ export default function SportEventOperations({
         {a.name}
       </Link>
     );
+  if (data?.workflow === "round-scoring")
+    return <GolfEventResults data={data} />;
   return (
     <section
       aria-label="Schedule and results"
       className="space-y-5 rounded-3xl border border-cl-border bg-cl-surface p-5 sm:p-7"
     >
       <h2 className="text-2xl font-black">
-        {running ? "Start waves & finish results" : "Race schedule & results"}
+        {sportKey === "golf"
+          ? "Golf rounds & scores"
+          : running
+            ? "Start waves & finish results"
+            : "Race schedule & results"}
       </h2>
       {query.isLoading ? (
         <p role="status">Loading schedule and results…</p>
@@ -240,6 +267,29 @@ export default function SportEventOperations({
                               <td className="p-2">
                                 {athlete(r)}
                                 {r.number ? ` · #${r.number}` : ""}
+                                {running && !!h.checkpoints?.length && (
+                                  <details>
+                                    <summary className="min-h-11 cursor-pointer py-2">
+                                      Checkpoint splits
+                                    </summary>
+                                    <ul>
+                                      {h.checkpoints.map((p) => (
+                                        <li key={p.id}>
+                                          {p.label} · {p.distanceMeters}m ·{" "}
+                                          {formatFinishTime(
+                                            r.splits?.find(
+                                              (s) => s.checkpointId === p.id,
+                                            )?.elapsedMs ?? null,
+                                          )}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                    <p className="text-xs text-cl-muted">
+                                      Cumulative {h.timingBasis} time before
+                                      penalties.
+                                    </p>
+                                  </details>
+                                )}
                               </td>
                               {!running && <td className="p-2">{r.laps}</td>}
                               <td className="whitespace-nowrap p-2">

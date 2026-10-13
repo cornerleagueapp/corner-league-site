@@ -178,7 +178,8 @@ export default function PublicSportEventPage({
                   </p>
                 </div>
               </section>
-              {data.sport.capabilities?.raceScheduling && (
+              {(data.sport.capabilities?.raceScheduling ||
+                data.sport.workflow === "round-scoring") && (
                 <SportEventOperations
                   eventId={eventId}
                   sportKey={sportKey}

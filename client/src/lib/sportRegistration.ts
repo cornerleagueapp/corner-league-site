@@ -21,9 +21,10 @@ export function isTeamSport(key: string): boolean {
   return (teamSportKeys as readonly string[]).includes(key);
 }
 export function isAthleteSport(key: string): boolean {
-  return isRacingSport(key) || isTeamSport(key);
+  return isRacingSport(key) || isTeamSport(key) || key === "golf";
 }
 export const sportEquipmentLabels: Record<string, string> = {
+  golf: "Golf equipment or accessibility needs (optional)",
   ...Object.fromEntries(
     teamSportKeys.map((key) => [
       key,
@@ -38,6 +39,7 @@ export const sportEquipmentLabels: Record<string, string> = {
   "rc-racing": "RC vehicle, scale and power system",
 };
 export const sportLabels: Record<string, string> = {
+  golf: "Golf",
   baseball: "Baseball",
   "american-football": "Football (American)",
   basketball: "Basketball",
@@ -232,7 +234,7 @@ export function registrationReturnPath(
   path: string | null,
 ): string | undefined {
   return path &&
-    /^\/sports\/(motocross|boat-racing|onewheel-racing|rc-racing|track-running|marathon)\/organizations\/[a-zA-Z0-9-]+\?event=[a-zA-Z0-9-]+$/.test(
+    /^\/sports\/(motocross|boat-racing|onewheel-racing|rc-racing|track-running|marathon|golf)\/organizations\/[a-zA-Z0-9-]+\?event=[a-zA-Z0-9-]+$/.test(
       path,
     )
     ? path
