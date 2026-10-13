@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { myTeamInvitations, respondToTeamInvitation } from "@/lib/teamSports";
+import { CaptainRequests } from "./TeamRecruitment";
 export default function TeamRosterInvites() {
   const auth = useAuth();
   return auth.isAuthenticated && auth.user?.id ? (
@@ -87,7 +88,9 @@ function Invitations({ account }: { account: string }) {
               <div className="flex flex-wrap gap-4">
                 {(r.status === "pending"
                   ? ["accept", "decline"]
-                  : ["leave"]
+                  : r.status === "requested"
+                    ? ["decline"]
+                    : ["leave"]
                 ).map((action) => (
                   <button
                     key={action}
@@ -101,7 +104,7 @@ function Invitations({ account }: { account: string }) {
                       })
                     }
                   >
-                    {action}
+                    {r.status === "requested" ? "Withdraw request" : action}
                   </button>
                 ))}
                 <Link
@@ -111,6 +114,13 @@ function Invitations({ account }: { account: string }) {
                   View published season
                 </Link>
               </div>
+              {r.isCaptain && (
+                <CaptainRequests
+                  seasonId={r.seasonId}
+                  teamId={r.teamId}
+                  account={account}
+                />
+              )}
             </article>
           ))}
           <div className="flex items-center gap-4">

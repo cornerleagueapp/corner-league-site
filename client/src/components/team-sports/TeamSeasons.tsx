@@ -1,4 +1,5 @@
 import { AdmissionOffer } from "@/components/admissions/AdmissionOffer";
+import TeamRecruitment from "./TeamRecruitment";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useSearch, useLocation } from "wouter";
@@ -196,6 +197,13 @@ export function SeasonDetails({
               className="rounded-xl border border-cl-border p-4"
             >
               <h5 className="font-bold">{t.name}</h5>
+              {!sandbox && t.recruiting && (
+                <TeamRecruitment
+                  seasonId={d.id}
+                  teamId={t.id}
+                  sportKey={d.sportKey}
+                />
+              )}
               <p className="text-sm text-cl-muted">
                 {d.divisions.find((v) => v.id === t.divisionId)?.name}
               </p>
@@ -220,6 +228,7 @@ export function SeasonDetails({
                     <span className="text-sm text-cl-muted">
                       {p.number ? `#${p.number} ` : ""}
                       {p.position}
+                      {t.captainProfileId === p.profileId ? " · Captain" : ""}
                     </span>
                   </li>
                 ))}

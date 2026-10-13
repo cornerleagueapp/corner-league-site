@@ -27,6 +27,8 @@ export type PublicTeamSeason = {
     divisionId: string;
     name: string;
     players: TeamPlayer[];
+    recruiting?: boolean;
+    captainProfileId?: string | null;
   }[];
   games: {
     id: string;
@@ -77,7 +79,9 @@ export type TeamSeasonList = {
 };
 export type PlayerInvitation = {
   id: string;
-  status: "pending" | "accepted";
+  status: "pending" | "accepted" | "requested";
+  teamId: string;
+  isCaptain?: boolean;
   profileId: string;
   sportKey: string;
   teamName: string;
