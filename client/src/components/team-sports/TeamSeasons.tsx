@@ -1,3 +1,4 @@
+import TeamBracket from "./TeamBracket";
 import { AdmissionOffer } from "@/components/admissions/AdmissionOffer";
 import TeamRecruitment from "./TeamRecruitment";
 import { useState } from "react";
@@ -188,6 +189,7 @@ export function SeasonDetails({
           ))}
         </select>
       </label>
+      <TeamBracket season={d} division={division} />
       <div>
         <h4 className="mb-3 text-lg font-bold">Teams & players</h4>
         <div className="grid gap-4 md:grid-cols-2">
@@ -280,6 +282,17 @@ export function SeasonDetails({
                 key={g.id}
                 className="rounded-xl border border-cl-border p-4"
               >
+                {g.competition && (
+                  <p className="text-sm text-cl-muted">
+                    {g.competition.kind === "single-elimination"
+                      ? "Single elimination"
+                      : "Round robin"}{" "}
+                    · Round {g.competition.round} · Match {g.competition.match}
+                    {g.competition.homeSeed
+                      ? ` · Seeds ${g.competition.homeSeed} and ${g.competition.awaySeed}`
+                      : ""}
+                  </p>
+                )}
                 <h5 className="font-bold">
                   {name(g.homeTeamId)} vs {name(g.awayTeamId)}
                 </h5>

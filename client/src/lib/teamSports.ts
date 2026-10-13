@@ -31,6 +31,14 @@ export type PublicTeamSeason = {
     captainProfileId?: string | null;
   }[];
   games: {
+    competition?: {
+      id: string;
+      kind: "round-robin" | "single-elimination";
+      round: number;
+      match: number;
+      homeSeed?: number;
+      awaySeed?: number;
+    };
     id: string;
     homeTeamId: string;
     awayTeamId: string;
