@@ -1,4 +1,5 @@
 import { AdmissionOffer } from "@/components/admissions/AdmissionOffer";
+import PublicEventPlan from "@/components/competition/PublicEventPlan";
 import { useOrganizationPageApi } from "./SandboxContext";
 import { trackGrowth } from "@/lib/growthAnalytics";
 import React from "react";
@@ -572,6 +573,11 @@ export default function OrgEventDetailsPage(props: { params: { id: string } }) {
               </div>
             </Card>
 
+            <PublicEventPlan
+              eventId={eventId}
+              organizationId={orgIdFromQuery || undefined}
+              sandbox={!!sandbox}
+            />
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
               <SectionCard
                 icon={<Trophy className="h-5 w-5" />}

@@ -1,4 +1,5 @@
 import SportEventOperations from "@/components/sport-registration/SportEventOperations";
+import PublicEventPlan from "@/components/competition/PublicEventPlan";
 import { useSandbox, sandboxFetch } from "./SandboxContext";
 import SportEventRegistration from "@/components/sport-registration/SportEventRegistration";
 import { useEffect } from "react";
@@ -184,6 +185,11 @@ export default function PublicSportEventPage({
                   organizationId={organizationId}
                 />
               )}
+              <PublicEventPlan
+                eventId={eventId}
+                organizationId={organizationId}
+                sandbox={!!sandbox}
+              />
               {data.sport.capabilities?.registration && (
                 <SportEventRegistration
                   eventId={eventId}
