@@ -1,3 +1,4 @@
+import { MarketingPreferences } from "@/components/marketing/MarketingPreferences";
 import { PageSEO } from "@/seo/usePageSEO";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -59,6 +60,7 @@ export default function NotificationsPage() {
           Preferences
         </Link>
       </header>
+      <MarketingPreferences />
       <div className="flex flex-wrap gap-2">
         <button className={socialButton} onClick={() => void query.refetch()}>
           Refresh

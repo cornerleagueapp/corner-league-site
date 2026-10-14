@@ -9,6 +9,10 @@ import { useLocation } from "wouter";
 import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import SignupMarketingCheckbox, {
+  useMarketingConfig,
+} from "@/components/marketing/SignupMarketingCheckbox";
+import { saveSignupMarketing } from "@/lib/marketingPreferences";
 import { PageSEO } from "@/seo/usePageSEO";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -78,6 +82,8 @@ export default function AuthPage() {
   const { toast } = useToast();
   const { isAuthenticated } = useAuth();
 
+  const marketingConfig = useMarketingConfig();
+  const [marketingChecked, setMarketingChecked] = useState(false);
   const [loginData, setLoginData] = useState({ identifier: "", password: "" });
   const [registerData, setRegisterData] = useState({
     firstName: "",
@@ -289,7 +295,7 @@ export default function AuthPage() {
     ) && passwordsMatch;
 
   const registerMutation = useMutation<
-    AuthSuccess,
+    AuthSuccess & { marketingNotice?: string | null },
     any,
     Omit<typeof registerData, "confirmPassword">
   >({
@@ -304,7 +310,7 @@ export default function AuthPage() {
         sportInterests: selectedSports.map((s) => s.trim()).filter(Boolean),
       };
 
-      return signupThenSignIn(
+      const session = await signupThenSignIn(
         () => apiRequest("POST", "/auth/sign-up", payload),
         async () => {
           const loginJson = await apiRequest<LoginResponse>(
@@ -324,8 +330,14 @@ export default function AuthPage() {
           return { accessToken, refreshToken, user } as AuthSuccess;
         },
       );
+      const marketingNotice = await saveSignupMarketing(
+        session.accessToken,
+        !!marketingConfig.data?.enabled,
+        marketingChecked,
+      );
+      return { ...session, marketingNotice };
     },
-    onSuccess: ({ accessToken, refreshToken, user }) => {
+    onSuccess: ({ accessToken, refreshToken, user, marketingNotice }) => {
       setTokens(accessToken, refreshToken);
       if (refreshToken) scheduleProactiveRefresh(accessToken);
       if (user?.username) setUsername(user.username);
@@ -334,7 +346,9 @@ export default function AuthPage() {
 
       toast({
         title: "Welcome to Corner League!",
-        description: `Account created for ${user.firstName ?? user.username}!`,
+        description:
+          marketingNotice ||
+          `Account created for ${user.firstName ?? user.username}!`,
       });
       finishAuthentication();
     },
@@ -903,6 +917,15 @@ export default function AuthPage() {
                     placeholder="Confirm your password"
                     required
                   />
+
+                  {marketingConfig.data?.enabled && (
+                    <SignupMarketingCheckbox
+                      checked={marketingChecked}
+                      disabled={registerMutation.isPending}
+                      onChange={setMarketingChecked}
+                      consentText={marketingConfig.data.consentText}
+                    />
+                  )}
 
                   <button
                     type="submit"

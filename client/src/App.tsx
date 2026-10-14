@@ -1,3 +1,4 @@
+import { MarketingInvitation } from "@/components/marketing/MarketingPreferences";
 import EmailUpdates from "./pages/email-updates";
 import ConsumerTheme from "@/components/ConsumerTheme";
 import { AdmissionPage, MyTicketsPage } from "@/pages/admissions/admissions";
@@ -903,6 +904,7 @@ function App() {
       <TooltipProvider>
         <Toaster />
         <Router />
+        <MarketingInvitation />
       </TooltipProvider>
     </QueryClientProvider>
   );

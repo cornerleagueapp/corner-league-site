@@ -41,6 +41,8 @@ function compile(relative) {
           return payload;
         },
       };
+    if (name === "@/components/marketing/MarketingPreferences")
+      return { MarketingPreferences: () => null };
     if (name === "@/hooks/useAuth") return { useAuth: () => auth };
     if (
       name === "@/components/MyRacerProfileLink" ||
