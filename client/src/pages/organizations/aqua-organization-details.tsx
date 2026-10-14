@@ -134,7 +134,10 @@ export default function AquaOrganizationDetailsPage(props: {
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [facilities, setFacilities] = useState(false);
   const [shopping, setShopping] = useState(
-    () => new URLSearchParams(window.location.search).get("shop") === "1",
+    () =>
+      new URLSearchParams(
+        typeof window === "undefined" ? "" : window.location.search,
+      ).get("shop") === "1",
   );
 
   const {

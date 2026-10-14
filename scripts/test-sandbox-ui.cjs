@@ -66,6 +66,8 @@ const api = {
   },
 };
 const mocks = {
+  "@/features/merchandise/OrganizationShop": { OrganizationShop: () => null },
+  "@/components/facilities/OrganizationFacilities": { default: () => null },
   "./public-sport-event": { default: () => null },
   "@/lib/sportRegistration": {
     isRacingSport: () => false,

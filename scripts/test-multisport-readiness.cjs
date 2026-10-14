@@ -99,6 +99,12 @@ for (const bad of [
     /Season data/,
   );
 const ui = compile("client/src/components/team-sports/TeamSeasons.tsx", {
+  "@/components/participation/EventRequirements": {
+    __esModule: true,
+    default: () => null,
+  },
+  "./TeamBracket": { __esModule: true, default: () => null },
+  "./TeamRecruitment": { __esModule: true, default: () => null },
   "@/components/admissions/AdmissionOffer": { AdmissionOffer: () => null },
   "@/lib/teamSports": team,
   "@/pages/organizations/SandboxContext": { useSandbox: () => null },

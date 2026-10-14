@@ -9,7 +9,7 @@ import {
   PublicationPage,
   WriterPage,
 } from "@/components/community/Publishing";
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 
 import { AnalyticsEvents } from "@/lib/analytics-events";
 
@@ -93,7 +93,7 @@ import RacePodSessionPage from "@/pages/racePods/racepod-session";
 import RacePodLandingPage from "@/pages/racepod-landing";
 import RacePodPublishedSessionsPage from "@/pages/racePods/racePodPublishedSessions";
 import AquaFeaturedGalleryPage from "@/pages/organizations/aqua-featured-gallery";
-import ArcadePage from "@/pages/arcadePage";
+const ArcadePage = lazy(() => import("@/pages/arcadePage"));
 import RegistrationHomePage from "@/features/registration/pages/RegistrationHomePage";
 import RegistrationEventsPage from "@/features/registration/pages/RegistrationEventsPage";
 import RegistrationEventPage from "@/features/registration/pages/RegistrationEventPage";
@@ -728,7 +728,15 @@ function Router() {
         {() => (
           <AppShell guestMode>
             <ErrorBoundary>
-              <ArcadePage />
+              <Suspense
+                fallback={
+                  <p role="status" className="p-6">
+                    Loading arcade…
+                  </p>
+                }
+              >
+                <ArcadePage />
+              </Suspense>
             </ErrorBoundary>
           </AppShell>
         )}

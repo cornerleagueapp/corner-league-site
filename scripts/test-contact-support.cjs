@@ -67,6 +67,7 @@ const client = compile("client/src/lib/supportContact.ts", {
   "./apiClient": nativeFetch,
 });
 const footer = compile("client/src/components/SiteFooter.tsx", {
+  "./marketing/NewsletterForm": { default: () => null },
   wouter: {
     Link: ({ href, children, ...p }) =>
       React.createElement("a", { href, ...p }, children),
