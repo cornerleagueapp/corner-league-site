@@ -1,3 +1,4 @@
+import NewsletterForm from "./marketing/NewsletterForm";
 import { Link } from "wouter";
 import { ORGANIZATION_SIGNUP_URL } from "@/lib/organizationSignup";
 export default function SiteFooter() {
@@ -57,6 +58,9 @@ export default function SiteFooter() {
             Organization dashboard ↗
           </a>
         </nav>
+      </div>
+      <div className="mx-auto max-w-7xl">
+        <NewsletterForm />
       </div>
       <div className="mx-auto mt-9 flex max-w-7xl flex-wrap items-center justify-between gap-4 border-t border-cl-border pt-6 text-xs text-cl-muted">
         <p>© {new Date().getFullYear()} Corner League. All rights reserved.</p>

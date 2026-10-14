@@ -1,3 +1,4 @@
+import NewsletterForm from "@/components/marketing/NewsletterForm";
 import { useSportSelection } from "@/hooks/useSportSelection";
 import SportOrganizationsPage from "@/pages/organizations/sport-organizations";
 import { useEffect, useState } from "react";
@@ -37,10 +38,17 @@ export default function ScoresLandingPage() {
         Loading sports…
       </p>
     );
-  return isJetSki ? (
-    <JetSkiLandingPage />
-  ) : (
-    <SportOrganizationsPage sportKey={sportKey} />
+  return (
+    <>
+      {isJetSki ? (
+        <JetSkiLandingPage />
+      ) : (
+        <SportOrganizationsPage sportKey={sportKey} />
+      )}
+      <div className="mx-auto max-w-7xl px-5 pb-10">
+        <NewsletterForm />
+      </div>
+    </>
   );
 }
 function JetSkiLandingPage() {

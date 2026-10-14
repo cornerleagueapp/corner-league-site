@@ -1,3 +1,4 @@
+import OrganizationFacilities from "@/components/facilities/OrganizationFacilities";
 import { OrganizationShop } from "@/features/merchandise/OrganizationShop";
 import TeamSeasons from "@/components/team-sports/TeamSeasons";
 import { isTeamSport } from "@/lib/sportRegistration";
@@ -131,6 +132,7 @@ export default function AquaOrganizationDetailsPage(props: {
   const [, navigate] = useLocation();
   const orgId = props?.params?.id;
   const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [facilities, setFacilities] = useState(false);
   const [shopping, setShopping] = useState(
     () => new URLSearchParams(window.location.search).get("shop") === "1",
   );
@@ -375,22 +377,40 @@ export default function AquaOrganizationDetailsPage(props: {
         {org?.id && !sandbox ? (
           <nav aria-label="Organization sections" className="mt-6 flex gap-3">
             <Button
-              variant={shopping ? "outline" : "default"}
-              aria-pressed={!shopping}
-              onClick={() => setShopping(false)}
+              variant={shopping || facilities ? "outline" : "default"}
+              aria-pressed={!shopping && !facilities}
+              onClick={() => {
+                setShopping(false);
+                setFacilities(false);
+              }}
             >
               Organization
             </Button>
             <Button
               variant={shopping ? "default" : "outline"}
               aria-pressed={shopping}
-              onClick={() => setShopping(true)}
+              onClick={() => {
+                setShopping(true);
+                setFacilities(false);
+              }}
             >
               Shop
             </Button>
+            <Button
+              variant={facilities ? "default" : "outline"}
+              aria-pressed={facilities}
+              onClick={() => {
+                setFacilities(true);
+                setShopping(false);
+              }}
+            >
+              Facilities & access
+            </Button>
           </nav>
         ) : null}
-        {shopping && org?.id && !sandbox ? (
+        {facilities && org?.id && !sandbox ? (
+          <OrganizationFacilities key={org.id} organizationId={org.id} />
+        ) : shopping && org?.id && !sandbox ? (
           <OrganizationShop key={org.id} organizationId={org.id} />
         ) : (
           <>

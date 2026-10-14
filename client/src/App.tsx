@@ -1,3 +1,4 @@
+import EmailUpdates from "./pages/email-updates";
 import ConsumerTheme from "@/components/ConsumerTheme";
 import { AdmissionPage, MyTicketsPage } from "@/pages/admissions/admissions";
 import { clearCommunityCache } from "@/lib/socialCache";
@@ -398,6 +399,7 @@ function Router() {
         )}
       </Route>
       <Route path="/contact" component={ContactPage} />
+      <Route path="/email-updates" component={EmailUpdates} />
       <Route path="/terms" component={TermsPage} />
       <Route path="/auth" component={AuthPage} />
       <Route path="/welcome" component={WelcomeSplash} />

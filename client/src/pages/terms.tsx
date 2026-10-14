@@ -26,8 +26,15 @@ export default function TermsPage() {
                 <div className="text-sm text-cl-muted">
                   <strong>Effective Date:</strong> 01/01/2025
                   <br />
-                  <strong>Last Updated:</strong> 08/08/2025
+                  <strong>Last Updated:</strong> 10/13/2026
                 </div>
+
+                <section aria-labelledby="marketing-privacy">
+                  <h2 id="marketing-privacy" className="text-xl font-semibold text-cl-ink mb-3">Optional Corner League email updates</h2>
+                  <p className="mb-4">Adults age 18 or older may choose to subscribe to Corner League news, platform updates, and promotions. Subscription is optional and requires email verification. Creating an account, registering for an event, buying merchandise, or contacting support does not automatically subscribe you to these campaigns.</p>
+                  <p className="mb-4">We store your email address and consent history to manage your subscription. Resend processes subscriber contacts and campaign delivery for Corner League. This marketing list is separate from organization customer lists and transactional messages.</p>
+                  <p className="mb-4">Use the unsubscribe or preferences link in a campaign email without signing in. You can cancel an unconfirmed request using the link in its verification email. Marketing opt-out does not stop necessary account messages, receipts, or your organization's communications. Contact us through the support page for questions or privacy requests.</p>
+                </section>
 
                 <section>
                   <h2 className="text-xl font-semibold text-cl-ink mb-3">
