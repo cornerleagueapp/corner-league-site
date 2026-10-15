@@ -1,4 +1,5 @@
 import TeamBracket from "./TeamBracket";
+import ConsumerBrandingHero from "@/components/branding/ConsumerBrandingHero";
 import { AdmissionOffer } from "@/components/admissions/AdmissionOffer";
 import TeamRecruitment from "./TeamRecruitment";
 import { useState } from "react";
@@ -162,6 +163,13 @@ export function SeasonDetails({
   const name = (id: string) => d.teams.find((t) => t.id === id)?.name ?? "Team";
   return (
     <div className="min-w-0 space-y-6">
+      <ConsumerBrandingHero
+        kind="season"
+        id={d.id}
+        organizationId={d.organizationId}
+        sport={d.sportKey}
+        name={`${d.leagueName} · ${d.name}`}
+      />
       <div>
         <h3 className="text-xl font-bold">
           {d.leagueName} · {d.name}

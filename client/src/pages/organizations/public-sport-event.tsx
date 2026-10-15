@@ -14,6 +14,7 @@ import { apiFetch } from "@/lib/apiClient";
 import { sportOrganization } from "@/lib/sportNavigation";
 import { eventLivestreamUrl } from "@/lib/eventLivestream";
 import { PageSEO } from "@/seo/usePageSEO";
+import ConsumerBrandingHero from "@/components/branding/ConsumerBrandingHero";
 export async function fetchPublicSportEvent(
   sportKey: string,
   organizationId: string,
@@ -148,6 +149,13 @@ export default function PublicSportEventPage({
         ) : (
           data && (
             <>
+              <ConsumerBrandingHero
+                kind="event"
+                id={eventId}
+                organizationId={organizationId}
+                sport={sportKey}
+                name={data.event.name}
+              />
               <header className="rounded-[30px] border border-cl-accent/15 cl-panel-wash p-6 sm:p-10">
                 <p className="text-xs font-black uppercase tracking-widest text-cl-accent">
                   {data.sport.label} · {data.organization.name}

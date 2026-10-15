@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PageSEO } from "@/seo/usePageSEO";
+import ConsumerBrandingHero from "@/components/branding/ConsumerBrandingHero";
 import { useLocation } from "wouter";
 import {
   CalendarDays,
@@ -34,6 +35,7 @@ import { AnalyticsEvents } from "@/lib/analytics-events";
 import { trackContentEngagementToBackend } from "@/lib/contentEngagementApi";
 
 type SportEvent = {
+  organizer?: { id: string };
   id: string;
   name: string;
   description?: string | null;
@@ -406,6 +408,15 @@ export default function OrgEventDetailsPage(props: { params: { id: string } }) {
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-cl-canvas text-cl-ink">
+      {data?.id && (data.organizer?.id || orgIdFromQuery) && (
+        <ConsumerBrandingHero
+          kind="event"
+          id={data.id}
+          organizationId={data.organizer?.id || orgIdFromQuery}
+          sport="jet-ski"
+          name={data.name}
+        />
+      )}
       <PageSEO
         title={`${data?.name || "Event Details"} • Corner League Sports`}
         description="View event details, classes, divisions, final standings, and official jet ski racing results."

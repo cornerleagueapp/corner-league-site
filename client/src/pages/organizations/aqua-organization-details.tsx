@@ -12,6 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import OrganizationPhotoGallery from "@/components/OrganizationPhotoGallery";
 import { Button } from "@/components/ui/button";
 import { PageSEO } from "@/seo/usePageSEO";
+import ConsumerBrandingHero from "@/components/branding/ConsumerBrandingHero";
 import {
   X,
   CalendarDays,
@@ -437,24 +438,16 @@ export default function AquaOrganizationDetailsPage(props: {
             ) : (
               <>
                 {/* main org card */}
+                <ConsumerBrandingHero
+                  kind="organization"
+                  id={org.id}
+                  organizationId={org.id}
+                  sport={primarySportKey}
+                  name={org.name}
+                />
                 <div className="mt-8 overflow-hidden rounded-[30px] border border-cl-accent/10 bg-cl-surface p-5 shadow-cl-panel sm:p-6">
                   <div className="flex flex-col gap-5 lg:flex-row lg:items-start">
                     <div className="flex items-start gap-4">
-                      <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-[26px] border border-cl-accent/10 bg-cl-subtle shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)] sm:h-28 sm:w-28">
-                        {org.logoUrl ? (
-                          <img
-                            src={org.logoUrl}
-                            alt={`${org.name} logo`}
-                            className="h-full w-full object-contain p-3"
-                            loading="lazy"
-                          />
-                        ) : (
-                          <span className="text-xs uppercase tracking-[0.16em] text-cl-muted">
-                            No Logo
-                          </span>
-                        )}
-                      </div>
-
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
                           <h2 className="break-words text-2xl font-black uppercase leading-tight tracking-[-0.02em] text-cl-ink sm:text-3xl">
