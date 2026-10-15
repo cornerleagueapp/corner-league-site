@@ -15,15 +15,30 @@ export default function GolfEventResults({ data }: { data: PublicOperations }) {
     >
       <h2 className="text-2xl font-black">Golf rounds & scores</h2>
       <p className="text-cl-muted">
-        Gross individual stroke play. Hole scores include penalty strokes. Equal
-        totals share a place. Only published information appears here.
+        Gross, net stroke play, or net Stableford, as configured by the
+        organizer. Hole scores include penalty strokes. Equal totals share a
+        place. Only published information appears here.
+      </p>
+      <p className="text-sm text-cl-muted">
+        Net scores use organizer-entered round playing handicaps. Stableford
+        awards max(0, 2 + par − net hole strokes); higher points win. Gross and
+        net stroke play use lower totals. A shared place is not a declared
+        playoff winner.
       </p>
       {!data.schedule.length && (
         <p>The organizer has not published flights yet.</p>
       )}
       {data.golfStandings?.map((group) => (
         <div key={group.classId} className="overflow-x-auto">
-          <h3 className="font-bold">{group.className} · Overall leaderboard</h3>
+          <h3 className="font-bold">
+            {group.className} ·{" "}
+            {group.scoring === "net"
+              ? "Net stroke play"
+              : group.scoring === "stableford"
+                ? "Net Stableford"
+                : "Gross stroke play"}{" "}
+            leaderboard
+          </h3>
           <p className="text-sm text-cl-muted">
             Overall places require a finished scorecard in every published round
             for this class.
@@ -37,6 +52,9 @@ export default function GolfEventResults({ data }: { data: PublicOperations }) {
                   "Rounds complete",
                   "Gross strokes",
                   "To par",
+                  "Net strokes",
+                  "Net to par",
+                  "Stableford points",
                 ].map((t) => (
                   <th className="p-2" key={t}>
                     {t}
@@ -58,6 +76,17 @@ export default function GolfEventResults({ data }: { data: PublicOperations }) {
                   <td className="p-2">
                     {r.completedRounds ? relative(r.toPar) : "—"}
                   </td>
+                  <td className="p-2">
+                    {r.completedRounds ? (r.netStrokes ?? r.grossStrokes) : "—"}
+                  </td>
+                  <td className="p-2">
+                    {r.completedRounds ? relative(r.netToPar ?? r.toPar) : "—"}
+                  </td>
+                  <td className="p-2">
+                    {group.scoring === "stableford" && r.completedRounds
+                      ? (r.stablefordPoints ?? "—")
+                      : "—"}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -75,7 +104,7 @@ export default function GolfEventResults({ data }: { data: PublicOperations }) {
               {h.label} · Round {h.round}
             </h3>
             <p className="text-cl-muted">
-              {h.className} ·{" "}
+              {h.className} · {h.golfScoring ?? "gross"} ·{" "}
               <time dateTime={h.startsAt}>
                 {new Date(h.startsAt).toLocaleString()}
               </time>{" "}
@@ -109,6 +138,10 @@ export default function GolfEventResults({ data }: { data: PublicOperations }) {
                         "Golfer",
                         "Gross",
                         "To par",
+                        "Playing handicap",
+                        "Net",
+                        "Net to par",
+                        "Stableford",
                         ...(h.holePars ?? []).map(
                           (p, i) => `Hole ${i + 1} · Par ${p}`,
                         ),
@@ -130,6 +163,14 @@ export default function GolfEventResults({ data }: { data: PublicOperations }) {
                         <td className="whitespace-nowrap p-2">{r.name}</td>
                         <td className="p-2">{r.grossStrokes ?? "—"}</td>
                         <td className="p-2">{relative(r.toPar)}</td>
+                        <td className="p-2">{r.playingHandicap ?? "—"}</td>
+                        <td className="p-2">{r.netStrokes ?? "—"}</td>
+                        <td className="p-2">{relative(r.netToPar)}</td>
+                        <td className="p-2">
+                          {h.golfScoring === "stableford"
+                            ? (r.stablefordPoints ?? "—")
+                            : "—"}
+                        </td>
                         {(h.holePars ?? []).map((_, i) => (
                           <td key={i} className="p-2">
                             {r.holeScores?.find((s) => s.hole === i + 1)

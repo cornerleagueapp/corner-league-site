@@ -286,7 +286,9 @@ export function SeasonDetails({
                   <p className="text-sm text-cl-muted">
                     {g.competition.kind === "single-elimination"
                       ? "Single elimination"
-                      : "Round robin"}{" "}
+                      : g.competition.kind === "double-round-robin"
+                        ? "Home & away"
+                        : "Round robin"}{" "}
                     · Round {g.competition.round} · Match {g.competition.match}
                     {g.competition.homeSeed
                       ? ` · Seeds ${g.competition.homeSeed} and ${g.competition.awaySeed}`
@@ -294,7 +296,10 @@ export function SeasonDetails({
                   </p>
                 )}
                 <h5 className="font-bold">
-                  {name(g.homeTeamId)} vs {name(g.awayTeamId)}
+                  {name(g.homeTeamId)}{" "}
+                  {g.competition?.bye
+                    ? "· BYE / automatic advancement"
+                    : `vs ${name(g.awayTeamId)}`}
                 </h5>
                 <p className="text-sm text-cl-muted">
                   <time dateTime={g.startsAt}>
@@ -303,17 +308,22 @@ export function SeasonDetails({
                   · {g.venue || "Venue to be announced"}
                 </p>
                 <p className="mt-2 font-bold">
-                  {g.status === "cancelled"
-                    ? "Cancelled"
-                    : r
-                      ? `${r.homeScore} – ${r.awayScore} · ${r.status === "final" ? "Final" : "In progress"}`
-                      : "Scheduled"}
+                  {g.competition?.bye
+                    ? "Advanced by bye"
+                    : g.status === "cancelled"
+                      ? "Cancelled"
+                      : r
+                        ? `${r.homeScore} – ${r.awayScore} · ${r.status === "final" ? "Final" : "In progress"}`
+                        : "Scheduled"}
                 </p>
-                {g.status !== "cancelled" && (
+                {g.status !== "cancelled" && !g.competition?.bye && (
                   <AdmissionOffer
                     eventKey={`game:${d.id}:${g.id}`}
                     sandbox={sandbox}
                   />
+                )}
+                {r?.decision && r.decision !== "regulation" && (
+                  <p>Decided in {r.decision}</p>
                 )}
                 {r?.tiebreakWinnerId && (
                   <p>Tiebreak winner: {name(r.tiebreakWinnerId)}</p>
@@ -346,12 +356,18 @@ export function SeasonDetails({
       <div>
         <h4 className="mb-3 text-lg font-bold">Standings</h4>
         <p className="mb-3 text-sm text-cl-muted">
-          Final games only. Ordered by standings points, score difference and
-          scores for; teams with equal values remain tied.
+          Final league games only; tournament games are excluded. Each division
+          ranks by points or win percentage, then score difference and scores
+          for. Equal values share a place.
         </p>
         {view.standings.map((s) => (
           <div key={s.divisionId} className="mb-5">
-            <h5 className="mb-2 font-bold">{s.name}</h5>
+            <h5 className="mb-2 font-bold">
+              {s.name} ·{" "}
+              {s.standingsMode === "win-percentage"
+                ? "Win percentage"
+                : "Standings points"}
+            </h5>
             <ul
               className="space-y-3 sm:hidden"
               aria-label={`${s.name} standings`}
@@ -362,10 +378,12 @@ export function SeasonDetails({
                   className="rounded-xl border border-cl-border p-3"
                 >
                   <p className="font-bold">
-                    {r.name} · {r.points} points
+                    #{r.position ?? "—"} {r.name} · {r.points} points ·{" "}
+                    {((r.winPercentage ?? 0) * 100).toFixed(1)}%
                   </p>
                   <p className="text-sm text-cl-muted">
-                    Played {r.played} · W {r.wins} · D {r.draws} · L {r.losses}
+                    Played {r.played} · W {r.wins} · D {r.draws} · L {r.losses}{" "}
+                    · OT losses {r.overtimeLosses ?? 0}
                   </p>
                   <p className="text-sm text-cl-muted">
                     {d.scoreLabel}: {r.scoredFor} for · {r.scoredAgainst}{" "}
@@ -381,6 +399,7 @@ export function SeasonDetails({
                   <tr>
                     {[
                       "Team",
+                      "Place",
                       "Played",
                       "Wins",
                       "Draws",
@@ -389,6 +408,8 @@ export function SeasonDetails({
                       `${d.scoreLabel} against`,
                       "Difference",
                       "Standings points",
+                      "Win %",
+                      "OT losses",
                     ].map((h) => (
                       <th
                         key={h}
@@ -407,6 +428,7 @@ export function SeasonDetails({
                         {r.name}
                       </th>
                       {[
+                        r.position ?? "—",
                         r.played,
                         r.wins,
                         r.draws,
@@ -415,6 +437,8 @@ export function SeasonDetails({
                         r.scoredAgainst,
                         r.difference,
                         r.points,
+                        ((r.winPercentage ?? 0) * 100).toFixed(1),
+                        r.overtimeLosses ?? 0,
                       ].map((v, i) => (
                         <td key={i} className="p-3">
                           {v}

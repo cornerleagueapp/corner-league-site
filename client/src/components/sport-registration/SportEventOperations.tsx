@@ -10,6 +10,8 @@ type Participant = {
   number: string;
 };
 type Heat = {
+  golfScoring?: "gross" | "net" | "stableford";
+  strokeIndexes?: number[];
   checkpoints?: { id: string; label: string; distanceMeters: number }[];
   holePars?: number[];
   id: string;
@@ -26,6 +28,10 @@ type Heat = {
 type Finish = Participant & {
   splits?: { checkpointId: string; elapsedMs: number }[];
   holeScores?: { hole: number; strokes: number }[];
+  netStrokes?: number | null;
+  netToPar?: number | null;
+  stablefordPoints?: number | null;
+  playingHandicap?: number;
   grossStrokes?: number | null;
   toPar?: number | null;
   status: string;
@@ -47,11 +53,15 @@ export type PublicOperations = {
   golfStandings?: {
     classId: string;
     className: string;
+    scoring?: "gross" | "net" | "stableford";
     rows: {
       profileId: string;
       name: string;
       completedRounds: number;
       totalRounds: number;
+      netStrokes?: number;
+      netToPar?: number;
+      stablefordPoints?: number;
       grossStrokes: number;
       toPar: number;
       eligible: boolean;
