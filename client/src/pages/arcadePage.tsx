@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import ArcadeHome from "@/components/arcade/ArcadeHome";
-import ArcadeGameCanvas from "@/components/arcade/ArcadeGameCanvas";
+import ArcadeGameCanvas from "@/components/arcade/DeferredArcadeCanvas";
 import {
   ArcadeCourse,
   ArcadeCpuRacer,

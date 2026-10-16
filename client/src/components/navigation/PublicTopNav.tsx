@@ -56,7 +56,9 @@ function scrollToSection(targetId: string) {
 
   window.scrollTo({
     top: y,
-    behavior: "smooth",
+    behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      ? "auto"
+      : "smooth",
   });
 }
 
@@ -83,6 +85,8 @@ export default function PublicTopNav({
   const sportsRef = React.useRef<HTMLDivElement | null>(null);
 
   const accountRef = React.useRef<HTMLDivElement | null>(null);
+  const sportsId = React.useId();
+  const accountId = React.useId();
 
   const isLandingPage = location === "/";
 
@@ -186,17 +190,33 @@ export default function PublicTopNav({
     }
 
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        closeMenus();
+      if (event.key !== "Escape") return;
+      for (const ref of [sportsRef, accountRef]) {
+        const trigger = ref.current?.querySelector<HTMLButtonElement>(
+          "button[aria-expanded='true']",
+        );
+        if (trigger && ref.current?.contains(document.activeElement)) {
+          event.preventDefault();
+          trigger.focus();
+        }
       }
+      closeMenus();
+    }
+    // Natural Tab navigation closes the disclosure after focus leaves it.
+    function handleFocusIn(event: FocusEvent) {
+      const target = event.target as Node;
+      if (!sportsRef.current?.contains(target)) setSportsOpen(false);
+      if (!accountRef.current?.contains(target)) setAccountOpen(false);
     }
 
-    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("focusin", handleFocusIn);
 
     window.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("focusin", handleFocusIn);
 
       window.removeEventListener("keydown", handleKeyDown);
     };
@@ -252,7 +272,7 @@ export default function PublicTopNav({
             <div ref={sportsRef} className="relative min-w-0">
               <button
                 type="button"
-                aria-haspopup="menu"
+                aria-controls={sportsOpen ? sportsId : undefined}
                 aria-expanded={sportsOpen}
                 onClick={() => {
                   setAccountOpen(false);
@@ -274,7 +294,7 @@ export default function PublicTopNav({
 
               {sportsOpen ? (
                 <div
-                  role="menu"
+                  id={sportsId}
                   className="absolute right-0 z-[250] mt-3 w-[min(82vw,260px)] overflow-hidden rounded-2xl border border-cl-accent/10 bg-cl-surface shadow-cl-panel backdrop-blur-xl"
                 >
                   {sports.map((sport) => {
@@ -286,7 +306,7 @@ export default function PublicTopNav({
                       <button
                         key={sport.key}
                         type="button"
-                        role="menuitem"
+                        aria-pressed={selected}
                         disabled={disabled}
                         onClick={() => handleSportSelect(sport)}
                         className={`flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-sm transition ${
@@ -319,7 +339,7 @@ export default function PublicTopNav({
             <div ref={accountRef} className="relative min-w-0">
               <button
                 type="button"
-                aria-haspopup="menu"
+                aria-controls={accountOpen ? accountId : undefined}
                 aria-expanded={accountOpen}
                 onClick={() => {
                   setSportsOpen(false);
@@ -340,7 +360,7 @@ export default function PublicTopNav({
 
               {accountOpen ? (
                 <div
-                  role="menu"
+                  id={accountId}
                   className="absolute right-0 z-[250] mt-3 w-[min(88vw,290px)] overflow-hidden rounded-[22px] border border-cl-accent/25 bg-cl-surface p-2 shadow-cl-panel ring-1 ring-black/40"
                 >
                   <div className="mb-2 flex items-center gap-3 rounded-[16px] border border-emerald-300/10 bg-emerald-300/[0.055] px-3 py-3">
@@ -361,7 +381,6 @@ export default function PublicTopNav({
 
                   <button
                     type="button"
-                    role="menuitem"
                     onClick={() => navigateFromAccount(profileHref)}
                     className="flex w-full items-center gap-3 rounded-[15px] px-3 py-3 text-left text-sm font-bold text-cl-muted transition hover:bg-cl-subtle hover:text-cl-ink"
                   >
@@ -371,7 +390,6 @@ export default function PublicTopNav({
 
                   <button
                     type="button"
-                    role="menuitem"
                     onClick={() => navigateFromAccount("/notifications")}
                     className="flex w-full items-center gap-3 rounded-[15px] px-3 py-3 text-left text-sm font-bold text-cl-muted transition hover:bg-cl-subtle hover:text-cl-ink"
                   >
@@ -388,7 +406,6 @@ export default function PublicTopNav({
                   {isJetSki && (
                     <button
                       type="button"
-                      role="menuitem"
                       onClick={() => navigateFromAccount("/racepod")}
                       className="flex w-full items-center gap-3 rounded-[15px] px-3 py-3 text-left text-sm font-bold text-cl-muted transition hover:bg-cl-subtle hover:text-cl-ink"
                     >
@@ -399,7 +416,6 @@ export default function PublicTopNav({
 
                   <button
                     type="button"
-                    role="menuitem"
                     onClick={() => navigateFromAccount("/settings")}
                     className="flex w-full items-center gap-3 rounded-[15px] px-3 py-3 text-left text-sm font-bold text-cl-muted transition hover:bg-cl-subtle hover:text-cl-ink"
                   >
@@ -411,7 +427,6 @@ export default function PublicTopNav({
 
                   <button
                     type="button"
-                    role="menuitem"
                     onClick={handleLogout}
                     className="flex w-full items-center gap-3 rounded-[15px] px-3 py-3 text-left text-sm font-bold text-cl-accent transition hover:bg-cl-accent/10 hover:text-cl-ink"
                   >

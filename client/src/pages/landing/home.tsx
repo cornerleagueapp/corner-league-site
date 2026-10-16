@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { DeferredPromoVideo } from "@/components/media/DeferredPromoVideo";
 import SiteFooter from "@/components/SiteFooter";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
@@ -49,6 +51,7 @@ const sportsImages = [
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
   const [location] = useLocation();
+  const [motionPaused, setMotionPaused] = useState(false);
 
   const handleLogin = () => {
     window.location.href = `/auth?next=${encodeURIComponent(location)}`;
@@ -58,7 +61,7 @@ export default function Home() {
   };
 
   return (
-    <div className="consumer-document-page bg-cl-canvas text-cl-ink font-sans overflow-x-hidden relative">
+    <div className={`consumer-document-page bg-cl-canvas text-cl-ink font-sans overflow-x-hidden relative ${motionPaused ? "home-motion-paused" : ""}`}>
       <PublicTopNav activeTab="home" />
 
       <PageSEO
@@ -110,7 +113,7 @@ export default function Home() {
       `}</style>
 
       {/* Background collage */}
-      <div className="background-scrolling">
+      <div className="background-scrolling" aria-hidden="true">
         {Array.from({ length: 5 }).map((_, colIndex) => {
           const columnImages = sportsImages.filter(
             (_, i) => i % 5 === colIndex,
@@ -158,7 +161,8 @@ export default function Home() {
                         (imgIndex % columnImages.length) + 1
                       }`}
                       className="w-full h-full object-cover"
-                      loading="eager"
+                      loading={imgIndex === 0 ? "eager" : "lazy"}
+                      decoding="async"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent pointer-events-none" />
                   </div>
@@ -171,6 +175,11 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/50 pointer-events-none z-10" />
         <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-black/20 pointer-events-none z-10" />
       </div>
+
+      <button type="button" aria-pressed={motionPaused} onClick={() => setMotionPaused((value) => !value)}
+        className="relative z-20 m-3 min-h-11 rounded-full bg-black/85 px-4 py-2 text-sm font-semibold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+        {motionPaused ? "Resume background animation" : "Pause background animation"}
+      </button>
 
       {/* HERO */}
       <div className="cl-dark text-cl-ink hero-overlay relative z-10 min-h-screen flex flex-col">
@@ -353,15 +362,7 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
             <div className="order-1 lg:order-2 lg:col-span-6 xl:col-span-5">
               <div className="relative aspect-[4/3] md:aspect-[16/10] rounded-2xl overflow-hidden border border-cl-border shadow-2xl">
-                <video
-                  src={partnerPromo}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  className="absolute inset-0 h-full w-full object-cover"
-                  poster={image13}
-                />
+                <DeferredPromoVideo src={partnerPromo} poster={image13} />
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
               </div>
             </div>

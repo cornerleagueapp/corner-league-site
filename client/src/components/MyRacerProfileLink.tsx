@@ -13,7 +13,6 @@ export default function MyRacerProfileLink({
     <>
       <button
         type="button"
-        role="menuitem"
         onClick={() =>
           onNavigate(profile?.profileUrl || "/create-racer-profile")
         }
@@ -32,7 +31,6 @@ export default function MyRacerProfileLink({
       </button>
       <button
         type="button"
-        role="menuitem"
         onClick={() => onNavigate("/create-racer-profile?athletes=1")}
         className="flex w-full items-center gap-3 rounded-[15px] px-3 py-3 text-left text-sm font-bold text-cl-muted hover:bg-white/[0.06] hover:text-cl-ink"
       >
