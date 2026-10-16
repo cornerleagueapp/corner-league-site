@@ -11,6 +11,22 @@ export default defineConfig({
     outDir: path.resolve(__dirname, "dist"),
     assetsDir: "assets",
     emptyOutDir: true,
+    rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, "client/index.html"),
+        widget: path.resolve(__dirname, "client/src/widgets/entry.tsx"),
+      },
+      output: {
+        entryFileNames: (chunk) =>
+          chunk.name === "widget"
+            ? "widgets/widget.js"
+            : "assets/[name]-[hash].js",
+        assetFileNames: (asset) =>
+          asset.name === "widget.css"
+            ? "widgets/widget.css"
+            : "assets/[name]-[hash][extname]",
+      },
+    },
   },
   resolve: {
     alias: {
