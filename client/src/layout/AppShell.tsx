@@ -455,7 +455,11 @@ export default function AppShell({
           tabIndex={-1}
           className="consumer-content min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden"
         >
-          {children}
+          <div
+            className={`consumer-page-frame${location === "/messages" ? " consumer-page-frame--workspace" : ""}`}
+          >
+            {children}
+          </div>
           {location !== "/messages" && <SiteFooter />}
         </div>
       </div>

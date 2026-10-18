@@ -2,12 +2,9 @@ import { useSportSelection } from "@/hooks/useSportSelection";
 import { sportDirectory, sportHub } from "@/lib/sportNavigation";
 import { hasMoreBelow } from "@/lib/sidebarScroll";
 import { useAuth } from "@/hooks/useAuth";
-import { CreateOrganizationLink } from "./CreateOrganizationLink";
 // src/components/sidebarPanel.tsx
 import { Link, useLocation } from "wouter";
 import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
-import { useMyOrganizationAdminOrganizations } from "@/features/organization-admin/hooks/useMyOrganizationAdminOrganizations";
-import { OrgDashboardLink, canOpenOrgDashboard } from "./OrgDashboardLink";
 import {
   Ticket,
   ChevronDown,
@@ -108,33 +105,8 @@ export function useAppSidebarSections(opts?: {
   const { isAuthenticated } = useAuth();
   const guest = !!opts?.guestMode;
   const { sportKey, sport, isJetSki } = useSportSelection();
-  const myOrganizationsQuery = useMyOrganizationAdminOrganizations(!guest);
-  const showOrgDashboard = canOpenOrgDashboard(
-    !guest && myOrganizationsQuery.isSuccess && !myOrganizationsQuery.isError,
-    myOrganizationsQuery.data,
-  );
-
   return useMemo<SidebarSection[]>(() => {
     const base: SidebarSection[] = [
-      ...(!guest && isAuthenticated
-        ? [
-            {
-              title: "Create organization",
-              organizationCreation: true,
-              items: [],
-            },
-          ]
-        : []),
-      ...(showOrgDashboard
-        ? [
-            {
-              title: "Organizer workspace",
-              organizationDashboard: true,
-              items: [],
-            },
-          ]
-        : []),
-
       {
         title: "Community",
         items: [
@@ -272,7 +244,6 @@ export function useAppSidebarSections(opts?: {
   }, [
     navigate,
     opts?.extra,
-    showOrgDashboard,
     guest,
     isAuthenticated,
     sportKey,
@@ -719,23 +690,6 @@ export default function SidebarPanel({
           >
             <div ref={navContentRef} className="pb-11">
               {sections.map((section) => {
-                if (section.organizationCreation)
-                  return (
-                    <CreateOrganizationLink
-                      key={section.title}
-                      collapsed={renderCollapsed}
-                      onNavigate={onClose}
-                    />
-                  );
-                if (section.organizationDashboard) {
-                  return (
-                    <OrgDashboardLink
-                      key={section.title}
-                      collapsed={renderCollapsed}
-                      onNavigate={onClose}
-                    />
-                  );
-                }
                 const open = renderCollapsed ? true : !!openMap[section.title];
 
                 return (

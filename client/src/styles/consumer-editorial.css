@@ -1,0 +1,245 @@
+/* Editorial pilot: shared gutters and flat surfaces. Loaded after consumer-theme. */
+:root {
+  --consumer-page-width: 1280px;
+  --consumer-page-gutter: clamp(16px, 2.5vw, 32px);
+  --consumer-page-gap: 24px;
+  --cl-canvas: 241 243 245;
+  --cl-surface: 255 255 255;
+  --cl-subtle: 234 238 242;
+  --cl-border: 213 220 227;
+}
+.consumer-page-frame {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: var(--consumer-page-width);
+  margin-inline: auto;
+  padding: var(--consumer-page-gap) var(--consumer-page-gutter) 40px;
+  min-width: 0;
+}
+/* Remove duplicate page gutters at the existing route root, not card interiors. */
+.consumer-page-frame > :where(div, main),
+.consumer-page-frame > div > main {
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
+  padding-inline: 0;
+  padding-top: 0;
+}
+.consumer-page-frame--workspace {
+  height: 100%;
+  padding-block: 0;
+}
+.consumer-page-frame .consumer-document-page {
+  min-height: 0;
+}
+.consumer-content {
+  background: rgb(var(--cl-canvas));
+}
+/* Flatten decorative treatments while keeping functional scrims on dialogs/maps/media. */
+.cl-panel-wash {
+  background: rgb(var(--cl-surface));
+}
+.cl-canvas-wash {
+  background: rgb(var(--cl-canvas));
+}
+:where(.consumer-app-shell, .consumer-document-page)
+  :where(
+    [class*="bg-gradient-"],
+    [class*="bg-[radial-gradient"],
+    [class*="bg-[linear-gradient"],
+    [class*="[background-image:linear-gradient"]
+  ) {
+  background-image: none !important;
+}
+:where(.consumer-app-shell, .consumer-document-page)
+  :where(
+    .pointer-events-none.absolute[class*="gradient"],
+    .pointer-events-none.absolute:has(> [class*="blur-3xl"]),
+    .pointer-events-none > [class*="blur-3xl"]
+  ) {
+  display: none;
+}
+/* Gradient text must remain legible after the gradient is removed. */
+:where(.consumer-app-shell, .consumer-document-page)
+  [class*="bg-gradient-"][class*="text-transparent"] {
+  color: rgb(var(--cl-accent));
+  -webkit-text-fill-color: currentColor;
+}
+.consumer-account-org-link {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  border-radius: 12px;
+  padding: 12px;
+  color: rgb(var(--cl-ink));
+  font-size: 14px;
+  font-weight: 700;
+}
+.consumer-account-org-link:hover {
+  background: rgb(var(--cl-subtle));
+}
+.consumer-hub-heading {
+  margin-bottom: 24px;
+}
+.consumer-hub-heading h1 {
+  margin: 6px 0 8px;
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 800;
+  line-height: 1.15;
+}
+.consumer-hub-heading > p:last-child {
+  color: rgb(var(--cl-muted));
+  line-height: 1.7;
+}
+.consumer-eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 800;
+  color: rgb(var(--cl-accent));
+}
+.consumer-editorial-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--consumer-page-gap);
+  align-items: start;
+}
+.consumer-editorial-feed,
+.consumer-editorial-rail {
+  min-width: 0;
+  display: grid;
+  gap: var(--consumer-page-gap);
+}
+.consumer-editorial-card {
+  min-width: 0;
+  border: 1px solid rgb(var(--cl-border));
+  border-radius: 12px;
+  background: rgb(var(--cl-surface));
+  padding: 24px;
+  box-shadow: 0 1px 2px rgb(24 38 47 / 0.04);
+}
+.consumer-editorial-card h2 {
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.2;
+  margin-block: 8px 12px;
+}
+.consumer-editorial-card p:not(.consumer-eyebrow) {
+  color: rgb(var(--cl-muted));
+  font-size: 14px;
+  line-height: 1.7;
+}
+.consumer-org-promo {
+  border-top: 4px solid rgb(var(--cl-accent));
+}
+.consumer-editorial-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  background: rgb(var(--cl-accent));
+  color: rgb(var(--cl-accent-contrast));
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  margin-block: 16px 8px;
+  text-align: center;
+}
+.consumer-editorial-cta:hover {
+  filter: brightness(0.92);
+}
+.consumer-editorial-cta:focus-visible {
+  outline: 3px solid rgb(var(--cl-accent));
+  outline-offset: 3px;
+}
+.consumer-org-promo .consumer-editorial-cta {
+  display: flex;
+}
+.consumer-org-promo .consumer-editorial-note {
+  font-size: 12px;
+}
+.consumer-hub-totals {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid rgb(var(--cl-border));
+  margin-top: 16px;
+  padding-top: 16px;
+  gap: 12px;
+}
+.consumer-hub-totals dt {
+  font-size: 12px;
+  color: rgb(var(--cl-muted));
+}
+.consumer-hub-totals dd {
+  font-size: 24px;
+  font-weight: 800;
+}
+/* Existing sections keep their behavior, with quieter card framing in the pilot. */
+.consumer-hub :where(section) {
+  padding-top: 0;
+  margin-top: 0;
+}
+.consumer-hub :where(.cl-panel-wash) {
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: none;
+}
+.consumer-hub :where(section h2) {
+  font-size: clamp(22px, 2.5vw, 30px);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  text-transform: none;
+}
+.consumer-hub :where(section > div) {
+  min-width: 0;
+}
+.consumer-hub .consumer-editorial-rail :where(.grid) {
+  grid-template-columns: minmax(0, 1fr);
+}
+.consumer-hub > section:last-child {
+  margin-top: 24px;
+}
+.consumer-newsletter-slot {
+  margin-top: 24px;
+}
+.consumer-content > footer {
+  margin-top: 0;
+  padding-inline: var(--consumer-page-gutter);
+}
+.consumer-content > footer > div {
+  max-width: calc(var(--consumer-page-width) - 2 * var(--consumer-page-gutter));
+}
+@media (min-width: 1100px) {
+  .consumer-editorial-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 320px);
+  }
+}
+@media (max-width: 480px) {
+  .consumer-editorial-card {
+    padding: 18px;
+  }
+  .consumer-hub-totals {
+    gap: 8px;
+  }
+}
+/* The separate /home and /about marketing routes use the same outer shell. */
+.consumer-marketing-pilot .background-scrolling,
+.consumer-marketing-pilot > button[aria-pressed] {
+  display: none;
+}
+.consumer-marketing-pilot .hero-overlay {
+  min-height: 0;
+  border-radius: 12px;
+  background: rgb(var(--cl-canvas));
+}
+.consumer-marketing-pilot > section,
+.consumer-marketing-pilot > main > section {
+  padding-inline: 0;
+}
+.consumer-marketing-pilot :where(.max-w-6xl) {
+  max-width: none;
+}
+.consumer-marketing-pilot + footer {
+  padding-inline: var(--consumer-page-gutter);
+}

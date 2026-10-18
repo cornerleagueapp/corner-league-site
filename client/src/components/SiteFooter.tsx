@@ -47,7 +47,7 @@ export default function SiteFooter() {
             rel="noopener noreferrer"
             className="block w-fit text-sm text-cl-muted hover:text-cl-accent"
           >
-            Create your organization ↗
+            Create your own Org ↗
           </a>
           <a
             href="https://admin.cornerleague.com"

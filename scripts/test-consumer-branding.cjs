@@ -48,9 +48,16 @@ let sandbox = null,
     effectiveLogoUrl: "https://example.com/logo.png",
     effectiveHeaderImageUrl: "https://example.com/header.png",
   };
+const visuals = compile("client/src/lib/sportVisuals.ts");
+const artwork = compile("client/src/components/sport-hub/SportArtwork.tsx", {
+  "@assets/sport-banners/sports-atlas.webp": { default: "/sports-atlas.webp" },
+  "@/lib/sportVisuals": visuals,
+});
 const component = compile(
   "client/src/components/branding/ConsumerBrandingHero.tsx",
   {
+    "@/components/sport-hub/SportArtwork": artwork,
+    "@/lib/sportVisuals": visuals,
     react: { ...React, useState: () => [failed, (v) => (failed = v)] },
     "@/pages/organizations/SandboxContext": { useSandbox: () => sandbox },
     "@/tanstack/react-query": {},
@@ -93,8 +100,8 @@ const props = {
   assert.equal(queries.at(-1).gcTime, 0);
   queryError = true;
   html = renderToStaticMarkup(React.createElement(component.default, props));
-  assert.match(html, /stock-golf.svg/);
-  assert.match(html, /stock-logo.svg/);
+  assert.match(html, /sports-atlas.webp/);
+  assert.match(html, /sport-logo-golf.svg/);
   assert(!html.includes("example.com/header"));
   const imageProps = {
     src: "https://example.com/broken.png",

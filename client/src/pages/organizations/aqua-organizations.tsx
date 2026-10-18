@@ -1,3 +1,6 @@
+import { BrandingImage } from "@/components/branding/ConsumerBrandingHero";
+import { brandingImage } from "@/lib/consumerBranding";
+import { sportLogo } from "@/lib/sportVisuals";
 import React, { useEffect } from "react";
 import { trackEvent } from "@/lib/analytics";
 import { AnalyticsEvents } from "@/lib/analytics-events";
@@ -276,20 +279,13 @@ export default function AquaOrganizationsPage() {
 
                     <div className="flex items-start gap-4">
                       <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-[24px] border border-cl-accent/10 bg-cl-subtle shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)] sm:h-24 sm:w-24">
-                        {o.logoUrl ? (
-                          <img
-                            src={o.logoUrl}
-                            alt={`${o.name} logo`}
-                            className="h-full w-full object-contain p-3"
-                            loading="lazy"
-                          />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(180deg,rgba(34,211,238,0.10),rgba(255,255,255,0.02))] text-center">
-                            <span className="px-2 text-[10px] font-medium uppercase tracking-[0.18em] text-cl-muted">
-                              No Logo
-                            </span>
-                          </div>
-                        )}
+                        <BrandingImage
+                          key={o.logoUrl ?? "default"}
+                          src={brandingImage(o.logoUrl)}
+                          fallback={sportLogo("jet-ski")}
+                          alt={`${o.name} logo`}
+                          className="h-full w-full object-contain p-3"
+                        />
                       </div>
 
                       <div className="min-w-0 flex-1">

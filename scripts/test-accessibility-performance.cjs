@@ -269,6 +269,11 @@ function text(node) {
   const nh = hooks();
   const nav = compile("client/src/components/navigation/PublicTopNav.tsx", {
     react: nh.react,
+    "@/features/organization-admin/hooks/useMyOrganizationAdminOrganizations": {
+      useMyOrganizationAdminOrganizations: () => ({ isSuccess: true, isError: false, data: { organizations: [] } }),
+    },
+    "@/components/OrgDashboardLink": compile("client/src/components/OrgDashboardLink.tsx"),
+    "@/components/CreateOrganizationLink": compile("client/src/components/CreateOrganizationLink.tsx"),
     "@/components/community/NotificationCount": {
       useUnreadNotifications: () => ({ data: { unreadCount: 2 } }),
       NotificationCount: () => null,

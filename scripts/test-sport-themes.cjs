@@ -2,7 +2,17 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const Module = require("node:module");
 const ts = require("typescript");
+const visualModule = new Module("sportVisuals.ts", module);
+visualModule._compile(
+  ts.transpileModule(
+    fs.readFileSync("client/src/lib/sportVisuals.ts", "utf8"),
+    { compilerOptions: { module: ts.ModuleKind.CommonJS } },
+  ).outputText,
+  "sportVisuals.ts",
+);
 const moduleFile = new Module("sportTheme.ts", module);
+moduleFile.require = (name) =>
+  name === "./sportVisuals" ? visualModule.exports : require(name);
 moduleFile._compile(
   ts.transpileModule(fs.readFileSync("client/src/lib/sportTheme.ts", "utf8"), {
     compilerOptions: {

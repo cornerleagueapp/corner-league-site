@@ -1,3 +1,5 @@
+import SportArtwork from "@/components/sport-hub/SportArtwork";
+import { sportLogo } from "@/lib/sportVisuals";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSandbox } from "@/pages/organizations/SandboxContext";
@@ -14,13 +16,16 @@ export function BrandingImage({
   fallback,
   alt,
   className,
+  fallbackContent,
 }: {
   src: string | null;
   fallback: string;
   alt: string;
   className: string;
+  fallbackContent?: React.ReactNode;
 }) {
   const [failed, setFailed] = useState(false);
+  if ((!src || failed) && fallbackContent) return <>{fallbackContent}</>;
   return (
     <img
       src={!failed && src ? src : fallback}
@@ -73,30 +78,29 @@ export default function ConsumerBrandingHero({
   const header = brandingImage(data?.effectiveHeaderImageUrl, !!sandbox),
     logo = brandingImage(data?.effectiveLogoUrl, !!sandbox);
   return (
-    <section
-      aria-label={`${name} branding`}
-      className="relative isolate min-h-48 overflow-hidden rounded-3xl bg-[#17394b] sm:min-h-64"
-    >
+    <section aria-label={`${name} branding`} className="sport-branding-hero">
       <BrandingImage
         key={header ?? "stock-header"}
         src={header}
         fallback={stockHeader(sport)}
         alt=""
-        className="absolute inset-0 h-full w-full object-cover object-center"
+        className="sport-branding-photo object-cover"
+        fallbackContent={
+          <SportArtwork sport={sport} className="sport-branding-photo" />
+        }
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-transparent" />
-      <div className="relative flex min-h-48 items-end gap-4 p-5 sm:min-h-64 sm:p-7">
+      <div className="sport-branding-copy">
         <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/30 bg-white shadow-lg sm:h-24 sm:w-24">
           <BrandingImage
             key={logo ?? "stock-logo"}
             src={logo}
-            fallback="/branding/stock-logo.svg"
+            fallback={sportLogo(sport)}
             alt={`${name} logo`}
             className="h-full w-full object-contain p-2"
           />
         </div>
         <div className="min-w-0 pb-1">
-          <p className="text-xs font-bold uppercase tracking-widest text-white/80">
+          <p className="text-xs font-bold uppercase tracking-widest text-cl-muted">
             {kind === "organization"
               ? "Organization"
               : kind === "event"
@@ -105,7 +109,7 @@ export default function ConsumerBrandingHero({
                   ? "League"
                   : "Season"}
           </p>
-          <h2 className="mt-2 break-words text-2xl font-black text-white sm:text-3xl">
+          <h2 className="mt-2 break-words text-2xl font-black text-cl-ink sm:text-3xl">
             {name}
           </h2>
         </div>

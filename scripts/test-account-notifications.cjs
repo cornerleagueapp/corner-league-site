@@ -43,6 +43,8 @@ function compile(relative) {
       };
     if (name === "@/components/marketing/MarketingPreferences")
       return { MarketingPreferences: () => null };
+    if (name === "@/features/organization-admin/hooks/useMyOrganizationAdminOrganizations")
+      return { useMyOrganizationAdminOrganizations: () => ({ isSuccess: true, isError: false, data: { organizations: [] } }) };
     if (name === "@/hooks/useAuth") return { useAuth: () => auth };
     if (
       name === "@/components/MyRacerProfileLink" ||

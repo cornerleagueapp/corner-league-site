@@ -3,6 +3,12 @@ import {
   NotificationCount,
 } from "@/components/community/NotificationCount";
 import React from "react";
+import { useMyOrganizationAdminOrganizations } from "@/features/organization-admin/hooks/useMyOrganizationAdminOrganizations";
+import {
+  canOpenOrgDashboard,
+  ORG_DASHBOARD_URL,
+} from "@/components/OrgDashboardLink";
+import { CREATE_ORGANIZATION_URL } from "@/components/CreateOrganizationLink";
 import { useSportSelection } from "@/hooks/useSportSelection";
 import MyRacerProfileLink from "@/components/MyRacerProfileLink";
 import { useLocation } from "wouter";
@@ -76,6 +82,14 @@ export default function PublicTopNav({
     isJetSki,
   } = useSportSelection();
   const notifications = useUnreadNotifications();
+  const organizationAccess =
+    useMyOrganizationAdminOrganizations(isAuthenticated);
+  const showOrgDashboard = canOpenOrgDashboard(
+    isAuthenticated &&
+      organizationAccess.isSuccess &&
+      !organizationAccess.isError,
+    organizationAccess.data,
+  );
   const [location, navigate] = useLocation();
 
   const [sportsOpen, setSportsOpen] = React.useState(false);
@@ -162,6 +176,8 @@ export default function PublicTopNav({
       return;
     }
 
+    if (location === "/") return;
+
     if (sport.href) {
       navigate(sport.href);
     }
@@ -229,7 +245,7 @@ export default function PublicTopNav({
   return (
     <header
       className={[
-        "cl-dark relative z-[100] min-w-0 max-w-full overflow-visible",
+        "consumer-top-nav relative z-[100] min-w-0 max-w-full overflow-visible",
         "border-b border-cl-accent/10 bg-cl-canvas backdrop-blur-xl",
         "shadow-cl-panel",
         sticky ? "consumer-public-nav-safe sticky top-0" : "",
@@ -402,6 +418,27 @@ export default function PublicTopNav({
                     </span>
                   </button>
                   <MyRacerProfileLink onNavigate={navigateFromAccount} />
+                  <div className="my-2 h-px bg-cl-subtle" />
+                  <a
+                    href={CREATE_ORGANIZATION_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={closeMenus}
+                    className="consumer-account-org-link"
+                  >
+                    Create your own Org ↗
+                  </a>
+                  {showOrgDashboard && (
+                    <a
+                      href={ORG_DASHBOARD_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={closeMenus}
+                      className="consumer-account-org-link"
+                    >
+                      Go to Org Dashboard ↗
+                    </a>
+                  )}
 
                   {isJetSki && (
                     <button

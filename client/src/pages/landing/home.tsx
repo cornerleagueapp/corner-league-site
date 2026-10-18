@@ -71,6 +71,7 @@ export default function Home() {
         image="https://cornerleague.com/og/clubs.png"
       />
 
+      <div className="consumer-page-frame consumer-marketing-pilot">
       {/* mobile col widths for background collage */}
       <style>{`
         @media (max-width: 767px) {
@@ -420,6 +421,7 @@ export default function Home() {
         </section>
       </main>
 
+      </div>
       <SiteFooter />
     </div>
   );
