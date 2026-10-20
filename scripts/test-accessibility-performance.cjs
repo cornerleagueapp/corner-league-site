@@ -270,6 +270,8 @@ function text(node) {
   const nav = compile("client/src/components/navigation/PublicTopNav.tsx", {
     react: nh.react,
     "./NavbarSearch": { default: () => null, __esModule: true },
+    "./ColorModeToggle": { default: () => null, __esModule: true },
+    "./SportNavigation": { DesktopExploreNavigation: () => null },
     "@/components/community/AccountAvatar": compile("client/src/components/community/AccountAvatar.tsx"),
     "@/features/organization-admin/hooks/useMyOrganizationAdminOrganizations": {
       useMyOrganizationAdminOrganizations: () => ({ isSuccess: true, isError: false, data: { organizations: [] } }),
@@ -322,7 +324,7 @@ function text(node) {
           ? trigger
           : null,
     };
-    refs[1].ref.current = { contains: () => false, querySelector: () => null };
+
     nh.flush();
     return navTree;
   }

@@ -1,3 +1,4 @@
+import LoadingCards from "@/components/ui/LoadingCards";
 import { Link } from "wouter";
 import type { EventItem, OrgItem } from "@/hooks/useScoresLandingData";
 import UpcomingEventsCalendar from "@/components/landing/UpcomingEventsCalendar";
@@ -138,9 +139,7 @@ export default function UpcomingEventsSection({
             </div>
 
             {isLoading ? (
-              <div className="px-5 py-10 text-sm text-cl-muted">
-                Loading upcoming race schedule…
-              </div>
+              <div className="p-5"><LoadingCards label="Loading upcoming race schedule…" count={3}/></div>
             ) : filtered.length === 0 ? (
               <div className="px-5 py-10">
                 <div className="max-w-xl rounded-[24px] border border-cl-border bg-cl-subtle p-6">

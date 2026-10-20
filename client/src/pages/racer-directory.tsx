@@ -1,3 +1,4 @@
+import LoadingCards from "@/components/ui/LoadingCards";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
@@ -62,7 +63,7 @@ function Directory({ sportKey, label }: { sportKey: string; label: string }) {
         </div>
       </form>
       {query.isPending ? (
-        <p role="status">Loading athletes…</p>
+        <LoadingCards label="Loading athletes…" />
       ) : query.isError ? (
         <div role="alert">
           <p>{query.error.message}</p>

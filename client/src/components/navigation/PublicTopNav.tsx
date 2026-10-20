@@ -1,3 +1,4 @@
+import ColorModeToggle from "./ColorModeToggle";
 import { DesktopExploreNavigation } from "./SportNavigation";
 import NavbarSearch from "./NavbarSearch";
 import AccountAvatar from "@/components/community/AccountAvatar";
@@ -291,6 +292,7 @@ export default function PublicTopNav({
             key={`${selectedSport?.key ?? "sport"}:${user?.id ?? "guest"}`}
           />
           <DesktopExploreNavigation sportKey={selectedSport?.key ?? "jet-ski"} />
+          <ColorModeToggle />
           {isAuthenticated ? (
             <div ref={accountRef} className="relative min-w-0">
               <button

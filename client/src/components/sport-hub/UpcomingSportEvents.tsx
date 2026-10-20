@@ -1,3 +1,4 @@
+import LoadingCards from "@/components/ui/LoadingCards";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
@@ -17,6 +18,7 @@ function EventPhoto({ event, sport }: { event: HubEvent; sport: string }) {
           src={event.imageUrl}
           alt=""
           loading="lazy"
+          decoding="async"
           onError={() => setFailed(true)}
         />
       ) : (
@@ -56,9 +58,7 @@ export default function UpcomingSportEvents({ sport }: { sport: string }) {
         </span>
       </div>
       {query.isPending ? (
-        <p role="status" className="sport-hub-empty">
-          Loading events…
-        </p>
+        <LoadingCards label="Loading events…" />
       ) : query.isError ? (
         <div role="alert" className="sport-hub-empty">
           <p>We couldn’t load events right now.</p>
