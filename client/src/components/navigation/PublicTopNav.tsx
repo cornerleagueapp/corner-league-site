@@ -424,7 +424,7 @@ export default function PublicTopNav({
                     onClick={() => navigateFromAccount("/notifications")}
                     className="flex w-full items-center gap-3 rounded-[15px] px-3 py-3 text-left text-sm font-bold text-cl-muted transition hover:bg-cl-subtle hover:text-cl-ink"
                   >
-                    <Bell className="h-4 w-4 shrink-0 text-cl-accent" />
+                    <Bell className="consumer-notification-bell h-4 w-4 shrink-0" />
                     <span>Notifications</span>
                     <span className="ml-auto">
                       <NotificationCount

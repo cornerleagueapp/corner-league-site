@@ -395,7 +395,7 @@ export function RacerGalleryView({
                     <img
                       src={getGalleryThumb(item)}
                       alt={item.title || "Racer media"}
-                      className="h-full w-full object-cover opacity-90 transition group-hover:scale-[1.03] group-hover:opacity-100"
+                      className="h-full w-full object-cover transition group-hover:scale-[1.03]"
                     />
 
                     <div className="cl-dark absolute right-2 top-2 grid h-8 w-8 place-items-center rounded-full bg-black/55 text-cl-ink">

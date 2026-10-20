@@ -86,7 +86,7 @@ export default function LeagueTopPerformersSection() {
             ) : trendingRacers.length === 0 ? null : (
               <div className="mt-8 overflow-hidden rounded-[30px] border border-cl-accent/10 bg-cl-surface shadow-cl-panel">
                 <div className="overflow-x-auto [scrollbar-width:thin] [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-cl-accent/20">
-                  <div className="min-w-[620px]">
+                  <div className="trending-athletes-table">
                     <div className="grid grid-cols-[70px_1fr_140px] items-center border-b border-cl-border px-4 py-4 text-xs font-bold uppercase tracking-[0.18em] text-cl-muted">
                       <div>Rank</div>
                       <div>Athlete</div>
@@ -110,7 +110,7 @@ export default function LeagueTopPerformersSection() {
                           </Link>
 
                           <div className="mt-1 text-sm text-cl-muted">
-                            Nationwide · Last
+                            Nationwide · Last{" "}
                             {trendingRange === "7d" ? "7" : "30"} days
                           </div>
                         </div>

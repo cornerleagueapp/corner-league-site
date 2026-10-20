@@ -325,7 +325,7 @@ export default function ScoresPage() {
         <div className="absolute left-1/2 top-0 h-[260px] w-[260px] -translate-x-1/2 rounded-full bg-cl-accent/[0.04] blur-3xl" />
       </div>
 
-      <div className="relative mx-auto max-w-7xl overflow-x-hidden p-6">
+      <div className="scores-page-content relative w-full min-w-0">
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-[11px] text-center uppercase tracking-[0.18em] text-cl-accent">
@@ -346,10 +346,7 @@ export default function ScoresPage() {
 
         {content}
 
-        <p className="mt-6 text-xs text-cl-muted">
-          Note: These embedded widgets are provided by Sportradar and may take a
-          moment to load. Heights are set generously for readability.
-        </p>
+
 
 
       </div>

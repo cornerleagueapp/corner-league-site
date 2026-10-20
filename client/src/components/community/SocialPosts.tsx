@@ -1,3 +1,4 @@
+import AccountAvatar from "./AccountAvatar";
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
@@ -106,7 +107,7 @@ export function PostComposer({ athleteId }: { athleteId?: string }) {
   if (!canCompose) return null;
   return (
     <form
-      className={socialBox}
+      className={`social-post-composer ${socialBox}`}
       onSubmit={(event) => {
         event.preventDefault();
         setError("");
@@ -407,9 +408,9 @@ export function PostCard({ post }: { post: SocialPost }) {
   const signIn = () =>
     navigate(`/auth?next=${encodeURIComponent(`/posts/${post.id}`)}`);
   return (
-    <article className={socialBox}>
+    <article className={`social-post-card ${socialBox}`}>
       <div className="mb-4 flex flex-wrap items-start justify-between gap-2">
-        <div>
+        <div className="social-post-author"><AccountAvatar picture={post.author.profilePicture} username={post.author.username} /><div>
           <Link
             href={`/profile/${encodeURIComponent(post.author.username)}`}
             className="text-sm font-bold text-cl-accent"
@@ -420,7 +421,7 @@ export function PostCard({ post }: { post: SocialPost }) {
             {post.athlete ? `Athlete update · ${post.athlete.name} · ` : ""}
             {new Date(post.createdAt).toLocaleString()}
           </p>
-        </div>
+        </div></div>
         {post.canEdit && (
           <div className="flex gap-2">
             <button
@@ -488,7 +489,7 @@ export function PostCard({ post }: { post: SocialPost }) {
         </p>
       )}
       {post.mediaUrls.length > 0 && (
-        <div className="mt-4 grid gap-2 sm:grid-cols-2">
+        <div className={`social-post-media mt-4 grid gap-2 ${post.mediaUrls.length > 1 ? "sm:grid-cols-2" : ""}`}>
           {post.mediaUrls.map((url, index) => (
             <a
               key={`${url}-${index}`}
@@ -593,7 +594,7 @@ function Feed({
     enabled: feed !== "following" || isAuthenticated,
   });
   return (
-    <div className="space-y-4">
+    <div className="social-post-feed space-y-4">
       {compose && <PostComposer key={String(user?.id)} athleteId={athleteId} />}
       <div className="flex items-center justify-between">
         <h2 className="font-bold">{athleteId ? "Athlete updates" : "Posts"}</h2>
