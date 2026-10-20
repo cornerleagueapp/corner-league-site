@@ -1,3 +1,4 @@
+import { SidebarSports } from "./navigation/SportNavigation";
 import { useSportSelection } from "@/hooks/useSportSelection";
 import { sportDirectory, sportHub } from "@/lib/sportNavigation";
 import { hasMoreBelow } from "@/lib/sidebarScroll";
@@ -632,12 +633,13 @@ export default function SidebarPanel({
             }`}
           >
             <div ref={navContentRef} className="pb-11">
+              <SidebarSports collapsed={renderCollapsed} onNavigate={onClose} />
               {sections.map((section) => {
                 const open = renderCollapsed ? true : !!openMap[section.title];
 
                 return (
                   <section
-                    className={renderCollapsed ? "mb-4" : "mb-2"}
+                    className={`${renderCollapsed ? "mb-4" : "mb-2"} ${section.title === "Explore" ? "cl-mobile-explore" : ""}`}
                     key={section.title}
                   >
                     {!renderCollapsed ? (

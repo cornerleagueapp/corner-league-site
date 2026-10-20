@@ -1,3 +1,4 @@
+import { SPORT_VISUALS } from "@/lib/sportVisuals";
 import { useEffect, useSyncExternalStore } from "react";
 import { useLocation } from "wouter";
 import { usePublicSports } from "./usePublicSports";
@@ -43,10 +44,18 @@ export function useSportSelection() {
   const [location] = useLocation();
   const saved = useSyncExternalStore(subscribe, snapshot, () => undefined);
   const availability = usePublicSports();
-  const sports =
+  const populated =
     !availability.isError && Array.isArray(availability.data)
       ? availability.data
       : [];
+  const sports = Object.entries(SPORT_VISUALS).map(([key, visual]) => ({
+    key,
+    label: visual.label,
+    organizationCount: 0,
+    href: key === "jet-ski" ? "/scores/aqua" : `/sports/${key}`,
+    enabled: true,
+    ...populated.find((s) => s.key === key),
+  }));
   const pending = availability.isPending;
   const sportKey =
     (pending || availability.isError) && saved && !routeSport(location)

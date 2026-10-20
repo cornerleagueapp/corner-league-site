@@ -46,6 +46,7 @@ import AuthPage from "@/pages/auth";
 import NotFound from "@/pages/not-found";
 import ClubDetailsPage from "./pages/clubs/clubDetails";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import RacerDirectory from "./pages/racer-directory";
 import RacerProfilePage from "./pages/racer-profile";
 import CreateRacerProfilePage from "./pages/create-racer-profile";
 import AppShell from "./layout/AppShell";
@@ -665,6 +666,7 @@ function Router() {
         </AppShell>
       </Route>
 
+      <Route path="/racer"><AppShell guestMode><ErrorBoundary><RacerDirectory /></ErrorBoundary></AppShell></Route>
       <Route path="/racer/:idOrSlug">
         {(params) => (
           <AppShell guestMode>

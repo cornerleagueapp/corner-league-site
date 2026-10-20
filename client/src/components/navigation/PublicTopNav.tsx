@@ -1,3 +1,4 @@
+import { DesktopExploreNavigation } from "./SportNavigation";
 import NavbarSearch from "./NavbarSearch";
 import AccountAvatar from "@/components/community/AccountAvatar";
 import {
@@ -255,7 +256,7 @@ export default function PublicTopNav({
     >
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-cl-accent/30" />
 
-      <div className="flex min-h-[68px] w-full min-w-0 items-center px-3 py-3 pl-[76px] sm:px-5 sm:pl-[84px] md:px-6 md:pl-6 lg:px-8">
+      <div className="cl-header-inner flex min-h-[68px] w-full min-w-0 items-center px-3 py-3 pl-[76px] sm:px-5 sm:pl-[84px] md:px-6 md:pl-6 lg:px-8">
         {/* {isLandingPage ? (
           <nav className="hidden min-w-0 items-center gap-2 lg:flex">
             {navItems.map((item) => {
@@ -277,85 +278,19 @@ export default function PublicTopNav({
           </nav>
         ) : null} */}
 
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-cl-accent/15 bg-cl-accent/[0.06]">
+        <a href="/" className="cl-header-logo" aria-label="Corner League home">
           <img
             src={cornerLeagueLogo}
             alt="Corner League"
             className="h-6 w-auto"
           />
-        </span>
+        </a>
 
         <div className="consumer-navbar-actions ml-auto flex min-w-0 flex-1 items-center justify-end gap-2 sm:gap-3">
-          {sports.length > 0 && (
-            <div ref={sportsRef} className="relative min-w-0">
-              <button
-                type="button"
-                aria-controls={sportsOpen ? sportsId : undefined}
-                aria-expanded={sportsOpen}
-                onClick={() => {
-                  setAccountOpen(false);
-
-                  setSportsOpen((current) => !current);
-                }}
-                className="inline-flex h-11 max-w-[126px] items-center gap-2 overflow-hidden rounded-full border border-cl-border bg-cl-subtle px-3 text-[10px] font-black uppercase tracking-[0.12em] text-cl-ink transition duration-200 hover:border-cl-accent/25 hover:bg-cl-accent/10 hover:text-cl-accent sm:max-w-none sm:px-4 sm:text-xs sm:tracking-[0.18em]"
-              >
-                <span className="block min-w-0 truncate">
-                  {selectedSport?.label ?? "Select Sport"}
-                </span>
-
-                <ChevronDown
-                  className={`h-4 w-4 shrink-0 transition-transform ${
-                    sportsOpen ? "rotate-180" : ""
-                  }`}
-                />
-              </button>
-
-              {sportsOpen ? (
-                <div
-                  id={sportsId}
-                  className="absolute right-0 z-[250] mt-3 w-[min(82vw,260px)] overflow-hidden rounded-2xl border border-cl-accent/10 bg-cl-surface shadow-cl-panel backdrop-blur-xl"
-                >
-                  {sports.map((sport) => {
-                    const selected = sport.key === selectedSport?.key;
-
-                    const disabled = sport.enabled === false;
-
-                    return (
-                      <button
-                        key={sport.key}
-                        type="button"
-                        aria-pressed={selected}
-                        disabled={disabled}
-                        onClick={() => handleSportSelect(sport)}
-                        className={`flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-sm transition ${
-                          disabled
-                            ? "cursor-not-allowed text-cl-muted"
-                            : selected
-                              ? "bg-cl-accent/10 text-cl-accent"
-                              : "text-cl-muted hover:bg-cl-subtle hover:text-cl-ink"
-                        }`}
-                      >
-                        <span className="min-w-0 truncate uppercase tracking-[0.12em]">
-                          {sport.label}
-                        </span>
-
-                        {selected ? (
-                          <Check className="h-4 w-4 shrink-0 text-cl-accent" />
-                        ) : disabled ? (
-                          <span className="rounded-full border border-cl-border bg-cl-subtle px-2 py-1 text-[8px] font-black uppercase tracking-[0.12em] text-cl-muted">
-                            Soon
-                          </span>
-                        ) : null}
-                      </button>
-                    );
-                  })}
-                </div>
-              ) : null}
-            </div>
-          )}
           <NavbarSearch
             key={`${selectedSport?.key ?? "sport"}:${user?.id ?? "guest"}`}
           />
+          <DesktopExploreNavigation sportKey={selectedSport?.key ?? "jet-ski"} />
           {isAuthenticated ? (
             <div ref={accountRef} className="relative min-w-0">
               <button

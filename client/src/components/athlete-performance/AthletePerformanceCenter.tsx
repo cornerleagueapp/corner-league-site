@@ -1,3 +1,4 @@
+import ThemedSelect from "@/components/navigation/ThemedSelect";
 import { useMemo, useState } from "react";
 import { Link } from "wouter";
 import { ExternalLink, ImageIcon, Play } from "lucide-react";
@@ -135,6 +136,63 @@ export default function AthletePerformanceCenter({
       </section>
     );
   }
+  const about = (
+    <section className="athlete-panel">
+      <h2>About {racer.racerName.split(" ")[0] || "the athlete"}</h2>
+      <p className="athlete-bio">{racer.bio || "No biography shared yet."}</p>
+      <dl className="athlete-bio-facts">
+        <div>
+          <dt>Location</dt>
+          <dd>
+            {racer.location ||
+              [racer.city, racer.stateCode, racer.countryCode]
+                .filter(Boolean)
+                .join(", ") ||
+              "—"}
+          </dd>
+        </div>
+        <div>
+          <dt>Age</dt>
+          <dd>{ageLabel || "—"}</dd>
+        </div>
+        <div>
+          <dt>Level</dt>
+          <dd>{racer.skillLevel || "Amateur"}</dd>
+        </div>
+        <div>
+          <dt>Ride</dt>
+          <dd>{racer.boatManufacturers || "—"}</dd>
+        </div>
+        <div>
+          <dt>Height</dt>
+          <dd>{heightLabel || "—"}</dd>
+        </div>
+        <div>
+          <dt>National rank</dt>
+          <dd>
+            {rating?.nationalRankingPosition
+              ? `#${rating.nationalRankingPosition}`
+              : "—"}
+          </dd>
+        </div>
+        <div>
+          <dt>Organization rank</dt>
+          <dd>
+            {rating?.organizationRankingPosition
+              ? `#${rating.organizationRankingPosition}`
+              : "—"}
+          </dd>
+        </div>
+      </dl>
+      {rating?.computedAt && (
+        <p className="athlete-method-note">
+          Rankings updated {new Date(rating.computedAt).toLocaleDateString()}.
+          Rankings may use a different season or class.
+        </p>
+      )}
+    </section>
+  );
+
   function results(full = false) {
     const rows = [...analysis.rows].reverse().slice(0, full ? limit : 6);
     return (
@@ -279,6 +337,7 @@ export default function AthletePerformanceCenter({
           </button>
         ))}
       </nav>
+      <div className="athlete-mobile-about">{about}</div>
       <div className="athlete-performance-filters">
         <div>
           <h2>Performance center</h2>
@@ -293,40 +352,33 @@ export default function AthletePerformanceCenter({
           </button>
         </div>
         <div className="athlete-filter-controls">
-          <label>
-            Season
-            <select
-              value={season}
-              onChange={(e) => {
-                setYear(e.target.value);
-                setLimit(20);
-              }}
-            >
-              <option value="all">All time</option>
-              {choices.years.map((y) => (
-                <option value={y} key={y}>
-                  {y} season
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Class
-            <select
-              value={division}
-              onChange={(e) => {
-                setDivision(e.target.value);
-                setLimit(20);
-              }}
-            >
-              <option value="all">All classes</option>
-              {choices.classes.map((c) => (
-                <option key={c.value} value={c.value}>
-                  {c.label}
-                </option>
-              ))}
-            </select>
-          </label>
+          <ThemedSelect
+            label="Season"
+            value={season}
+            onChange={(value) => {
+              setYear(value);
+              setLimit(20);
+            }}
+            options={[
+              { value: "all", label: "All time" },
+              ...choices.years.map((y) => ({
+                value: String(y),
+                label: `${y} season`,
+              })),
+            ]}
+          />
+          <ThemedSelect
+            label="Class"
+            value={division}
+            onChange={(value) => {
+              setDivision(value);
+              setLimit(20);
+            }}
+            options={[
+              { value: "all", label: "All classes" },
+              ...choices.classes,
+            ]}
+          />
         </div>
       </div>
       {error && (
@@ -480,63 +532,7 @@ export default function AthletePerformanceCenter({
           )}
         </main>
         <aside className="athlete-performance-sidebar">
-          <section className="athlete-panel">
-            <h2>About {racer.racerName.split(" ")[0] || "the athlete"}</h2>
-            <p className="athlete-bio">
-              {racer.bio || "No biography shared yet."}
-            </p>
-            <dl className="athlete-bio-facts">
-              <div>
-                <dt>Location</dt>
-                <dd>
-                  {racer.location ||
-                    [racer.city, racer.stateCode, racer.countryCode]
-                      .filter(Boolean)
-                      .join(", ") ||
-                    "—"}
-                </dd>
-              </div>
-              <div>
-                <dt>Age</dt>
-                <dd>{ageLabel || "—"}</dd>
-              </div>
-              <div>
-                <dt>Level</dt>
-                <dd>{racer.skillLevel || "Amateur"}</dd>
-              </div>
-              <div>
-                <dt>Ride</dt>
-                <dd>{racer.boatManufacturers || "—"}</dd>
-              </div>
-              <div>
-                <dt>Height</dt>
-                <dd>{heightLabel || "—"}</dd>
-              </div>
-              <div>
-                <dt>National rank</dt>
-                <dd>
-                  {rating?.nationalRankingPosition
-                    ? `#${rating.nationalRankingPosition}`
-                    : "—"}
-                </dd>
-              </div>
-              <div>
-                <dt>Organization rank</dt>
-                <dd>
-                  {rating?.organizationRankingPosition
-                    ? `#${rating.organizationRankingPosition}`
-                    : "—"}
-                </dd>
-              </div>
-            </dl>
-            {rating?.computedAt && (
-              <p className="athlete-method-note">
-                Rankings updated{" "}
-                {new Date(rating.computedAt).toLocaleDateString()}. Rankings may
-                use a different season or class.
-              </p>
-            )}
-          </section>
+          <div className="athlete-desktop-about">{about}</div>
           <section className="athlete-panel">
             <header className="athlete-panel-heading">
               <h2>World Finals</h2>

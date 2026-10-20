@@ -7,7 +7,6 @@ export function routeSport(path: string): string | undefined {
   if (validSportKey(key)) return key;
   if (
     /^\/aqua-organizations(?:\/|$)/.test(path) ||
-    path === "/event-map" ||
     /^\/(?:registration|racepod)(?:\/|$)/.test(path) ||
     /^\/scores\/aqua(?:\/|$)/.test(path)
   )

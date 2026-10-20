@@ -85,3 +85,23 @@ export function safeProfileImage(value?: string | null) {
     ? value
     : null;
 }
+
+export async function browseAthletes(
+  sport: string,
+  search: string,
+  page: number,
+  signal?: AbortSignal,
+) {
+  const query = new URLSearchParams({
+    sportKey: sport,
+    search,
+    page: String(page),
+  });
+  const response = await apiFetch(
+    `/community/directory/athletes/browse?${query}`,
+    { signal, cache: "no-store", skipAuth: true, noRefresh: true },
+  );
+  if (!response.ok)
+    throw new Error("The athlete directory is unavailable. Please try again.");
+  return parseDirectory(await response.json(), "athletes", sport);
+}

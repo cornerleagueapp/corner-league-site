@@ -5,6 +5,8 @@ import usMapOutline from "@assets/us-map-outline.svg";
 
 type Props = {
   events: EventItem[];
+  sportKey?: string;
+  sportLabel?: string;
 };
 
 type GeoMeta = {
@@ -207,7 +209,7 @@ function InlineUSMap({
   );
 }
 
-export default function NationwideMap({ events }: Props) {
+export default function NationwideMap({ events, sportKey = "jet-ski", sportLabel = "Jet Ski" }: Props) {
   const [filter, setFilter] = React.useState<FilterKey>("all");
   const [activeClusterKey, setActiveClusterKey] = React.useState<string | null>(
     null,
@@ -332,7 +334,7 @@ export default function NationwideMap({ events }: Props) {
               </h2>
 
               <p className="mt-4 max-w-3xl text-sm leading-7 text-cl-muted sm:text-base">
-                Explore where jet ski racing is active across the country, from
+                Explore where {sportLabel} is active across the country, from
                 upcoming race weekends to recent event coverage.
               </p>
             </div>
@@ -496,7 +498,7 @@ export default function NationwideMap({ events }: Props) {
 
                   <div className="mt-6">
                     <Link
-                      href={`/aqua-organizations/event-details/${activeEvent.id}?orgId=${encodeURIComponent(
+                      href={sportKey !== "jet-ski" ? `/sports/${sportKey}/organizations/${encodeURIComponent(activeEvent.organizationId || "")}?event=${encodeURIComponent(activeEvent.id)}` : `/aqua-organizations/event-details/${activeEvent.id}?orgId=${encodeURIComponent(
                         activeEvent.organizationId || "",
                       )}`}
                     >
@@ -516,7 +518,7 @@ export default function NationwideMap({ events }: Props) {
                         {activeCluster.events.slice(1).map((event) => (
                           <Link
                             key={event.id}
-                            href={`/aqua-organizations/event-details/${event.id}?orgId=${encodeURIComponent(
+                            href={sportKey !== "jet-ski" ? `/sports/${sportKey}/organizations/${encodeURIComponent(event.organizationId || "")}?event=${encodeURIComponent(event.id)}` : `/aqua-organizations/event-details/${event.id}?orgId=${encodeURIComponent(
                               event.organizationId || "",
                             )}`}
                           >
