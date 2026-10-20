@@ -1,3 +1,4 @@
+import SportCommunitySection from "@/components/sport-hub/SportCommunitySection";
 import UpcomingSportEvents from "@/components/sport-hub/UpcomingSportEvents";
 import SportHubHero from "@/components/sport-hub/SportHubHero";
 import { BrandingImage } from "@/components/branding/ConsumerBrandingHero";
@@ -129,6 +130,7 @@ function SportDirectory({ sportKey }: { sportKey: string }) {
           </aside>
         </div>
       </div>
+      <SportCommunitySection sport={sportKey} />
     </main>
   );
 }

@@ -1,33 +1,35 @@
+import PeopleDialog from "@/components/community/PeopleDialog";
+import FollowedResults from "@/components/community/FollowedResults";
+import { FollowedOrganizations } from "@/components/community/OrganizationFollowing";
 import AthleteAccountLinks from "@/components/sport-registration/AthleteAccountLinks";
-import UserSearchPanel from "@/components/community/UserSearchPanel";
+import ProfilePhotoViewer from "@/components/community/ProfilePhotoViewer";
+import ProfileHeader from "@/components/community/ProfileHeader";
+import { useSportSelection } from "@/hooks/useSportSelection";
 import { PublicationList } from "@/components/community/Publishing";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { ShieldCheck, RefreshCw, Share2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { apiRequest } from "@/lib/apiClient";
 import { getCommunityProfile } from "@/lib/communityApi";
 import { socialRequest } from "@/lib/socialApi";
 import { PageSEO } from "@/seo/usePageSEO";
 import RacerIdentityCard from "@/components/community/RacerIdentityCard";
 import FollowedAthletesPanel from "@/components/community/FollowedAthletesPanel";
-import {
-  PeoplePanel,
-  UserSocialControls,
-} from "@/components/community/UserSocialControls";
+import { UserSocialControls } from "@/components/community/UserSocialControls";
 import SocialPostFeed, {
   SocialFailure,
   socialBox,
   socialButton,
 } from "@/components/community/SocialPosts";
-import stockAvatar from "@/assets/stockprofilepicture.jpeg";
 export default function UserProfilePage({ username }: { username: string }) {
   const { user } = useAuth();
+  const { sportKey } = useSportSelection();
   const [tab, setTab] = useState<"athletes" | "posts" | "results" | "articles">(
-    "athletes",
+    "posts",
   );
   const [people, setPeople] = useState<"followers" | "following" | null>(null);
+  const peopleTrigger = useRef<HTMLElement | null>(null);
   const [share, setShare] = useState("");
   const profile = useQuery({
     queryKey: ["community-profile", username],
@@ -44,16 +46,6 @@ export default function UserProfilePage({ username }: { username: string }) {
       ),
     enabled: !!profile.data,
     staleTime: 30_000,
-    retry: false,
-  });
-  const teams = useQuery({
-    queryKey: ["profile-teams", profile.data?.user.id],
-    queryFn: () =>
-      apiRequest<{ data: { teams: { id: string; name: string }[] } }>(
-        "GET",
-        `/users/${profile.data!.user.id}/get-favorite-teams`,
-      ),
-    enabled: !!profile.data,
     retry: false,
   });
   if (profile.isPending)
@@ -75,166 +67,168 @@ export default function UserProfilePage({ username }: { username: string }) {
   const racer = profile.data.racerProfile;
   const isOwn = String(user?.id) === person.id;
   return (
-    <main className="mx-auto max-w-6xl space-y-6 p-4 py-8 text-cl-ink">
+    <main className="consumer-social-profile mx-auto max-w-6xl space-y-6 text-cl-ink">
       <PageSEO title={`@${person.username} • Corner League`} />
-      <header
-        className={`${socialBox} relative overflow-hidden bg-gradient-to-br from-cyan-950/60 via-[#07111f] to-orange-950/30`}
-      >
-        <div className="flex flex-col gap-5 sm:flex-row">
-          <img
-            src={person.profilePicture || stockAvatar}
-            alt={`${person.username} profile`}
-            onError={(event) => {
-              event.currentTarget.onerror = null;
-              event.currentTarget.src = stockAvatar;
-            }}
-            className="h-28 w-28 shrink-0 rounded-full border border-cl-accent/25 object-cover"
-          />
-          <div className="min-w-0 flex-1">
-            <p className="text-xs font-bold uppercase tracking-widest text-cl-accent">
-              Corner League community
-            </p>
-            <h1 className="mt-2 break-words text-3xl font-black sm:text-4xl">
-              {[person.firstName, person.lastName].filter(Boolean).join(" ") ||
-                person.username}
-            </h1>
-            <p className="mt-1 text-cl-muted">@{person.username}</p>
-            {racer?.isVerifiedAthlete && racer.profileUrl && (
-              <Link
-                href={racer.profileUrl}
-                className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-4 text-sm text-emerald-200"
-              >
-                <ShieldCheck size={16} />
-                Verified athlete · Racer profile
-              </Link>
-            )}
-            <AthleteAccountLinks username={person.username} />
-            <p className="mt-4 whitespace-pre-wrap break-words text-sm leading-relaxed text-cl-muted">
-              {person.bio}
-            </p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {person.tags.profile.map((tag) => (
-                <span
-                  key={tag}
-                  className="rounded-full border border-cl-border px-3 py-1 text-xs text-cl-muted"
+      <header className="profile-social-header">
+        <ProfileHeader
+          key={person.id}
+          userId={person.id}
+          username={person.username}
+          sport={racer?.sportKey || sportKey}
+          isOwn={isOwn}
+        />
+        <div className="profile-identity-body">
+          <div className="profile-identity-row">
+            <ProfilePhotoViewer
+              key={person.id}
+              picture={person.profilePicture}
+              username={person.username}
+            />
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-bold uppercase tracking-widest text-cl-accent">
+                Corner League community
+              </p>
+              <h1 className="mt-2 break-words text-3xl font-black sm:text-4xl">
+                {[person.firstName, person.lastName]
+                  .filter(Boolean)
+                  .join(" ") || person.username}
+              </h1>
+              <p className="mt-1 text-cl-muted">@{person.username}</p>
+              {racer?.isVerifiedAthlete && racer.profileUrl && (
+                <Link
+                  href={racer.profileUrl}
+                  className="profile-verified-badge"
                 >
-                  {tag}
-                </span>
-              ))}
+                  <ShieldCheck size={16} />
+                  Verified athlete · Racer profile
+                </Link>
+              )}
+              <AthleteAccountLinks username={person.username} />
+              <p className="mt-4 whitespace-pre-wrap break-words text-sm leading-relaxed text-cl-muted">
+                {person.bio}
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {person.tags.profile.map((tag) => (
+                  <span
+                    key={tag}
+                    className="rounded-full border border-cl-border px-3 py-1 text-xs text-cl-muted"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex flex-wrap gap-2">
-            <button
-              className={socialButton}
-              onClick={() =>
-                setPeople(people === "followers" ? null : "followers")
-              }
-            >
-              {summary.data?.followersCount ?? "—"} Followers
-            </button>
-            <button
-              className={socialButton}
-              onClick={() =>
-                setPeople(people === "following" ? null : "following")
-              }
-            >
-              {summary.data?.followingCount ?? "—"} Following users
-            </button>
-            <button
-              aria-label="Refresh profile"
-              className={socialButton}
-              onClick={() => {
-                void profile.refetch();
-                void summary.refetch();
-                void teams.refetch();
-              }}
-            >
-              <RefreshCw size={16} />
-            </button>
-            <button
-              className={socialButton}
-              onClick={async () => {
-                const url = `${window.location.origin}/profile/${encodeURIComponent(person.username)}`;
-                try {
-                  await navigator.clipboard.writeText(url);
-                  setShare("Link copied");
-                } catch {
-                  setShare(url);
-                }
-              }}
-            >
-              <Share2 size={16} />
-              Share
-            </button>
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
+            <div className="flex flex-wrap gap-2">
+              <button
+                className={socialButton}
+                onClick={(event) => {
+                  peopleTrigger.current = event.currentTarget;
+                  setPeople("followers");
+                }}
+              >
+                {summary.data?.followersCount ?? "—"} Followers
+              </button>
+              <button
+                className={socialButton}
+                onClick={(event) => {
+                  peopleTrigger.current = event.currentTarget;
+                  setPeople("following");
+                }}
+              >
+                {summary.data?.followingCount ?? "—"} Following users
+              </button>
+              <button
+                aria-label="Refresh profile"
+                className={socialButton}
+                onClick={() => {
+                  void profile.refetch();
+                  void summary.refetch();
+                }}
+              >
+                <RefreshCw size={16} />
+              </button>
+              <button
+                className={socialButton}
+                onClick={async () => {
+                  const url = `${window.location.origin}/profile/${encodeURIComponent(person.username)}`;
+                  try {
+                    await navigator.clipboard.writeText(url);
+                    setShare("Link copied");
+                  } catch {
+                    setShare(url);
+                  }
+                }}
+              >
+                <Share2 size={16} />
+                Share
+              </button>
+            </div>
+            <UserSocialControls targetId={person.id} />
           </div>
-          <UserSocialControls targetId={person.id} />
+          {summary.isError && (
+            <p role="status" className="mt-3 text-xs text-amber-900">
+              Community counts are temporarily unavailable.
+            </p>
+          )}
+          {share && (
+            <p role="status" className="mt-3 break-all text-xs text-cl-accent">
+              {share}
+            </p>
+          )}
         </div>
-        {summary.isError && (
-          <p role="status" className="mt-3 text-xs text-amber-200">
-            Community counts are temporarily unavailable.
-          </p>
-        )}
-        {share && (
-          <p role="status" className="mt-3 break-all text-xs text-cl-accent">
-            {share}
-          </p>
-        )}
       </header>
-      {people && <PeoplePanel username={username} kind={people} />}
-      {isOwn && <UserSearchPanel key={user?.id} />}
+      {people && (
+        <PeopleDialog
+          username={username}
+          kind={people}
+          onClose={() => setPeople(null)}
+          returnFocus={peopleTrigger.current}
+        />
+      )}
       <div className="grid min-w-0 gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
-        <aside className="order-2 space-y-5 lg:order-1">
+        <aside className="profile-about space-y-5">
           <RacerIdentityCard profile={racer} isOwn={isOwn} />
           <section className={socialBox}>
-            <h2 className="mb-3 font-bold">Favorite teams</h2>
-            {teams.isError ? (
-              <p className="text-sm text-cl-muted">Teams unavailable.</p>
-            ) : teams.data?.data?.teams?.length ? (
-              teams.data.data.teams.map((team) => (
-                <p key={team.id} className="mb-2 text-sm text-cl-muted">
-                  {team.name}
-                </p>
-              ))
-            ) : (
-              <p className="text-sm text-cl-muted">No favorite teams yet.</p>
-            )}
+            <h2 className="font-bold">About</h2>
+            <p className="mt-3 whitespace-pre-wrap break-words text-sm text-cl-muted">
+              {person.bio || "No bio added yet."}
+            </p>
           </section>
         </aside>
-        <section className="order-1 min-w-0 space-y-5 lg:order-2">
-          <nav
-            role="tablist"
-            aria-label="Profile content"
-            className="flex flex-wrap gap-2"
-          >
+        <section className="min-w-0 space-y-5">
+          <nav aria-label="Profile content" className="profile-content-nav">
             {(
               [
-                ["athletes", "Athletes"],
                 ["posts", "Posts"],
+                ["athletes", "Athletes"],
                 ["results", "Results"],
                 ["articles", "Articles"],
               ] as const
             ).map(([value, label]) => (
               <button
                 key={value}
-                role="tab"
-                aria-selected={tab === value}
+                type="button"
+                aria-pressed={tab === value}
                 onClick={() => setTab(value)}
-                className={socialButton}
+                className="profile-content-button"
               >
                 {label}
               </button>
             ))}
           </nav>
           {tab === "athletes" && (
-            <FollowedAthletesPanel username={username} isOwn={isOwn} />
+            <>
+              <FollowedAthletesPanel username={username} isOwn={isOwn} />
+              <FollowedOrganizations key={username} username={username} />
+            </>
           )}
           {tab === "posts" && (
             <SocialPostFeed username={username} compose={isOwn} />
           )}
           {tab === "articles" && (
-            <section className="space-y-4">
+            <section className="profile-articles space-y-4">
               {isOwn && (
                 <Link className={socialButton} href="/writer">
                   Manage your articles
@@ -244,21 +238,7 @@ export default function UserProfilePage({ username }: { username: string }) {
             </section>
           )}
           {tab === "results" && (
-            <section className={socialBox}>
-              <h2 className="font-bold">Race results & rankings</h2>
-              {racer?.profileUrl ? (
-                <Link
-                  href={racer.profileUrl}
-                  className={`${socialButton} mt-4`}
-                >
-                  View racer results
-                </Link>
-              ) : (
-                <p className="mt-3 text-sm text-cl-muted">
-                  No linked racer results yet.
-                </p>
-              )}
-            </section>
+            <FollowedResults key={username} username={username} isOwn={isOwn} />
           )}
         </section>
       </div>

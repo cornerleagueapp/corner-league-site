@@ -1,6 +1,6 @@
 import { trackEvent } from "@/lib/analytics";
 import { AnalyticsEvents } from "@/lib/analytics-events";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useSportSelection } from "@/hooks/useSportSelection";
 import { PageSEO } from "@/seo/usePageSEO";
 import { sportVisual } from "@/lib/sportVisuals";
@@ -12,7 +12,7 @@ import NewsletterForm from "@/components/marketing/NewsletterForm";
 import LeagueTopPerformersSection from "@/components/landing/LeagueTopPerformersSection";
 import FeaturedRacerGallerySection from "@/components/FeaturedRacerGallerySection";
 import { FeaturedPollSection } from "@/features/polls/components/FeaturedPollSection";
-import RacePodSection from "@/components/landing/RacePodSection";
+import SportCommunitySection from "@/components/sport-hub/SportCommunitySection";
 import SpotifyPodcastSection from "@/components/SpotifyPodcastSection";
 import NationwideMap from "@/components/landing/NationwideMap";
 import { useScoresLandingData } from "@/hooks/useScoresLandingData";
@@ -24,7 +24,6 @@ function RacingCoverage() {
       <FeaturedRacerGallerySection sourcePage="landing_page" limit={4} />
       <FeaturedPollSection sourcePage="landing_page" />
       <NationwideMap events={allEvents} />
-      <RacePodSection />
       <SpotifyPodcastSection
         title="Wally's World WaterX Podcast"
         subtitle="Stories and interviews from the racing community."
@@ -34,7 +33,6 @@ function RacingCoverage() {
   );
 }
 function SportHome({ sport }: { sport: string }) {
-  const [coverageOpen, setCoverageOpen] = useState(false);
   const visual = sportVisual(sport);
   useEffect(() => {
     trackEvent(AnalyticsEvents.SCORES_HOME_VIEWED, {
@@ -52,17 +50,8 @@ function SportHome({ sport }: { sport: string }) {
       <SportHubHero sport={sport} />
       <UpcomingSportEvents key={sport} sport={sport} />
       <OrganizationSpotlight sport={sport} />
-      {sport === "jet-ski" && (
-        <details
-          className="sport-coverage-details"
-          onToggle={(event) => setCoverageOpen(event.currentTarget.open)}
-        >
-          <summary>
-            More Jet Ski coverage: rankings, gallery, polls, map and RacePod
-          </summary>
-          {coverageOpen && <RacingCoverage />}
-        </details>
-      )}
+      {sport === "jet-ski" && <RacingCoverage />}
+      <SportCommunitySection sport={sport} />
       <OrganizationPromoCard />
       <NewsletterForm />
     </main>

@@ -1,3 +1,5 @@
+import NavbarSearch from "./NavbarSearch";
+import AccountAvatar from "@/components/community/AccountAvatar";
 import {
   useUnreadNotifications,
   NotificationCount,
@@ -16,13 +18,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { logout } from "@/lib/logout";
 import {
   Bell,
+  Ticket,
+  PenLine,
   Check,
   ChevronDown,
   CircleUserRound,
   LogOut,
   Settings,
-  ShieldCheck,
-  Wifi,
 } from "lucide-react";
 import cornerLeagueLogo from "@assets/CL_Logo.png";
 
@@ -283,7 +285,7 @@ export default function PublicTopNav({
           />
         </span>
 
-        <div className="ml-auto flex min-w-0 shrink-0 items-center justify-end gap-2 sm:gap-3">
+        <div className="consumer-navbar-actions ml-auto flex min-w-0 flex-1 items-center justify-end gap-2 sm:gap-3">
           {sports.length > 0 && (
             <div ref={sportsRef} className="relative min-w-0">
               <button
@@ -351,6 +353,9 @@ export default function PublicTopNav({
               ) : null}
             </div>
           )}
+          <NavbarSearch
+            key={`${selectedSport?.key ?? "sport"}:${user?.id ?? "guest"}`}
+          />
           {isAuthenticated ? (
             <div ref={accountRef} className="relative min-w-0">
               <button
@@ -362,9 +367,16 @@ export default function PublicTopNav({
 
                   setAccountOpen((current) => !current);
                 }}
-                className="inline-flex h-11 max-w-[126px] items-center gap-2 overflow-hidden rounded-full border border-cl-accent/20 bg-cl-accent/10 px-3 text-[10px] font-black uppercase tracking-[0.12em] text-cl-accent transition duration-200 hover:border-cl-accent/40 hover:bg-cl-accent/20 hover:text-cl-ink sm:max-w-none sm:px-4 sm:text-xs sm:tracking-[0.18em]"
+                className="consumer-account-trigger"
+                aria-label={`Account options for @${username || "member"}`}
               >
-                <span className="block min-w-0 truncate">Account</span>
+                <AccountAvatar
+                  picture={user?.profilePicture}
+                  username={username}
+                />
+                <span className="consumer-account-username">
+                  {username || "Your profile"}
+                </span>
                 <NotificationCount count={notifications.data?.unreadCount} />
 
                 <ChevronDown
@@ -377,20 +389,23 @@ export default function PublicTopNav({
               {accountOpen ? (
                 <div
                   id={accountId}
-                  className="absolute right-0 z-[250] mt-3 w-[min(88vw,290px)] overflow-hidden rounded-[22px] border border-cl-accent/25 bg-cl-surface p-2 shadow-cl-panel ring-1 ring-black/40"
+                  className="consumer-account-panel absolute right-0 z-[250] mt-3 w-[min(88vw,320px)] overflow-y-auto rounded-2xl border border-cl-border bg-cl-surface p-2 shadow-cl-panel"
                 >
-                  <div className="mb-2 flex items-center gap-3 rounded-[16px] border border-emerald-300/10 bg-emerald-300/[0.055] px-3 py-3">
-                    <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-emerald-300/15 bg-emerald-300/10 text-emerald-200">
-                      <ShieldCheck className="h-4 w-4" />
-                    </div>
-
+                  <div className="consumer-account-identity">
+                    <AccountAvatar
+                      picture={user?.profilePicture}
+                      username={username}
+                    />
                     <div className="min-w-0">
-                      <p className="text-[9px] font-black uppercase tracking-[0.14em] text-emerald-200">
-                        Signed in
+                      <p className="truncate font-bold text-cl-ink">
+                        {[user?.firstName, user?.lastName]
+                          .filter(Boolean)
+                          .join(" ") ||
+                          username ||
+                          "Your profile"}
                       </p>
-
-                      <p className="mt-1 truncate text-xs text-cl-muted">
-                        {(user as any)?.email || username || "Account active"}
+                      <p className="truncate text-sm text-cl-muted">
+                        @{username || "member"}
                       </p>
                     </div>
                   </div>
@@ -418,7 +433,34 @@ export default function PublicTopNav({
                     </span>
                   </button>
                   <MyRacerProfileLink onNavigate={navigateFromAccount} />
+                  <button
+                    type="button"
+                    onClick={() => navigateFromAccount("/tickets")}
+                    className="consumer-account-org-link"
+                  >
+                    <Ticket className="h-4 w-4 shrink-0" />
+                    My tickets
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => navigateFromAccount("/writer")}
+                    className="consumer-account-org-link"
+                  >
+                    <PenLine className="h-4 w-4 shrink-0" />
+                    Writer studio
+                  </button>
                   <div className="my-2 h-px bg-cl-subtle" />
+                  <button
+                    type="button"
+                    onClick={() => navigateFromAccount("/settings")}
+                    className="flex w-full items-center gap-3 rounded-[15px] px-3 py-3 text-left text-sm font-bold text-cl-muted transition hover:bg-cl-subtle hover:text-cl-ink"
+                  >
+                    <Settings className="h-4 w-4 shrink-0 text-cl-accent" />
+                    Account Settings
+                  </button>
+
+                  <div className="my-2 h-px bg-cl-subtle" />
+
                   <a
                     href={CREATE_ORGANIZATION_URL}
                     target="_blank"
@@ -439,28 +481,6 @@ export default function PublicTopNav({
                       Go to Org Dashboard ↗
                     </a>
                   )}
-
-                  {isJetSki && (
-                    <button
-                      type="button"
-                      onClick={() => navigateFromAccount("/racepod")}
-                      className="flex w-full items-center gap-3 rounded-[15px] px-3 py-3 text-left text-sm font-bold text-cl-muted transition hover:bg-cl-subtle hover:text-cl-ink"
-                    >
-                      <Wifi className="h-4 w-4 shrink-0 text-cl-accent" />
-                      RacePod
-                    </button>
-                  )}
-
-                  <button
-                    type="button"
-                    onClick={() => navigateFromAccount("/settings")}
-                    className="flex w-full items-center gap-3 rounded-[15px] px-3 py-3 text-left text-sm font-bold text-cl-muted transition hover:bg-cl-subtle hover:text-cl-ink"
-                  >
-                    <Settings className="h-4 w-4 shrink-0 text-cl-accent" />
-                    Account Settings
-                  </button>
-
-                  <div className="my-2 h-px bg-cl-subtle" />
 
                   <button
                     type="button"

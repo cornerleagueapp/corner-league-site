@@ -11,7 +11,7 @@ export default function OrganizationSpotlight({ sport }: { sport: string }) {
     queryFn: ({ signal }) => fetchSportOrganizations(sport, 1, signal),
     staleTime: 30_000,
   });
-  const rows = query.data?.organizations.slice(0, 3) ?? [];
+  const rows = query.data?.organizations.slice(0, 6) ?? [];
   return (
     <section className="sport-hub-section" aria-labelledby="spotlight-title">
       <div className="sport-section-heading">

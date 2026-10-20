@@ -1,9 +1,9 @@
+import { publicPageAvailable } from "@/lib/publicFeatures";
 import { useSportSelection } from "@/hooks/useSportSelection";
 import { sportThemeStyle } from "@/lib/sportTheme";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "wouter";
 import SidebarPanel, { useAppSidebarSections } from "@/components/sidebarPanel";
-import RacerSearchModal from "@/components/RacerSearchModal";
 import cornerLeagueLogo from "@assets/CL_Logo.png";
 import { logout } from "@/lib/logout";
 import { useAuth } from "@/hooks/useAuth";
@@ -193,7 +193,6 @@ export default function AppShell({
 
   const [clubsSubKey, setClubsSubKey] = useState<"" | "my" | "discover">("");
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const [racerSearchOpen, setRacerSearchOpen] = useState(false);
 
   useEffect(() => {
     const hardLogout = () => {
@@ -250,18 +249,6 @@ export default function AppShell({
 
     return () => {
       window.removeEventListener("clubs:activeTab", handler as EventListener);
-    };
-  }, []);
-
-  useEffect(() => {
-    const onOpenRacerSearch = () => {
-      setRacerSearchOpen(true);
-    };
-
-    window.addEventListener("racer-search:open", onOpenRacerSearch);
-
-    return () => {
-      window.removeEventListener("racer-search:open", onOpenRacerSearch);
     };
   }, []);
 
@@ -458,23 +445,11 @@ export default function AppShell({
           <div
             className={`consumer-page-frame${location === "/messages" ? " consumer-page-frame--workspace" : ""}`}
           >
-            {children}
+            {publicPageAvailable(location) ? children : <section className="sport-hub-empty"><h1>Page unavailable</h1><p>This feature is not currently available.</p><a href="/">Return home</a></section>}
           </div>
           {location !== "/messages" && <SiteFooter />}
         </div>
       </div>
-
-      <RacerSearchModal
-        open={racerSearchOpen}
-        onClose={() => setRacerSearchOpen(false)}
-        onSelectRacer={(racer) => {
-          setRacerSearchOpen(false);
-
-          const id = encodeURIComponent(String(racer.id));
-
-          navigate(`/racer/${id}`);
-        }}
-      />
 
       {showLogoutConfirm ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4">

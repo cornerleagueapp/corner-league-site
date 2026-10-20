@@ -269,6 +269,8 @@ function text(node) {
   const nh = hooks();
   const nav = compile("client/src/components/navigation/PublicTopNav.tsx", {
     react: nh.react,
+    "./NavbarSearch": { default: () => null, __esModule: true },
+    "@/components/community/AccountAvatar": compile("client/src/components/community/AccountAvatar.tsx"),
     "@/features/organization-admin/hooks/useMyOrganizationAdminOrganizations": {
       useMyOrganizationAdminOrganizations: () => ({ isSuccess: true, isError: false, data: { organizations: [] } }),
     },

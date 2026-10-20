@@ -113,11 +113,19 @@ function PostImage({
 }
 export function OrganizationPosts({
   organizationId,
+  previewLimit,
 }: {
   organizationId: string;
+  previewLimit?: number;
 }) {
   const { sandbox, fetch: pageFetch } = useOrganizationPageApi();
   const [page, setPage] = useState(1);
+  const preview =
+    typeof previewLimit === "number" &&
+    Number.isInteger(previewLimit) &&
+    previewLimit > 0
+      ? Math.min(6, previewLimit)
+      : null;
   const query = useQuery<Feed>({
     queryKey: [
       "organization-public-posts",
@@ -146,7 +154,7 @@ export function OrganizationPosts({
   return (
     <section
       aria-label="Organization news and posts"
-      className="mt-6 rounded-2xl border border-cl-border bg-cl-subtle p-5 sm:p-7"
+      className="org-news-feed rounded-2xl border border-cl-border bg-cl-surface p-5 sm:p-7"
     >
       <div className="mb-5 flex items-center justify-between gap-4">
         <h2 className="text-xl font-bold text-cl-ink">News & Updates</h2>
@@ -169,7 +177,7 @@ export function OrganizationPosts({
         </p>
       )}
       {query.isError && (
-        <p className="text-amber-300" role="alert">
+        <p className="text-cl-danger" role="alert">
           Unable to load organization posts. Use Refresh to try again.
         </p>
       )}
@@ -180,7 +188,10 @@ export function OrganizationPosts({
         </p>
       )}
       <div className="grid gap-4 md:grid-cols-2">
-        {query.data?.articles.map((post) => (
+        {(preview
+          ? query.data?.articles.slice(0, preview)
+          : query.data?.articles
+        )?.map((post) => (
           <Link
             key={post.id}
             href={
@@ -188,7 +199,7 @@ export function OrganizationPosts({
                 ? `/internal/test-organizations/${sandbox.id}?post=${encodeURIComponent(post.id)}`
                 : `/organization-posts/${post.id}`
             }
-            className="overflow-hidden rounded-xl border border-cl-border bg-slate-950/50 transition hover:border-cl-accent/50"
+            className="overflow-hidden rounded-xl border border-cl-border bg-cl-surface transition hover:border-cl-accent/50"
             style={{ borderTop: `3px solid ${postAccent(post.accentColor)}` }}
           >
             {safePostImage(post.headerImageUrl) && (
@@ -217,19 +228,21 @@ export function OrganizationPosts({
           </Link>
         ))}
       </div>
-      <div className="mt-5 flex items-center gap-4 text-sm text-cl-muted">
-        {page > 1 && (
-          <button className="min-h-11 px-3" onClick={() => setPage(page - 1)}>
-            Previous
-          </button>
-        )}
-        <span>Page {page}</span>
-        {query.data?.meta.hasNextPage && (
-          <button className="min-h-11 px-3" onClick={() => setPage(page + 1)}>
-            Next
-          </button>
-        )}
-      </div>
+      {!preview && (
+        <div className="mt-5 flex items-center gap-4 text-sm text-cl-muted">
+          {page > 1 && (
+            <button className="min-h-11 px-3" onClick={() => setPage(page - 1)}>
+              Previous
+            </button>
+          )}
+          <span>Page {page}</span>
+          {query.data?.meta.hasNextPage && (
+            <button className="min-h-11 px-3" onClick={() => setPage(page + 1)}>
+              Next
+            </button>
+          )}
+        </div>
+      )}
     </section>
   );
 }

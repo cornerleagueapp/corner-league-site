@@ -1,3 +1,4 @@
+import { PUBLIC_RACEPOD_ENABLED } from "@/lib/publicFeatures";
 import SportAthletePublic from "./sport-athlete-public";
 import { isAthleteSport } from "@/lib/sportRegistration";
 import { useSearch } from "wouter";
@@ -922,7 +923,7 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
   }, [racer?.athleteId]);
 
   useEffect(() => {
-    if (!racer?.athleteId) {
+    if (!PUBLIC_RACEPOD_ENABLED || !racer?.athleteId) {
       setRacePodSessions([]);
       return;
     }
@@ -1487,12 +1488,12 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
               </div>
             </Card>
 
-            <RacePodReplayStatCard
+            {PUBLIC_RACEPOD_ENABLED && <RacePodReplayStatCard
               loading={racePodSessionsLoading}
               count={racePodSessions.length}
               latestSession={latestRacePodSession}
               onClick={() => setRacePodSessionsOpen(true)}
-            />
+            />}
           </div>
 
           <div className="order-1 space-y-4 lg:order-2 lg:col-span-2">
@@ -2245,7 +2246,7 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
         }}
       />
 
-      <RacePodSessionsModal
+      {PUBLIC_RACEPOD_ENABLED && <RacePodSessionsModal
         open={racePodSessionsOpen}
         racerName={racer.racerName}
         sessions={racePodSessions}
@@ -2255,7 +2256,7 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
           setRacePodSessionsOpen(false);
           navigate(`/racepod/sessions/${encodeURIComponent(sessionId)}`);
         }}
-      />
+      />}
 
       <RacerProfileShareModal
         open={shareOpen}

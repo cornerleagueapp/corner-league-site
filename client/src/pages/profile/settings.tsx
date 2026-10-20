@@ -8,14 +8,7 @@ import { apiFetch, apiRequest } from "@/lib/apiClient";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import TagsInput from "../../components/TagsInput";
-import {
-  Camera,
-  CheckCircle2,
-  Save,
-  Settings as SettingsIcon,
-  UserRound,
-  X,
-} from "lucide-react";
+import { Camera, CheckCircle2, Save, Bell, UserRound, X } from "lucide-react";
 
 type ProfileFromDb = {
   id: string | number;
@@ -262,59 +255,25 @@ export default function Settings() {
   };
 
   return (
-    <div className="relative min-h-dvh overflow-x-hidden bg-cl-canvas text-cl-ink">
-      <div className="pointer-events-none fixed inset-0 -z-10">
-        <div className="absolute inset-0 cl-panel-wash" />
-        <div className="absolute inset-0 opacity-[0.04] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:72px_72px]" />
-      </div>
-
-      <main className="mx-auto w-full max-w-6xl px-4 py-8 pb-24 sm:px-6 sm:py-12 lg:px-8">
-        <section className="relative overflow-hidden rounded-[30px] border border-cl-accent/10 cl-panel-wash p-5 shadow-cl-panel sm:rounded-[38px] sm:p-8">
-          <div className="pointer-events-none absolute inset-0">
-            <div className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-cl-accent/10 blur-3xl" />
-            <div className="absolute -right-24 bottom-0 h-96 w-96 rounded-full bg-cl-accent/10 blur-3xl" />
-            <div className="absolute inset-0 opacity-[0.05] [background-image:linear-gradient(rgba(255,255,255,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.18)_1px,transparent_1px)] [background-size:72px_72px]" />
-          </div>
-
-          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-            <div className="min-w-0">
-              <div className="mb-4 flex flex-wrap items-center gap-2">
-                <div className="inline-flex items-center gap-2 rounded-full border border-cl-accent/20 bg-cl-accent/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-cl-accent">
-                  <span className="h-2 w-2 rounded-full bg-cl-accent shadow-cl-panel" />
-                  Account
-                </div>
-
-                <div className="inline-flex items-center rounded-full border border-cl-accent/20 bg-cl-accent/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-cl-accent">
-                  Profile Settings
-                </div>
-              </div>
-
-              <h1 className="max-w-4xl text-3xl font-black uppercase leading-[0.95] tracking-[-0.04em] text-cl-ink sm:text-5xl">
-                Account <span className="cl-title-accent">Settings</span>
-              </h1>
-
-              <p className="mt-4 max-w-2xl text-sm leading-7 text-cl-muted sm:text-base">
-                Update your public profile, username, bio, tags, and profile
-                picture.
-              </p>
-            </div>
-
-            <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl border border-cl-accent/20 bg-cl-accent/10 text-cl-accent shadow-cl-panel">
-              <SettingsIcon className="h-6 w-6" />
-            </div>
-          </div>
-        </section>
+    <div className="consumer-settings text-cl-ink">
+      <main className="mx-auto w-full max-w-6xl pb-12">
+        <header className="settings-heading">
+          <h1>Account settings</h1>
+          <p>Manage your public profile, notifications, and messages.</p>
+        </header>
 
         <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[240px_minmax(0,1fr)]">
-          <aside className="rounded-[26px] border border-cl-accent/10 bg-cl-surface p-3 shadow-cl-panel lg:self-start">
-            <nav className="flex gap-2 overflow-x-auto lg:flex-col lg:overflow-visible">
+          <aside className="settings-section-sidebar lg:self-start">
+            <nav
+              aria-label="Settings sections"
+              className="settings-section-nav"
+            >
               <button
+                type="button"
                 onClick={() => setActiveSection("profile")}
-                className={`inline-flex min-w-max items-center gap-2 rounded-full px-4 py-3 text-xs font-black uppercase tracking-[0.14em] transition lg:w-full lg:min-w-0 lg:justify-start lg:rounded-[18px] ${
-                  activeSection === "profile"
-                    ? "bg-cl-accent text-cl-contrast shadow-cl-panel"
-                    : "border border-cl-border bg-cl-subtle text-cl-muted hover:bg-cl-subtle hover:text-cl-ink"
-                }`}
+                aria-pressed={activeSection === "profile"}
+                aria-controls="settings-section-content"
+                className="settings-section-button"
               >
                 <UserRound className="h-4 w-4" />
                 Profile
@@ -322,19 +281,30 @@ export default function Settings() {
               <button
                 type="button"
                 onClick={() => setActiveSection("notifications")}
-                className="inline-flex min-h-11 items-center rounded-xl border border-cl-border px-4 py-3 text-sm text-cl-accent"
+                aria-pressed={activeSection === "notifications"}
+                aria-controls="settings-section-content"
+                className="settings-section-button"
               >
+                <Bell className="h-4 w-4 shrink-0" aria-hidden="true" />
                 Notifications & messages
               </button>
             </nav>
           </aside>
 
-          <section className="min-w-0">
+          <section
+            id="settings-section-content"
+            aria-label={
+              activeSection === "profile"
+                ? "Profile settings"
+                : "Notification settings"
+            }
+            className="min-w-0"
+          >
             {activeSection === "notifications" && (
               <SocialPreferences key={String(user?.id)} />
             )}
             {activeSection === "profile" && (
-              <div className="overflow-hidden rounded-[30px] border border-cl-accent/10 bg-cl-surface shadow-cl-panel">
+              <div className="settings-content-card">
                 <div className="border-b border-cl-border px-5 py-5 sm:px-6">
                   <div className="flex items-center gap-3">
                     <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-cl-accent/20 bg-cl-accent/10 text-cl-accent">
@@ -471,7 +441,7 @@ export default function Settings() {
                             }))
                           }
                           title="Email changes are disabled for now"
-                          className="field-input cursor-not-allowed opacity-65"
+                          className="field-input cursor-not-allowed"
                           required
                         />
                       </Field>
@@ -527,7 +497,7 @@ export default function Settings() {
                         You have unsaved profile changes.
                       </div>
                     ) : (
-                      <div className="rounded-[18px] border border-emerald-400/15 bg-emerald-500/[0.06] px-4 py-3 text-xs leading-6 text-emerald-200/80">
+                      <div className="settings-saved-state">
                         <span className="inline-flex items-center gap-2">
                           <CheckCircle2 className="h-4 w-4" />
                           Your profile is up to date.
@@ -576,33 +546,6 @@ export default function Settings() {
           </section>
         </div>
       </main>
-
-      <style>{`
-        .field-input {
-          width: 100%;
-          min-height: 48px;
-          border-radius: 14px;
-          background: rgba(255,255,255,0.055);
-          border: 1px solid rgba(255,255,255,0.10);
-          padding: 0 14px;
-          color: white;
-          outline: none;
-          transition:
-            border-color 160ms ease,
-            box-shadow 160ms ease,
-            background 160ms ease;
-        }
-
-        .field-input::placeholder {
-          color: rgba(255,255,255,0.34);
-        }
-
-        .field-input:focus {
-          border-color: rgba(103,232,249,0.34);
-          box-shadow: 0 0 0 3px rgba(34,211,238,0.10);
-          background: rgba(255,255,255,0.075);
-        }
-      `}</style>
     </div>
   );
 }

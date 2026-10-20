@@ -60,7 +60,7 @@ export default function SiteFooter() {
         </nav>
       </div>
       <div className="mx-auto max-w-7xl">
-        <NewsletterForm />
+        <NewsletterForm layout="footer" />
       </div>
       <div className="mx-auto mt-9 flex max-w-7xl flex-wrap items-center justify-between gap-4 border-t border-cl-border pt-6 text-xs text-cl-muted">
         <p>© {new Date().getFullYear()} Corner League. All rights reserved.</p>

@@ -1,3 +1,4 @@
+import { OrganizationFollowButton } from "@/components/community/OrganizationFollowing";
 import SportArtwork from "@/components/sport-hub/SportArtwork";
 import { sportLogo } from "@/lib/sportVisuals";
 import { useState } from "react";
@@ -42,13 +43,16 @@ export default function ConsumerBrandingHero({
   organizationId,
   sport,
   name,
+  headingLevel = 2,
 }: {
   kind: BrandingKind;
   id: string;
   organizationId: string;
   sport: string;
   name: string;
+  headingLevel?: 1 | 2;
 }) {
+  const Heading = headingLevel === 1 ? "h1" : "h2";
   const sandbox = useSandbox();
   const query = useQuery({
     queryKey: [
@@ -109,9 +113,15 @@ export default function ConsumerBrandingHero({
                   ? "League"
                   : "Season"}
           </p>
-          <h2 className="mt-2 break-words text-2xl font-black text-cl-ink sm:text-3xl">
+          <Heading className="mt-2 break-words text-2xl font-black text-cl-ink sm:text-3xl">
             {name}
-          </h2>
+          </Heading>
+          {kind === "organization" && !sandbox && (
+            <OrganizationFollowButton
+              key={organizationId}
+              organizationId={organizationId}
+            />
+          )}
         </div>
       </div>
     </section>

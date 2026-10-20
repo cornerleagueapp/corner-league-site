@@ -26,7 +26,7 @@ function EventPhoto({ event, sport }: { event: HubEvent; sport: string }) {
   );
 }
 export default function UpcomingSportEvents({ sport }: { sport: string }) {
-  const [count, setCount] = useState(4);
+  const [count, setCount] = useState(6);
   const query = useQuery({
     queryKey: ["sport-hub-events", sport],
     queryFn: async ({ signal }) => {
@@ -108,7 +108,7 @@ export default function UpcomingSportEvents({ sport }: { sport: string }) {
           {events.length > count && (
             <button
               className="sport-hub-more"
-              onClick={() => setCount((value) => value + 4)}
+              onClick={() => setCount((value) => value + 6)}
             >
               Show more events
             </button>

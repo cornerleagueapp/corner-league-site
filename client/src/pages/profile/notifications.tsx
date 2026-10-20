@@ -45,7 +45,7 @@ export default function NotificationsPage() {
     },
   });
   return (
-    <main className="mx-auto max-w-3xl space-y-5 p-4 py-8 text-cl-ink">
+    <main className="notifications-page space-y-5 py-8 text-cl-ink">
       <PageSEO title="Notifications" canonicalPath="/notifications" noindex />
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
@@ -60,7 +60,7 @@ export default function NotificationsPage() {
           Preferences
         </Link>
       </header>
-      <MarketingPreferences />
+      <details className="notification-preferences"><summary>Email updates & preferences</summary><MarketingPreferences key={user?.id} /></details>
       <div className="flex flex-wrap gap-2">
         <button className={socialButton} onClick={() => void query.refetch()}>
           Refresh
@@ -86,9 +86,9 @@ export default function NotificationsPage() {
           {query.data.items.map((alert) => (
             <article
               key={alert.id}
-              className={`${socialBox} ${!alert.isRead ? "border-cl-accent/30" : ""}`}
+              className={`notification-row ${!alert.isRead ? "notification-row--unread" : ""}`}
             >
-              <p className="break-words text-sm text-cl-ink">{alert.content}</p>
+              <p className="mb-2 text-xs font-bold text-cl-accent">{alert.isRead ? "Read" : "New update"}</p><p className="break-words text-sm text-cl-ink">{alert.content}</p>
               <p className="mt-2 text-xs text-cl-muted">
                 {new Date(alert.createdAt).toLocaleString()}
               </p>

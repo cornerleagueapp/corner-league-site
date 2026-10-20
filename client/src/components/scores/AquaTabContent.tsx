@@ -16,7 +16,7 @@ import {
 import { apiFetch } from "@/lib/apiClient";
 import AquaScoresSection from "@/components/AquaScoresSection";
 import AccordionSection from "@/components/AccordionSection";
-import { markHahn300 } from "@/data/markHanRace";
+import SportCommunitySection from "@/components/sport-hub/SportCommunitySection";
 import { trackEvent } from "@/lib/analytics";
 import { AnalyticsEvents } from "@/lib/analytics-events";
 import FeaturedRacerGallerySection from "../FeaturedRacerGallerySection";
@@ -84,123 +84,6 @@ function trophyFor(place?: number) {
     default:
       return { show: false, colorClass: "", label: "" };
   }
-}
-
-function FeaturedRaceSection() {
-  return (
-    <div className="space-y-6">
-      <div>
-        <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-cl-accent/20 bg-cl-accent/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-cl-accent">
-          Featured Race
-        </div>
-
-        <h2 className="text-3xl font-black uppercase leading-[0.95] tracking-[-0.03em] text-cl-ink sm:text-4xl">
-          {markHahn300.title}
-        </h2>
-
-        <p className="mt-3 text-sm font-bold uppercase tracking-[0.16em] text-cl-accent">
-          {markHahn300.date}
-        </p>
-      </div>
-
-      <div className="relative overflow-hidden rounded-[30px] border border-cl-accent/10 bg-cl-surface p-4 shadow-cl-panel sm:p-6">
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute -left-24 top-0 h-72 w-72 rounded-full bg-cl-accent/10 blur-3xl" />
-          <div className="absolute -right-24 bottom-0 h-80 w-80 rounded-full bg-cl-accent/10 blur-3xl" />
-        </div>
-
-        <div className="relative">
-          <AccordionSection
-            labelShow="Show Final Results - Overall"
-            labelHide="Hide Final Results - Overall"
-          >
-            <div className="space-y-4">
-              <div className="text-sm text-cl-muted">
-                {markHahn300.subtitle}
-              </div>
-
-              <div className="overflow-hidden rounded-[24px] border border-cl-border bg-cl-surface">
-                <div className="overflow-x-auto [scrollbar-width:thin] [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-cl-accent/20">
-                  <table className="min-w-[680px] text-sm">
-                    <thead className="bg-cl-surface">
-                      <tr className="text-cl-ink">
-                        <th className="px-2 py-3 text-left font-semibold">
-                          Place
-                        </th>
-                        <th className="px-2 py-3 text-left font-semibold">
-                          Number/MFG
-                        </th>
-                        <th className="px-2 py-3 text-left font-semibold">
-                          Team Name
-                        </th>
-                        <th className="px-2 py-3 text-right font-semibold">
-                          Laps
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-cl-border">
-                      {markHahn300.results.map((r) => (
-                        <tr
-                          key={`${r.place}-${r.boatNumber}-${r.mfg}`}
-                          className="text-cl-ink"
-                        >
-                          <td className="px-4 py-3 tabular-nums">
-                            <span className="inline-flex items-center gap-2">
-                              {r.place}
-                              {(() => {
-                                const trophy = trophyFor(r.place);
-                                return trophy.show ? (
-                                  <Trophy
-                                    aria-label={trophy.label}
-                                    className={`h-4 w-4 ${trophy.colorClass}`}
-                                  />
-                                ) : null;
-                              })()}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 tabular-nums">
-                            {r.boatNumber} - {r.mfg}
-                          </td>
-                          <td className="px-4 py-3">{r.teamName}</td>
-                          <td className="px-4 py-3 text-right tabular-nums">
-                            {r.lapsCompleted}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                <div className="rounded-[24px] border border-cl-accent/10 bg-cl-subtle p-4">
-                  <div className="mb-2 text-sm font-semibold text-cl-ink">
-                    Penalties
-                  </div>
-                  <ul className="list-disc space-y-1 pl-5 text-sm text-cl-muted">
-                    {markHahn300.penalties.map((p) => (
-                      <li key={p}>{p}</li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="rounded-[24px] border border-cl-accent/10 bg-cl-subtle p-4">
-                  <div className="mb-2 text-sm font-semibold text-cl-ink">
-                    Achievements
-                  </div>
-                  <ul className="list-disc space-y-1 pl-5 text-sm text-cl-muted">
-                    {markHahn300.achievement.map((p) => (
-                      <li key={p}>{p}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </AccordionSection>
-        </div>
-      </div>
-    </div>
-  );
 }
 
 function AquaHubCard({
@@ -608,67 +491,6 @@ function VoteAwardsBanner({ onClick }: { onClick: () => void }) {
   );
 }
 
-function RacePodSessionsBanner({ onClick }: { onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="group relative w-full overflow-hidden rounded-[28px] border border-cl-accent/20 cl-panel-wash p-4 text-left shadow-cl-panel transition hover:-translate-y-0.5 hover:border-cl-accent/[0.35] hover:bg-cl-accent/[0.08] sm:p-5"
-    >
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -right-16 top-1/2 h-44 w-44 -translate-y-1/2 rounded-full bg-cl-accent/[0.12] blur-3xl" />
-        <div className="absolute -left-20 bottom-0 h-44 w-44 rounded-full bg-cl-accent/10 blur-3xl" />
-        <div className="absolute inset-0 opacity-[0.04] [background-image:linear-gradient(rgba(255,255,255,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.18)_1px,transparent_1px)] [background-size:46px_46px]" />
-      </div>
-
-      <div className="relative flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex min-w-0 items-start gap-4">
-          <div className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-cl-accent/25 bg-cl-accent/[0.15] text-cl-accent shadow-cl-panel">
-            <Radio className="h-5 w-5" />
-          </div>
-
-          <div className="min-w-0">
-            <div className="mb-1 inline-flex items-center gap-2 rounded-full border border-cl-accent/[0.15] bg-cl-accent/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-cl-accent">
-              RacePod Community
-            </div>
-
-            <h3 className="text-xl font-black uppercase leading-tight tracking-[-0.02em] text-cl-ink sm:text-2xl">
-              View Shared RacePod Sessions
-            </h3>
-
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-cl-muted">
-              Explore published AQUA replays from racers, including GPS routes,
-              speed data, shared cards, users, and claimed athlete profiles.
-            </p>
-
-            <div className="mt-4 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-              <span className="inline-flex items-center gap-2 rounded-full border border-cl-border bg-cl-subtle px-3 py-1.5 text-[11px] font-bold text-cl-muted">
-                <Route className="h-3.5 w-3.5 text-cl-accent" />
-                Route replays
-              </span>
-
-              <span className="inline-flex items-center gap-2 rounded-full border border-cl-border bg-cl-subtle px-3 py-1.5 text-[11px] font-bold text-cl-muted">
-                <Zap className="h-3.5 w-3.5 text-cl-accent" />
-                Speed stats
-              </span>
-
-              <span className="inline-flex items-center gap-2 rounded-full border border-cl-border bg-cl-subtle px-3 py-1.5 text-[11px] font-bold text-cl-muted">
-                <Share2 className="h-3.5 w-3.5 text-cl-accent" />
-                Share cards
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div className="inline-flex shrink-0 items-center gap-2 self-start rounded-full border border-cl-accent/25 bg-cl-accent/10 px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-cl-accent transition group-hover:bg-cl-accent group-hover:text-cl-contrast lg:self-center">
-          Open Replays
-          <ChevronRight className="h-4 w-4 transition group-hover:translate-x-1" />
-        </div>
-      </div>
-    </button>
-  );
-}
-
 function AquaHubSection({
   onOpenResults,
   onOpenRacerSearch,
@@ -751,19 +573,18 @@ function AquaHubSection({
 
           <AquaHubCard
             icon={<Trophy className="h-5 w-5" />}
-            title="Results"
-            description="View full motos, race outcomes, podium stories, and class-by-class coverage."
-            // onClick={onOpenResults}
+            title="Community Forum"
+            description="Talk racing, share ideas, and ask your community."
+            onClick={() => navigate("/community?sport=jet-ski")}
             highlighted
-            // cta="Open results"
-            cta="Coming soon"
+            cta="Join the discussion"
           />
 
           <AquaHubCard
             icon={<Search className="h-5 w-5" />}
             title="Search Racers"
             description="Look up racers, compare profiles, and jump directly into individual performance pages."
-            onClick={onOpenRacerSearch}
+            onClick={() => window.dispatchEvent(new Event("racer-search:open"))}
             cta="Open search"
           />
 
@@ -785,24 +606,17 @@ function AquaHubSection({
 
           <AquaHubCard
             icon={<Sparkles className="h-5 w-5" />}
-            title="Stats & Rankings"
-            description="See whos on top of the leaderboards and point system overalls"
-            cta="Coming soon"
+            title="Articles & Blogs"
+            description="Stories and perspectives from the Jet Ski community."
+            onClick={() => navigate("/articles?sport=jet-ski")}
+            cta="Read stories"
           />
         </div>
       </div>
 
       <FeaturedRacerGallerySection sourcePage="aqua_hub" limit={7} compact />
 
-      <RacePodSessionsBanner
-        onClick={() => {
-          navigate("/scores/aqua/racepod");
-        }}
-      />
-
-      <div className="pt-2">
-        <FeaturedRaceSection />
-      </div>
+      <SportCommunitySection sport="jet-ski" />
     </div>
   );
 }

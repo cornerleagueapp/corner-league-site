@@ -1,0 +1,249 @@
+/* Organization pages share the sport-community shell and deliberately scoped card styles. */
+.org-community-page {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+.org-community-back {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  min-height: 44px;
+  color: rgb(var(--cl-accent));
+  font-size: 14px;
+  font-weight: 700;
+}
+.org-community-introduction {
+  padding: 0 4px;
+}
+.org-community-eyebrow {
+  color: rgb(var(--cl-accent));
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.org-community-description {
+  color: rgb(var(--cl-muted));
+  font-size: 15px;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-width: 85ch;
+  margin-top: 8px;
+}
+.org-community-navigation {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  min-width: 0;
+  overflow-x: auto;
+  border: 1px solid rgb(var(--cl-border));
+  border-radius: 12px;
+  padding: 6px;
+  background: rgb(var(--cl-surface));
+  scrollbar-width: thin;
+}
+.org-community-navigation a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-height: 44px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: rgb(var(--cl-muted));
+  font-weight: 700;
+}
+.org-community-navigation a:hover {
+  background: rgb(var(--cl-subtle));
+  color: rgb(var(--cl-ink));
+}
+.org-community-navigation a[aria-current="page"] {
+  background: rgb(var(--cl-accent));
+  color: #fff;
+}
+.org-community-navigation a:focus-visible,
+.org-community-back:focus-visible,
+.org-community-shortcuts a:focus-visible,
+.org-community-more:focus-visible {
+  outline: 3px solid rgb(var(--cl-accent));
+  outline-offset: 2px;
+}
+.org-community-panel {
+  min-width: 0;
+}
+.org-community-overview {
+  display: grid;
+  gap: 24px;
+}
+.org-community-card {
+  border: 1px solid rgb(var(--cl-border));
+  border-radius: 14px;
+  background: rgb(var(--cl-surface));
+  padding: 24px;
+  min-width: 0;
+}
+.org-community-card > p {
+  font-size: 14px;
+  color: rgb(var(--cl-muted));
+  line-height: 1.7;
+}
+.org-community-shortcuts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+.org-community-shortcuts a {
+  display: grid;
+  gap: 8px;
+  border: 1px solid rgb(var(--cl-border));
+  border-radius: 10px;
+  padding: 18px;
+  min-height: 96px;
+}
+.org-community-shortcuts a:hover {
+  border-color: rgb(var(--cl-accent));
+  background: rgb(var(--cl-subtle));
+}
+.org-community-shortcuts strong {
+  font-size: 16px;
+  font-weight: 800;
+}
+.org-community-shortcuts span {
+  color: rgb(var(--cl-muted));
+  font-size: 13px;
+  line-height: 1.6;
+}
+.org-community-event-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+.org-community-event-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgb(var(--cl-border));
+  background: rgb(var(--cl-surface));
+  border-radius: 12px;
+}
+.org-community-event-photo {
+  height: clamp(150px, 16vw, 210px);
+  overflow: hidden;
+}
+.org-community-event-photo > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.org-community-event-body {
+  display: grid;
+  gap: 8px;
+  padding: 20px;
+}
+.org-community-event-body h3 {
+  font-size: 19px;
+  line-height: 1.35;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+.org-community-event-body > p:not(.org-community-eyebrow) {
+  color: rgb(var(--cl-muted));
+  font-size: 13px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.org-community-event-summary {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.org-community-event-body .sport-hub-button {
+  margin-top: 4px;
+  justify-self: start;
+}
+.org-community-state {
+  display: grid;
+  gap: 12px;
+  padding: 24px;
+  background: rgb(var(--cl-surface));
+  border: 1px solid rgb(var(--cl-border));
+  border-radius: 12px;
+  color: rgb(var(--cl-muted));
+  font-size: 14px;
+  line-height: 1.7;
+}
+.org-community-state h1 {
+  font-size: 28px;
+  font-weight: 800;
+  color: rgb(var(--cl-ink));
+}
+.org-community-state .sport-hub-button {
+  justify-self: start;
+}
+.org-community-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 20px;
+  font-size: 14px;
+}
+.org-community-pagination button {
+  min-height: 44px;
+  border: 1px solid rgb(var(--cl-border));
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 700;
+  background: rgb(var(--cl-surface));
+}
+.org-community-pagination button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.org-community-more {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  justify-self: start;
+  color: rgb(var(--cl-accent));
+  font-weight: 700;
+  font-size: 14px;
+}
+/* Keep existing season/shop/gallery controls and dialogs intact, while aligning their outer surfaces. */
+.org-community-panel > section,
+.org-community-panel > div > section {
+  margin-top: 0;
+  border-radius: 12px;
+}
+.org-community-panel :where(h2) {
+  font-size: 22px;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+  text-transform: none;
+}
+.org-community-panel .org-news-feed {
+  min-width: 0;
+}
+@media (max-width: 640px) {
+  .org-community-page {
+    gap: 16px;
+  }
+  .org-community-card {
+    padding: 18px;
+  }
+  .org-community-shortcuts,
+  .org-community-event-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .org-community-event-photo {
+    height: 180px;
+  }
+  .org-community-navigation a {
+    padding-inline: 12px;
+  }
+}

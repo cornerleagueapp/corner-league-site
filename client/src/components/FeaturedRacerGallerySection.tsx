@@ -94,15 +94,15 @@ function GalleryTile({
       type="button"
       onClick={() => navigate("/scores/aqua/gallery")}
       className={`group relative min-w-0 overflow-hidden rounded-[24px] border border-cl-accent/10 bg-cl-surface text-left shadow-cl-panel transition hover:-translate-y-1 hover:border-cl-accent/30 ${
-        large ? "min-h-[360px] sm:min-h-[420px]" : "min-h-[220px]"
+        large ? "" : ""
       }`}
     >
-      <div className="absolute inset-0 bg-cl-canvas">
+      <div className="aspect-[16/10] overflow-hidden bg-cl-canvas">
         {mediaUrl ? (
           <img
             src={mediaUrl}
             alt={item.title || athleteName}
-            className="h-full w-full object-cover opacity-80 transition duration-500 group-hover:scale-105 group-hover:opacity-95"
+            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
             loading="lazy"
           />
         ) : (
@@ -111,7 +111,7 @@ function GalleryTile({
           </div>
         )}
 
-        <div className="absolute inset-0 cl-panel-wash" />
+
       </div>
 
       <div className="absolute left-3 top-3 z-10 inline-flex items-center gap-2 rounded-full border border-cl-border bg-cl-subtle px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-cl-ink backdrop-blur-md">
@@ -123,7 +123,7 @@ function GalleryTile({
         {isVideo(item) ? "Video" : "Photo"}
       </div>
 
-      <div className="absolute inset-x-0 bottom-0 z-10 p-4 sm:p-5">
+      <div className="relative bg-cl-surface p-4 sm:p-5">
         <div className="flex items-center gap-3">
           <div className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full border border-cl-accent/25 bg-cl-accent/15">
             {athleteImage ? (

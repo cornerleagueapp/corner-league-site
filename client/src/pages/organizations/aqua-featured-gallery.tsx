@@ -176,8 +176,8 @@ export default function AquaFeaturedGalleryPage() {
 
       <div className="pointer-events-none fixed inset-0 z-0">
         <div className="absolute inset-0 bg-cl-canvas" />
-        <div className="absolute inset-0 cl-panel-wash" />
-        <div className="absolute inset-0 cl-panel-wash" />
+
+
         <div className="absolute inset-0 opacity-[0.035] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:72px_72px]" />
       </div>
 
@@ -288,7 +288,7 @@ export default function AquaFeaturedGalleryPage() {
                         <img
                           src={mediaUrl}
                           alt={item.title || athleteName}
-                          className="h-full w-full object-cover opacity-85 transition duration-500 group-hover:scale-105 group-hover:opacity-100"
+                          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                           loading="lazy"
                         />
                       ) : (
@@ -297,7 +297,7 @@ export default function AquaFeaturedGalleryPage() {
                         </div>
                       )}
 
-                      <div className="absolute inset-0 cl-panel-wash" />
+
 
                       <div className="absolute left-3 top-3 inline-flex items-center gap-2 rounded-full border border-cl-border bg-cl-subtle px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-cl-ink backdrop-blur-md">
                         {String(item.type || "image").toLowerCase() ===

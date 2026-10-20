@@ -2,13 +2,10 @@ import { useState } from "react";
 import { Link } from "wouter";
 import {
   useEngagementLeaderboards,
-  useIhraSkiGpLeaderboard,
   useTrendingRacers,
 } from "@/hooks/useScoresLandingData";
 
 export default function LeagueTopPerformersSection() {
-  const { rows, isLoading } = useIhraSkiGpLeaderboard();
-  const leader = rows[0];
 
   const [trendingRange, setTrendingRange] = useState<"7d" | "30d">("30d");
 
@@ -37,172 +34,7 @@ export default function LeagueTopPerformersSection() {
         </div>
 
         <div className="relative">
-          <div className="mb-3 flex flex-wrap items-center gap-2 sm:gap-3">
-            <div className="inline-flex items-center gap-2 rounded-full border border-cl-accent/20 bg-cl-accent/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-cl-accent sm:px-4 sm:text-[11px] sm:tracking-[0.24em]">
-              <span className="h-2 w-2 rounded-full bg-cl-accent shadow-cl-panel" />
-              Stats
-            </div>
-
-            <div className="inline-flex items-center gap-2 rounded-full border border-cl-accent/20 bg-cl-accent/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-cl-accent sm:px-4 sm:text-[11px] sm:tracking-[0.24em]">
-              Power Rankings
-            </div>
-          </div>
-
-          <h2 className="max-w-4xl text-[2.35rem] font-black uppercase leading-[0.9] tracking-[-0.04em] text-cl-ink min-[380px]:text-4xl sm:text-5xl lg:text-6xl">
-            IHRA
-            <span className="cl-title-accent">Ski GP Rankings</span>
-          </h2>
-
-          <p className="mt-4 max-w-3xl text-sm leading-7 text-cl-muted sm:text-base">
-            Current top performers, athlete profile momentum, and fan engagement
-            signals from across the Corner League racing ecosystem.
-          </p>
-
-          <div className="mt-10 grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:gap-8">
-            <div className="relative overflow-hidden rounded-[30px] border border-cl-accent/10 cl-panel-wash px-5 py-10 shadow-cl-panel sm:px-8 sm:py-12 lg:min-h-[430px]">
-              <div className="pointer-events-none absolute inset-0">
-                <div className="absolute left-1/2 top-0 h-64 w-64 -translate-x-1/2 rounded-full bg-cl-accent/10 blur-3xl" />
-                <div className="absolute inset-0 opacity-[0.06] [background-image:linear-gradient(rgba(255,255,255,0.22)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.22)_1px,transparent_1px)] [background-size:54px_54px]" />
-              </div>
-
-              {leader ? (
-                <div className="relative flex h-full flex-col justify-between">
-                  <div>
-                    <div className="inline-flex rounded-full border border-cl-accent/20 bg-cl-accent/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-cl-accent">
-                      Current Points Leader
-                    </div>
-
-                    <div className="mt-6 max-w-full break-words text-4xl font-black uppercase leading-[0.92] tracking-[-0.04em] text-cl-ink sm:text-5xl lg:text-6xl">
-                      {leader.name}
-                    </div>
-
-                    {/* <p className="mt-4 text-sm leading-7 text-cl-muted">
-                      Leading the IHRA Ski GP standings with the strongest
-                      current points profile in the class.
-                    </p> */}
-                  </div>
-
-                  <div className="mt-8 grid gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
-                    <div className="rounded-[24px] border border-cl-border bg-cl-subtle p-4">
-                      <div className="text-2xl font-black text-cl-ink">
-                        {leader.totalPoints}
-                      </div>
-                      <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.18em] text-cl-muted">
-                        Points
-                      </div>
-                    </div>
-
-                    <div className="rounded-[24px] border border-cl-accent/15 bg-cl-accent/[0.08] p-4">
-                      <div className="text-2xl font-black text-cl-accent">
-                        {Number(leader.overallRating ?? 0).toFixed(1)}
-                      </div>
-                      <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.18em] text-cl-muted">
-                        Overall
-                      </div>
-                    </div>
-
-                    <div className="rounded-[24px] border border-cl-accent/15 bg-cl-accent/[0.08] p-4">
-                      <div className="text-2xl font-black text-cl-accent">
-                        {leader.seasonMotoWins}
-                      </div>
-                      <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.18em] text-cl-muted">
-                        Moto Wins
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="relative flex h-full min-h-[320px] items-center justify-center text-center text-4xl font-black uppercase text-cl-ink sm:text-5xl lg:text-6xl">
-                  Coming Soon
-                </div>
-              )}
-            </div>
-
-            <div className="overflow-hidden rounded-[30px] border border-cl-accent/10 bg-cl-surface shadow-cl-panel">
-              <div className="flex flex-col gap-2 border-b border-cl-border bg-cl-subtle px-4 py-5 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <div className="text-sm font-black uppercase tracking-[0.2em] text-cl-ink">
-                    Top 5 Standings
-                  </div>
-                  <div className="mt-1 text-xs text-cl-muted">
-                    IHRA · Ski GP · Season points
-                  </div>
-                </div>
-
-                <div className="rounded-full border border-cl-accent/20 bg-cl-accent/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-cl-accent">
-                  Official Stats
-                </div>
-              </div>
-
-              <div className="overflow-x-auto [scrollbar-width:thin] [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-cl-accent/20">
-                <div className="min-w-[680px]">
-                  <div className="grid grid-cols-[70px_minmax(0,1fr)_110px_90px_110px] items-center border-b border-cl-border px-4 py-4 text-xs font-bold uppercase tracking-[0.18em] text-cl-muted">
-                    <div>Rank</div>
-                    <div>Racer</div>
-                    <div className="text-right">Points</div>
-                    <div className="text-right">OVR</div>
-                    <div className="text-right">Wins</div>
-                  </div>
-
-                  {isLoading ? (
-                    <div className="px-4 py-8 text-cl-muted">
-                      Loading rankings…
-                    </div>
-                  ) : rows.length === 0 ? (
-                    <div className="px-4 py-8 text-cl-muted">
-                      Rankings will appear once IHRA Ski GP season data is
-                      available.
-                    </div>
-                  ) : (
-                    <div>
-                      {rows.map((person, idx) => (
-                        <div
-                          key={`${person.participantId}-${idx}`}
-                          className="group grid grid-cols-[70px_minmax(0,1fr)_110px_90px_110px] items-center gap-4 border-b border-cl-border px-4 py-5 transition duration-200 last:border-b-0 hover:bg-cl-accent/[0.035]"
-                        >
-                          <div className="text-4xl font-black text-cl-muted group-hover:text-cl-accent">
-                            {String(idx + 1).padStart(2, "0")}
-                          </div>
-
-                          <div className="min-w-0 max-w-full">
-                            {person.racerHref ? (
-                              <Link href={person.racerHref}>
-                                <div className="cursor-pointer break-words font-black uppercase tracking-[0.06em] text-cl-ink transition hover:text-cl-accent">
-                                  {person.name}
-                                </div>
-                              </Link>
-                            ) : (
-                              <div className="break-words font-black uppercase tracking-[0.06em] text-cl-ink">
-                                {person.name}
-                              </div>
-                            )}
-
-                            <div className="mt-1 text-sm text-cl-muted">
-                              IHRA · Ski GP
-                            </div>
-                          </div>
-
-                          <div className="text-right text-3xl font-black text-cl-ink">
-                            {person.totalPoints}
-                          </div>
-
-                          <div className="text-right text-xl font-black text-cl-accent">
-                            {Number(person.overallRating ?? 0).toFixed(1)}
-                          </div>
-
-                          <div className="text-right text-xl font-black text-cl-accent">
-                            {person.seasonMotoWins}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-14 border-t border-cl-border pt-10">
+          <div className="pt-2">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <div className="mb-2 text-xs font-black uppercase tracking-[0.28em] text-cl-accent">

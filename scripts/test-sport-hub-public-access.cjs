@@ -1,0 +1,12 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const ts = require('typescript');
+const Module = require('node:module');
+const path = require('node:path');
+const filename = path.resolve(__dirname, '../client/src/lib/publicFeatures.ts');
+const m = new Module(filename, module);
+m._compile(ts.transpileModule(fs.readFileSync(filename,'utf8'), {compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText, filename);
+for (const route of ['/racepod','/racepod/','/racepod/sessions/123','/racepod-info?from=home','/scores/aqua/racepod','/admin/racepods']) assert.equal(m.exports.publicPageAvailable(route),false,route);
+for (const route of ['/','/scores/aqua','/community?sport=golf','/articles','/racer/123']) assert.equal(m.exports.publicPageAvailable(route),true,route);
+assert.equal(m.exports.PUBLIC_RACEPOD_ENABLED,false);
+console.log('PASS hidden telemetry routes and preserved public sports/community routes');

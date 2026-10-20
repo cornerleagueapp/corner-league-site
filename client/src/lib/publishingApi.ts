@@ -1,6 +1,14 @@
 import { socialRequest, parsePage, type Person, type Page } from "./socialApi";
 export const publishingSports = [
   "general",
+  "american-football",
+  "soccer",
+  "hockey",
+  "track-running",
+  "marathon",
+  "onewheel-racing",
+  "rc-racing",
+
   "jet-ski",
   "motocross",
   "boat-racing",

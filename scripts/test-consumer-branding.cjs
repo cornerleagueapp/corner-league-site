@@ -56,6 +56,7 @@ const artwork = compile("client/src/components/sport-hub/SportArtwork.tsx", {
 const component = compile(
   "client/src/components/branding/ConsumerBrandingHero.tsx",
   {
+    "@/components/community/OrganizationFollowing": { OrganizationFollowButton: () => React.createElement("button", {}, "Follow organization") },
     "@/components/sport-hub/SportArtwork": artwork,
     "@/lib/sportVisuals": visuals,
     react: { ...React, useState: () => [failed, (v) => (failed = v)] },

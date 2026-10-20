@@ -108,47 +108,6 @@ export function useAppSidebarSections(opts?: {
   return useMemo<SidebarSection[]>(() => {
     const base: SidebarSection[] = [
       {
-        title: "Community",
-        items: [
-          ...(!guest && isAuthenticated
-            ? [
-                {
-                  key: "my-tickets",
-                  label: "My tickets",
-                  selectable: false,
-                  matchPaths: ["/tickets"],
-                  onSelect: () => navigate("/tickets"),
-                },
-              ]
-            : []),
-          {
-            key: "community-forum",
-            label: "Community Forum",
-            selectable: false,
-            matchPaths: ["/community", "/community/*"],
-            onSelect: () => navigate("/community"),
-          },
-          {
-            key: "community-articles",
-            label: "Articles & Blogs",
-            selectable: false,
-            matchPaths: ["/articles", "/articles/*"],
-            onSelect: () => navigate("/articles"),
-          },
-          ...(isAuthenticated
-            ? [
-                {
-                  key: "writer-studio",
-                  label: "Writer Studio",
-                  selectable: false,
-                  matchPaths: ["/writer", "/writer/*"],
-                  onSelect: () => navigate("/writer"),
-                },
-              ]
-            : []),
-        ],
-      },
-      {
         title: "Explore",
         items: [
           {
@@ -175,15 +134,6 @@ export function useAppSidebarSections(opts?: {
                   matchPaths: ["/registration", "/registration/*"],
                   onSelect: () => navigate("/registration"),
                 },
-                {
-                  key: "search-racers",
-                  label: "Search Racers",
-                  selectable: false,
-                  matchPaths: ["/racer/*"],
-                  onSelect: () => {
-                    window.dispatchEvent(new CustomEvent("racer-search:open"));
-                  },
-                },
               ]
             : []),
           {
@@ -208,13 +158,6 @@ export function useAppSidebarSections(opts?: {
                 },
               ]
             : []),
-          {
-            key: "podcast-episodes",
-            label: "Podcast Episodes",
-            selectable: false,
-            matchPaths: ["/podcast-episodes"],
-            onSelect: () => navigate("/podcast-episodes"),
-          },
           {
             key: "top-trends",
             label: "Top Trends",
