@@ -27,7 +27,6 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
 import SocialPostFeed from "@/components/community/SocialPosts";
-import RacerSearchModal from "@/components/RacerSearchModal";
 import { trackEvent } from "@/lib/analytics";
 import { AnalyticsEvents } from "@/lib/analytics-events";
 import {
@@ -413,7 +412,6 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
-  const [searchOpen, setSearchOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [claimOpen, setClaimOpen] = useState(false);
   const [claimLoading, setClaimLoading] = useState(false);
@@ -1311,7 +1309,7 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
           onEdit={() => setEditOpen(true)}
           onClaim={handleClaimProfileClick}
           onGallery={() => setGalleryOpen(true)}
-          onSearch={() => setSearchOpen(true)}
+          onSearch={() => window.dispatchEvent(new Event("racer-search:open"))}
           onProfileImageClick={() => {
             if (racer.racerImage) {
               setLightboxUrl(racer.racerImage);
@@ -2235,16 +2233,6 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
             loading={claimLoading}
           />
         )}
-
-      <RacerSearchModal
-        open={searchOpen}
-        onClose={() => setSearchOpen(false)}
-        onSelectRacer={(r) => {
-          setSearchOpen(false);
-          const idStr = encodeURIComponent(String(r.id));
-          navigate(`/racer/${idStr}`);
-        }}
-      />
 
       {PUBLIC_RACEPOD_ENABLED && <RacePodSessionsModal
         open={racePodSessionsOpen}

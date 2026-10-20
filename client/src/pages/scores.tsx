@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { useLocation } from "wouter";
-import RacerSearchModal from "@/components/RacerSearchModal";
 import AquaTabContent from "@/components/scores/AquaTabContent";
 
 type TabKey = "AQUA" | "MLB" | "NBA" | "NFL" | "NHL" | "NCAAF";
@@ -149,7 +148,6 @@ function TabDropdown({
 
 export default function ScoresPage() {
   const [location, navigate] = useLocation();
-  const [racerSearchOpen, setRacerSearchOpen] = useState(false);
 
   const pathname = location.split("?")[0];
 
@@ -162,7 +160,7 @@ export default function ScoresPage() {
 
   const openRacerSearch = () => {
     setActive("AQUA");
-    setRacerSearchOpen(true);
+    window.dispatchEvent(new Event("racer-search:open"));
   };
 
   useEffect(() => {
@@ -191,18 +189,6 @@ export default function ScoresPage() {
       openRacerSearch();
     }
   }, [location]);
-
-  useEffect(() => {
-    const onOpenRacerSearch = () => {
-      openRacerSearch();
-    };
-
-    window.addEventListener("racer-search:open", onOpenRacerSearch);
-
-    return () => {
-      window.removeEventListener("racer-search:open", onOpenRacerSearch);
-    };
-  }, []);
 
   const MLB_PLAYOFFS_URL =
     "https://widgets.media.sportradar.com/uscommon/en_us/standalone/us.season.mlb.playoffs#border=true&seasonId=125735";
@@ -365,23 +351,7 @@ export default function ScoresPage() {
           moment to load. Heights are set generously for readability.
         </p>
 
-        <RacerSearchModal
-          open={racerSearchOpen}
-          onClose={() => {
-            setRacerSearchOpen(false);
 
-            const params = new URLSearchParams(window.location.search);
-
-            if (params.get("search") === "racers") {
-              navigate("/scores/aqua", { replace: true });
-            }
-          }}
-          onSelectRacer={(r) => {
-            setRacerSearchOpen(false);
-            const idStr = encodeURIComponent(String(r.id));
-            navigate(`/racer/${idStr}`);
-          }}
-        />
       </div>
     </div>
   );

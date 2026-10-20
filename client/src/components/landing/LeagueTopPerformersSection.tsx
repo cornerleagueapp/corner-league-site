@@ -25,7 +25,7 @@ export default function LeagueTopPerformersSection() {
     viewedDivisions.length > 0;
 
   return (
-    <section id="rankings-section" className="scroll-mt-24 pt-16">
+    <section id="rankings-section" className="trending-section scroll-mt-24 pt-6">
       <div className="relative overflow-hidden rounded-[30px] border border-cl-accent/10 cl-panel-wash px-4 py-8 shadow-cl-panel sm:rounded-[38px] sm:px-8 sm:py-10">
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-cl-accent/10 blur-3xl" />
@@ -142,7 +142,7 @@ export default function LeagueTopPerformersSection() {
                     <p className="mt-2 text-xs leading-6 text-cl-muted">
                       Total organization views, clicks, and schedule opens.
                     </p>
-                    <div className="mt-5 space-y-3">
+                    <div className="trending-link-list mt-5">
                       {engagedOrganizations.map((org, idx) => (
                         <Link
                           key={org.organizationId}
@@ -153,14 +153,14 @@ export default function LeagueTopPerformersSection() {
                               <div className="text-xs font-black text-cl-muted">
                                 #{idx + 1}
                               </div>
-                              <div className="max-w-full break-words font-bold uppercase leading-snug text-cl-ink group-hover:text-cl-accent sm:truncate">
+                              <div className="max-w-full break-words font-bold uppercase leading-snug text-cl-ink group-hover:text-cl-accent ">
                                 {org.organizationName}
                               </div>
                               <div className="mt-1 text-xs text-cl-muted">
                                 Last {trendingRange === "7d" ? "7" : "30"} days
                               </div>
                             </div>
-                            <div className="w-full shrink-0 rounded-full border border-cl-accent/10 bg-cl-accent/[0.06] px-3 py-2 text-left text-lg font-black text-cl-accent sm:w-auto sm:bg-transparent sm:px-0 sm:py-0 sm:text-right sm:text-xl">
+                            <div className="trending-value">
                               {org.engagements.toLocaleString()}
                             </div>
                           </div>
@@ -181,7 +181,7 @@ export default function LeagueTopPerformersSection() {
                     <p className="mt-2 text-xs leading-6 text-cl-muted">
                       Total event detail page views.
                     </p>
-                    <div className="mt-5 space-y-3">
+                    <div className="trending-link-list mt-5">
                       {viewedEvents.map((event, idx) => (
                         <Link key={event.eventId} href={event.eventHref}>
                           <div className="group flex min-w-0 cursor-pointer flex-col items-start gap-3 rounded-2xl border border-cl-border bg-cl-subtle px-4 py-4 transition hover:border-cl-accent/30 hover:bg-cl-accent/10 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:py-3">
@@ -189,11 +189,11 @@ export default function LeagueTopPerformersSection() {
                               <div className="text-xs font-black text-cl-muted">
                                 #{idx + 1}
                               </div>
-                              <div className="max-w-full break-words font-bold uppercase leading-snug text-cl-ink group-hover:text-cl-accent sm:truncate">
+                              <div className="max-w-full break-words font-bold uppercase leading-snug text-cl-ink group-hover:text-cl-accent ">
                                 {event.eventName}
                               </div>
                               {event.organizationName ? (
-                                <div className="max-w-full break-words text-xs leading-5 text-cl-muted sm:truncate">
+                                <div className="max-w-full break-words text-xs leading-5 text-cl-muted ">
                                   {event.organizationName}
                                 </div>
                               ) : (
@@ -203,7 +203,7 @@ export default function LeagueTopPerformersSection() {
                                 </div>
                               )}
                             </div>
-                            <div className="w-full shrink-0 rounded-full border border-cl-accent/10 bg-cl-accent/[0.06] px-3 py-2 text-left text-lg font-black text-cl-accent sm:w-auto sm:bg-transparent sm:px-0 sm:py-0 sm:text-right sm:text-xl">
+                            <div className="trending-value">
                               {event.views.toLocaleString()}
                             </div>
                           </div>
@@ -224,7 +224,7 @@ export default function LeagueTopPerformersSection() {
                     <p className="mt-2 text-xs leading-6 text-cl-muted">
                       Total class/result views.
                     </p>
-                    <div className="mt-5 space-y-3">
+                    <div className="trending-link-list mt-5">
                       {viewedDivisions.map((division, idx) => {
                         const content = (
                           <div className="group flex min-w-0 cursor-pointer flex-col items-start gap-3 rounded-2xl border border-cl-border bg-cl-subtle px-4 py-4 transition hover:border-cl-accent/30 hover:bg-cl-accent/10 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:py-3">
@@ -232,11 +232,11 @@ export default function LeagueTopPerformersSection() {
                               <div className="text-xs font-black text-cl-muted">
                                 #{idx + 1}
                               </div>
-                              <div className="max-w-full break-words font-bold uppercase leading-snug text-cl-ink group-hover:text-cl-accent sm:truncate">
+                              <div className="max-w-full break-words font-bold uppercase leading-snug text-cl-ink group-hover:text-cl-accent ">
                                 {division.divisionName}
                               </div>
                               {division.eventName ? (
-                                <div className="max-w-full break-words text-xs leading-5 text-cl-muted sm:truncate">
+                                <div className="max-w-full break-words text-xs leading-5 text-cl-muted ">
                                   {division.eventName}
                                 </div>
                               ) : (
@@ -246,7 +246,7 @@ export default function LeagueTopPerformersSection() {
                                 </div>
                               )}
                             </div>
-                            <div className="w-full shrink-0 rounded-full border border-cl-accent/10 bg-cl-accent/[0.06] px-3 py-2 text-left text-lg font-black text-cl-accent sm:w-auto sm:bg-transparent sm:px-0 sm:py-0 sm:text-right sm:text-xl">
+                            <div className="trending-value">
                               {division.views.toLocaleString()}
                             </div>
                           </div>

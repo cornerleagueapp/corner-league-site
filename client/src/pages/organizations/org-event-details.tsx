@@ -1,5 +1,6 @@
 import EventRequirements from "@/components/participation/EventRequirements";
-import { AdmissionOffer } from "@/components/admissions/AdmissionOffer";
+import EventLivestream from "@/components/events/EventLivestream";
+import EventPhotoGallery from "@/components/events/EventPhotoGallery";
 import PublicEventPlan from "@/components/competition/PublicEventPlan";
 import { useOrganizationPageApi } from "./SandboxContext";
 import { trackGrowth } from "@/lib/growthAnalytics";
@@ -410,6 +411,7 @@ export default function OrgEventDetailsPage(props: { params: { id: string } }) {
     <div className="relative min-h-screen overflow-x-hidden bg-cl-canvas text-cl-ink">
       {data?.id && (data.organizer?.id || orgIdFromQuery) && (
         <ConsumerBrandingHero
+          headingLevel={1}
           kind="event"
           id={data.id}
           organizationId={data.organizer?.id || orgIdFromQuery}
@@ -426,111 +428,9 @@ export default function OrgEventDetailsPage(props: { params: { id: string } }) {
         }
       />
 
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 cl-panel-wash" />
-        <div className="absolute inset-0 opacity-[0.04] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:72px_72px]" />
-        <div className="absolute left-1/2 top-0 h-[320px] w-[320px] -translate-x-1/2 rounded-full bg-cl-accent/[0.08] blur-3xl" />
-      </div>
-
-      <div className="relative mx-auto w-full max-w-6xl px-3 py-10 pt-16 sm:px-6 sm:pt-10 lg:px-8">
-        <div className="relative overflow-hidden rounded-[30px] border border-cl-accent/10 cl-panel-wash shadow-cl-panel sm:rounded-[38px]">
-          <div className="pointer-events-none absolute inset-0">
-            <div className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-cl-accent/10 blur-3xl" />
-            <div className="absolute -right-24 bottom-0 h-96 w-96 rounded-full bg-cl-accent/10 blur-3xl" />
-            <div className="absolute inset-0 opacity-[0.05] [background-image:linear-gradient(rgba(255,255,255,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.18)_1px,transparent_1px)] [background-size:72px_72px]" />
-          </div>
-
-          <div className="relative p-5 sm:p-7 lg:p-10">
-            <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-              <div className="min-w-0 max-w-4xl">
-                <div className="mb-4 flex flex-wrap items-center gap-2 sm:gap-3">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-cl-accent/20 bg-cl-accent/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-cl-accent sm:px-4 sm:text-[11px] sm:tracking-[0.24em]">
-                    <span className="h-2 w-2 rounded-full bg-cl-accent shadow-cl-panel" />
-                    Event Details
-                  </div>
-
-                  <div className="inline-flex items-center gap-2 rounded-full border border-cl-accent/20 bg-cl-accent/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-cl-accent sm:px-4 sm:text-[11px] sm:tracking-[0.24em]">
-                    Official Results
-                  </div>
-                </div>
-
-                <p className="text-xs font-black uppercase tracking-[0.26em] text-cl-accent">
-                  Aqua • Jet Ski Racing • Event Coverage
-                </p>
-
-                <h1 className="mt-3 max-w-full break-words text-[2.35rem] font-black uppercase leading-[0.9] tracking-[-0.04em] text-cl-ink min-[380px]:text-4xl sm:text-5xl lg:text-6xl">
-                  {data?.name || "Event Details"}
-                </h1>
-
-                <p className="mt-4 max-w-3xl text-sm leading-7 text-cl-muted sm:text-base">
-                  {data?.description ||
-                    "Results, divisions, classes, and winners will live here."}
-                </p>
-              </div>
-
-              <div className="flex flex-col gap-3 sm:flex-row lg:flex-col lg:items-end">
-                {data?.id && (
-                  <AdmissionOffer
-                    eventKey={`event:${data.id}`}
-                    sandbox={!!sandbox}
-                  />
-                )}
-                {eventLivestreamUrl(data?.livestreamUrl) && (
-                  <a
-                    href={eventLivestreamUrl(data?.livestreamUrl)!}
-                    onClick={() =>
-                      !sandbox &&
-                      data?.id &&
-                      trackGrowth("Livestream Clicked", data.id)
-                    }
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="rounded-full bg-cl-accent px-5 py-3 text-center text-sm font-black text-cl-contrast"
-                  >
-                    Watch stream ↗
-                  </a>
-                )}
-                <Button
-                  onClick={() => {
-                    if (orgIdFromQuery) {
-                      navigate(
-                        `/aqua-organizations/${encodeURIComponent(orgIdFromQuery)}`,
-                      );
-                      return;
-                    }
-
-                    navigate(
-                      sandbox
-                        ? `/internal/test-organizations/${sandbox.id}`
-                        : "/aqua-organizations",
-                    );
-                  }}
-                  className="inline-flex items-center gap-2 rounded-full border border-cl-border bg-cl-subtle px-5 py-3 text-xs font-black uppercase tracking-[0.14em] text-cl-muted hover:border-cl-accent/25 hover:bg-cl-accent/10 hover:text-cl-ink"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                  Back
-                </Button>
-
-                {data?.sport ? (
-                  <div className="inline-flex items-center gap-3 rounded-[24px] border border-cl-accent/10 bg-cl-subtle px-4 py-3 shadow-cl-panel">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-cl-accent/15 bg-cl-accent/10 text-cl-accent">
-                      <Waves className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <div className="text-[10px] uppercase tracking-[0.22em] text-cl-muted">
-                        Sport
-                      </div>
-                      <div className="text-sm font-bold text-cl-ink">
-                        {data.sport}
-                      </div>
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-            </div>
-          </div>
-        </div>
-
+      <div className="event-details-content relative w-full py-6">
+        {/* Admissions are deferred; the branded hero above is the event heading. */}
+        {!(data?.id && (data.organizer?.id || orgIdFromQuery)) && <h1 className="text-3xl font-bold">{data?.name || "Event details"}</h1>}
         {isLoading ? (
           <Card className="mt-8 rounded-[30px] border border-cl-accent/10 bg-cl-surface p-6 text-cl-muted shadow-cl-panel">
             Loading event…
@@ -547,7 +447,7 @@ export default function OrgEventDetailsPage(props: { params: { id: string } }) {
             Event not found.
           </Card>
         ) : (
-          <div className="mt-8 space-y-6">
+          <div className="space-y-6">
             <Card className="overflow-hidden rounded-[30px] border border-cl-accent/10 bg-cl-surface p-5 shadow-cl-panel sm:p-6">
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
                 <InfoTile
@@ -595,6 +495,9 @@ export default function OrgEventDetailsPage(props: { params: { id: string } }) {
               organizationId={orgIdFromQuery || undefined}
               sandbox={!!sandbox}
             />
+            <EventLivestream url={data.livestreamUrl} name={data.name} />
+            {!sandbox && <EventPhotoGallery key={data.id} eventId={data.id} /> }
+
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
               <SectionCard
                 icon={<Trophy className="h-5 w-5" />}

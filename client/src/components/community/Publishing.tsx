@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation, useSearch } from "wouter";
 import {
   RefreshCw,
+  Search,
   BookOpen,
   PenLine,
   ArrowUp,
@@ -21,6 +22,7 @@ import {
   publicationPath,
   publicationRoute,
   publishingSports,
+  canonicalPublishingSport,
   publishingCategories,
   publishingLabel,
   safePublishingUrl,
@@ -155,7 +157,7 @@ export function PublicationList({
             ))}
           </select>
         )}
-        <button className={socialButton}>Search</button>
+        <button type="submit" className="publication-search-button"><Search size={18} aria-hidden="true" />Search</button>
         <button
           type="button"
           className={socialButton}
@@ -263,7 +265,7 @@ export function PublicationList({
 }
 export function PublishingDirectory({ kind }: { kind: PublicationKind }) {
   const search = useSearch();
-  const requestedSport = new URLSearchParams(search).get("sport") || "";
+  const requestedSport = canonicalPublishingSport(new URLSearchParams(search).get("sport") || "");
   const initialSport = publishingSports.includes(requestedSport) ? requestedSport : "";
   const { isAuthenticated } = useAuth();
   return (
@@ -340,7 +342,7 @@ function PublicationForm({
     invalidate = usePublishing();
   const [title, setTitle] = useState(publication?.title || ""),
     [body, setBody] = useState(publication?.body || ""),
-    [sport, setSport] = useState(publication?.sport || "general"),
+    [sport, setSport] = useState(canonicalPublishingSport(publication?.sport || "general")),
     [category, setCategory] = useState(publication?.category || "discussion"),
     [published, setPublished] = useState(publication?.published || false),
     [file, setFile] = useState<File | null>(null),

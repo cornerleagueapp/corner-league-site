@@ -393,7 +393,7 @@ export default function NationwideMap({ events }: Props) {
             </div>
           </div>
 
-          <div className="mt-10 grid min-w-0 items-start gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:gap-8">
+          <div className="map-event-layout mt-8 grid min-w-0 items-start gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:gap-8">
             <div className="relative min-w-0 overflow-hidden rounded-[30px] border border-cl-accent/10 bg-cl-surface p-3 shadow-cl-panel sm:p-4">
               <div className="absolute inset-0 opacity-[0.05] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:48px_48px]" />
 
@@ -512,7 +512,7 @@ export default function NationwideMap({ events }: Props) {
                         More Events In This Area
                       </div>
 
-                      <div className="mt-3 max-h-[400px] space-y-3 overflow-y-auto pr-1 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-cl-accent/20">
+                      <div className="map-event-list mt-4 max-h-[520px] space-y-4 overflow-y-auto pr-2 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-cl-accent/20">
                         {activeCluster.events.slice(1).map((event) => (
                           <Link
                             key={event.id}
@@ -520,7 +520,7 @@ export default function NationwideMap({ events }: Props) {
                               event.organizationId || "",
                             )}`}
                           >
-                            <div className="group min-w-0 cursor-pointer rounded-2xl border border-cl-border bg-cl-subtle px-4 py-4 transition hover:border-cl-accent/30 hover:bg-cl-accent/10">
+                            <div className="group min-w-0 cursor-pointer rounded-2xl border border-cl-border bg-cl-subtle px-5 py-5 transition hover:border-cl-accent/30 hover:bg-cl-accent/10">
                               <div className="break-words font-bold uppercase leading-snug text-cl-ink group-hover:text-cl-accent">
                                 {event.name}
                               </div>

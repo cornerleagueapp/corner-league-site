@@ -1,5 +1,4 @@
-import OrganizationFacilities from "@/components/facilities/OrganizationFacilities";
-import { OrganizationShop } from "@/features/merchandise/OrganizationShop";
+// Future: OrganizationFacilities and OrganizationShop remain available in their feature modules.
 import TeamSeasons from "@/components/team-sports/TeamSeasons";
 import { isTeamSport } from "@/lib/sportRegistration";
 import { rememberSport } from "@/hooks/useSportSelection";
@@ -414,12 +413,7 @@ function OrganizationCommunityPage(props: Props) {
                 organizationId={org.id}
               />
             )}
-            {section === "shop" && !sandbox && (
-              <OrganizationShop key={org.id} organizationId={org.id} />
-            )}
-            {section === "facilities" && !sandbox && (
-              <OrganizationFacilities key={org.id} organizationId={org.id} />
-            )}
+            {/* Shop and facilities are deferred until a future release. */}
           </section>
         </>
       )}

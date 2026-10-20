@@ -23,12 +23,7 @@ export function organizationSections(
       : []),
     { key: "updates", label: "News & updates" },
     { key: "gallery", label: "Photos" },
-    ...(!sandbox
-      ? [
-          { key: "shop" as const, label: "Shop" },
-          { key: "facilities" as const, label: "Facilities & access" },
-        ]
-      : []),
+    // Shop and facilities are intentionally unavailable during this release.
   ];
 }
 export function organizationSection(
