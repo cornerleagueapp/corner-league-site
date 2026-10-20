@@ -882,3 +882,16 @@
 @media(min-width:768px) and (max-width:1279px){.cl-header-inner{flex-wrap:wrap}.consumer-navbar-actions{flex-wrap:wrap}.cl-desktop-explore{order:4;flex-basis:100%;justify-content:center}}
 @media(max-width:1099px){.athlete-mobile-about{display:block;margin-bottom:18px}.athlete-desktop-about{display:none}}
 @media(max-width:767px){.cl-sidebar-sports,.cl-desktop-explore{display:none}.cl-mobile-sport-choice{display:block;margin-bottom:18px}.cl-mobile-sport-choice label{color:inherit}.cl-header-logo{position:absolute;left:50%;transform:translateX(-50%);width:40px;z-index:1}.consumer-navbar-actions{flex:0 0 auto!important;margin-left:auto}.cl-header-inner{position:relative;padding-right:12px!important;min-height:68px}.cl-athlete-directory-grid{grid-template-columns:minmax(0,1fr)}.cl-directory-card{padding:14px}.athlete-filter-controls>.cl-choice{flex:1;min-width:0}.cl-choice-trigger{min-width:0}.cl-not-found{margin:18px 0}}
+
+/* Navigation spacing and matching mobile accordion sections. */
+.cl-desktop-explore{gap:clamp(8px,1vw,20px)}
+.cl-more-trigger{display:inline-flex;align-items:center;justify-content:center;gap:8px;line-height:1.25}
+.cl-more-chevron{width:16px;height:16px;flex-shrink:0;stroke-width:2;transition:transform .15s ease}
+.cl-more-trigger[data-state=open] .cl-more-chevron{transform:rotate(180deg)}
+.cl-sidebar-sports button{padding:12px;min-height:44px}
+.cl-sidebar-sports strong{overflow-wrap:anywhere}
+.cl-mobile-sport-list{padding-top:8px}
+.cl-mobile-sport-list button{display:block;width:100%;padding:12px;text-align:left;border-radius:12px;color:inherit;font-size:14px;font-weight:600;min-height:44px}
+.cl-mobile-sport-list button:hover,.cl-mobile-sport-list button[aria-current]{background:rgb(var(--cl-accent)/.12)}
+@media(max-width:767px){.cl-mobile-sport-choice{margin-bottom:8px}}
+@media(prefers-reduced-motion:reduce){.cl-more-chevron{transition:none}}
