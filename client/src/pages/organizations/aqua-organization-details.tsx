@@ -2,7 +2,7 @@
 import TeamSeasons from "@/components/team-sports/TeamSeasons";
 import { isTeamSport } from "@/lib/sportRegistration";
 import { rememberSport } from "@/hooks/useSportSelection";
-import { sportDirectory, sportOrganization } from "@/lib/sportNavigation";
+import { sportOrganization } from "@/lib/sportNavigation";
 import { sportVisual } from "@/lib/sportVisuals";
 import { useOrganizationPageApi } from "./SandboxContext";
 import { OrganizationPosts } from "@/features/organization-posts/OrganizationPosts";
@@ -197,16 +197,14 @@ function OrganizationCommunityPage(props: Props) {
             : undefined
         }
       />
-      <Link
-        className="org-community-back"
-        href={
-          sandbox
-            ? `/internal/test-organizations/${encodeURIComponent(sandbox.id)}`
-            : sportDirectory(primarySportKey)
-        }
-      >
-        ← Back to organizations
-      </Link>
+      {sandbox ? (
+        <Link
+          className="org-community-back"
+          href={`/internal/test-organizations/${encodeURIComponent(sandbox.id)}`}
+        >
+          Back to test organization
+        </Link>
+      ) : null}
       {loading ? (
         <div className="org-community-state" role="status">
           Loading organization…

@@ -21,6 +21,10 @@ function compile(relative, mock = {}) {
 const org = compile('client/src/components/OrgDashboardLink.tsx');
 const creation = compile('client/src/components/CreateOrganizationLink.tsx');
 const Nav = compile('client/src/components/navigation/PublicTopNav.tsx', {
+  './ColorModeToggle': { __esModule: true, default: () => null },
+  './SportNavigation': { DesktopExploreNavigation: () => null },
+  './NavbarSearch': { __esModule: true, default: () => null },
+  '@/components/community/AccountAvatar': { __esModule: true, default: () => null },
   react: { ...React, useState: () => [true, () => {}], useEffect: () => {} },
   '@/hooks/useAuth': { useAuth: () => ({ isAuthenticated: authenticated, user: authenticated ? { id: 'u', username: 'user' } : null }) },
   '@/features/organization-admin/hooks/useMyOrganizationAdminOrganizations': { useMyOrganizationAdminOrganizations: () => access },

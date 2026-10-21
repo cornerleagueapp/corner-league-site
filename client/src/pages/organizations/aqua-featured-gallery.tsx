@@ -1,3 +1,5 @@
+import ConsumerMediaDialog from "@/components/ui/ConsumerMediaDialog";
+import GalleryThumbnail from "@/components/media/GalleryThumbnail";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "wouter";
 import {
@@ -91,7 +93,8 @@ async function fetchFeaturedGallery(limit: number) {
     res?.data ??
     res;
 
-  return Array.isArray(list) ? (list as GalleryItem[]) : [];
+  if (!Array.isArray(list)) throw new Error("Gallery response unavailable");
+  return list as GalleryItem[];
 }
 
 export default function AquaFeaturedGalleryPage() {
@@ -102,6 +105,8 @@ export default function AquaFeaturedGalleryPage() {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<"all" | "image" | "video">("all");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [reload, setReload] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -109,6 +114,7 @@ export default function AquaFeaturedGalleryPage() {
     (async () => {
       try {
         setLoading(true);
+        setError(false);
         const list = await fetchFeaturedGallery(60);
 
         if (!cancelled) {
@@ -117,6 +123,7 @@ export default function AquaFeaturedGalleryPage() {
       } catch {
         if (!cancelled) {
           setItems([]);
+          setError(true);
         }
       } finally {
         if (!cancelled) {
@@ -128,18 +135,7 @@ export default function AquaFeaturedGalleryPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
-
-  useEffect(() => {
-    if (!selectedItem) return;
-
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.body.style.overflow = previous || "";
-    };
-  }, [selectedItem]);
+  }, [reload]);
 
   const filteredItems = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -177,7 +173,6 @@ export default function AquaFeaturedGalleryPage() {
       <div className="pointer-events-none fixed inset-0 z-0">
         <div className="absolute inset-0 bg-cl-canvas" />
 
-
         <div className="absolute inset-0 opacity-[0.035] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:72px_72px]" />
       </div>
 
@@ -192,7 +187,7 @@ export default function AquaFeaturedGalleryPage() {
         </button>
 
         <section className="overflow-hidden rounded-[38px] border border-cl-accent/10 cl-panel-wash p-6 shadow-cl-panel sm:p-8 lg:p-10">
-          <div className="grid gap-8 lg:grid-cols-[1fr_360px] lg:items-end">
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-cl-accent/25 bg-cl-accent/10 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.22em] text-cl-accent">
                 <Sparkles className="h-3.5 w-3.5" />
@@ -228,6 +223,7 @@ export default function AquaFeaturedGalleryPage() {
               <div className="flex h-12 items-center gap-3 rounded-2xl border border-cl-border bg-cl-subtle px-4">
                 <Search className="h-4 w-4 text-cl-muted" />
                 <input
+                  aria-label="Search featured gallery"
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder="Search racer, caption, title..."
@@ -239,6 +235,7 @@ export default function AquaFeaturedGalleryPage() {
                 {(["all", "image", "video"] as const).map((value) => (
                   <button
                     key={value}
+                    aria-pressed={filter === value}
                     type="button"
                     onClick={() => setFilter(value)}
                     className={`rounded-2xl border px-3 py-2 text-[10px] font-black uppercase tracking-[0.14em] transition ${
@@ -261,8 +258,26 @@ export default function AquaFeaturedGalleryPage() {
 
         <section className="mt-8">
           {loading ? (
-            <div className="rounded-[30px] border border-cl-accent/10 bg-cl-surface p-8 text-center text-cl-muted shadow-cl-panel">
+            <div
+              role="status"
+              aria-busy="true"
+              className="rounded-[30px] border border-cl-accent/10 bg-cl-surface p-8 text-center text-cl-muted shadow-cl-panel"
+            >
               Loading featured gallery…
+            </div>
+          ) : error ? (
+            <div
+              role="alert"
+              className="rounded-2xl border border-cl-danger/30 bg-cl-surface p-6 text-cl-danger"
+            >
+              <p>Featured gallery could not load.</p>
+              <button
+                type="button"
+                className="mt-3 rounded-lg border border-cl-border px-4 py-2 text-cl-ink"
+                onClick={() => setReload((n) => n + 1)}
+              >
+                Try again
+              </button>
             </div>
           ) : filteredItems.length ? (
             <div className="columns-1 gap-5 sm:columns-2 xl:columns-3">
@@ -285,19 +300,21 @@ export default function AquaFeaturedGalleryPage() {
                       }`}
                     >
                       {mediaUrl ? (
-                        <img
-                          src={mediaUrl}
+                        <GalleryThumbnail
+                          video={String(item.type).toLowerCase() === "video"}
+                          src={
+                            String(item.type).toLowerCase() === "video"
+                              ? item.thumbnailUrl
+                              : mediaUrl
+                          }
                           alt={item.title || athleteName}
                           className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                          loading="lazy"
                         />
                       ) : (
                         <div className="grid h-full w-full place-items-center bg-cl-surface">
                           <ImageIcon className="h-10 w-10 text-cl-accent" />
                         </div>
                       )}
-
-
 
                       <div className="absolute left-3 top-3 inline-flex items-center gap-2 rounded-full border border-cl-border bg-cl-subtle px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-cl-ink backdrop-blur-md">
                         {String(item.type || "image").toLowerCase() ===
@@ -358,105 +375,116 @@ export default function AquaFeaturedGalleryPage() {
               </div>
 
               <h2 className="mt-5 text-2xl font-black text-cl-ink">
-                No featured gallery media yet
+                {items.length
+                  ? "No matching media"
+                  : "No featured gallery media yet"}
               </h2>
 
               <p className="mx-auto mt-2 max-w-xl text-sm leading-7 text-cl-muted">
-                Once racers mark photos or videos as featured, they will appear
-                here for the Aqua community.
+                {items.length
+                  ? "Try a different search or clear your filters."
+                  : "Once racers mark photos or videos as featured, they will appear here for the Aqua community."}
               </p>
+              {items.length ? (
+                <button
+                  type="button"
+                  className="mt-4 rounded-lg border border-cl-border px-4 py-2 text-cl-accent"
+                  onClick={() => {
+                    setQuery("");
+                    setFilter("all");
+                  }}
+                >
+                  Clear filters
+                </button>
+              ) : null}
             </div>
           )}
         </section>
       </main>
 
       {selectedItem ? (
-        <div className="fixed inset-0 z-[90] flex items-center justify-center px-4">
-          <button
-            type="button"
-            aria-label="Close media preview"
-            className="absolute inset-0 bg-cl-subtle backdrop-blur-sm"
-            onClick={() => setSelectedItem(null)}
-          />
+        <ConsumerMediaDialog
+          title={selectedItem.title || "Race Day Highlight"}
+          description="Featured racer media preview."
+          onClose={() => setSelectedItem(null)}
+          className="max-w-5xl"
+        >
+          <div className="grid max-h-[92vh] grid-cols-1 overflow-y-auto lg:grid-cols-[minmax(0,1fr)_340px]">
+            <div className="grid min-h-[160px] sm:min-h-[320px] place-items-center bg-cl-canvas">
+              {String(selectedItem.type || "image").toLowerCase() ===
+              "video" ? (
+                <video
+                  src={getFullMediaUrl(selectedItem)}
+                  controls
+                  className="max-h-[72vh] w-full object-contain"
+                />
+              ) : (
+                <img
+                  src={getFullMediaUrl(selectedItem)}
+                  alt={selectedItem.title || "Gallery media"}
+                  className="max-h-[72vh] w-full object-contain"
+                />
+              )}
+            </div>
 
-          <div className="relative z-10 max-h-[92vh] w-full max-w-5xl overflow-hidden rounded-[30px] border border-cl-accent/10 bg-cl-surface shadow-cl-panel">
-            <div className="grid max-h-[92vh] grid-cols-1 overflow-y-auto lg:grid-cols-[1fr_340px]">
-              <div className="grid min-h-[320px] place-items-center bg-cl-canvas">
-                {String(selectedItem.type || "image").toLowerCase() ===
-                "video" ? (
-                  <video
-                    src={getFullMediaUrl(selectedItem)}
-                    controls
-                    className="max-h-[72vh] w-full object-contain"
-                  />
-                ) : (
-                  <img
-                    src={getFullMediaUrl(selectedItem)}
-                    alt={selectedItem.title || "Gallery media"}
-                    className="max-h-[72vh] w-full object-contain"
-                  />
-                )}
-              </div>
-
-              <aside className="p-5">
-                <div className="flex items-center gap-3">
-                  <div className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-full border border-cl-accent/25 bg-cl-accent/15">
-                    {getAthleteImage(selectedItem) ? (
-                      <img
-                        src={getAthleteImage(selectedItem)}
-                        alt={getAthleteName(selectedItem)}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <UserCircle2 className="h-6 w-6 text-cl-accent" />
-                    )}
-                  </div>
-
-                  <div className="min-w-0">
-                    <div className="truncate text-sm font-black text-cl-ink">
-                      {getAthleteName(selectedItem)}
-                    </div>
-                    <div className="text-xs text-cl-muted">
-                      {formatDate(selectedItem.createdAt)}
-                    </div>
-                  </div>
+            <aside className="p-5">
+              <div className="flex items-center gap-3">
+                <div className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-full border border-cl-accent/25 bg-cl-accent/15">
+                  {getAthleteImage(selectedItem) ? (
+                    <img
+                      src={getAthleteImage(selectedItem)}
+                      alt={getAthleteName(selectedItem)}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <UserCircle2 className="h-6 w-6 text-cl-accent" />
+                  )}
                 </div>
 
-                <h2 className="mt-6 text-2xl font-black uppercase leading-tight text-cl-ink">
-                  {selectedItem.title || "Race Day Highlight"}
-                </h2>
+                <div className="min-w-0">
+                  <div className="truncate text-sm font-black text-cl-ink">
+                    {getAthleteName(selectedItem)}
+                  </div>
+                  <div className="text-xs text-cl-muted">
+                    {formatDate(selectedItem.createdAt)}
+                  </div>
+                </div>
+              </div>
 
-                {selectedItem.caption ? (
-                  <p className="mt-3 text-sm leading-7 text-cl-muted">
-                    {selectedItem.caption}
-                  </p>
-                ) : null}
+              <h2 className="mt-6 text-2xl font-black uppercase leading-tight text-cl-ink">
+                {selectedItem.title || "Race Day Highlight"}
+              </h2>
 
-                {getRacerProfileId(selectedItem) ? (
-                  <button
-                    type="button"
-                    onClick={() =>
-                      navigate(
-                        `/racer/${encodeURIComponent(String(getRacerProfileId(selectedItem)))}`,
-                      )
-                    }
-                    className="mt-6 inline-flex h-11 w-full items-center justify-center rounded-full bg-cl-accent px-5 text-xs font-black uppercase tracking-[0.14em] text-cl-contrast transition hover:bg-cl-accent"
-                  >
-                    View Racer Profile
-                  </button>
-                ) : null}
+              {selectedItem.caption ? (
+                <p className="mt-3 text-sm leading-7 text-cl-muted">
+                  {selectedItem.caption}
+                </p>
+              ) : null}
 
+              {getRacerProfileId(selectedItem) ? (
                 <button
                   type="button"
-                  onClick={() => setSelectedItem(null)}
-                  className="mt-3 inline-flex h-11 w-full items-center justify-center rounded-full border border-cl-border bg-cl-subtle px-5 text-xs font-black uppercase tracking-[0.14em] text-cl-muted transition hover:bg-cl-subtle"
+                  onClick={() =>
+                    navigate(
+                      `/racer/${encodeURIComponent(String(getRacerProfileId(selectedItem)))}`,
+                    )
+                  }
+                  className="mt-6 inline-flex h-11 w-full items-center justify-center rounded-full bg-cl-accent px-5 text-xs font-black uppercase tracking-[0.14em] text-cl-contrast transition hover:bg-cl-accent"
                 >
-                  Close
+                  View Racer Profile
                 </button>
-              </aside>
-            </div>
+              ) : null}
+
+              <button
+                type="button"
+                onClick={() => setSelectedItem(null)}
+                className="mt-3 inline-flex h-11 w-full items-center justify-center rounded-full border border-cl-border bg-cl-subtle px-5 text-xs font-black uppercase tracking-[0.14em] text-cl-muted transition hover:bg-cl-subtle"
+              >
+                Close
+              </button>
+            </aside>
           </div>
-        </div>
+        </ConsumerMediaDialog>
       ) : null}
     </div>
   );

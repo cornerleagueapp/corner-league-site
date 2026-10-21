@@ -155,7 +155,8 @@ export async function fetchAthleteGallery(
     res?.data ??
     res;
 
-  return Array.isArray(list) ? (list as RacerGalleryItem[]) : [];
+  if (!Array.isArray(list)) throw new Error("Gallery response unavailable");
+  return list as RacerGalleryItem[];
 }
 
 export async function fetchAthleteSponsors(

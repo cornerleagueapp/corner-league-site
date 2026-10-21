@@ -432,6 +432,8 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryItems, setGalleryItems] = useState<RacerGalleryItem[]>([]);
   const [galleryLoading, setGalleryLoading] = useState(false);
+  const [galleryError, setGalleryError] = useState<string | null>(null);
+  const [galleryReload, setGalleryReload] = useState(0);
 
   const [sponsors, setSponsors] = useState<RacerSponsor[]>([]);
   const [sponsorsLoading, setSponsorsLoading] = useState(false);
@@ -832,6 +834,8 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
   useEffect(() => {
     if (!racer?.athleteId) {
       setGalleryItems([]);
+      setGalleryError(null);
+      setGalleryLoading(false);
       return;
     }
 
@@ -840,6 +844,8 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
     (async () => {
       try {
         setGalleryLoading(true);
+        setGalleryItems([]);
+        setGalleryError(null);
         const list = await fetchAthleteGallery(String(racer.athleteId));
 
         if (!cancelled) {
@@ -848,6 +854,7 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
       } catch {
         if (!cancelled) {
           setGalleryItems([]);
+          setGalleryError("Racer media could not load. Please try again.");
         }
       } finally {
         if (!cancelled) {
@@ -859,7 +866,7 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
     return () => {
       cancelled = true;
     };
-  }, [racer?.athleteId]);
+  }, [racer?.athleteId, galleryReload]);
 
   useEffect(() => {
     if (!racer?.athleteId) {
@@ -1057,6 +1064,8 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
         racer={racer}
         items={galleryItems}
         loading={galleryLoading}
+        error={galleryError}
+        onRetry={() => setGalleryReload(n => n + 1)}
         canUpload={canEdit}
         onBack={() => setGalleryOpen(false)}
         onUpload={async (drafts) => {
@@ -1079,10 +1088,11 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
             );
 
             uploadedItems.push(uploaded as RacerGalleryItem);
+            setGalleryItems((prev) => [uploaded as RacerGalleryItem, ...prev]);
+            setGalleryError(null);
           }
 
           if (uploadedItems.length > 0) {
-            setGalleryItems((prev) => [...uploadedItems, ...prev]);
             toast({
               title: "Gallery updated",
               description: `${uploadedItems.length} media item${

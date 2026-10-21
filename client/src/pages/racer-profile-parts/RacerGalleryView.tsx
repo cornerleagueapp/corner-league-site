@@ -1,3 +1,5 @@
+import ConsumerMediaDialog from "@/components/ui/ConsumerMediaDialog";
+import GalleryThumbnail from "@/components/media/GalleryThumbnail";
 import { PageSEO } from "@/seo/usePageSEO";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -17,6 +19,8 @@ export function RacerGalleryView({
   racer,
   items,
   loading,
+  error,
+  onRetry,
   onBack,
   canUpload,
   onUpload,
@@ -24,6 +28,8 @@ export function RacerGalleryView({
   racer: Racer;
   items: RacerGalleryItem[];
   loading: boolean;
+  error?: string | null;
+  onRetry?: () => void;
   onBack: () => void;
   canUpload?: boolean;
   onUpload?: (drafts: GalleryUploadDraft[]) => Promise<void> | void;
@@ -36,6 +42,7 @@ export function RacerGalleryView({
     null,
   );
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [drafts, setDrafts] = useState<GalleryUploadDraft[]>([
     {
       id: crypto.randomUUID(),
@@ -72,7 +79,9 @@ export function RacerGalleryView({
   };
 
   const closeUploadForm = () => {
+    if (uploading) return;
     setIsUploadOpen(false);
+    setUploadError(null);
     resetDrafts();
   };
 
@@ -99,7 +108,7 @@ export function RacerGalleryView({
               <ArrowLeft className="h-5 w-5" />
             </button>
 
-            <div>
+            <div className="min-w-0 break-words">
               <div className="text-[10px] uppercase tracking-[0.24em] text-cl-accent">
                 Racer Gallery
               </div>
@@ -136,35 +145,36 @@ export function RacerGalleryView({
         </div>
 
         {canUpload && isUploadOpen ? (
-          <div
-            className="cl-dark fixed inset-0 z-[90] bg-black/80 backdrop-blur-sm"
-            onClick={closeUploadForm}
+          <ConsumerMediaDialog
+            title="Upload racer media"
+            description="Add photos or video clips to your racer gallery."
+            busy={uploading}
+            onClose={closeUploadForm}
+            className="flex h-[calc(100dvh-2rem)] flex-col overflow-hidden"
           >
-            <div
-              className="flex h-full w-full flex-col overflow-hidden bg-cl-canvas text-cl-ink sm:m-6 sm:h-[calc(100vh-3rem)] sm:w-[calc(100vw-3rem)] sm:rounded-[30px] sm:border sm:border-cl-accent/15"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex shrink-0 items-center justify-between border-b border-cl-border px-4 py-4 sm:px-6">
-                <div>
-                  <div className="text-xs font-black uppercase tracking-[0.22em] text-cl-accent">
-                    Upload Media
-                  </div>
-                  <p className="mt-1 text-sm text-cl-muted">
-                    Add multiple photos or video clips to your racer gallery.
-                  </p>
+            <div className="flex shrink-0 items-center justify-between border-b border-cl-border px-4 py-4 sm:px-6">
+              <div>
+                <div className="text-xs font-black uppercase tracking-[0.22em] text-cl-accent">
+                  Upload Media
                 </div>
-
-                <button
-                  type="button"
-                  onClick={closeUploadForm}
-                  className="grid h-11 w-11 place-items-center rounded-full border border-cl-border bg-cl-subtle text-cl-ink hover:bg-cl-subtle"
-                  aria-label="Close upload form"
-                >
-                  <X className="h-5 w-5" />
-                </button>
+                <p className="mt-1 text-sm text-cl-muted">
+                  Add multiple photos or video clips to your racer gallery.
+                </p>
               </div>
 
-              <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6">
+              <button
+                type="button"
+                onClick={closeUploadForm}
+                disabled={uploading}
+                className="grid h-11 w-11 place-items-center rounded-full border border-cl-border bg-cl-subtle text-cl-ink hover:bg-cl-subtle"
+                aria-label="Close upload form"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6">
+              <fieldset disabled={uploading} className="min-w-0">
                 <div className="mb-4 flex justify-end">
                   <button
                     type="button"
@@ -195,7 +205,7 @@ export function RacerGalleryView({
                                 prev.filter((item) => item.id !== draft.id),
                               )
                             }
-                            className="grid h-8 w-8 place-items-center rounded-full border border-red-300/20 bg-red-500/10 text-red-200"
+                            className="grid h-8 w-8 place-items-center rounded-full border border-cl-danger/20 bg-cl-danger/10 text-cl-danger"
                             aria-label="Remove upload row"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -289,46 +299,72 @@ export function RacerGalleryView({
                     </div>
                   ))}
                 </div>
-              </div>
-
-              <div className="flex shrink-0 justify-end gap-2 border-t border-cl-border bg-cl-canvas px-4 py-4 sm:px-6">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={closeUploadForm}
-                  className="border border-cl-border bg-transparent text-cl-ink hover:bg-cl-subtle"
-                  disabled={uploading}
-                >
-                  Cancel
-                </Button>
-
-                <Button
-                  disabled={uploading || !drafts.some((draft) => draft.file)}
-                  onClick={async () => {
-                    if (!onUpload) return;
-
-                    try {
-                      setUploading(true);
-                      await onUpload(drafts.filter((draft) => draft.file));
-                      resetDrafts();
-                      setIsUploadOpen(false);
-                    } finally {
-                      setUploading(false);
-                    }
-                  }}
-                  className="bg-cl-accent text-cl-contrast hover:bg-cl-accent"
-                >
-                  <Upload className="mr-2 h-4 w-4" />
-                  {uploading ? "Uploading..." : "Upload Media"}
-                </Button>
-              </div>
+              </fieldset>
             </div>
-          </div>
+
+            {uploadError ? (
+              <p role="alert" className="px-4 py-2 text-sm text-cl-danger">
+                {uploadError}
+              </p>
+            ) : null}
+            <div className="flex shrink-0 flex-wrap justify-end gap-2 border-t border-cl-border bg-cl-canvas px-4 py-4 sm:px-6">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={closeUploadForm}
+                className="border border-cl-border bg-transparent text-cl-ink hover:bg-cl-subtle"
+                disabled={uploading}
+              >
+                Cancel
+              </Button>
+
+              <Button
+                disabled={
+                  uploading || !onUpload || !drafts.some((draft) => draft.file)
+                }
+                onClick={async () => {
+                  if (!onUpload) return;
+
+                  try {
+                    setUploading(true);
+                    setUploadError(null);
+                    await onUpload(drafts.filter((draft) => draft.file));
+                    resetDrafts();
+                    setIsUploadOpen(false);
+                  } catch {
+                    setUploadError(
+                      "Media could not upload. Some files may have completed; close and review your gallery before retrying.",
+                    );
+                  } finally {
+                    setUploading(false);
+                  }
+                }}
+                className="bg-cl-accent text-cl-contrast hover:bg-cl-accent"
+              >
+                <Upload className="mr-2 h-4 w-4" />
+                {uploading ? "Uploading..." : "Upload Media"}
+              </Button>
+            </div>
+          </ConsumerMediaDialog>
         ) : null}
 
         {loading ? (
-          <div className="rounded-[28px] border border-cl-accent/10 bg-cl-surface p-6 text-sm text-cl-muted">
+          <div
+            role="status"
+            aria-busy="true"
+            className="rounded-[28px] border border-cl-accent/10 bg-cl-surface p-6 text-sm text-cl-muted"
+          >
             Loading racer media…
+          </div>
+        ) : error ? (
+          <div
+            role="alert"
+            className="rounded-2xl border border-cl-danger/30 bg-cl-surface p-6 text-cl-danger"
+          >
+            <p>{error}</p>
+            <Button variant="outline" className="mt-3" onClick={onRetry}>
+              Try again
+            </Button>
           </div>
         ) : items.length === 0 ? (
           <div className="rounded-[28px] border border-cl-accent/10 bg-cl-surface p-6 text-sm text-cl-muted">
@@ -342,7 +378,7 @@ export function RacerGalleryView({
                   Featured Highlight
                 </div>
 
-                <div className="grid gap-5 lg:grid-cols-[1.6fr_1fr] lg:items-center">
+                <div className="grid gap-5 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:items-center">
                   <div className="relative overflow-hidden rounded-[24px] border border-cl-border bg-cl-canvas">
                     {featured.type === "video" ? (
                       <video
@@ -389,11 +425,16 @@ export function RacerGalleryView({
                   key={item.id}
                   type="button"
                   onClick={() => setSelectedMedia(item)}
-                  className="group overflow-hidden rounded-[22px] border border-cl-accent/10 bg-cl-surface text-left transition hover:border-cl-accent/30"
+                  className="group min-w-0 overflow-hidden rounded-[22px] border border-cl-accent/10 bg-cl-surface text-left transition hover:border-cl-accent/30"
                 >
                   <div className="relative aspect-[4/3] bg-cl-canvas">
-                    <img
-                      src={getGalleryThumb(item)}
+                    <GalleryThumbnail
+                      video={item.type === "video"}
+                      src={
+                        item.type === "video"
+                          ? item.thumbnailUrl || item.thumbnail_url
+                          : getGalleryThumb(item)
+                      }
                       alt={item.title || "Racer media"}
                       className="h-full w-full object-cover transition group-hover:scale-[1.03]"
                     />
@@ -426,56 +467,52 @@ export function RacerGalleryView({
       </div>
 
       {selectedMedia ? (
-        <div
-          className="fixed inset-0 z-[95] flex items-center justify-center bg-cl-surface p-4 backdrop-blur-sm"
-          onClick={() => setSelectedMedia(null)}
+        <ConsumerMediaDialog
+          title={selectedMedia.title || "Racer media"}
+          description="Racer gallery media preview."
+          onClose={() => setSelectedMedia(null)}
         >
-          <div
-            className="relative max-h-full w-full max-w-6xl overflow-hidden rounded-[28px] border border-cl-accent/15 bg-cl-canvas"
-            onClick={(e) => e.stopPropagation()}
+          <button
+            type="button"
+            onClick={() => setSelectedMedia(null)}
+            className="cl-dark absolute right-4 top-4 z-10 grid h-11 w-11 place-items-center rounded-full border border-cl-border bg-black/50 text-cl-ink backdrop-blur-md hover:bg-black/70"
+            aria-label="Close media preview"
           >
-            <button
-              type="button"
-              onClick={() => setSelectedMedia(null)}
-              className="cl-dark absolute right-4 top-4 z-10 grid h-11 w-11 place-items-center rounded-full border border-cl-border bg-black/50 text-cl-ink backdrop-blur-md hover:bg-black/70"
-              aria-label="Close media preview"
-            >
-              <X className="h-5 w-5" />
-            </button>
+            <X className="h-5 w-5" />
+          </button>
 
-            <div className="max-h-[82vh] overflow-y-auto">
-              <div className="bg-cl-canvas">
-                {selectedMedia.type === "video" ? (
-                  <video
-                    src={selectedMedia.url}
-                    controls
-                    autoPlay
-                    playsInline
-                    className="max-h-[72vh] w-full object-contain"
-                  />
-                ) : (
-                  <img
-                    src={getGalleryThumb(selectedMedia)}
-                    alt={selectedMedia.title || "Racer media"}
-                    className="max-h-[72vh] w-full object-contain"
-                  />
-                )}
+          <div className="max-h-[82vh] overflow-y-auto">
+            <div className="bg-cl-canvas">
+              {selectedMedia.type === "video" ? (
+                <video
+                  src={selectedMedia.url}
+                  controls
+                  autoPlay
+                  playsInline
+                  className="max-h-[72vh] w-full object-contain"
+                />
+              ) : (
+                <img
+                  src={selectedMedia.url}
+                  alt={selectedMedia.title || "Racer media"}
+                  className="max-h-[72vh] w-full object-contain"
+                />
+              )}
+            </div>
+
+            <div className="p-5">
+              <div className="text-xl font-black text-cl-ink">
+                {selectedMedia.title || "Untitled Highlight"}
               </div>
 
-              <div className="p-5">
-                <div className="text-xl font-black text-cl-ink">
-                  {selectedMedia.title || "Untitled Highlight"}
-                </div>
-
-                {selectedMedia.caption ? (
-                  <p className="mt-2 text-sm leading-7 text-cl-muted">
-                    {selectedMedia.caption}
-                  </p>
-                ) : null}
-              </div>
+              {selectedMedia.caption ? (
+                <p className="mt-2 text-sm leading-7 text-cl-muted">
+                  {selectedMedia.caption}
+                </p>
+              ) : null}
             </div>
           </div>
-        </div>
+        </ConsumerMediaDialog>
       ) : null}
     </div>
   );

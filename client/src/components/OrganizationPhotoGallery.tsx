@@ -117,16 +117,16 @@ function Gallery({
         </p>
       ) : null}
       {query.isError ? (
-        <p role="alert" className="mt-4 text-red-300">
-          Photos could not load. Please try again later.
+        <p role="alert" className="mt-4 text-cl-danger">
+          Photos could not load. <button type="button" className="ml-2 underline" disabled={query.isFetching} onClick={() => void query.refetch()}>{query.isFetching ? "Retrying…" : "Try again"}</button>
         </p>
       ) : null}
       {error ? (
-        <p role="alert" className="mt-4 text-red-300">
+        <p role="alert" className="mt-4 text-cl-danger">
           {error}
         </p>
       ) : null}
-      {query.data && !query.data.items.length ? (
+      {!query.isError && query.data && !query.data.items.length ? (
         <p className="mt-4 text-sm text-cl-muted">No published photos yet.</p>
       ) : null}
       <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -149,7 +149,7 @@ function Gallery({
                 className="h-full w-full object-cover"
               />
             </button>
-            <div className="space-y-2 p-3">
+            <div className="min-w-0 space-y-2 break-words p-3">
               <time
                 dateTime={photo.capturedAt}
                 className="text-xs text-cl-accent"
@@ -168,7 +168,7 @@ function Gallery({
         ))}
       </div>
       {query.data && query.data.total > 12 ? (
-        <div className="mt-5 flex items-center justify-between gap-2">
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-2">
           <Button
             variant="outline"
             disabled={page === 1 || query.isFetching}
@@ -220,7 +220,7 @@ function Gallery({
                 </Button>
               ) : null}
               {error ? (
-                <p role="alert" className="text-red-300">
+                <p role="alert" className="text-cl-danger">
                   {error}
                 </p>
               ) : null}

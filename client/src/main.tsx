@@ -7,6 +7,7 @@ import "./styles/consumer-editorial.css";
 import "./styles/consumer-community.css";
 import "./styles/consumer-organization.css";
 import "./styles/consumer-night.css";
+import "./styles/consumer-ui-finish.css";
 import { HelmetProvider } from "react-helmet-async";
 
 createRoot(document.getElementById("root")!).render(

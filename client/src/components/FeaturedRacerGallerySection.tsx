@@ -1,3 +1,4 @@
+import GalleryThumbnail from "@/components/media/GalleryThumbnail";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "wouter";
 import {
@@ -73,7 +74,8 @@ async function fetchFeaturedGallery(limit: number) {
     res?.data ??
     res;
 
-  return Array.isArray(list) ? (list as FeaturedGalleryItem[]) : [];
+  if (!Array.isArray(list)) throw new Error("Gallery response unavailable");
+  return list as FeaturedGalleryItem[];
 }
 
 function GalleryTile({
@@ -99,19 +101,17 @@ function GalleryTile({
     >
       <div className="aspect-[16/10] overflow-hidden bg-cl-canvas">
         {mediaUrl ? (
-          <img
-            src={mediaUrl}
+          <GalleryThumbnail
+            video={isVideo(item)}
+            src={isVideo(item) ? item.thumbnailUrl : mediaUrl}
             alt={item.title || athleteName}
             className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-            loading="lazy"
           />
         ) : (
           <div className="grid h-full w-full place-items-center bg-cl-surface">
             <ImageIcon className="h-10 w-10 text-cl-accent" />
           </div>
         )}
-
-
       </div>
 
       <div className="absolute left-3 top-3 z-10 inline-flex items-center gap-2 rounded-full border border-cl-border bg-cl-subtle px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-cl-ink backdrop-blur-md">
@@ -177,6 +177,8 @@ export default function FeaturedRacerGallerySection({
 }) {
   const [items, setItems] = useState<FeaturedGalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [reload, setReload] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -184,6 +186,7 @@ export default function FeaturedRacerGallerySection({
     (async () => {
       try {
         setLoading(true);
+        setError(false);
         const list = await fetchFeaturedGallery(limit);
 
         if (!cancelled) {
@@ -192,6 +195,7 @@ export default function FeaturedRacerGallerySection({
       } catch {
         if (!cancelled) {
           setItems([]);
+          setError(true);
         }
       } finally {
         if (!cancelled) {
@@ -203,7 +207,7 @@ export default function FeaturedRacerGallerySection({
     return () => {
       cancelled = true;
     };
-  }, [limit]);
+  }, [limit, reload]);
 
   const featured = items[0] ?? null;
   const previewItems = useMemo(
@@ -213,7 +217,12 @@ export default function FeaturedRacerGallerySection({
 
   if (loading) {
     return (
-      <section className="mt-10 rounded-[30px] border border-cl-accent/10 bg-cl-surface p-5 shadow-cl-panel sm:p-7">
+      <section
+        role="status"
+        aria-busy="true"
+        aria-label="Loading featured racer gallery"
+        className="mt-10 rounded-[30px] border border-cl-accent/10 bg-cl-surface p-5 shadow-cl-panel sm:p-7"
+      >
         <div className="animate-pulse">
           <div className="h-5 w-44 rounded-full bg-cl-accent/10" />
           <div className="mt-4 h-9 w-72 max-w-full rounded bg-cl-subtle" />
@@ -222,6 +231,24 @@ export default function FeaturedRacerGallerySection({
             <div className="h-72 rounded-[24px] bg-cl-subtle" />
           </div>
         </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section
+        role="alert"
+        className="mt-10 rounded-2xl border border-cl-danger/30 bg-cl-surface p-6 text-cl-danger"
+      >
+        <p>Featured racer gallery could not load.</p>
+        <button
+          type="button"
+          className="mt-3 rounded-lg border border-cl-border px-4 py-2 text-cl-ink"
+          onClick={() => setReload((n) => n + 1)}
+        >
+          Try again
+        </button>
       </section>
     );
   }
@@ -246,11 +273,12 @@ export default function FeaturedRacerGallerySection({
             </p>
           </div>
 
-          <Link href="/scores/aqua/gallery">
-            <button className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-cl-accent/20 bg-cl-accent/10 px-5 text-xs font-black uppercase tracking-[0.16em] text-cl-accent transition hover:bg-cl-accent hover:text-cl-contrast">
-              Open Gallery
-              <ChevronRight className="h-4 w-4" />
-            </button>
+          <Link
+            href="/scores/aqua/gallery"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-cl-accent/20 bg-cl-accent/10 px-5 text-xs font-black uppercase tracking-[0.16em] text-cl-accent transition hover:bg-cl-accent hover:text-cl-contrast"
+          >
+            Open Gallery
+            <ChevronRight className="h-4 w-4" />
           </Link>
         </div>
       </section>
@@ -277,11 +305,12 @@ export default function FeaturedRacerGallerySection({
           </p>
         </div>
 
-        <Link href="/scores/aqua/gallery">
-          <button className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-cl-accent/20 bg-cl-accent/10 px-5 text-xs font-black uppercase tracking-[0.16em] text-cl-accent transition hover:bg-cl-accent hover:text-cl-contrast">
-            View All
-            <ChevronRight className="h-4 w-4" />
-          </button>
+        <Link
+          href="/scores/aqua/gallery"
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-cl-accent/20 bg-cl-accent/10 px-5 text-xs font-black uppercase tracking-[0.16em] text-cl-accent transition hover:bg-cl-accent hover:text-cl-contrast"
+        >
+          View All
+          <ChevronRight className="h-4 w-4" />
         </Link>
       </div>
 

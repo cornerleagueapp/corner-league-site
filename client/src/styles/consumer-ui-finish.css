@@ -1,0 +1,20 @@
+/* Final consumer UI corrections. Keep media captions and sport palettes intact. */
+.cl-media-dialog {
+  overscroll-behavior: contain;
+  overflow-wrap: anywhere;
+}
+.cl-media-dialog :where(input, textarea, select) {
+  max-width: 100%;
+}
+.cl-media-dialog :where(button, a, input, textarea, select):focus-visible {
+  outline: 3px solid rgb(var(--cl-accent));
+  outline-offset: 3px;
+}
+.consumer-content :where(article, section) > :where(h1, h2, h3, p) {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 639px) {
+  .cl-media-dialog :where(input, textarea, select) {
+    font-size: 16px;
+  }
+}
