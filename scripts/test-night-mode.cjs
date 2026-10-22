@@ -87,7 +87,7 @@ listeners.get("storage")({ key: themeApi.COLOR_MODE_KEY });
 assert.equal(document.documentElement.dataset.colorMode, "dark");
 saved = undefined;
 listeners.get("storage")({ key: null });
-assert.equal(themeApi.currentColorMode(), "light");
+assert.equal(themeApi.currentColorMode(), "dark");
 blocked = true;
 themeApi.setColorMode("dark");
 assert.equal(themeApi.currentColorMode(), "dark");
@@ -98,7 +98,7 @@ assert.equal(cleaned, 3);
 for (const preference of [undefined, "light", "dark", "invalid"]) {
   blocked = false;
   saved = preference;
-  systemDark = true;
+  systemDark = false;
   vm.runInNewContext(
     fs.readFileSync(path.join(root, "public/consumer-theme-init.js"), "utf8"),
     { localStorage: storage, window, document },

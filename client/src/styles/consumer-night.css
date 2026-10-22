@@ -289,3 +289,15 @@ html[data-color-mode="dark"]
     transform: translateY(-50%);
   }
 }
+
+/* Profile follow/results panels and publishing must not reset the dark palette. */
+html[data-color-mode="dark"] :is(.publishing-page,.publication-list){--cl-surface:34 38 45;--cl-subtle:44 49 57;--cl-ink:244 246 248;--cl-muted:186 196 207;--cl-border:77 89 101;--cl-accent:103 232 249;color:rgb(var(--cl-ink))}
+html[data-color-mode="dark"] :is(.community-following-card,.publication-card,.writer-studio-header,.publishing-page form:not(.publication-filters)){background:rgb(var(--cl-surface));color:rgb(var(--cl-ink));border-color:rgb(var(--cl-border))}
+html[data-color-mode="dark"] :is(.community-following-card p,.community-result-feed time,.community-empty-state){color:rgb(var(--cl-muted))}
+html[data-color-mode="dark"] :is(.community-org-grid article,.community-result-feed article){border-color:rgb(var(--cl-border));color:rgb(var(--cl-ink))}
+html[data-color-mode="dark"] :is(.community-result-place,.publication-cover-fallback){background:rgb(var(--cl-subtle));color:rgb(var(--cl-accent))}
+html[data-color-mode="dark"] .community-empty-state{background:rgb(var(--cl-subtle));border-color:rgb(var(--cl-border))}
+html[data-color-mode="dark"] .community-empty-state h3{color:rgb(var(--cl-ink))}
+html[data-color-mode="dark"] .writer-studio-kicker{color:rgb(var(--cl-accent))}
+html[data-color-mode="dark"] :is(.writer-studio-actions a:first-child,.publication-search-button){background:#67e8f9;color:#09212a;border-color:#67e8f9}
+html[data-color-mode="dark"] .publication-draft-label{background:#493a1f;color:#ffe2a3}

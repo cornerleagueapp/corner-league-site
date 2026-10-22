@@ -2,7 +2,7 @@
 (function () {
   var preference = null;
   try { preference = localStorage.getItem('corner-league-color-mode'); } catch (_) {}
-  var dark = preference === 'dark' || (preference !== 'light' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  var dark = preference !== 'light';
   document.documentElement.dataset.colorMode = dark ? 'dark' : 'light';
   document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
 })();

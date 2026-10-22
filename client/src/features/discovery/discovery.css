@@ -21,3 +21,16 @@
 .discovery-sport-menu [data-state=checked]{color:rgb(var(--cl-accent));font-weight:700}
 .discovery-section-title>a{font-size:14px;font-weight:650;color:rgb(var(--cl-accent));padding:8px 0;white-space:nowrap}
 @media(max-width:767px){.discovery-feed-card>.discovery-image{width:100%;height:190px}.discovery-sport-filter{align-items:stretch;flex-direction:column;gap:8px}.discovery-page .discovery-sport-trigger{width:100%}}
+
+/* Keep discovery ahead of stories on small screens without changing the desktop columns. */
+.discovery-home-columns{grid-template-areas:"latest directory" "latest sports";grid-template-rows:auto 1fr;align-items:start}
+.discovery-home-latest{grid-area:latest;min-width:0}
+.discovery-home-directory{grid-area:directory;min-width:0}
+.discovery-home-sports{grid-area:sports;min-width:0}
+.discovery-home-directory>.discovery-card{margin-bottom:10px}
+@media(max-width:767px){
+ .discovery-home-columns{grid-template-areas:"directory" "latest" "sports";grid-template-rows:auto;gap:24px}
+ .discovery-home-columns .discovery-home-directory{border-top:0;padding-top:0}
+ .discovery-home-directory>.discovery-section-title:first-child{margin-top:0}
+}
+.discovery-home-directory .discovery-section-title{flex-wrap:wrap;column-gap:12px;row-gap:4px}

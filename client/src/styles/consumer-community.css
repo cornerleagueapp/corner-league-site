@@ -945,3 +945,9 @@
 .cl-mobile-sport-list button:hover,.cl-mobile-sport-list button[aria-current]{background:rgb(var(--cl-accent)/.12)}
 @media(max-width:767px){.cl-mobile-sport-choice{margin-bottom:8px}}
 @media(prefers-reduced-motion:reduce){.cl-more-chevron{transition:none}}
+
+/* Keep mobile labels beside their symbols and center collapsed desktop symbols. */
+.cl-mobile-sport-list button{display:flex;align-items:center;gap:12px;text-align:left}
+.cl-mobile-sport-list button span{min-width:0;overflow-wrap:anywhere}
+.cl-sidebar-sports[data-collapsed="true"] button{justify-content:center;padding-inline:0;gap:0}
+.cl-sidebar-sports[data-collapsed="true"] .cl-sport-icon{margin-inline:auto}

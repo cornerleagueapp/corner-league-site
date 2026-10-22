@@ -634,7 +634,7 @@ export default function SidebarPanel({
           >
             <div ref={navContentRef} className="pb-11">
               <SidebarSports collapsed={renderCollapsed} onNavigate={onClose} />
-              {sections.map((section) => {
+              {sections.filter(section => section.title !== "Explore" || (location !== "/" && location !== "/search_results")).map((section) => {
                 const open = renderCollapsed ? true : !!openMap[section.title];
 
                 return (

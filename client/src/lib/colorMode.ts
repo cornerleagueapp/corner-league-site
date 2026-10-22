@@ -12,13 +12,8 @@ function stored(): ColorMode | undefined {
   }
 }
 export function currentColorMode(): ColorMode {
-  if (typeof window === "undefined") return "light";
-  return (
-    stored() ??
-    (window.matchMedia?.("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light")
-  );
+  if (typeof window === "undefined") return "dark";
+  return stored() ?? "dark";
 }
 export function applyColorMode() {
   if (typeof document === "undefined") return;
@@ -70,6 +65,6 @@ export function useColorMode() {
   return useSyncExternalStore(
     subscribe,
     currentColorMode,
-    () => "light" as ColorMode,
+    () => "dark" as ColorMode,
   );
 }

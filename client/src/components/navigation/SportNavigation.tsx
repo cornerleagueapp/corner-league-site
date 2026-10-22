@@ -28,7 +28,7 @@ export function SidebarSports({
   };
   return (
     <>
-      <div className="cl-sidebar-sports">
+      <div className="cl-sidebar-sports" data-collapsed={collapsed}>
         <h2>{collapsed ? "" : "Sports"}</h2>
         <button type="button" title="All Sports" aria-label="All Sports" aria-current={location === "/" ? "page" : undefined} onClick={()=>{navigate("/");onNavigate?.();}}><SportIcon sport="all" />{!collapsed&&<strong>All Sports</strong>}</button>
         {sports.map((sport) => (
@@ -67,7 +67,7 @@ export function SidebarSports({
           </svg>
         </button>
         <div id={listId} hidden={!open} className="cl-mobile-sport-list">
-          <button type="button" onClick={()=>{navigate("/");onNavigate?.();}}>All Sports</button>
+          <button type="button" onClick={()=>{navigate("/");onNavigate?.();}}><SportIcon sport="all" /><span>All Sports</span></button>
           {sports.map((sport) => (
             <button
               type="button"
@@ -75,7 +75,7 @@ export function SidebarSports({
               aria-current={location !== "/" && sport.key === sportKey ? "page" : undefined}
               onClick={() => choose(sport.key)}
             >
-              <SportIcon sport={sport.key} /> {sport.label}
+              <SportIcon sport={sport.key} /><span>{sport.label}</span>
             </button>
           ))}
         </div>
