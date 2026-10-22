@@ -20,7 +20,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { logout } from "@/lib/logout";
 import {
   Bell,
-  Ticket,
   PenLine,
   Check,
   ChevronDown,
@@ -291,7 +290,9 @@ export default function PublicTopNav({
           <NavbarSearch
             key={`${selectedSport?.key ?? "sport"}:${user?.id ?? "guest"}`}
           />
-          <DesktopExploreNavigation sportKey={selectedSport?.key ?? "jet-ski"} />
+          <DesktopExploreNavigation
+            sportKey={selectedSport?.key ?? "jet-ski"}
+          />
           <ColorModeToggle />
           {isAuthenticated ? (
             <div ref={accountRef} className="relative min-w-0">
@@ -370,7 +371,8 @@ export default function PublicTopNav({
                     </span>
                   </button>
                   <MyRacerProfileLink onNavigate={navigateFromAccount} />
-                  <button
+                  {/* Phase 2/3: deferred ticket navigation; retained for restoration.
+<button
                     type="button"
                     onClick={() => navigateFromAccount("/tickets")}
                     className="consumer-account-org-link"
@@ -378,6 +380,7 @@ export default function PublicTopNav({
                     <Ticket className="h-4 w-4 shrink-0" />
                     My tickets
                   </button>
+                  */}
                   <button
                     type="button"
                     onClick={() => navigateFromAccount("/writer")}

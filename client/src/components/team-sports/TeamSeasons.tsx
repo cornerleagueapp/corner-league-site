@@ -1,6 +1,6 @@
 import TeamBracket from "./TeamBracket";
 import ConsumerBrandingHero from "@/components/branding/ConsumerBrandingHero";
-import { AdmissionOffer } from "@/components/admissions/AdmissionOffer";
+// Phase 2/3: AdmissionOffer remains in @/components/admissions/AdmissionOffer.
 import TeamRecruitment from "./TeamRecruitment";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -324,12 +324,14 @@ export function SeasonDetails({
                         ? `${r.homeScore} – ${r.awayScore} · ${r.status === "final" ? "Final" : "In progress"}`
                         : "Scheduled"}
                 </p>
-                {g.status !== "cancelled" && !g.competition?.bye && (
+                {/* Phase 2/3: deferred ticket offers; retained for restoration.
+{g.status !== "cancelled" && !g.competition?.bye && (
                   <AdmissionOffer
                     eventKey={`game:${d.id}:${g.id}`}
                     sandbox={sandbox}
                   />
                 )}
+                */}
                 {r?.decision && r.decision !== "regulation" && (
                   <p>Decided in {r.decision}</p>
                 )}

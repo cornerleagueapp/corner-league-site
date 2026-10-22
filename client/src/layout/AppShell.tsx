@@ -1,3 +1,4 @@
+import "@/styles/consumer-motion.css";
 import Breadcrumbs from "@/components/navigation/Breadcrumbs";
 import { publicPageAvailable } from "@/lib/publicFeatures";
 import { useSportSelection } from "@/hooks/useSportSelection";
@@ -444,10 +445,19 @@ export default function AppShell({
           className="consumer-content min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden"
         >
           <div
-            className={`consumer-page-frame${location === "/messages" ? " consumer-page-frame--workspace" : ""}`}
+            key={location}
+            className={`consumer-page-frame consumer-page-enter${location === "/messages" ? " consumer-page-frame--workspace" : ""}`}
           >
             <Breadcrumbs />
-            {publicPageAvailable(location) ? children : <section className="sport-hub-empty"><h1>Page unavailable</h1><p>This feature is not currently available.</p><a href="/">Return home</a></section>}
+            {publicPageAvailable(location) ? (
+              children
+            ) : (
+              <section className="sport-hub-empty">
+                <h1>Page unavailable</h1>
+                <p>This feature is not currently available.</p>
+                <a href="/">Return home</a>
+              </section>
+            )}
           </div>
           {location !== "/messages" && <SiteFooter />}
         </div>
