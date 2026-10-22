@@ -309,7 +309,7 @@ export default function AppShell({
     <div
       className="consumer-app-shell relative flex overflow-hidden bg-black text-white"
       data-consumer-sport={sportKey}
-      style={sportThemeStyle(sportKey)}
+      style={sportThemeStyle(location === "/" || location === "/search_results" ? "all" : sportKey)}
     >
       <a className="consumer-skip-link" href="#consumer-main">
         Skip to content

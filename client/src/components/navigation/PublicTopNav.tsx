@@ -290,9 +290,9 @@ export default function PublicTopNav({
           <NavbarSearch
             key={`${selectedSport?.key ?? "sport"}:${user?.id ?? "guest"}`}
           />
-          <DesktopExploreNavigation
+          {location !== "/" && location !== "/search_results" && <DesktopExploreNavigation
             sportKey={selectedSport?.key ?? "jet-ski"}
-          />
+          />}
           <ColorModeToggle />
           {isAuthenticated ? (
             <div ref={accountRef} className="relative min-w-0">

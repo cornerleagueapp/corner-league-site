@@ -8,13 +8,15 @@ import {
 import * as Popover from "@radix-ui/react-popover";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Search, X } from "lucide-react";
-import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { useSportSelection } from "@/hooks/useSportSelection";
 import { sportVisual } from "@/lib/sportVisuals";
-import { directorySearch } from "@/lib/profileDirectory";
-import AccountAvatar from "@/components/community/AccountAvatar";
+import { discovery, searchUrl, labels, visibleGroups, DiscoveryGroup } from "@/features/discovery/api";
+import "@/features/discovery/discovery.css";
+import { DiscoveryImage } from "@/features/discovery/DiscoveryCards";
+
 function subscribeMobile(callback: () => void) {
   const m = window.matchMedia("(max-width: 1023px)");
   m.addEventListener("change", callback);
@@ -30,20 +32,20 @@ export default function NavbarSearch() {
     () => false,
   );
   const auth = useAuth();
-  const client = useQueryClient();
+
   const { sportKey } = useSportSelection();
-  const label = sportVisual(sportKey).label;
-  const [location] = useLocation();
+
+  const [location, navigate] = useLocation();
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [search, setSearch] = useState("");
-  const [kind, setKind] = useState<"users" | "athletes">("athletes");
+
   const anchor = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const id = useId();
   useEffect(() => {
     const openAthletes = () => {
-      setKind("athletes"); setOpen(true);
+      setOpen(true);
       window.requestAnimationFrame(() => inputRef.current?.focus());
     };
     window.addEventListener("racer-search:open", openAthletes);
@@ -62,77 +64,25 @@ export default function NavbarSearch() {
     setInput("");
     setSearch("");
   }, [sportKey]);
-  const enabled =
-    open &&
-    search.length >= 2 &&
-    search === input.trim() &&
-    (kind === "athletes" || auth.isAuthenticated);
-  const results = useInfiniteQuery({
-    queryKey: [
-      "navbar-directory",
-      auth.user?.id ?? "guest",
-      kind,
-      kind === "athletes" ? sportKey : "",
-      search,
-    ],
-    queryFn: ({ pageParam, signal }) =>
-      directorySearch(
-        kind,
-        sportKey,
-        search,
-        pageParam,
-        auth.isAuthenticated,
-        signal,
-      ),
-    initialPageParam: 1,
-    getNextPageParam: (last) => (last.hasNextPage ? last.page + 1 : undefined),
-    enabled,
-    staleTime: 30_000,
-    retry: false,
+  const scopedSport = location === "/" || location === "/search_results" ? "" : sportKey;
+  const enabled = open && search.length >= 2 && search === input.trim();
+  const results = useQuery({
+    queryKey: ["universal-search-preview", auth.user?.id ?? "guest", scopedSport, search],
+    queryFn: ({signal}) => discovery<{groups: DiscoveryGroup[]}>("search", {q:search, ...(scopedSport?{sport:scopedSport}:{})}, auth.isAuthenticated, signal),
+    enabled, staleTime:60000, retry:false,
   });
-  useEffect(() => {
-    const key = [
-      "navbar-directory",
-      auth.user?.id ?? "guest",
-      kind,
-      kind === "athletes" ? sportKey : "",
-      search,
-    ];
-    if (!enabled) void client.cancelQueries({ queryKey: key, exact: true });
-    return () => {
-      void client.cancelQueries({ queryKey: key, exact: true });
-    };
-  }, [client, auth.user?.id, kind, sportKey, search, enabled]);
-  // Closing, clearing, switching tab/sport, or typing again cancels an in-flight request.
-  const cacheKey = `${auth.user?.id ?? "guest"}:${kind}:${sportKey}:${search}`;
-  const tabs = (
-    <div className="navbar-search-tabs" aria-label="Search category">
-      <button
-        type="button"
-        aria-pressed={kind === "users"}
-        onClick={() => setKind("users")}
-      >
-        Users
-      </button>
-      <button
-        type="button"
-        aria-pressed={kind === "athletes"}
-        onClick={() => setKind("athletes")}
-      >
-        {label} Athletes
-      </button>
-    </div>
-  );
   const field = () => (
     <label className="navbar-search-field">
       <Search size={18} aria-hidden="true" />
-      <span className="sr-only">Search users or athletes</span>
+      <span className="sr-only">Search Corner League</span>
       <input
         ref={inputRef}
         type="search"
         maxLength={80}
         value={input}
-        placeholder="Search users or athletes…"
+        placeholder="Search athletes, users, organizations, events, articles…"
+        onKeyDown={e=>{if(e.key === "Enter" && input.trim().length >= 2){setOpen(false);navigate(searchUrl(input.trim(), "all", scopedSport));}}}
+        onClick={() => setOpen(true)}
         onFocus={() => setOpen(true)}
         onChange={(e) => setInput(e.target.value)}
         aria-controls={open ? id : undefined}
@@ -140,82 +90,19 @@ export default function NavbarSearch() {
       />
     </label>
   );
-  const body = (
-    <>
-      {tabs}
-      {kind === "users" && !auth.isAuthenticated ? (
-        <p>
-          <Link href="/auth">Sign in to search users</Link>
-        </p>
-      ) : input.trim().length < 2 ? (
-        <p role="status">Enter at least 2 characters.</p>
-      ) : input.trim() !== search ? (
-        <p role="status">Waiting for your search…</p>
-      ) : results.isPending ? (
-        <p role="status">Searching…</p>
-      ) : results.isError ? (
-        <div role="alert">
-          <p>{results.error.message}</p>
-          <button type="button" onClick={() => void results.refetch()}>
-            Retry search
-          </button>
-        </div>
-      ) : (
-        <>
-          {!results.data?.pages.some((p) => p.items.length) && (
-            <p role="status">
-              No matching {kind === "users" ? "users" : `${label} athletes`}.
-            </p>
-          )}
-          <div className="navbar-search-results" key={cacheKey}>
-            {results.data?.pages
-              .flatMap((p) => p.items)
-              .filter(
-                (item, index, all) =>
-                  all.findIndex((a) => a.id === item.id) === index,
-              )
-              .map((item) => (
-                <Link
-                  key={item.id}
-                  href={item.profileUrl}
-                  onClick={() => setOpen(false)}
-                  className="navbar-search-result"
-                >
-                  <AccountAvatar
-                    picture={item.imageUrl}
-                    username={item.username || item.name}
-                  />
-                  <span>
-                    <strong>{item.name}</strong>
-                    <small>
-                      {item.username
-                        ? `@${item.username}`
-                        : item.detail || label}
-                    </small>
-                  </span>
-                </Link>
-              ))}
-          </div>
-          {results.hasNextPage && (
-            <button
-              className="navbar-search-more"
-              type="button"
-              disabled={results.isFetchingNextPage}
-              onClick={() => void results.fetchNextPage()}
-            >
-              {results.isFetchingNextPage ? "Loading…" : "Load more"}
-            </button>
-          )}
-        </>
-      )}
-    </>
-  );
+  const body = <>
+    {input.trim().length<2?<p role="status">Enter at least two characters.</p>:search!==input.trim()?<p role="status">Waiting for your search…</p>:results.isPending?<p role="status">Searching…</p>:results.isError?<div role="alert">{results.error.message}<button onClick={()=>void results.refetch()}>Retry</button></div>:<>
+    {!visibleGroups(results.data?.groups).length&&<p role="status">No results found</p>}
+    {visibleGroups(results.data?.groups).map(g=><section className="discovery-preview-section" key={g.kind}><h3>{labels[g.kind]}</h3>{g.signInRequired?<Link href="/auth">Sign in to search users</Link>:!g.items.length?<p>No matches</p>:g.items.slice(0,3).map(i=><Link className="discovery-preview-result" key={i.id} href={i.href} onClick={()=>setOpen(false)}><DiscoveryImage item={i}/><span><strong>{i.name}</strong><small>{g.kind==='users'?'User account':g.kind==='athletes'?'Athlete profile':labels[g.kind]}{i.sport?` · ${sportVisual(i.sport).label}`:''}</small></span></Link>)}{g.hasNextPage&&<Link href={searchUrl(search,g.kind,scopedSport)} onClick={()=>setOpen(false)}>View all {labels[g.kind].toLowerCase()} →</Link>}</section>)}
+    {results.data?.groups.some(g=>g.signInRequired)&&<Link href="/auth">Sign in to search users</Link>}
+    <Link className="discovery-preview-all" href={searchUrl(search,'all',scopedSport)} onClick={()=>setOpen(false)}>View all results for “{search}” →</Link></>}
+  </>;
   if (mobile)
     return (
       <Dialog.Root open={open} onOpenChange={setOpen}>
         <Dialog.Trigger
           className="navbar-search-mobile-trigger"
-          aria-label="Search users or athletes"
+          aria-label="Search Corner League"
         >
           <Search size={21} aria-hidden="true" />
         </Dialog.Trigger>

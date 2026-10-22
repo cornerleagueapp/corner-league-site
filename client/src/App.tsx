@@ -1,3 +1,5 @@
+import AllSportsHome from "@/features/discovery/AllSportsHome";
+import DiscoveryPage from "@/features/discovery/DiscoveryPage";
 import { MarketingInvitation } from "@/components/marketing/MarketingPreferences";
 import EmailUpdates from "./pages/email-updates";
 import ConsumerTheme from "@/components/ConsumerTheme";
@@ -386,11 +388,12 @@ function Router() {
         {() => (
           <AppShell guestMode>
             <ErrorBoundary>
-              <ScoresLandingPage />
+              <AllSportsHome />
             </ErrorBoundary>
           </AppShell>
         )}
       </Route>
+      <Route path="/search_results"><AppShell><ErrorBoundary><DiscoveryPage /></ErrorBoundary></AppShell></Route>
       <Route path="/home" component={Home} />
       <Route path="/about" component={Home} />
       <Route path="/admissions/:key">

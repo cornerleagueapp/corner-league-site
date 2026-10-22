@@ -1,6 +1,7 @@
 import { sportVisual } from "./sportVisuals";
 export type Breadcrumb = { label: string; href?: string };
 const labels: Record<string, string> = {
+  search_results: "Search results",
   scores: "Sports hub",
   aqua: "Jet Ski",
   sports: "Sports",

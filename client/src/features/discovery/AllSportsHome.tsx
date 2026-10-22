@@ -1,0 +1,13 @@
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { useAuth } from '@/hooks/useAuth';
+import { Link } from 'wouter';
+import { useSportSelection } from '@/hooks/useSportSelection';
+import { discovery, DiscoveryItem } from './api';
+import { DiscoveryCard } from './DiscoveryCards';
+import './discovery.css';
+export default function AllSportsHome(){
+ const auth=useAuth();const {sports}=useSportSelection();
+ const feed=useInfiniteQuery({queryKey:['all-sports-feed',auth.user?.id||'guest'],initialPageParam:1,queryFn:({pageParam,signal})=>discovery<{items:DiscoveryItem[];page:number;hasNextPage:boolean;upcoming:DiscoveryItem[];organizations:DiscoveryItem[];hasMoreEvents?:boolean;hasMoreOrganizations?:boolean}>('feed',{page:String(pageParam)},auth.isAuthenticated,signal),getNextPageParam:last=>last.hasNextPage&&last.page<50?last.page+1:undefined,staleTime:60000,retry:false});
+ const items=feed.data?.pages.flatMap(p=>p.items).filter((v,i,a)=>a.findIndex(x=>x.id===v.id)===i)||[];
+ return <main className="discovery-page"><h1>All sports. One community.</h1><p className="discovery-subtitle">The latest from every sport.</p><div className="discovery-home-columns"><section><div className="discovery-section-title"><h2>Latest</h2><span>Newest first</span></div>{feed.isPending?<div className="discovery-loading" role="status">Loading the latest stories…</div>:feed.isError?<div role="alert">{feed.error.message}<button onClick={()=>void feed.refetch()}>Retry</button></div>:!items.length?<p>No published stories yet. Explore a sport to discover its organizations and events.</p>:items.map(i=><DiscoveryCard key={i.id} item={i} feed/>)}{feed.hasNextPage&&<button className="discovery-load-more" disabled={feed.isFetchingNextPage} onClick={()=>void feed.fetchNextPage()}>{feed.isFetchingNextPage?'Loading…':'Load more stories'}</button>}</section><aside><div className="discovery-section-title"><h2>Coming up</h2>{feed.data?.pages[0]?.hasMoreEvents&&<Link href="/search_results?kind=events">See more →</Link>}</div>{feed.data?.pages[0]?.upcoming.map(i=><DiscoveryCard key={i.id} item={i}/>)}{feed.isSuccess&&!feed.data?.pages[0]?.upcoming.length&&<p>No upcoming events yet.</p>}<div className="discovery-section-title"><h2>Explore organizations</h2>{feed.data?.pages[0]?.hasMoreOrganizations&&<Link href="/search_results?kind=organizations">See more →</Link>}</div>{feed.data?.pages[0]?.organizations.map(i=><DiscoveryCard key={i.id} item={i}/>)}<h2 className="mt-6">Explore sports</h2>{sports.map(s=><Link key={s.key} href={s.href||'/'} className="discovery-sport-link">{s.label}<span>→</span></Link>)}<Link className="discovery-sport-link" href="/search_results?kind=organizations">Find an organization →</Link></aside></div></main>;
+}

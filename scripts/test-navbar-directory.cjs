@@ -64,14 +64,12 @@ assert.throws(() =>
       ...page,
       items: [{ ...page.items[0], profileUrl: "https://evil.example" }],
     },
-    "athletes",
     "basketball",
   ),
 );
 assert.throws(() =>
   directory.parseDirectory(
     { ...page, hasNextPage: "true" },
-    "athletes",
     "basketball",
   ),
 );
@@ -111,12 +109,23 @@ const Search = compile("client/src/components/navigation/NavbarSearch.tsx", {
   },
   "@radix-ui/react-popover": radix,
   "@radix-ui/react-dialog": radix,
+  "@/features/discovery/discovery.css": {},
+  "@/features/discovery/api": {
+    labels: {athletes:'Athletes',users:'Users'},
+    searchUrl: (q,k,s)=>`/search_results?q=${q}&kind=${k}&sport=${s}`,
+    discovery: async()=>({groups:[]}),
+    visibleGroups: groups=>(groups||[]).filter(g=>g.items.length),
+  },
+  "@/features/discovery/DiscoveryCards": {DiscoveryImage:()=>null},
   "@tanstack/react-query": {
     useQueryClient: () => ({ cancelQueries: async () => {} }),
-    useInfiniteQuery: (options) => {
+    useQuery: (options) => {
       query = options;
       return {
-        data: { pages: [page] },
+        data: { groups: [
+          {kind:'athletes',items:Array.from({length:5},(_,i)=>({id:String(i),name:'Athlete '+i,href:'/racer/a?sport=basketball',sport:'basketball'})),hasNextPage:true},
+          {kind:'users',items:[],signInRequired:!signedIn,hasNextPage:false}
+        ] },
         hasNextPage: false,
         isPending: false,
         isError: false,
@@ -167,15 +176,16 @@ const Search = compile("client/src/components/navigation/NavbarSearch.tsx", {
   assert.match(request[0], /\/community\/directory\/athletes\?/);
   assert.equal(request[1].skipAuth, true);
   let html = render(React.createElement(Search));
-  assert.match(html, /Basketball Athletes/);
-  assert.match(html, /Users/);
+  assert.match(html, /Athlete profile/);
+  assert.match(html, /View all athletes/);
+  assert.doesNotMatch(html, /Athlete 3/);
+  assert.doesNotMatch(html, /<h3>Users<\/h3>/);
   assert.match(html, /navbar-search-desktop/);
   assert.match(html, /\/racer\/a\?sport=basketball/);
   assert.ok(query.enabled);
-  assert.deepEqual(query.queryKey.slice(0, 4), [
-    "navbar-directory",
+  assert.deepEqual(query.queryKey.slice(0, 3), [
+    "universal-search-preview",
     "owner",
-    "athletes",
     "basketball",
   ]);
   mobile = true;
@@ -187,7 +197,7 @@ const Search = compile("client/src/components/navigation/NavbarSearch.tsx", {
   signedIn = false;
   html = render(React.createElement(Search));
   assert.match(html, /Sign in to search users/);
-  assert.equal(query.enabled, false);
+  assert.equal(query.enabled, true);
   assert.equal(query.queryKey[1], "guest");
   console.log(
     "PASS directory validation, safe links/images, abort forwarding, public/auth routes, sport/account query isolation and desktop/mobile search rendering",

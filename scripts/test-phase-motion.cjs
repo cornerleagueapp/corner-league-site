@@ -52,7 +52,7 @@ assert(
   !/\btransform\s*:/.test(css),
   "Keep fixed-position popovers in their existing containing block",
 );
-assert(css.includes("180ms"));
+assert(css.includes("550ms"));
 const app = fs.readFileSync("client/src/layout/AppShell.tsx", "utf8");
 assert(app.includes("consumer-page-enter"));
 assert(app.includes("key={location}"));
