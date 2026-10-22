@@ -58,21 +58,21 @@ function normalize(m: any): Msg {
 async function getReaction(messageId: string, userId: string) {
   const r = await apiRequest<any>(
     "GET",
-    `/club-channel-reactions/${messageId}/${userId}`
+    `/club-channel-reactions/${messageId}/${userId}`,
   );
   return r?.data?.reaction ?? null;
 }
 async function getReactionCount(messageId: string) {
   const r = await apiRequest<any>(
     "GET",
-    `/club-channel-reactions/count/${messageId}`
+    `/club-channel-reactions/count/${messageId}`,
   );
   return r?.data?.count ?? 0;
 }
 async function createReaction(
   messageId: string,
   userId: string,
-  reaction: string
+  reaction: string,
 ) {
   return apiRequest("POST", "/club-channel-reactions", {
     clubChannelMessageId: messageId,
@@ -137,7 +137,7 @@ export default function ClubChannelFeed({
 
         const res = await apiRequest<any>(
           "GET",
-          `/club-channels/${channelId}/messages?${params.toString()}`
+          `/club-channels/${channelId}/messages?${params.toString()}`,
         );
         const msgs: any[] = Array.isArray(res?.data?.messages)
           ? res.data.messages
@@ -155,7 +155,7 @@ export default function ClubChannelFeed({
             } catch {
               return base;
             }
-          })
+          }),
         );
 
         const nextCursor: string | null = res?.meta?.nextCursor ?? null;
@@ -169,7 +169,7 @@ export default function ClubChannelFeed({
 
   const flat = useMemo(
     () => (data?.pages ?? []).flatMap((p: Page) => p.items),
-    [data]
+    [data],
   );
 
   // autoload more when reaching top (inverted-like)
@@ -206,7 +206,7 @@ export default function ClubChannelFeed({
   }
 
   return (
-    <div className="rounded-xl border border-gray-800 bg-[#121212]">
+    <div className="rounded-xl border border-cl-border bg-cl-canvas">
       <div
         ref={scrollerRef}
         className="h-[60vh] min-h-[400px] max-h-[70vh] overflow-y-auto flex flex-col-reverse p-4"
@@ -214,9 +214,9 @@ export default function ClubChannelFeed({
         <div />
 
         {isLoading ? (
-          <div className="text-white/70">Loading…</div>
+          <div className="text-cl-muted">Loading…</div>
         ) : flat.length === 0 ? (
-          <div className="text-center text-white/80 py-16">
+          <div className="text-center text-cl-ink py-16">
             Say something, Post something. Do you…
             <div className="mt-6 opacity-80 text-4xl">💬</div>
           </div>
@@ -224,7 +224,7 @@ export default function ClubChannelFeed({
           flat.map((m: Msg) => (
             <div
               key={m.id}
-              className="py-3 border-b border-gray-800/60 last:border-b-0"
+              className="py-3 border-b border-cl-border last:border-b-0"
             >
               <div className="flex gap-3">
                 <img
@@ -236,19 +236,19 @@ export default function ClubChannelFeed({
                   alt=""
                 />
                 <div className="flex-1">
-                  <div className="flex items-baseline gap-2 text-xs text-white/70">
-                    <span className="font-medium text-white">
+                  <div className="flex items-baseline gap-2 text-xs text-cl-muted">
+                    <span className="font-medium text-cl-ink">
                       {m.sender?.firstName} {m.sender?.lastName}
                     </span>
                     <time>{new Date(m.createdAt).toLocaleString()}</time>
                   </div>
-                  <div className="mt-2 inline-block max-w-[80%] rounded-2xl rounded-tl-none border border-white/5 bg-white/5 px-4 py-2 text-sm">
+                  <div className="mt-2 inline-block max-w-[80%] rounded-2xl rounded-tl-none border border-cl-border bg-cl-subtle px-4 py-2 text-sm">
                     {m.content}
                   </div>
                   {m.mediaUrls?.[0] && (
                     <img
                       src={m.mediaUrls[0]}
-                      className="mt-2 rounded-lg border border-gray-800 max-h-[360px] object-cover"
+                      className="mt-2 rounded-lg border border-cl-border max-h-[360px] object-cover"
                       alt=""
                     />
                   )}
@@ -256,12 +256,12 @@ export default function ClubChannelFeed({
                   <div className="mt-2 flex items-center gap-3">
                     <button
                       onClick={() => onToggleLike(m)}
-                      className="rounded-full px-3 py-1 bg-white/5 border border-white/10 hover:bg-white/10 text-sm"
+                      className="rounded-full px-3 py-1 bg-cl-subtle border border-cl-border hover:bg-cl-subtle text-sm"
                       title="Like"
                     >
                       {m.reaction ? "❤️" : "♡"}
                     </button>
-                    <span className="text-white/70 text-sm">
+                    <span className="text-cl-muted text-sm">
                       {m.reactionCount ?? 0}
                     </span>
 
@@ -285,14 +285,14 @@ export default function ClubChannelFeed({
         )}
 
         {hasNextPage && (
-          <div className="py-3 text-center text-white/60">
+          <div className="py-3 text-center text-cl-muted">
             {isFetchingNextPage ? "Loading more…" : "Scroll for more"}
           </div>
         )}
       </div>
 
       {/* composer */}
-      <div className="border-t border-gray-800 p-3 bg-[#121212]">
+      <div className="border-t border-cl-border p-3 bg-cl-canvas">
         <div className="flex items-end gap-2">
           <textarea
             value={draft}
@@ -305,12 +305,12 @@ export default function ClubChannelFeed({
             }}
             rows={2}
             placeholder="Write a message…"
-            className="flex-1 resize-none rounded-lg bg-white/5 border border-white/10 p-2 text-sm text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/20"
+            className="flex-1 resize-none rounded-lg bg-cl-subtle border border-cl-border p-2 text-sm text-cl-ink placeholder-cl-muted focus:outline-none focus:ring-2 focus:ring-cl-accent/20"
           />
           <button
             onClick={() => sendMessage.mutate()}
             disabled={!draft.trim() || sendMessage.isPending}
-            className="shrink-0 px-4 py-2 rounded-lg bg-white text-black disabled:opacity-50"
+            className="shrink-0 px-4 py-2 rounded-lg bg-cl-surface text-cl-ink disabled:opacity-50"
           >
             {sendMessage.isPending ? "Sending…" : "Send"}
           </button>

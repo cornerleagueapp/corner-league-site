@@ -58,7 +58,7 @@ export default function RegistrationProgress({
   highestCompletedStep = 0,
 }: RegistrationProgressProps) {
   return (
-    <div className="relative overflow-hidden rounded-[24px] border border-cyan-300/10 bg-[#07111F]/92 p-3 shadow-[0_18px_55px_rgba(0,0,0,0.24)] sm:p-4">
+    <div className="relative overflow-hidden rounded-[24px] border border-cl-accent/10 bg-cl-surface p-3 shadow-cl-panel sm:p-4">
       <div className="overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <div className="flex min-w-max items-center">
           {steps.map((step, index) => {
@@ -84,19 +84,19 @@ export default function RegistrationProgress({
                   }}
                   className={`group flex min-w-[78px] flex-col items-center gap-2 rounded-[18px] px-2 py-2.5 transition sm:min-w-[96px] ${
                     active
-                      ? "bg-cyan-300/10"
+                      ? "bg-cl-accent/10"
                       : canSelect
-                        ? "hover:bg-white/[0.04]"
+                        ? "hover:bg-cl-subtle"
                         : "cursor-default"
                   }`}
                 >
                   <span
                     className={`grid h-10 w-10 place-items-center rounded-full border transition ${
                       completed
-                        ? "border-emerald-300/25 bg-emerald-300/12 text-emerald-200"
+                        ? "border-emerald-300/25 bg-emerald-300/12 text-cl-success"
                         : active
-                          ? "border-cyan-300/35 bg-cyan-300 text-[#06111d] shadow-[0_0_24px_rgba(34,211,238,0.2)]"
-                          : "border-white/10 bg-white/[0.04] text-white/30"
+                          ? "border-cl-accent/[0.35] bg-cl-accent text-cl-contrast shadow-cl-panel"
+                          : "border-cl-border bg-cl-subtle text-cl-muted"
                     }`}
                   >
                     {completed ? (
@@ -109,10 +109,10 @@ export default function RegistrationProgress({
                   <span
                     className={`text-[9px] font-black uppercase tracking-[0.12em] ${
                       active
-                        ? "text-cyan-100"
+                        ? "text-cl-accent"
                         : completed
-                          ? "text-emerald-200/75"
-                          : "text-white/35"
+                          ? "text-cl-success"
+                          : "text-cl-muted"
                     }`}
                   >
                     <span className="sm:hidden">{step.shortLabel}</span>
@@ -125,7 +125,7 @@ export default function RegistrationProgress({
                     className={`h-px w-5 shrink-0 sm:w-8 ${
                       step.number < currentStep
                         ? "bg-emerald-300/40"
-                        : "bg-white/10"
+                        : "bg-cl-subtle"
                     }`}
                   />
                 ) : null}

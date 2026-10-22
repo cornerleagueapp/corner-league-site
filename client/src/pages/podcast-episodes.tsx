@@ -3,7 +3,7 @@ import { PageSEO } from "@/seo/usePageSEO";
 
 export default function PodcastEpisodesPage() {
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-[#030913] px-3 py-6 text-white sm:px-6 lg:px-8">
+    <div className="relative min-h-screen overflow-x-hidden bg-cl-canvas px-3 py-6 text-cl-ink sm:px-6 lg:px-8">
       <PageSEO
         title="Podcast Episodes • Corner League Sports"
         description="Listen to Wally's World WaterX Podcast episodes and racing updates."

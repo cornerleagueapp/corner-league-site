@@ -1,252 +1,132 @@
+// Future: OrganizationFacilities and OrganizationShop remain available in their feature modules.
 import TeamSeasons from "@/components/team-sports/TeamSeasons";
 import { isTeamSport } from "@/lib/sportRegistration";
 import { rememberSport } from "@/hooks/useSportSelection";
-import { sportDirectory, sportOrganization } from "@/lib/sportNavigation";
+import { sportOrganization } from "@/lib/sportNavigation";
+import { sportVisual } from "@/lib/sportVisuals";
 import { useOrganizationPageApi } from "./SandboxContext";
 import { OrganizationPosts } from "@/features/organization-posts/OrganizationPosts";
-import React, { useMemo, useState, useEffect } from "react";
-import { useLocation } from "wouter";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useSearch } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import OrganizationPhotoGallery from "@/components/OrganizationPhotoGallery";
-import { Button } from "@/components/ui/button";
-import { PageSEO } from "@/seo/usePageSEO";
+import ConsumerBrandingHero from "@/components/branding/ConsumerBrandingHero";
+import OrganizationEventCards from "@/components/organization-community/OrganizationEventCards";
 import {
-  X,
-  CalendarDays,
-  MapPin,
-  ChevronRight,
-  Trophy,
-  Clock3,
-} from "lucide-react";
-
+  organizationSections,
+  organizationSection,
+  organizationSectionPath,
+  organizationEventPage,
+  type OrganizationSection,
+} from "@/lib/organizationPresentation";
+import { PageSEO } from "@/seo/usePageSEO";
 import { trackEvent } from "@/lib/analytics";
 import { AnalyticsEvents } from "@/lib/analytics-events";
 import { trackContentEngagementToBackend } from "@/lib/contentEngagementApi";
 
 type Organization = {
   id: string;
-  primarySportKey?: string;
-  sportProfile?: {
-    label: string;
-    capabilities?: { eventManagement?: boolean; raceResults?: boolean };
-  };
   name: string;
+  primarySportKey?: string;
   abbreviation?: string | null;
   description?: string | null;
-  logoUrl?: string | null;
-  createdAt?: string;
-  updatedAt?: string;
+  sportProfile?: {
+    label?: string;
+    capabilities?: { eventManagement?: boolean };
+  };
 };
-
-type SportEvent = {
-  id: string;
-  name: string;
-  description?: string | null;
-  location?: string | null;
-  startDate: string;
-  endDate: string;
-  imageUrl?: string | null;
-  createdAt?: string;
-  updatedAt?: string;
-};
-
-function getOrgFromResponse(json: any): Organization | null {
-  return json?.organization ?? json?.data?.organization ?? null;
+type Props = { params: { id: string }; expectedSportKey?: string };
+export default function AquaOrganizationDetailsPage(props: Props) {
+  return (
+    <OrganizationCommunityPage
+      key={`${props.params.id}:${props.expectedSportKey ?? "jet-ski"}`}
+      {...props}
+    />
+  );
 }
-
-function getEventsFromResponse(json: any): SportEvent[] {
-  return json?.sportEvents ?? json?.data?.sportEvents ?? [];
-}
-
-function formatEventDateRange(start?: string, end?: string) {
-  if (!start) return "Date TBD";
-
-  const startDate = new Date(start);
-  const endDate = end ? new Date(end) : null;
-
-  const sameDay =
-    endDate &&
-    startDate.getFullYear() === endDate.getFullYear() &&
-    startDate.getMonth() === endDate.getMonth() &&
-    startDate.getDate() === endDate.getDate();
-
-  const startText = startDate.toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-
-  if (!endDate) return startText;
-  if (sameDay) return startText;
-
-  const endText = endDate.toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-
-  return `${startText} - ${endText}`;
-}
-
-function formatEventTime(start?: string, end?: string) {
-  if (!start) return "Time TBD";
-
-  const startDate = new Date(start);
-  const endDate = end ? new Date(end) : null;
-
-  const startHasTime =
-    startDate.getHours() !== 0 ||
-    startDate.getMinutes() !== 0 ||
-    startDate.getSeconds() !== 0;
-
-  const endHasTime =
-    !!endDate &&
-    (endDate.getHours() !== 0 ||
-      endDate.getMinutes() !== 0 ||
-      endDate.getSeconds() !== 0);
-
-  if (!startHasTime && !endHasTime) return "All day";
-
-  const startText = startDate.toLocaleTimeString(undefined, {
-    hour: "numeric",
-    minute: "2-digit",
-  });
-
-  if (!endDate || !endHasTime) return startText;
-
-  const endText = endDate.toLocaleTimeString(undefined, {
-    hour: "numeric",
-    minute: "2-digit",
-  });
-
-  return `${startText} - ${endText}`;
-}
-
-export default function AquaOrganizationDetailsPage(props: {
-  params: { id: string };
-  expectedSportKey?: string;
-}) {
+function OrganizationCommunityPage(props: Props) {
   const { sandbox, fetch: pageFetch } = useOrganizationPageApi();
-  const [, navigate] = useLocation();
-  const orgId = props?.params?.id;
-  const [scheduleOpen, setScheduleOpen] = useState(false);
-
-  const {
-    data: orgData,
-    isLoading,
-    isError,
-    error,
-  } = useQuery({
+  const [location] = useLocation(),
+    search = useSearch();
+  const orgId = props.params.id;
+  const [eventPage, setEventPage] = useState(1);
+  const scope = `${sandbox?.id ?? "public"}:${sandbox?.account ?? "guest"}`;
+  const organizationQuery = useQuery({
     queryKey: [
       "/organizations",
       orgId,
-      ...(props.expectedSportKey ? [props.expectedSportKey] : []),
-      ...(sandbox ? [sandbox.account] : []),
+      props.expectedSportKey ?? "jet-ski",
+      scope,
     ],
     enabled: !!orgId && !sandbox,
-    queryFn: async () => {
-      const res = await pageFetch(`/organizations/${orgId}`, {
-        method: "GET",
-        skipAuth: true,
-        noRefresh: true,
-      });
-
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(json?.message || "Failed to load organization.");
-      }
-
-      const org = getOrgFromResponse(json);
-      if (!org) throw new Error("Organization not found in response.");
+    queryFn: async ({ signal }) => {
+      const response = await pageFetch(
+        `/organizations/${encodeURIComponent(orgId)}`,
+        { method: "GET", skipAuth: true, noRefresh: true, signal },
+      );
+      const json = await response.json();
+      if (!response.ok) throw new Error("We couldn’t load this organization.");
+      const data = json.data ?? json,
+        organization = data.organization;
       if (
-        props.expectedSportKey &&
-        (org as Organization).primarySportKey !== props.expectedSportKey
+        !organization ||
+        organization.id !== orgId ||
+        (props.expectedSportKey &&
+          organization.primarySportKey !== props.expectedSportKey)
       )
         throw new Error("Organization not found for this sport.");
       return {
-        ...org,
-        sportProfile: json?.sportProfile ?? json?.data?.sportProfile,
-      };
+        ...organization,
+        sportProfile: data.sportProfile,
+      } as Organization;
     },
-    gcTime: sandbox ? 0 : undefined,
     staleTime: 60_000,
+    retry: 1,
   });
-
-  const {
-    data: events = [],
-    isLoading: eventsLoading,
-    isError: eventsError,
-    error: eventsQueryError,
-  } = useQuery({
-    queryKey: [
-      "/sport-event/organization",
-      orgId,
-      ...(sandbox ? [sandbox.account] : []),
-    ],
-    enabled:
-      !!orgId &&
-      (sandbox
-        ? scheduleOpen
-        : !isTeamSport(orgData?.primarySportKey ?? "") &&
-          !!orgData?.sportProfile?.capabilities?.eventManagement),
-    queryFn: async () => {
-      const res = await pageFetch(
-        `/sport-event/organization/${orgId}?page=1&limit=50&order=ASC&sortBy=startDate`,
-        {
-          method: "GET",
-          skipAuth: true,
-          noRefresh: true,
-        },
-      );
-
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(json?.message || "Failed to load schedule.");
-      }
-
-      const arr = getEventsFromResponse(json);
-      return Array.isArray(arr)
-        ? [...arr].sort(
-            (a, b) =>
-              new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
-          )
-        : [];
-    },
-    gcTime: sandbox ? 0 : undefined,
-    staleTime: 30_000,
-  });
-
-  const upcomingCount = useMemo(() => {
-    const now = Date.now();
-    return events.filter(
-      (e) => new Date(e.endDate || e.startDate).getTime() >= now,
-    ).length;
-  }, [events]);
-
-  const org = (sandbox?.data.organization ?? orgData) as
+  const org = (sandbox?.data.organization ?? organizationQuery.data) as
     Organization | undefined;
-
   const primarySportKey =
     org?.primarySportKey ?? props.expectedSportKey ?? "jet-ski";
-  const sportLabel =
-    org?.sportProfile?.label ??
-    (sandbox
-      ? sandbox.data.organization.primarySportKey
-      : (props.expectedSportKey?.replace(/-/g, " ") ?? "Sport"));
-  const hasCompetition =
+  const team = isTeamSport(primarySportKey);
+  const hasEvents =
     !!org &&
-    !isTeamSport(primarySportKey) &&
-    (!!sandbox ||
-      (org?.sportProfile?.capabilities?.eventManagement ??
-        primarySportKey === "jet-ski"));
+    (sandbox
+      ? !team
+      : !!org.sportProfile?.capabilities?.eventManagement ||
+        primarySportKey === "jet-ski");
+  const sections = organizationSections(team, hasEvents, !!sandbox);
+  const section = organizationSection(search, sections);
+  const sportLabel =
+    org?.sportProfile?.label ?? sportVisual(primarySportKey).label;
+  const eventsQuery = useQuery({
+    queryKey: [
+      "organization-community-events",
+      scope,
+      orgId,
+      primarySportKey,
+      eventPage,
+    ],
+    enabled:
+      !!org && hasEvents && (section === "overview" || section === "events"),
+    queryFn: async ({ signal }) => {
+      const response = await pageFetch(
+        `/sport-event/organization/${encodeURIComponent(orgId)}?page=${eventPage}&limit=12&order=DESC&sortBy=startDate`,
+        { method: "GET", skipAuth: true, noRefresh: true, signal },
+      );
+      const json = await response.json();
+      if (!response.ok)
+        throw new Error("We couldn’t load this organization’s events.");
+      return organizationEventPage(json, orgId);
+    },
+    staleTime: sandbox ? 0 : 30_000,
+    gcTime: sandbox ? 0 : undefined,
+    retry: 1,
+  });
   useEffect(() => {
-    if (org && !sandbox && org.primarySportKey)
-      rememberSport(org.primarySportKey);
-  }, [org?.id, org?.primarySportKey, sandbox]);
-
+    if (org?.primarySportKey && !sandbox) rememberSport(org.primarySportKey);
+  }, [org?.id, org?.primarySportKey, scope]);
   useEffect(() => {
     if (!org || sandbox) return;
-
     trackEvent(AnalyticsEvents.ORGANIZATION_VIEWED, {
       organization_id: org.id,
       organization_name: org.name,
@@ -254,7 +134,6 @@ export default function AquaOrganizationDetailsPage(props: {
       sport: primarySportKey,
       page_type: "organization_details",
     });
-
     void trackContentEngagementToBackend({
       contentType: "organization",
       action: "organization_viewed",
@@ -265,13 +144,52 @@ export default function AquaOrganizationDetailsPage(props: {
       sport: primarySportKey,
       sourcePage: "organization_details",
     }).catch(() => {});
-  }, [org?.id, primarySportKey]);
-
+  }, [org?.id, primarySportKey, scope]);
+  useEffect(() => {
+    if (section !== "events") setEventPage(1);
+  }, [section, scope, orgId]);
+  function selectSection(next: OrganizationSection) {
+    if (next === "overview" || next === "events") setEventPage(1);
+    if (next !== "events" || !org || sandbox) return;
+    trackEvent(AnalyticsEvents.ORGANIZATION_SCHEDULE_OPENED, {
+      organization_id: org.id,
+      organization_name: org.name,
+      sport: primarySportKey,
+      page_type: "organization_details",
+    });
+    void trackContentEngagementToBackend({
+      contentType: "organization",
+      action: "organization_schedule_opened",
+      contentId: org.id,
+      contentName: org.name,
+      organizationId: org.id,
+      organizationName: org.name,
+      sport: primarySportKey,
+      sourcePage: "organization_details",
+    }).catch(() => {});
+  }
+  const sectionHref = (key: OrganizationSection) =>
+    organizationSectionPath(location, search, key);
+  const events = eventsQuery.data?.items ?? [];
+  const highlights = [...events]
+    .sort((a, b) => {
+      const first = Date.parse(a.endDate) >= Date.now(),
+        second = Date.parse(b.endDate) >= Date.now();
+      if (first !== second) return first ? -1 : 1;
+      return first
+        ? Date.parse(a.startDate) - Date.parse(b.startDate)
+        : Date.parse(b.startDate) - Date.parse(a.startDate);
+    })
+    .slice(0, 4);
+  const loading = !sandbox && organizationQuery.isPending;
+  const failed = !sandbox && organizationQuery.isError;
+  const currentLabel =
+    sections.find((link) => link.key === section)?.label ?? "Overview";
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-[#030913] text-white">
+    <main className="org-community-page">
       <PageSEO
         title={`${org?.name || "Organization"} • Corner League Sports`}
-        description={`Official ${sportLabel} organization profile, news and photo gallery.`}
+        description={`Explore ${org?.name || "this organization"}: ${sportLabel} events, news and photos.`}
         noindex={!!sandbox}
         canonicalPath={
           !sandbox && orgId
@@ -279,509 +197,258 @@ export default function AquaOrganizationDetailsPage(props: {
             : undefined
         }
       />
-
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.12),transparent_28%),radial-gradient(circle_at_82%_18%,rgba(255,107,53,0.08),transparent_24%),linear-gradient(180deg,#030913_0%,#07111F_48%,#02050A_100%)]" />
-        <div className="absolute inset-0 opacity-[0.04] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:72px_72px]" />
-        <div className="absolute left-1/2 top-0 h-[320px] w-[320px] -translate-x-1/2 rounded-full bg-cyan-400/8 blur-3xl" />
-      </div>
-
-      <div className="relative mx-auto w-full max-w-[88rem] overflow-x-hidden px-3 pb-10 pt-16 sm:px-6 sm:pt-10 lg:px-8">
-        {/* top hero */}
-        <div className="relative overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[linear-gradient(180deg,rgba(7,17,31,0.96)_0%,rgba(4,10,19,0.98)_100%)] shadow-[0_30px_90px_rgba(0,0,0,0.38)] sm:rounded-[38px]">
-          <div className="pointer-events-none absolute inset-0">
-            <div className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-cyan-400/10 blur-3xl" />
-            <div className="absolute -right-24 bottom-0 h-96 w-96 rounded-full bg-[#FF6B35]/10 blur-3xl" />
-            <div className="absolute inset-0 opacity-[0.05] [background-image:linear-gradient(rgba(255,255,255,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.18)_1px,transparent_1px)] [background-size:72px_72px]" />
-          </div>
-
-          <div className="relative flex flex-col gap-6 p-5 sm:p-7 lg:flex-row lg:items-end lg:justify-between lg:p-10">
-            <div className="min-w-0 max-w-4xl">
-              <div className="mb-4 flex flex-wrap items-center gap-2 sm:gap-3">
-                <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200 sm:px-4 sm:text-[11px] sm:tracking-[0.24em]">
-                  <span className="h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_18px_rgba(103,232,249,0.95)]" />
-                  Organization Details
-                </div>
-
-                <div className="inline-flex items-center gap-2 rounded-full border border-[#FF6B35]/20 bg-[#FF6B35]/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-[#FFB199] sm:px-4 sm:text-[11px] sm:tracking-[0.24em]">
-                  {sportLabel} Organization
-                </div>
-              </div>
-
-              <p className="text-xs font-black uppercase tracking-[0.26em] text-cyan-200/65">
-                {sportLabel} • Official Profile
-              </p>
-
-              <div className="mt-3 flex flex-wrap items-center gap-3">
-                <h1 className="max-w-full break-words text-[2.35rem] font-black uppercase leading-[0.9] tracking-[-0.04em] text-white min-[380px]:text-4xl sm:text-5xl lg:text-6xl">
-                  {org?.name || "Organization"}
-                </h1>
-
-                {org?.abbreviation ? (
-                  <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-cyan-100">
-                    {org.abbreviation}
-                  </span>
-                ) : null}
-              </div>
-
-              <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-300 sm:text-base">
-                {org?.description ||
-                  "View organization details, upcoming events, and official updates."}
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-3 sm:flex-row lg:flex-col lg:items-end">
-              <button
-                type="button"
-                onClick={() =>
-                  navigate(
-                    sandbox
-                      ? `/internal/test-organizations/${sandbox.id}`
-                      : sportDirectory(primarySportKey),
-                  )
-                }
-                className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/[0.05] px-5 py-3 text-xs font-black uppercase tracking-[0.14em] text-white/75 transition hover:border-cyan-300/25 hover:bg-cyan-300/10 hover:text-white"
-              >
-                ← Back to Organizations
-              </button>
-
-              {hasCompetition && (
-                <div className="inline-flex items-center gap-3 rounded-[24px] border border-cyan-300/10 bg-white/[0.04] px-4 py-3 shadow-[0_18px_45px_rgba(0,0,0,0.22)]">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-300/15 bg-cyan-300/10 text-cyan-200">
-                    <CalendarDays className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">
-                      Upcoming
-                    </div>
-                    <div className="text-lg font-bold text-white">
-                      {eventsLoading
-                        ? "Loading…"
-                        : eventsError
-                          ? "Unavailable"
-                          : `${upcomingCount} events`}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {isLoading ? (
-          <div className="mt-8 rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-6 text-slate-300 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
-            Loading organization…
-          </div>
-        ) : isError ? (
-          <div className="mt-8 rounded-[30px] border border-red-400/25 bg-red-500/10 p-6 text-white shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
-            <div className="mb-1 font-semibold">
-              Failed to load organization
-            </div>
-            <div className="text-sm text-white/80">
-              {(error as any)?.message ?? "Unknown error"}
-            </div>
-          </div>
-        ) : !org ? (
-          <div className="mt-8 rounded-[30px] border border-white/10 bg-[#07111F]/80 p-6 text-slate-300 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
-            Organization not found.
-          </div>
-        ) : (
-          <>
-            {/* main org card */}
-            <div className="mt-8 overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.3)] sm:p-6">
-              <div className="flex flex-col gap-5 lg:flex-row lg:items-start">
-                <div className="flex items-start gap-4">
-                  <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-[26px] border border-cyan-300/10 bg-white/[0.05] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)] sm:h-28 sm:w-28">
-                    {org.logoUrl ? (
-                      <img
-                        src={org.logoUrl}
-                        alt={`${org.name} logo`}
-                        className="h-full w-full object-contain p-3"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <span className="text-xs uppercase tracking-[0.16em] text-white/40">
-                        No Logo
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="break-words text-2xl font-black uppercase leading-tight tracking-[-0.02em] text-white sm:text-3xl">
-                        {org.name}
-                      </h2>
-
-                      {org.abbreviation ? (
-                        <span className="rounded-full border border-white/12 bg-white/[0.04] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/70">
-                          {org.abbreviation}
-                        </span>
-                      ) : null}
-                    </div>
-
-                    <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300">
-                      {org.description || "No description provided."}
-                    </p>
-
-                    <p className="mt-4 break-all text-[11px] uppercase tracking-[0.16em] text-white/35">
-                      ID: {org.id}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* info blocks */}
-              {hasCompetition && (
-                <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (!sandbox) {
-                        trackEvent(
-                          AnalyticsEvents.ORGANIZATION_SCHEDULE_OPENED,
-                          {
-                            organization_id: org?.id ?? orgId,
-                            organization_name: org?.name ?? null,
-                            sport: primarySportKey,
-                            page_type: "organization_details",
-                          },
-                        );
-
-                        void trackContentEngagementToBackend({
-                          contentType: "organization",
-                          action: "organization_schedule_opened",
-                          contentId: org?.id ?? orgId,
-                          contentName: org?.name ?? null,
-                          organizationId: org?.id ?? orgId,
-                          organizationName: org?.name ?? null,
-                          sport: primarySportKey,
-                          sourcePage: "organization_details",
-                        }).catch(() => {});
-                      }
-                      setScheduleOpen(true);
-                    }}
-                    className="group min-w-0 rounded-[24px] border border-cyan-300/10 bg-white/[0.04] p-5 text-left transition hover:border-cyan-300/25 hover:bg-cyan-300/[0.045]"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <div className="mb-2 inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-400/15 bg-cyan-400/8 text-cyan-300">
-                          <CalendarDays className="h-5 w-5" />
-                        </div>
-                        <div className="text-lg font-black uppercase tracking-[-0.01em] text-white">
-                          Schedule
-                        </div>
-                        <div className="mt-2 text-sm leading-7 text-slate-300">
-                          {eventsLoading && scheduleOpen
-                            ? "Loading events…"
-                            : upcomingCount > 0
-                              ? `${upcomingCount} upcoming event${upcomingCount === 1 ? "" : "s"} available to view`
-                              : "View all organization events and dates"}
-                        </div>
-                      </div>
-
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-cyan-300 transition group-hover:border-cyan-300/25 group-hover:bg-cyan-400/8">
-                        <ChevronRight className="h-4 w-4" />
-                      </div>
-                    </div>
-                  </button>
-
-                  <InfoCard
-                    icon={<Trophy className="h-5 w-5" />}
-                    title="Race Results"
-                    description="Past podiums, standings, and results modules can plug into this area later."
-                    muted
-                  />
-                </div>
-              )}
-            </div>
-            {isTeamSport(primarySportKey) && (
-              <TeamSeasons organizationId={org.id} sportKey={primarySportKey} />
-            )}
-            <OrganizationPosts key={org.id} organizationId={org.id} />
-          </>
-        )}
-
-        {org?.id ? (
-          <div className="mt-6">
-            <OrganizationPhotoGallery organizationId={org.id} />
-          </div>
-        ) : null}
-
-        {scheduleOpen && (
-          <ScheduleModal
-            orgName={org?.name || "Organization"}
-            sandboxId={sandbox?.id}
-            sportKey={primarySportKey}
-            organizationId={orgId}
-            events={events}
-            loading={eventsLoading}
-            error={eventsError ? (eventsQueryError as any)?.message : null}
-            onClose={() => setScheduleOpen(false)}
-          />
-        )}
-      </div>
-    </div>
-  );
-}
-
-function InfoCard({
-  icon,
-  title,
-  description,
-  muted,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  muted?: boolean;
-}) {
-  return (
-    <div
-      className={`min-w-0 rounded-[24px] border p-5 ${
-        muted
-          ? "border-white/10 bg-white/[0.04]"
-          : "border-cyan-300/10 bg-cyan-300/[0.04]"
-      }`}
-    >
-      <div className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-300/15 bg-cyan-300/10 text-cyan-200">
-        {icon}
-      </div>
-      <div className="break-words text-lg font-black uppercase tracking-[-0.01em] text-white">
-        {title}
-      </div>
-      <p className="mt-2 text-sm leading-7 text-slate-300">{description}</p>
-    </div>
-  );
-}
-
-function ScheduleModal({
-  orgName,
-  sandboxId,
-  sportKey,
-  organizationId,
-  events,
-  loading,
-  error,
-  onClose,
-}: {
-  orgName: string;
-  sandboxId?: string;
-  sportKey?: string;
-  organizationId?: string;
-  events: SportEvent[];
-  loading: boolean;
-  error: string | null;
-  onClose: () => void;
-}) {
-  const [, navigate] = useLocation();
-  const now = Date.now();
-
-  const upcomingEvents = [...events]
-    .filter((event) => {
-      const compareDate = new Date(event.endDate || event.startDate).getTime();
-      return compareDate >= now;
-    })
-    .sort(
-      (a, b) =>
-        new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
-    );
-
-  const pastEvents = [...events]
-    .filter((event) => {
-      const compareDate = new Date(event.endDate || event.startDate).getTime();
-      return compareDate < now;
-    })
-    .sort(
-      (a, b) =>
-        new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
-    );
-
-  function handleOpenEvent(eventId: string) {
-    onClose();
-    navigate(
-      sandboxId
-        ? `/internal/test-organizations/${sandboxId}?event=${encodeURIComponent(eventId)}`
-        : sportKey && sportKey !== "jet-ski" && organizationId
-          ? `${sportOrganization(sportKey, organizationId)}?event=${encodeURIComponent(eventId)}`
-          : `/aqua-organizations/event-details/${eventId}`,
-    );
-  }
-
-  return (
-    <div
-      className="fixed inset-0 z-[80] flex items-end justify-center bg-black/70 p-0 backdrop-blur-sm sm:items-center sm:p-4"
-      onClick={onClose}
-    >
-      <div
-        className="relative flex h-[92vh] w-full flex-col overflow-hidden rounded-t-[30px] border border-cyan-300/10 bg-[#07111F] shadow-[0_30px_90px_rgba(0,0,0,0.5)] sm:h-auto sm:max-h-[88vh] sm:max-w-5xl sm:rounded-[30px]"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="border-b border-white/10 bg-[linear-gradient(180deg,rgba(7,17,31,0.98)_0%,rgba(4,10,19,0.98)_100%)] px-4 py-4 sm:px-6">
-          {" "}
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-cyan-200">
-                <span className="h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_12px_rgba(103,232,249,0.9)]" />
-                Event Schedule
-              </div>
-              <h2 className="text-lg font-semibold text-white sm:text-xl">
-                {orgName} Schedule
-              </h2>
-              <p className="text-sm text-white/50">Upcoming and past events</p>
-            </div>
-
-            <Button
-              onClick={onClose}
-              className="rounded-full border border-white/10 bg-white/[0.05] px-4 py-2.5 text-xs font-black uppercase tracking-[0.14em] text-white/70 hover:bg-white/10 hover:text-white"
-            >
-              <X className="mr-2 h-4 w-4" />
-              Close
-            </Button>
-          </div>
-        </div>
-
-        <div className="max-h-[calc(92vh-88px)] overflow-y-auto px-4 py-4 sm:max-h-[72vh] sm:px-6">
-          {loading ? (
-            <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-5 text-white/70">
-              Loading schedule…
-            </div>
-          ) : error ? (
-            <div className="rounded-[24px] border border-red-500/25 bg-red-500/10 p-5 text-white">
-              <div className="mb-1 font-semibold">Failed to load schedule</div>
-              <div className="text-sm text-white/80">{error}</div>
-            </div>
-          ) : events.length === 0 ? (
-            <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-5 text-white/70">
-              No events found for this organization yet.
-            </div>
-          ) : (
-            <div className="space-y-8">
-              <EventSection
-                title="Upcoming"
-                tone="upcoming"
-                count={upcomingEvents.length}
-                emptyText="No upcoming events."
-                events={upcomingEvents}
-                onOpenEvent={handleOpenEvent}
-              />
-
-              <EventSection
-                title="Past"
-                tone="past"
-                count={pastEvents.length}
-                emptyText="No past events yet."
-                events={pastEvents}
-                onOpenEvent={handleOpenEvent}
-              />
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function EventSection({
-  title,
-  tone,
-  count,
-  emptyText,
-  events,
-  onOpenEvent,
-}: {
-  title: string;
-  tone: "upcoming" | "past";
-  count: number;
-  emptyText: string;
-  events: SportEvent[];
-  onOpenEvent: (eventId: string) => void;
-}) {
-  const headingClass =
-    tone === "upcoming" ? "text-cyan-200/90" : "text-white/75";
-
-  const badgeClass =
-    tone === "upcoming"
-      ? "border-cyan-400/20 bg-cyan-400/10 text-cyan-200"
-      : "border-white/15 bg-white/5 text-white/70";
-
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <h3
-          className={`text-sm font-black uppercase tracking-[0.18em] ${headingClass}`}
+      {sandbox ? (
+        <Link
+          className="org-community-back"
+          href={`/internal/test-organizations/${encodeURIComponent(sandbox.id)}`}
         >
-          {title}
-        </h3>
-        <span className="text-xs text-white/45">
-          {count} event{count === 1 ? "" : "s"}
-        </span>
-      </div>
-
-      {events.length === 0 ? (
-        <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-4 text-sm text-white/55">
-          {emptyText}
+          Back to test organization
+        </Link>
+      ) : null}
+      {loading ? (
+        <div className="org-community-state" role="status">
+          Loading organization…
+        </div>
+      ) : failed ? (
+        <div className="org-community-state" role="alert">
+          <h1>Organization unavailable</h1>
+          <p>
+            {organizationQuery.error instanceof Error
+              ? organizationQuery.error.message
+              : "Please try again."}
+          </p>
+          <button
+            className="sport-hub-button"
+            onClick={() => void organizationQuery.refetch()}
+          >
+            Try again
+          </button>
+        </div>
+      ) : !org ? (
+        <div className="org-community-state">
+          <h1>Organization not found</h1>
+          <p>Return to the directory to explore available organizations.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          {events.map((event) => (
-            <button
-              key={event.id}
-              type="button"
-              onClick={() => onOpenEvent(event.id)}
-              className="group min-w-0 w-full rounded-[24px] border border-cyan-300/10 bg-[#07111F]/80 p-5 text-left shadow-[0_16px_40px_rgba(0,0,0,0.22)] transition hover:border-cyan-300/25 hover:bg-cyan-300/[0.045]"
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] ${badgeClass}`}
+        <>
+          <ConsumerBrandingHero
+            key={`${scope}:${org.id}`}
+            kind="organization"
+            id={org.id}
+            organizationId={org.id}
+            sport={primarySportKey}
+            name={org.name}
+            headingLevel={1}
+          />
+          <div className="org-community-introduction">
+            <p className="org-community-eyebrow">
+              {sportLabel} community
+              {org.abbreviation ? ` · ${org.abbreviation}` : ""}
+            </p>
+            {org.description && (
+              <p className="org-community-description">{org.description}</p>
+            )}
+          </div>
+          <nav
+            className="org-community-navigation"
+            aria-label="Organization sections"
+          >
+            {sections.map((link) => (
+              <Link
+                key={link.key}
+                href={sectionHref(link.key)}
+                aria-current={section === link.key ? "page" : undefined}
+                onClick={() => selectSection(link.key)}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+          <section
+            className="org-community-panel"
+            aria-label={`${org.name} ${currentLabel}`}
+          >
+            {section === "overview" && (
+              <div className="org-community-overview">
+                <section className="org-community-card">
+                  <div className="sport-section-heading">
+                    <h2>Welcome to {org.name}</h2>
+                  </div>
+                  <p>
+                    Follow the latest news, discover events, and explore the
+                    community.
+                  </p>
+                  <div className="org-community-shortcuts">
+                    {hasEvents && (
+                      <Link
+                        href={sectionHref("events")}
+                        onClick={() => selectSection("events")}
+                      >
+                        <strong>Events & schedules</strong>
+                        <span>Find dates, locations and event details →</span>
+                      </Link>
+                    )}
+                    {team && (
+                      <Link href={sectionHref("competition")}>
+                        <strong>Leagues & seasons</strong>
+                        <span>
+                          Follow teams, standings, games and brackets →
+                        </span>
+                      </Link>
+                    )}
+                    <Link href={sectionHref("updates")}>
+                      <strong>News & updates</strong>
+                      <span>
+                        Announcements and stories from the organization →
+                      </span>
+                    </Link>
+                    <Link href={sectionHref("gallery")}>
+                      <strong>Community photos</strong>
+                      <span>Explore the organization’s photo gallery →</span>
+                    </Link>
+                  </div>
+                </section>
+                {hasEvents && (
+                  <section>
+                    <div className="sport-section-heading">
+                      <h2>Event highlights</h2>
+                      <Link
+                        href={sectionHref("events")}
+                        onClick={() => selectSection("events")}
+                      >
+                        View events →
+                      </Link>
+                    </div>
+                    <EventStatus
+                      query={eventsQuery}
+                      empty="New events will appear here when available."
+                    />
+                    {!eventsQuery.isError && (
+                      <OrganizationEventCards
+                        events={highlights}
+                        organizationId={org.id}
+                        sport={primarySportKey}
+                        sandboxId={sandbox?.id}
+                      />
+                    )}
+                  </section>
+                )}
+                <OrganizationPosts
+                  key={`${scope}:${org.id}:overview`}
+                  organizationId={org.id}
+                  previewLimit={2}
+                />
+                <Link
+                  className="org-community-more"
+                  href={sectionHref("updates")}
+                >
+                  View all news & updates →
+                </Link>
+              </div>
+            )}
+            {section === "events" && (
+              <div>
+                <div className="sport-section-heading">
+                  <h2>Events & schedules</h2>
+                  <p className="text-sm text-cl-muted">
+                    {eventsQuery.data?.total != null
+                      ? `${eventsQuery.data.total} event${eventsQuery.data.total === 1 ? "" : "s"}`
+                      : "Organization events"}
+                  </p>
+                </div>
+                <EventStatus
+                  query={eventsQuery}
+                  empty="No events are available on this page."
+                />
+                {!eventsQuery.isError && (
+                  <OrganizationEventCards
+                    events={events}
+                    organizationId={org.id}
+                    sport={primarySportKey}
+                    sandboxId={sandbox?.id}
+                  />
+                )}
+                {(eventPage > 1 || eventsQuery.data?.hasNextPage) && (
+                  <nav
+                    className="org-community-pagination"
+                    aria-label="Organization event pages"
+                  >
+                    <button
+                      disabled={eventPage === 1 || eventsQuery.isFetching}
+                      onClick={() => setEventPage((value) => value - 1)}
                     >
-                      {tone === "upcoming" ? "Upcoming" : "Past"}
-                    </span>
-                  </div>
-
-                  <div className="mt-3 break-words text-base font-black uppercase leading-snug tracking-[-0.01em] text-white sm:text-lg">
-                    <span className="line-clamp-2">{event.name}</span>
-                  </div>
-
-                  {!!event.description && (
-                    <p className="mt-2 line-clamp-2 whitespace-pre-wrap text-sm text-white/65">
-                      {event.description}
-                    </p>
-                  )}
-                </div>
-
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-cyan-300 transition group-hover:border-cyan-300/25 group-hover:bg-cyan-400/8">
-                  <ChevronRight className="h-4 w-4" />
-                </div>
+                      Previous
+                    </button>
+                    <span>Page {eventPage}</span>
+                    <button
+                      disabled={
+                        !eventsQuery.data?.hasNextPage || eventsQuery.isFetching
+                      }
+                      onClick={() => setEventPage((value) => value + 1)}
+                    >
+                      Next
+                    </button>
+                  </nav>
+                )}
               </div>
-
-              <div className="mt-4 grid min-w-0 grid-cols-1 gap-3 text-sm">
-                <div className="flex items-start gap-2 text-white/75">
-                  <CalendarDays className="mt-0.5 h-4 w-4 shrink-0 text-white/45" />
-                  <div className="min-w-0 break-words">
-                    {formatEventDateRange(event.startDate, event.endDate)}
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-2 text-white/75">
-                  <Clock3 className="mt-0.5 h-4 w-4 shrink-0 text-white/45" />
-                  <div className="min-w-0 break-words">
-                    {formatEventTime(event.startDate, event.endDate)}
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-2 text-white/75">
-                  <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-white/45" />
-                  <div className="min-w-0 break-words">
-                    {event.location || "Location TBD"}
-                  </div>
-                </div>
-              </div>
-            </button>
-          ))}
-        </div>
+            )}
+            {section === "competition" && team && (
+              <TeamSeasons
+                key={`${scope}:${org.id}`}
+                organizationId={org.id}
+                sportKey={primarySportKey}
+              />
+            )}
+            {section === "updates" && (
+              <OrganizationPosts
+                key={`${scope}:${org.id}:updates`}
+                organizationId={org.id}
+              />
+            )}
+            {section === "gallery" && (
+              <OrganizationPhotoGallery
+                key={`${scope}:${org.id}`}
+                organizationId={org.id}
+              />
+            )}
+            {/* Shop and facilities are deferred until a future release. */}
+          </section>
+        </>
       )}
-    </div>
+    </main>
   );
+}
+function EventStatus({
+  query,
+  empty,
+}: {
+  query: {
+    isPending: boolean;
+    isError: boolean;
+    data?: { items: unknown[] };
+    refetch: () => unknown;
+  };
+  empty: string;
+}) {
+  if (query.isPending)
+    return (
+      <p role="status" className="org-community-state">
+        Loading events…
+      </p>
+    );
+  if (query.isError)
+    return (
+      <div role="alert" className="org-community-state">
+        <p>Events couldn’t be loaded.</p>
+        <button
+          onClick={() => void query.refetch()}
+          className="sport-hub-button"
+        >
+          Try again
+        </button>
+      </div>
+    );
+  if (!query.data?.items.length)
+    return <p className="org-community-state">{empty}</p>;
+  return null;
 }

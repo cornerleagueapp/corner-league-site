@@ -77,7 +77,7 @@ export default function AthleteFollowButton({
               following: !state.data.isFollowing,
             });
         }}
-        className="inline-flex min-h-11 items-center gap-2 rounded-full border border-cyan-300/25 bg-cyan-300/10 px-5 py-3 text-sm font-bold text-cyan-100 transition hover:bg-cyan-300/20 disabled:opacity-60"
+        className="inline-flex min-h-11 items-center gap-2 rounded-full border border-cl-accent/25 bg-cl-accent/10 px-5 py-3 text-sm font-bold text-cl-accent transition hover:bg-cl-accent/20 disabled:opacity-60"
       >
         {follow.isPending ? (
           <Loader2 className="h-4 w-4 animate-spin" />
@@ -97,7 +97,7 @@ export default function AthleteFollowButton({
               ? "Following athlete"
               : "Follow athlete"}
         {count !== undefined && (
-          <span className="text-xs text-white/60">
+          <span className="text-xs text-cl-muted">
             {count.toLocaleString()} {count === 1 ? "follower" : "followers"}
           </span>
         )}
@@ -116,7 +116,7 @@ export default function AthleteFollowButton({
         </button>
       ) : null}
       {follow.isError && (
-        <p role="alert" className="max-w-xs text-xs text-rose-200">
+        <p role="alert" className="max-w-xs text-xs text-cl-danger">
           {follow.error instanceof Error
             ? follow.error.message
             : "Follow change failed. Please try again."}

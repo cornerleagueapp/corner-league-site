@@ -55,9 +55,9 @@ export default function ContactPage() {
     setForm((f) => ({ ...f, [key]: value }));
   }
   const inputClass =
-    "mt-2 w-full min-h-12 rounded-xl border border-white/20 bg-white/5 px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-300 disabled:opacity-60";
+    "mt-2 w-full min-h-12 rounded-xl border border-cl-border bg-cl-subtle px-4 py-3 text-cl-ink placeholder:text-cl-muted focus:outline-none focus:ring-2 focus:ring-cl-accent disabled:opacity-60";
   return (
-    <div className="min-h-screen bg-[#030913] text-white">
+    <div className="min-h-screen bg-cl-canvas text-cl-ink">
       <PageSEO
         title="Contact & Support | Corner League"
         description="Get help with your Corner League account, share feedback, or contact our team about your organization."
@@ -65,31 +65,31 @@ export default function ContactPage() {
       <PublicTopNav />
       <main className="mx-auto max-w-6xl px-5 py-12 sm:px-8 sm:py-20">
         <div className="mb-10">
-          <p className="text-xs font-bold uppercase tracking-[.24em] text-cyan-300">
+          <p className="text-xs font-bold uppercase tracking-[.24em] text-cl-accent">
             LET’S TALK
           </p>
           <h1 className="mt-4 text-4xl font-black sm:text-5xl">
             How can we help?
           </h1>
-          <p className="mt-4 max-w-xl text-lg leading-8 text-slate-300">
+          <p className="mt-4 max-w-xl text-lg leading-8 text-cl-muted">
             Questions, feedback or a little help getting started. Send our team
             a message and we’ll review your request.
           </p>
         </div>
         <div className="grid gap-8 lg:grid-cols-[.8fr_1.2fr]">
           <aside className="space-y-5">
-            <div className="rounded-2xl border border-cyan-300/15 bg-cyan-300/5 p-6">
-              <MessageCircle className="mb-4 h-7 w-7 text-cyan-300" />
+            <div className="rounded-2xl border border-cl-accent/[0.15] bg-cl-accent/5 p-6">
+              <MessageCircle className="mb-4 h-7 w-7 text-cl-accent" />
               <h2 className="text-xl font-bold">Fans & athletes</h2>
-              <p className="mt-3 leading-7 text-slate-300">
+              <p className="mt-3 leading-7 text-cl-muted">
                 Need help with your account, athlete profile or the platform?
                 Use the form. For event rules or schedule changes, contact the
                 event organizer.
               </p>
             </div>
-            <div className="rounded-2xl border border-white/15 p-6">
+            <div className="rounded-2xl border border-cl-border p-6">
               <h2 className="text-xl font-bold">Organization support</h2>
-              <p className="mt-3 leading-7 text-slate-300">
+              <p className="mt-3 leading-7 text-cl-muted">
                 Already managing an organization? Sign in to Corner League OS
                 and open Contact & Support for priority help linked to your
                 workspace.
@@ -98,31 +98,31 @@ export default function ContactPage() {
                 href="https://admin.cornerleague.com/contact"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-5 inline-flex min-h-11 items-center gap-2 font-bold text-cyan-200"
+                className="mt-5 inline-flex min-h-11 items-center gap-2 font-bold text-cl-accent"
               >
                 Open organization support
                 <ArrowUpRight size={18} />
               </a>
             </div>
-            <p className="px-1 text-sm leading-6 text-slate-400">
+            <p className="px-1 text-sm leading-6 text-cl-muted">
               Please don’t include passwords or payment card details. Our team
               can use the ticket reference to locate your request.
             </p>
           </aside>
-          <section className="rounded-3xl border border-white/15 bg-[#081524] p-6 sm:p-8">
+          <section className="rounded-3xl border border-cl-border bg-cl-canvas p-6 sm:p-8">
             {ticket ? (
               <div role="status" className="space-y-5">
-                <CheckCircle2 className="h-10 w-10 text-cyan-300" />
+                <CheckCircle2 className="h-10 w-10 text-cl-accent" />
                 <h2 className="text-2xl font-bold">Your request is received</h2>
-                <p className="text-slate-300">
+                <p className="text-cl-muted">
                   It’s in our support queue. Keep this reference for any
                   follow-up.
                 </p>
-                <p className="break-all rounded-xl bg-white/5 p-4 font-mono text-sm">
+                <p className="break-all rounded-xl bg-cl-subtle p-4 font-mono text-sm">
                   {ticket}
                 </p>
                 <button
-                  className="min-h-11 font-bold text-cyan-200"
+                  className="min-h-11 font-bold text-cl-accent"
                   onClick={() => {
                     setTicket("");
                     pending.current = { signature: "", id: "" };
@@ -132,7 +132,7 @@ export default function ContactPage() {
                 </button>
                 <Link
                   href="/"
-                  className="ml-4 inline-block min-h-11 text-slate-300"
+                  className="ml-4 inline-block min-h-11 text-cl-muted"
                 >
                   Back to sports
                 </Link>
@@ -186,7 +186,7 @@ export default function ContactPage() {
                       ["other", "Something else"],
                     ].map(([value, label]) => (
                       <option
-                        className="bg-[#081524]"
+                        className="bg-cl-canvas"
                         key={value}
                         value={value}
                       >
@@ -236,18 +236,18 @@ export default function ContactPage() {
                 {error && (
                   <p
                     role="alert"
-                    className="rounded-xl border border-rose-400/30 p-4 text-rose-200"
+                    className="rounded-xl border border-rose-400/30 p-4 text-cl-danger"
                   >
                     {error}
                   </p>
                 )}
                 <button
                   disabled={busy}
-                  className="min-h-12 w-full rounded-xl bg-cyan-300 px-5 py-3 font-bold text-[#030913] disabled:opacity-60"
+                  className="min-h-12 w-full rounded-xl bg-cl-accent px-5 py-3 font-bold text-cl-contrast disabled:opacity-60"
                 >
                   {busy ? "Sending…" : "Send request"}
                 </button>
-                <p className="text-xs leading-6 text-slate-400">
+                <p className="text-xs leading-6 text-cl-muted">
                   Your details are used to handle this request.{" "}
                   <Link href="/terms" className="underline">
                     Terms & privacy

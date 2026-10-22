@@ -21,7 +21,7 @@ export function ClubInfoModal({
       <div
         className={cn(
           "relative z-10 mx-auto mt-20 w-[92%] max-w-md",
-          "rounded-xl border border-white/10 bg-[#0b0f18] p-5"
+          "rounded-xl border border-cl-border bg-cl-canvas p-5",
         )}
         role="dialog"
         aria-modal="true"
@@ -31,7 +31,7 @@ export function ClubInfoModal({
           <h2 className="text-lg font-semibold">Club Info</h2>
           <button
             onClick={onClose}
-            className="text-white/70 hover:text-white"
+            className="text-cl-muted hover:text-cl-ink"
             aria-label="Close"
           >
             ✕
@@ -40,16 +40,16 @@ export function ClubInfoModal({
 
         <div className="mt-4 space-y-3 text-sm">
           <div>
-            <div className="text-white/60">Name</div>
-            <div className="text-white">{club.name || "—"}</div>
+            <div className="text-cl-muted">Name</div>
+            <div className="text-cl-ink">{club.name || "—"}</div>
           </div>
           <div>
-            <div className="text-white/60">Description</div>
-            <div className="text-white">{club.description || "—"}</div>
+            <div className="text-cl-muted">Description</div>
+            <div className="text-cl-ink">{club.description || "—"}</div>
           </div>
           <div>
-            <div className="text-white/60">Owner</div>
-            <div className="text-white">{club.ownerName || "—"}</div>
+            <div className="text-cl-muted">Owner</div>
+            <div className="text-cl-ink">{club.ownerName || "—"}</div>
           </div>
         </div>
 
@@ -57,7 +57,7 @@ export function ClubInfoModal({
           <div className="mt-6 flex justify-end">
             <button
               onClick={onEdit}
-              className="px-4 py-2 rounded-md bg-white text-black hover:bg-gray-200"
+              className="px-4 py-2 rounded-md bg-cl-surface text-cl-ink hover:bg-cl-subtle"
             >
               Edit Club
             </button>

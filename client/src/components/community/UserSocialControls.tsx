@@ -129,7 +129,7 @@ export function UserSocialControls({ targetId }: { targetId: string }) {
         </>
       )}
       {query.data?.interactionBlocked && (
-        <p className="mt-2 text-xs text-white/55">
+        <p className="mt-2 text-xs text-cl-muted">
           Interactions with this user are unavailable.
         </p>
       )}
@@ -171,10 +171,10 @@ function People({
       ) : (
         <>
           {query.data.items.map((person) => (
-            <div key={person.id} className="border-b border-white/10 py-3">
+            <div key={person.id} className="border-b border-cl-border py-3">
               <Link
                 href={`/profile/${encodeURIComponent(person.username)}`}
-                className="flex min-h-11 items-center border-b border-white/10 py-3 font-semibold text-cyan-100"
+                className="flex min-h-11 items-center border-b border-cl-border py-3 font-semibold text-cl-accent"
               >
                 @{person.username}
               </Link>
@@ -182,7 +182,7 @@ function People({
             </div>
           ))}
           {!query.data.items.length && (
-            <p className="text-white/55">No users yet.</p>
+            <p className="text-cl-muted">No users yet.</p>
           )}
           <Pagination
             page={page}

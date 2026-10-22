@@ -140,15 +140,15 @@ export default function ClassSelectionStep({
   return (
     <div className="space-y-6">
       <div>
-        <div className="text-[9px] font-black uppercase tracking-[0.16em] text-cyan-200/60">
+        <div className="text-[9px] font-black uppercase tracking-[0.16em] text-cl-accent">
           Step 3 of 6
         </div>
 
-        <h2 className="mt-2 text-2xl font-black uppercase tracking-[-0.035em] text-white sm:text-3xl">
+        <h2 className="mt-2 text-2xl font-black uppercase tracking-[-0.035em] text-cl-ink sm:text-3xl">
           Select race classes
         </h2>
 
-        <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-400">
+        <p className="mt-2 max-w-2xl text-sm leading-7 text-cl-muted">
           Select the classes this racer will enter, then choose the event days
           they will participate in for each class.
         </p>
@@ -157,9 +157,9 @@ export default function ClassSelectionStep({
       {!enabledDays.length ? (
         <div className="rounded-[22px] border border-amber-300/15 bg-amber-300/[0.055] p-4">
           <div className="flex items-start gap-3">
-            <Info className="mt-0.5 h-4 w-4 shrink-0 text-amber-200" />
+            <Info className="mt-0.5 h-4 w-4 shrink-0 text-cl-warning" />
 
-            <p className="text-xs leading-6 text-amber-100/70">
+            <p className="text-xs leading-6 text-cl-warning">
               This event does not currently have any registration-enabled race
               days.
             </p>
@@ -184,16 +184,16 @@ export default function ClassSelectionStep({
                 />
 
                 {selection ? (
-                  <div className="rounded-[22px] border border-cyan-300/10 bg-[#07111F]/82 p-4">
+                  <div className="rounded-[22px] border border-cl-accent/10 bg-cl-surface p-4">
                     <div className="mb-3 flex items-center gap-2">
-                      <CalendarDays className="h-4 w-4 text-cyan-200" />
+                      <CalendarDays className="h-4 w-4 text-cl-accent" />
 
                       <div>
-                        <div className="text-xs font-black uppercase text-white">
+                        <div className="text-xs font-black uppercase text-cl-ink">
                           Select Event Days
                         </div>
 
-                        <div className="mt-1 text-[10px] text-white/35">
+                        <div className="mt-1 text-[10px] text-cl-muted">
                           Minimum {eventClass.minimumSelectedDays}
                           {eventClass.maximumSelectedDays
                             ? ` • Maximum ${eventClass.maximumSelectedDays}`
@@ -215,8 +215,8 @@ export default function ClassSelectionStep({
                             onClick={() => toggleDay(eventClass, day.id)}
                             className={`inline-flex min-h-11 items-center gap-2 rounded-full border px-4 text-[9px] font-black uppercase tracking-[0.11em] transition ${
                               selected
-                                ? "border-cyan-300/30 bg-cyan-300 text-[#06111d]"
-                                : "border-white/10 bg-white/[0.04] text-white/55 hover:border-cyan-300/20 hover:text-white"
+                                ? "border-cl-accent/30 bg-cl-accent text-cl-contrast"
+                                : "border-cl-border bg-cl-subtle text-cl-muted hover:border-cl-accent/20 hover:text-cl-ink"
                             }`}
                           >
                             {selected ? (

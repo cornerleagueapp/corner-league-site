@@ -67,25 +67,25 @@ function getStatusStyles(status: RegistrationEvent["registrationStatus"]) {
     case "open":
       return {
         label: "Registration Open",
-        className: "border-emerald-300/20 bg-emerald-300/10 text-emerald-200",
+        className: "border-emerald-300/20 bg-emerald-300/10 text-cl-success",
       };
 
     case "upcoming":
       return {
         label: "Coming Soon",
-        className: "border-amber-300/20 bg-amber-300/10 text-amber-200",
+        className: "border-amber-300/20 bg-amber-300/10 text-cl-warning",
       };
 
     case "closed":
       return {
         label: "Registration Closed",
-        className: "border-red-300/20 bg-red-300/10 text-red-200",
+        className: "border-red-300/20 bg-red-300/10 text-cl-danger",
       };
 
     default:
       return {
         label: status,
-        className: "border-white/10 bg-white/[0.05] text-white/55",
+        className: "border-cl-border bg-cl-subtle text-cl-muted",
       };
   }
 }
@@ -111,14 +111,14 @@ export default function RegistrationEventCard({
     <article
       className={`group relative min-w-0 overflow-hidden rounded-[28px] border transition duration-300 hover:-translate-y-1 ${
         featured
-          ? "border-cyan-300/20 bg-[linear-gradient(135deg,#0B2330_0%,#081625_48%,#1A151D_100%)] shadow-[0_28px_85px_rgba(0,0,0,0.48),inset_0_1px_0_rgba(255,255,255,0.04)]"
-          : "border-cyan-200/[0.14] bg-[#081625] shadow-[0_26px_80px_rgba(0,0,0,0.44),inset_0_1px_0_rgba(255,255,255,0.03)] hover:border-cyan-300/30 hover:bg-[#0A192A]"
+          ? "border-cl-accent/20 cl-panel-wash shadow-cl-panel"
+          : "border-cl-accent/[0.14] bg-cl-canvas shadow-cl-panel hover:border-cl-accent/30 hover:bg-cl-canvas"
       }`}
     >
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -right-24 -top-24 h-64 w-64 rounded-full bg-cyan-300/10 blur-3xl" />
+        <div className="absolute -right-24 -top-24 h-64 w-64 rounded-full bg-cl-accent/10 blur-3xl" />
 
-        <div className="absolute -bottom-24 -left-20 h-56 w-56 rounded-full bg-[#FF6B35]/8 blur-3xl" />
+        <div className="absolute -bottom-24 -left-20 h-56 w-56 rounded-full bg-cl-accent/[0.08] blur-3xl" />
 
         <div className="absolute inset-0 opacity-[0.028] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:52px_52px]" />
       </div>
@@ -126,7 +126,7 @@ export default function RegistrationEventCard({
       <div className="relative flex h-full flex-col p-5 sm:p-6">
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
-            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-cyan-300/15 bg-cyan-300/10 text-cyan-200">
+            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-cl-accent/[0.15] bg-cl-accent/10 text-cl-accent">
               {featured ? (
                 <Trophy className="h-5 w-5" />
               ) : (
@@ -135,7 +135,7 @@ export default function RegistrationEventCard({
             </div>
 
             <div className="min-w-0">
-              <div className="truncate text-[10px] font-black uppercase tracking-[0.17em] text-cyan-200/65">
+              <div className="truncate text-[10px] font-black uppercase tracking-[0.17em] text-cl-accent">
                 {organizationAbbreviation}
               </div>
 
@@ -161,32 +161,32 @@ export default function RegistrationEventCard({
           onClick={openEvent}
           className="mt-5 block text-left"
         >
-          <h2 className="break-words text-2xl font-black uppercase leading-[0.98] tracking-[-0.035em] text-white transition group-hover:text-cyan-100 sm:text-3xl">
+          <h2 className="break-words text-2xl font-black uppercase leading-[0.98] tracking-[-0.035em] text-cl-ink transition group-hover:text-cl-accent sm:text-3xl">
             {event.name}
           </h2>
 
-          <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-400">
+          <p className="mt-3 line-clamp-3 text-sm leading-6 text-cl-muted">
             {event.description}
           </p>
         </button>
 
         <div className="mt-5 grid grid-cols-1 gap-2.5 text-sm sm:grid-cols-2">
-          <div className="flex items-center gap-2.5 rounded-[16px] border border-white/8 bg-white/[0.035] px-3 py-3 text-slate-300">
-            <CalendarDays className="h-4 w-4 shrink-0 text-cyan-200" />
+          <div className="flex items-center gap-2.5 rounded-[16px] border border-cl-border bg-cl-subtle px-3 py-3 text-cl-muted">
+            <CalendarDays className="h-4 w-4 shrink-0 text-cl-accent" />
 
             <span className="min-w-0 truncate">
               {formatDateRange(event.startDate, event.endDate)}
             </span>
           </div>
 
-          <div className="flex items-center gap-2.5 rounded-[16px] border border-white/8 bg-white/[0.035] px-3 py-3 text-slate-300">
-            <MapPin className="h-4 w-4 shrink-0 text-[#FFB199]" />
+          <div className="flex items-center gap-2.5 rounded-[16px] border border-cl-border bg-cl-subtle px-3 py-3 text-cl-muted">
+            <MapPin className="h-4 w-4 shrink-0 text-cl-accent" />
 
             <span className="min-w-0 truncate">{event.formattedLocation}</span>
           </div>
 
-          <div className="flex items-center gap-2.5 rounded-[16px] border border-white/8 bg-white/[0.035] px-3 py-3 text-slate-300">
-            <Users className="h-4 w-4 shrink-0 text-cyan-200" />
+          <div className="flex items-center gap-2.5 rounded-[16px] border border-cl-border bg-cl-subtle px-3 py-3 text-cl-muted">
+            <Users className="h-4 w-4 shrink-0 text-cl-accent" />
 
             <span>
               {event.confirmedRacerCount} confirmed racer
@@ -194,8 +194,8 @@ export default function RegistrationEventCard({
             </span>
           </div>
 
-          <div className="flex items-center gap-2.5 rounded-[16px] border border-white/8 bg-white/[0.035] px-3 py-3 text-slate-300">
-            <Clock3 className="h-4 w-4 shrink-0 text-[#FFB199]" />
+          <div className="flex items-center gap-2.5 rounded-[16px] border border-cl-border bg-cl-subtle px-3 py-3 text-cl-muted">
+            <Clock3 className="h-4 w-4 shrink-0 text-cl-accent" />
 
             <span className="min-w-0 truncate">
               {event.registrationClosesAt
@@ -205,9 +205,9 @@ export default function RegistrationEventCard({
           </div>
         </div>
 
-        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-5">
-          <div className="flex items-center gap-2 text-xs font-bold text-white/50">
-            <Building2 className="h-4 w-4 text-white/35" />
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-cl-border pt-5">
+          <div className="flex items-center gap-2 text-xs font-bold text-cl-muted">
+            <Building2 className="h-4 w-4 text-cl-muted" />
 
             <span className="line-clamp-1">{organizationName}</span>
           </div>
@@ -215,7 +215,7 @@ export default function RegistrationEventCard({
           <button
             type="button"
             onClick={openEvent}
-            className="inline-flex items-center gap-2 rounded-full bg-cyan-300 px-4 py-3 text-[10px] font-black uppercase tracking-[0.14em] text-[#06111d] transition hover:bg-cyan-200"
+            className="inline-flex items-center gap-2 rounded-full bg-cl-accent px-4 py-3 text-[10px] font-black uppercase tracking-[0.14em] text-cl-contrast transition hover:bg-cl-accent"
           >
             View Event
             <ChevronRight className="h-4 w-4" />

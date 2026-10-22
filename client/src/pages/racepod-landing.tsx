@@ -26,17 +26,17 @@ function FeatureCard({
   description: string;
 }) {
   return (
-    <div className="relative overflow-hidden rounded-[28px] border border-cyan-300/10 bg-[#07111F]/80 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
-      <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-cyan-300/10 blur-3xl" />
+    <div className="relative overflow-hidden rounded-[28px] border border-cl-accent/10 bg-cl-surface p-6 shadow-cl-panel">
+      <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-cl-accent/10 blur-3xl" />
 
       <div className="relative">
-        <div className="grid h-12 w-12 place-items-center rounded-2xl border border-cyan-300/15 bg-cyan-300/10 text-cyan-100">
+        <div className="grid h-12 w-12 place-items-center rounded-2xl border border-cl-accent/[0.15] bg-cl-accent/10 text-cl-accent">
           {icon}
         </div>
 
-        <h3 className="mt-5 text-xl font-black text-white">{title}</h3>
+        <h3 className="mt-5 text-xl font-black text-cl-ink">{title}</h3>
 
-        <p className="mt-3 text-sm leading-7 text-white/55">{description}</p>
+        <p className="mt-3 text-sm leading-7 text-cl-muted">{description}</p>
       </div>
     </div>
   );
@@ -52,27 +52,27 @@ function StepCard({
   description: string;
 }) {
   return (
-    <div className="rounded-[26px] border border-white/10 bg-white/[0.035] p-5">
-      <div className="grid h-10 w-10 place-items-center rounded-full border border-cyan-300/20 bg-cyan-300/10 text-sm font-black text-cyan-100">
+    <div className="rounded-[26px] border border-cl-border bg-cl-subtle p-5">
+      <div className="grid h-10 w-10 place-items-center rounded-full border border-cl-accent/20 bg-cl-accent/10 text-sm font-black text-cl-accent">
         {number}
       </div>
 
-      <h3 className="mt-5 text-lg font-black text-white">{title}</h3>
+      <h3 className="mt-5 text-lg font-black text-cl-ink">{title}</h3>
 
-      <p className="mt-2 text-sm leading-7 text-white/55">{description}</p>
+      <p className="mt-2 text-sm leading-7 text-cl-muted">{description}</p>
     </div>
   );
 }
 
 function UseCaseCard({ title, items }: { title: string; items: string[] }) {
   return (
-    <div className="rounded-[28px] border border-white/10 bg-black/20 p-6">
-      <h3 className="text-xl font-black text-white">{title}</h3>
+    <div className="rounded-[28px] border border-cl-border bg-cl-surface p-6">
+      <h3 className="text-xl font-black text-cl-ink">{title}</h3>
 
       <div className="mt-5 space-y-3">
         {items.map((item) => (
-          <div key={item} className="flex gap-3 text-sm text-white/60">
-            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-cyan-200" />
+          <div key={item} className="flex gap-3 text-sm text-cl-muted">
+            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-cl-accent" />
             <span>{item}</span>
           </div>
         ))}
@@ -104,28 +104,28 @@ export default function RacePodLandingPage() {
   const betaMailTo = `mailto:jaketylersimon@gmail.com?subject=${betaEmailSubject}&body=${betaEmailBody}`;
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-[#030913] text-white">
+    <div className="relative min-h-screen overflow-x-hidden bg-cl-canvas text-cl-ink">
       <div className="pointer-events-none fixed inset-0 z-0">
-        <div className="absolute inset-0 bg-[#030913]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.14),transparent_30%),radial-gradient(circle_at_82%_18%,rgba(255,107,53,0.10),transparent_28%),radial-gradient(circle_at_50%_55%,rgba(7,17,31,0.82),transparent_58%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(3,9,19,0.18)_0%,rgba(3,9,19,0.72)_52%,rgba(3,9,19,0.98)_100%)]" />
+        <div className="absolute inset-0 bg-cl-canvas" />
+        <div className="absolute inset-0 cl-panel-wash" />
+        <div className="absolute inset-0 cl-panel-wash" />
         <div className="absolute inset-0 opacity-[0.035] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:72px_72px]" />
       </div>
 
       <main className="relative z-10 mx-auto max-w-7xl px-4 pb-16 pt-8 sm:px-6 lg:px-8">
-        <section className="overflow-hidden rounded-[38px] border border-cyan-300/10 bg-[linear-gradient(135deg,rgba(34,211,238,0.12)_0%,rgba(7,17,31,0.94)_48%,rgba(255,107,53,0.10)_100%)] p-6 shadow-[0_34px_100px_rgba(0,0,0,0.46)] sm:p-8 lg:p-10">
+        <section className="overflow-hidden rounded-[38px] border border-cl-accent/10 cl-panel-wash p-6 shadow-cl-panel sm:p-8 lg:p-10">
           <div className="grid gap-10 lg:grid-cols-[1.04fr_0.96fr] lg:items-center">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/25 bg-cyan-300/10 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.22em] text-cyan-200">
+              <div className="inline-flex items-center gap-2 rounded-full border border-cl-accent/25 bg-cl-accent/10 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.22em] text-cl-accent">
                 <Sparkles className="h-3.5 w-3.5" />
                 Corner League RacePod
               </div>
 
-              <h1 className="mt-6 max-w-4xl bg-[linear-gradient(90deg,#FFFFFF_0%,#7CF4FF_50%,#FF7849_100%)] bg-clip-text text-4xl font-black uppercase italic tracking-[0.04em] text-transparent sm:text-6xl lg:text-7xl">
+              <h1 className="mt-6 max-w-4xl text-cl-accent text-4xl font-black uppercase italic tracking-[0.04em] sm:text-6xl lg:text-7xl">
                 The Race Replay System for Grassroots Motorsports
               </h1>
 
-              <p className="mt-6 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg">
+              <p className="mt-6 max-w-2xl text-base leading-8 text-cl-muted sm:text-lg">
                 RacePod turns every practice session into a pro-level replay.
                 Track your route, speed, distance, session history, and
                 shareable highlights directly on Corner League.
@@ -134,7 +134,7 @@ export default function RacePodLandingPage() {
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
                 <a
                   href={betaMailTo}
-                  className="inline-flex h-14 items-center justify-center gap-2 rounded-2xl bg-cyan-300 px-6 text-sm font-black uppercase tracking-[0.14em] text-[#06111d] transition hover:bg-cyan-200"
+                  className="inline-flex h-14 items-center justify-center gap-2 rounded-2xl bg-cl-accent px-6 text-sm font-black uppercase tracking-[0.14em] text-cl-contrast transition hover:bg-cl-accent"
                 >
                   Join RacePod Beta
                   <ArrowRight className="h-4 w-4" />
@@ -143,49 +143,49 @@ export default function RacePodLandingPage() {
                 <button
                   type="button"
                   onClick={() => navigate("/racepod")}
-                  className="inline-flex h-14 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-6 text-sm font-black uppercase tracking-[0.14em] text-white/80 transition hover:bg-white/10 hover:text-white"
+                  className="inline-flex h-14 items-center justify-center gap-2 rounded-2xl border border-cl-border bg-cl-subtle px-6 text-sm font-black uppercase tracking-[0.14em] text-cl-ink transition hover:bg-cl-subtle hover:text-cl-ink"
                 >
                   Owner Dashboard
                 </button>
               </div>
 
-              <div className="mt-7 flex flex-wrap gap-2 text-xs text-white/55">
-                <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5">
+              <div className="mt-7 flex flex-wrap gap-2 text-xs text-cl-muted">
+                <span className="rounded-full border border-cl-border bg-cl-subtle px-3 py-1.5">
                   GPS route replay
                 </span>
-                <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5">
+                <span className="rounded-full border border-cl-border bg-cl-subtle px-3 py-1.5">
                   Speed analytics
                 </span>
-                <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5">
+                <span className="rounded-full border border-cl-border bg-cl-subtle px-3 py-1.5">
                   Public share links
                 </span>
-                <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5">
+                <span className="rounded-full border border-cl-border bg-cl-subtle px-3 py-1.5">
                   Sponsor-ready proof
                 </span>
               </div>
             </div>
 
             <div className="relative">
-              <div className="pointer-events-none absolute -inset-6 rounded-[42px] bg-cyan-300/10 blur-3xl" />
+              <div className="pointer-events-none absolute -inset-6 rounded-[42px] bg-cl-accent/10 blur-3xl" />
 
-              <div className="relative overflow-hidden rounded-[34px] border border-cyan-300/15 bg-[#030913]/80 p-5 shadow-[0_28px_80px_rgba(0,0,0,0.42)]">
-                <div className="rounded-[28px] border border-white/10 bg-[radial-gradient(circle_at_center,rgba(34,211,238,0.12),transparent_34%),linear-gradient(135deg,rgba(7,17,31,0.98),rgba(3,9,19,0.98))] p-5">
+              <div className="relative overflow-hidden rounded-[34px] border border-cl-accent/[0.15] bg-cl-surface p-5 shadow-cl-panel">
+                <div className="rounded-[28px] border border-cl-border cl-panel-wash p-5">
                   <div className="mb-5 flex items-center justify-between">
                     <div>
-                      <div className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-300/70">
+                      <div className="text-[10px] font-black uppercase tracking-[0.22em] text-cl-accent">
                         Live Replay Preview
                       </div>
-                      <div className="mt-1 text-xl font-black text-white">
+                      <div className="mt-1 text-xl font-black text-cl-ink">
                         Practice Session
                       </div>
                     </div>
 
-                    <div className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-emerald-300">
+                    <div className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-cl-success">
                       Recorded
                     </div>
                   </div>
 
-                  <div className="relative min-h-[260px] overflow-hidden rounded-[24px] border border-white/10 bg-black/25">
+                  <div className="relative min-h-[260px] overflow-hidden rounded-[24px] border border-cl-border bg-cl-surface">
                     <div className="absolute inset-0 opacity-[0.08] [background-image:linear-gradient(rgba(255,255,255,0.26)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.26)_1px,transparent_1px)] [background-size:32px_32px]" />
 
                     <svg
@@ -224,34 +224,34 @@ export default function RacePodLandingPage() {
                   </div>
 
                   <div className="mt-5 grid grid-cols-3 gap-3">
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                      <div className="text-[10px] font-black uppercase tracking-[0.16em] text-white/35">
+                    <div className="rounded-2xl border border-cl-border bg-cl-subtle p-4">
+                      <div className="text-[10px] font-black uppercase tracking-[0.16em] text-cl-muted">
                         Max Speed
                       </div>
-                      <div className="mt-2 text-2xl font-black text-white">
+                      <div className="mt-2 text-2xl font-black text-cl-ink">
                         54.8
                       </div>
-                      <div className="text-xs text-white/35">mph</div>
+                      <div className="text-xs text-cl-muted">mph</div>
                     </div>
 
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                      <div className="text-[10px] font-black uppercase tracking-[0.16em] text-white/35">
+                    <div className="rounded-2xl border border-cl-border bg-cl-subtle p-4">
+                      <div className="text-[10px] font-black uppercase tracking-[0.16em] text-cl-muted">
                         Distance
                       </div>
-                      <div className="mt-2 text-2xl font-black text-white">
+                      <div className="mt-2 text-2xl font-black text-cl-ink">
                         4.2
                       </div>
-                      <div className="text-xs text-white/35">mi</div>
+                      <div className="text-xs text-cl-muted">mi</div>
                     </div>
 
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                      <div className="text-[10px] font-black uppercase tracking-[0.16em] text-white/35">
+                    <div className="rounded-2xl border border-cl-border bg-cl-subtle p-4">
+                      <div className="text-[10px] font-black uppercase tracking-[0.16em] text-cl-muted">
                         Points
                       </div>
-                      <div className="mt-2 text-2xl font-black text-white">
+                      <div className="mt-2 text-2xl font-black text-cl-ink">
                         288
                       </div>
-                      <div className="text-xs text-white/35">GPS</div>
+                      <div className="text-xs text-cl-muted">GPS</div>
                     </div>
                   </div>
                 </div>
@@ -286,17 +286,17 @@ export default function RacePodLandingPage() {
           />
         </section>
 
-        <section className="mt-8 rounded-[34px] border border-cyan-300/10 bg-[#07111F]/80 p-6 shadow-[0_30px_90px_rgba(0,0,0,0.36)] sm:p-8">
+        <section className="mt-8 rounded-[34px] border border-cl-accent/10 bg-cl-surface p-6 shadow-cl-panel sm:p-8">
           <div className="max-w-3xl">
-            <div className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-300/70">
+            <div className="text-[10px] font-black uppercase tracking-[0.22em] text-cl-accent">
               How It Works
             </div>
 
-            <h2 className="mt-3 text-3xl font-black text-white sm:text-4xl">
+            <h2 className="mt-3 text-3xl font-black text-cl-ink sm:text-4xl">
               From practice to replay in four steps
             </h2>
 
-            <p className="mt-4 text-sm leading-7 text-white/55">
+            <p className="mt-4 text-sm leading-7 text-cl-muted">
               RacePod is designed to be simple for racers. Activate the device,
               start a session, ride, then view and share the replay.
             </p>
@@ -330,16 +330,16 @@ export default function RacePodLandingPage() {
         </section>
 
         <section className="mt-8 grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
-          <div className="rounded-[34px] border border-cyan-300/10 bg-[linear-gradient(135deg,rgba(34,211,238,0.08),rgba(7,17,31,0.92))] p-6 shadow-[0_30px_90px_rgba(0,0,0,0.34)] sm:p-8">
-            <div className="text-[10px] font-black uppercase tracking-[0.22em] text-[#FFB199]">
+          <div className="rounded-[34px] border border-cl-accent/10 cl-panel-wash p-6 shadow-cl-panel sm:p-8">
+            <div className="text-[10px] font-black uppercase tracking-[0.22em] text-cl-accent">
               Built For Racers
             </div>
 
-            <h2 className="mt-3 text-3xl font-black text-white sm:text-4xl">
+            <h2 className="mt-3 text-3xl font-black text-cl-ink sm:text-4xl">
               Make every session count
             </h2>
 
-            <p className="mt-4 text-sm leading-7 text-white/58">
+            <p className="mt-4 text-sm leading-7 text-cl-muted">
               Most grassroots racers finish a session with no real data. RacePod
               gives racers a simple way to understand performance, create better
               content, and show progress over time.
@@ -347,12 +347,12 @@ export default function RacePodLandingPage() {
 
             <div className="mt-7 space-y-4">
               <div className="flex gap-3">
-                <Trophy className="mt-1 h-5 w-5 shrink-0 text-cyan-200" />
+                <Trophy className="mt-1 h-5 w-5 shrink-0 text-cl-accent" />
                 <div>
-                  <div className="font-black text-white">
+                  <div className="font-black text-cl-ink">
                     Better training feedback
                   </div>
-                  <div className="mt-1 text-sm leading-6 text-white/50">
+                  <div className="mt-1 text-sm leading-6 text-cl-muted">
                     Compare routes, speeds, and session history after each day
                     on the water or track.
                   </div>
@@ -360,12 +360,12 @@ export default function RacePodLandingPage() {
               </div>
 
               <div className="flex gap-3">
-                <Users className="mt-1 h-5 w-5 shrink-0 text-cyan-200" />
+                <Users className="mt-1 h-5 w-5 shrink-0 text-cl-accent" />
                 <div>
-                  <div className="font-black text-white">
+                  <div className="font-black text-cl-ink">
                     Better sponsor value
                   </div>
-                  <div className="mt-1 text-sm leading-6 text-white/50">
+                  <div className="mt-1 text-sm leading-6 text-cl-muted">
                     Give sponsors measurable proof of activity, reach, and
                     performance content.
                   </div>
@@ -373,12 +373,12 @@ export default function RacePodLandingPage() {
               </div>
 
               <div className="flex gap-3">
-                <ShieldCheck className="mt-1 h-5 w-5 shrink-0 text-cyan-200" />
+                <ShieldCheck className="mt-1 h-5 w-5 shrink-0 text-cl-accent" />
                 <div>
-                  <div className="font-black text-white">
+                  <div className="font-black text-cl-ink">
                     Built for real race days
                   </div>
-                  <div className="mt-1 text-sm leading-6 text-white/50">
+                  <div className="mt-1 text-sm leading-6 text-cl-muted">
                     Designed around quick sessions, public replays, racer
                     profiles, and event-driven motorsports.
                   </div>
@@ -430,18 +430,18 @@ export default function RacePodLandingPage() {
           </div>
         </section>
 
-        <section className="mt-8 overflow-hidden rounded-[34px] border border-[#FF6B35]/20 bg-[linear-gradient(135deg,rgba(255,107,53,0.14),rgba(7,17,31,0.92)_50%,rgba(34,211,238,0.10))] p-6 shadow-[0_30px_90px_rgba(0,0,0,0.38)] sm:p-8">
+        <section className="mt-8 overflow-hidden rounded-[34px] border border-cl-accent/20 cl-panel-wash p-6 shadow-cl-panel sm:p-8">
           <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
             <div>
-              <div className="text-[10px] font-black uppercase tracking-[0.22em] text-[#FFB199]">
+              <div className="text-[10px] font-black uppercase tracking-[0.22em] text-cl-accent">
                 Beta Access
               </div>
 
-              <h2 className="mt-3 text-3xl font-black text-white sm:text-4xl">
+              <h2 className="mt-3 text-3xl font-black text-cl-ink sm:text-4xl">
                 Reserve RacePod for your next season
               </h2>
 
-              <p className="mt-4 max-w-3xl text-sm leading-7 text-white/58">
+              <p className="mt-4 max-w-3xl text-sm leading-7 text-cl-muted">
                 We are opening early RacePod access for racers, teams, clubs,
                 and promoters who want to test replay-based performance tracking
                 before public ordering opens.
@@ -451,7 +451,7 @@ export default function RacePodLandingPage() {
             <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
               <a
                 href={betaMailTo}
-                className="inline-flex h-14 items-center justify-center gap-2 rounded-2xl bg-[#FF6B35] px-6 text-sm font-black uppercase tracking-[0.14em] text-white transition hover:bg-[#ff7f55]"
+                className="inline-flex h-14 items-center justify-center gap-2 rounded-2xl bg-cl-accent px-6 text-sm font-black uppercase tracking-[0.14em] text-cl-contrast transition hover:bg-cl-accent"
               >
                 Reserve RacePod
                 <ArrowRight className="h-4 w-4" />
@@ -460,7 +460,7 @@ export default function RacePodLandingPage() {
               <button
                 type="button"
                 onClick={() => navigate("/racepod")}
-                className="inline-flex h-14 items-center justify-center gap-2 rounded-2xl border border-cyan-300/20 bg-cyan-300/10 px-6 text-sm font-black uppercase tracking-[0.14em] text-cyan-100 transition hover:bg-cyan-300 hover:text-[#06111d]"
+                className="inline-flex h-14 items-center justify-center gap-2 rounded-2xl border border-cl-accent/20 bg-cl-accent/10 px-6 text-sm font-black uppercase tracking-[0.14em] text-cl-accent transition hover:bg-cl-accent hover:text-cl-contrast"
               >
                 <Radio className="h-4 w-4" />
                 Open Dashboard
@@ -469,30 +469,32 @@ export default function RacePodLandingPage() {
           </div>
         </section>
 
-        <section className="mt-8 rounded-[34px] border border-cyan-300/10 bg-[#07111F]/80 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.28)] sm:p-8">
+        <section className="mt-8 rounded-[34px] border border-cl-accent/10 bg-cl-surface p-6 shadow-cl-panel sm:p-8">
           <div className="grid gap-6 md:grid-cols-3">
             <div>
-              <div className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-300/70">
+              <div className="text-[10px] font-black uppercase tracking-[0.22em] text-cl-accent">
                 Coming Next
               </div>
 
-              <h2 className="mt-3 text-2xl font-black text-white">
+              <h2 className="mt-3 text-2xl font-black text-cl-ink">
                 RacePod roadmap
               </h2>
             </div>
 
-            <div className="rounded-[24px] border border-white/10 bg-white/[0.035] p-5">
-              <Zap className="h-5 w-5 text-cyan-200" />
-              <h3 className="mt-4 font-black text-white">Live sessions</h3>
-              <p className="mt-2 text-sm leading-6 text-white/50">
+            <div className="rounded-[24px] border border-cl-border bg-cl-subtle p-5">
+              <Zap className="h-5 w-5 text-cl-accent" />
+              <h3 className="mt-4 font-black text-cl-ink">Live sessions</h3>
+              <p className="mt-2 text-sm leading-6 text-cl-muted">
                 Real-time tracking for events, teams, and race-day operations.
               </p>
             </div>
 
-            <div className="rounded-[24px] border border-white/10 bg-white/[0.035] p-5">
-              <Activity className="h-5 w-5 text-cyan-200" />
-              <h3 className="mt-4 font-black text-white">Advanced analytics</h3>
-              <p className="mt-2 text-sm leading-6 text-white/50">
+            <div className="rounded-[24px] border border-cl-border bg-cl-subtle p-5">
+              <Activity className="h-5 w-5 text-cl-accent" />
+              <h3 className="mt-4 font-black text-cl-ink">
+                Advanced analytics
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-cl-muted">
                 Sector comparison, corner analysis, heat maps, and rider
                 improvement trends.
               </p>

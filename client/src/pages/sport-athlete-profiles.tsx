@@ -18,7 +18,7 @@ import {
 } from "@/lib/sportRegistration";
 import { apiRequest } from "@/lib/apiClient";
 const inputClass =
-  "mt-2 w-full rounded-xl border border-white/20 bg-[#07111f] p-3 text-white";
+  "mt-2 w-full rounded-xl border border-cl-border bg-cl-surface p-3 text-cl-ink";
 const initial = (sportKey: string): AthleteInput => ({
   sportKey,
   name: "",
@@ -69,14 +69,14 @@ export default function SportAthleteProfiles() {
     if (!selected && visible.length) setSelected(visible[0]);
   }, [visible.join("|"), selected]);
   return (
-    <main className="mx-auto max-w-4xl space-y-6 p-4 py-10 text-white">
+    <main className="mx-auto max-w-4xl space-y-6 p-4 py-10 text-cl-ink">
       <h1 className="text-3xl font-black">Your athlete profiles</h1>
       {returnTo && (
-        <Link href={returnTo} className="inline-block text-cyan-200 underline">
+        <Link href={returnTo} className="inline-block text-cl-accent underline">
           Return to event registration
         </Link>
       )}
-      <p className="text-slate-300">
+      <p className="text-cl-muted">
         Keep one account-owned athlete profile for each sport. Existing Jet Ski
         racer profiles stay linked to your account. Ownership verification
         confirms the account link; it is not a competition license or skill
@@ -84,12 +84,12 @@ export default function SportAthleteProfiles() {
       </p>
       <Link
         href="/create-racer-profile"
-        className="inline-block text-cyan-200 underline"
+        className="inline-block text-cl-accent underline"
       >
         Manage your Jet Ski racer profile
       </Link>
       {!auth.isAuthenticated ? (
-        <Link href="/auth" className="block text-cyan-200 underline">
+        <Link href="/auth" className="block text-cl-accent underline">
           Sign in to manage athlete profiles
         </Link>
       ) : profiles.isPending ? (
@@ -110,14 +110,14 @@ export default function SportAthleteProfiles() {
                 type="button"
                 onClick={() => setSelected(key)}
                 aria-pressed={selected === key}
-                className={`min-h-11 rounded-full border px-5 ${selected === key ? "border-cyan-300 text-cyan-200" : "border-white/20"}`}
+                className={`min-h-11 rounded-full border px-5 ${selected === key ? "border-cl-accent text-cl-accent" : "border-cl-border"}`}
               >
                 {sportLabels[key]}
               </button>
             ))}
           </div>
           {!visible.length ? (
-            <p className="text-slate-400">
+            <p className="text-cl-muted">
               More sport profiles become available when an organization for that
               sport is published.
             </p>
@@ -145,7 +145,7 @@ export default function SportAthleteProfiles() {
             )
           )}
           <TeamRosterInvites />
-          <section className="rounded-2xl border border-white/15 bg-[#07111f] p-5">
+          <section className="rounded-2xl border border-cl-border bg-cl-surface p-5">
             <h2 className="text-xl font-bold">Your sport registrations</h2>
             {registrations.isPending ? (
               <p role="status">Loading registrations…</p>
@@ -162,19 +162,19 @@ export default function SportAthleteProfiles() {
             ) : (
               <>
                 {!registrations.data?.items.length && (
-                  <p className="mt-3 text-slate-400">
+                  <p className="mt-3 text-cl-muted">
                     No registrations yet for these sports.
                   </p>
                 )}
                 {registrations.data?.items.map((r) => (
                   <article
                     key={r.id}
-                    className="mt-5 border-t border-white/10 pt-4"
+                    className="mt-5 border-t border-cl-border pt-4"
                   >
                     <h3 className="font-bold">
                       {r.event?.name ?? "Event"} · {r.status.replace(/_/g, " ")}
                     </h3>
-                    <p className="mt-2 text-slate-300">
+                    <p className="mt-2 text-cl-muted">
                       {r.entries
                         .map((e) => `${e.name}: ${e.dates.join(", ")}`)
                         .join(" · ")}
@@ -185,7 +185,7 @@ export default function SportAthleteProfiles() {
                     </p>
                     {r.event && (
                       <Link
-                        className="mt-2 inline-block text-cyan-200 underline"
+                        className="mt-2 inline-block text-cl-accent underline"
                         href={`/sports/${r.event.sportKey}/organizations/${r.event.organizationId}?event=${r.event.id}`}
                       >
                         Open event
@@ -275,7 +275,7 @@ function ProfileForm({
   return (
     <form
       onSubmit={submit}
-      className="space-y-4 rounded-2xl border border-cyan-200/20 bg-[#07111f] p-5"
+      className="space-y-4 rounded-2xl border border-cl-accent/20 bg-cl-surface p-5"
     >
       <h2 className="text-2xl font-bold">
         {profile ? "Edit" : "Create"} your {sportLabels[sportKey]} profile
@@ -283,7 +283,7 @@ function ProfileForm({
       {profile && (
         <Link
           href={`/racer/${profile.id}?sport=${sportKey}`}
-          className="inline-block text-cyan-200 underline"
+          className="inline-block text-cl-accent underline"
         >
           View public athlete profile
         </Link>
@@ -333,13 +333,13 @@ function ProfileForm({
         </p>
       )}
       {saved && (
-        <p role="status" className="text-cyan-200">
+        <p role="status" className="text-cl-accent">
           Profile saved.
         </p>
       )}
       <button
         disabled={busy}
-        className="min-h-12 rounded-full bg-cyan-300 px-6 font-bold text-slate-950 disabled:opacity-50"
+        className="min-h-12 rounded-full bg-cl-accent px-6 font-bold text-cl-contrast disabled:opacity-50"
       >
         {busy ? "Saving…" : "Save athlete profile"}
       </button>

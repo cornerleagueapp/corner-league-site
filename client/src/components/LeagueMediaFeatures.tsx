@@ -80,7 +80,7 @@ const textVariants = {
 
 export default function LeagueMediaFeatures() {
   return (
-    <section className="px-5 bg-black">
+    <section className="px-5 bg-cl-canvas">
       <div className="mx-auto max-w-6xl py-0 snap-y snap-mandatory md:snap-proximity overflow-y-auto">
         {featureBlocks.map((block, index) => {
           const isEven = index % 2 === 0;
@@ -121,18 +121,18 @@ export default function LeagueMediaFeatures() {
                   transition={{ duration: 0.55, ease: "easeOut", delay: 0.05 }}
                 >
                   {block.eyebrow && (
-                    <p className="text-xs md:text-sm font-semibold tracking-[0.18em] text-white/60 uppercase">
+                    <p className="text-xs md:text-sm font-semibold tracking-[0.18em] text-cl-muted uppercase">
                       {block.eyebrow}
                     </p>
                   )}
                   <h3 className="mt-2 text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight">
                     {block.title}
                   </h3>
-                  <p className="mt-4 text-base md:text-lg text-white/75 leading-relaxed">
+                  <p className="mt-4 text-base md:text-lg text-cl-muted leading-relaxed">
                     {block.body}
                   </p>
                   {block.bodySecondary && (
-                    <p className="mt-4 text-base md:text-lg text-white/75 leading-relaxed">
+                    <p className="mt-4 text-base md:text-lg text-cl-muted leading-relaxed">
                       {block.bodySecondary}
                     </p>
                   )}
@@ -140,7 +140,7 @@ export default function LeagueMediaFeatures() {
                   {block.ctaLabel && block.ctaHref && (
                     <div className="mt-6">
                       <Link href={block.ctaHref}>
-                        <Button className="rounded-full px-6 py-3 text-sm md:text-base font-semibold bg-white text-black hover:bg-gray-100">
+                        <Button className="rounded-full px-6 py-3 text-sm md:text-base font-semibold bg-cl-surface text-cl-ink hover:bg-cl-subtle">
                           {block.ctaLabel}
                         </Button>
                       </Link>
@@ -166,7 +166,7 @@ function MediaBlock({
   type?: "image" | "video";
 }) {
   return (
-    <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-white/[0.02] shadow-[0_18px_60px_rgba(0,0,0,0.7)]">
+    <div className="relative rounded-2xl overflow-hidden border border-cl-border bg-cl-subtle shadow-cl-panel">
       <div className="aspect-[4/3] sm:aspect-[16/10] lg:aspect-[4/3] w-full">
         {type === "video" ? (
           <video

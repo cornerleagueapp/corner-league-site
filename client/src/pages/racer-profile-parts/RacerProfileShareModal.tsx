@@ -89,8 +89,8 @@ export default function RacerProfileShareModal({
     return [
       "h-12 flex-1 rounded-[14px] border px-3 text-xs font-black uppercase tracking-[0.08em] transition",
       isActive
-        ? "border-cyan-300 bg-cyan-300 text-[#06111d] shadow-[0_0_24px_rgba(34,211,238,0.20)]"
-        : "border-white/10 bg-white/[0.04] text-white/60 hover:border-cyan-300/25 hover:bg-cyan-300/10 hover:text-cyan-100",
+        ? "border-cl-accent bg-cl-accent text-cl-contrast shadow-cl-panel"
+        : "border-cl-border bg-cl-subtle text-cl-muted hover:border-cl-accent/25 hover:bg-cl-accent/10 hover:text-cl-accent",
     ].join(" ");
   }
 
@@ -103,13 +103,13 @@ export default function RacerProfileShareModal({
         aria-label="Close share modal"
       />
 
-      <div className="relative z-10 flex max-h-[94vh] w-full max-w-6xl flex-col overflow-hidden rounded-[28px] border border-cyan-300/20 bg-[#07111F] shadow-[0_30px_100px_rgba(0,0,0,0.65)]">
-        <div className="flex items-center justify-between border-b border-white/10 px-5 py-4 sm:px-6">
+      <div className="relative z-10 flex max-h-[94vh] w-full max-w-6xl flex-col overflow-hidden rounded-[28px] border border-cl-accent/20 bg-cl-canvas shadow-cl-panel">
+        <div className="flex items-center justify-between border-b border-cl-border px-5 py-4 sm:px-6">
           <div>
-            <div className="text-xs font-black uppercase tracking-[0.18em] text-cyan-200">
+            <div className="text-xs font-black uppercase tracking-[0.18em] text-cl-accent">
               Share Racer Profile
             </div>
-            <div className="mt-1 text-sm text-white/45">
+            <div className="mt-1 text-sm text-cl-muted">
               Copy the profile link or save a social-ready image
             </div>
           </div>
@@ -117,7 +117,7 @@ export default function RacerProfileShareModal({
           <button
             type="button"
             onClick={onClose}
-            className="grid h-10 w-10 place-items-center rounded-full border border-white/10 bg-white/10 text-white/80 transition hover:bg-white/15"
+            className="grid h-10 w-10 place-items-center rounded-full border border-cl-border bg-cl-subtle text-cl-ink transition hover:bg-cl-subtle"
             aria-label="Close"
           >
             <X className="h-5 w-5" />
@@ -125,7 +125,7 @@ export default function RacerProfileShareModal({
         </div>
 
         <div className="grid min-h-0 gap-5 overflow-y-auto p-4 sm:p-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <div className="flex min-h-[540px] items-center justify-center overflow-hidden rounded-[24px] border border-white/10 bg-black/20 p-3 sm:min-h-[640px]">
+          <div className="flex min-h-[540px] items-center justify-center overflow-hidden rounded-[24px] border border-cl-border bg-cl-surface p-3 sm:min-h-[640px]">
             <div className="relative flex h-full w-full items-center justify-center overflow-hidden">
               <div
                 className="origin-center"
@@ -179,26 +179,26 @@ export default function RacerProfileShareModal({
           </div>
 
           <div className="flex flex-col gap-4">
-            <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-4">
-              <div className="text-sm font-bold text-white">
+            <div className="rounded-[24px] border border-cl-border bg-cl-subtle p-4">
+              <div className="text-sm font-bold text-cl-ink">
                 Ready for social posting
               </div>
-              <p className="mt-2 text-sm leading-6 text-white/60">
+              <p className="mt-2 text-sm leading-6 text-cl-muted">
                 This exports a clean, branded racer profile image without edit
                 buttons or extra page UI.
               </p>
             </div>
 
-            <div className="rounded-[24px] border border-cyan-300/10 bg-cyan-300/[0.04] p-4">
-              <div className="text-xs font-black uppercase tracking-[0.16em] text-cyan-200">
+            <div className="rounded-[24px] border border-cl-accent/10 bg-cl-accent/[0.04] p-4">
+              <div className="text-xs font-black uppercase tracking-[0.16em] text-cl-accent">
                 Highlight Stat
               </div>
 
-              <p className="mt-2 text-xs leading-5 text-white/45">
+              <p className="mt-2 text-xs leading-5 text-cl-muted">
                 Choose which stat appears in the share card highlight box.
               </p>
 
-              <div className="mt-3 flex gap-2 rounded-[18px] border border-white/10 bg-black/20 p-1.5">
+              <div className="mt-3 flex gap-2 rounded-[18px] border border-cl-border bg-cl-surface p-1.5">
                 <button
                   type="button"
                   onClick={() => setHighlightStatMode("worldFinals")}
@@ -220,7 +220,7 @@ export default function RacerProfileShareModal({
             <Button
               onClick={handleCopyLink}
               disabled={copying}
-              className="h-14 rounded-[16px] bg-cyan-300 text-sm font-black uppercase tracking-[0.08em] text-[#06111d] hover:bg-cyan-200"
+              className="h-14 rounded-[16px] bg-cl-accent text-sm font-black uppercase tracking-[0.08em] text-cl-contrast hover:bg-cl-accent"
             >
               <Copy className="mr-2 h-4 w-4" />
               {copying ? "Copying..." : "Copy Link"}
@@ -229,13 +229,13 @@ export default function RacerProfileShareModal({
             <Button
               onClick={handleSaveImage}
               disabled={saving}
-              className="h-14 rounded-[16px] border border-[#FF6B35]/30 bg-[#FF6B35]/12 text-sm font-black uppercase tracking-[0.08em] text-[#FFB199] hover:bg-[#FF6B35]/18"
+              className="h-14 rounded-[16px] border border-cl-accent/30 bg-cl-accent/[0.12] text-sm font-black uppercase tracking-[0.08em] text-cl-accent hover:bg-cl-accent/[0.18]"
             >
               <Download className="mr-2 h-4 w-4" />
               {saving ? "Saving..." : "Save Image"}
             </Button>
 
-            <div className="rounded-[20px] border border-cyan-300/10 bg-[#03101B] p-4 text-xs leading-6 text-white/45">
+            <div className="rounded-[20px] border border-cl-accent/10 bg-cl-canvas p-4 text-xs leading-6 text-cl-muted">
               Tip: the saved image is ideal for posts, stories, messages, or
               sending directly to sponsors and fans.
             </div>

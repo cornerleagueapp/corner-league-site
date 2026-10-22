@@ -209,7 +209,7 @@ export function LocationAutocomplete({
           <div
             id="location-autocomplete-dropdown"
             className={[
-              "z-[9999] overflow-y-auto rounded-[18px] border border-cyan-300/20 bg-[#07111F] p-2 shadow-[0_24px_70px_rgba(0,0,0,0.65)]",
+              "z-[9999] overflow-y-auto rounded-[18px] border border-cl-accent/20 bg-cl-canvas p-2 shadow-cl-panel",
               dropdownPos.placement === "top"
                 ? "animate-in fade-in slide-in-from-bottom-2"
                 : "animate-in fade-in slide-in-from-top-2",
@@ -223,14 +223,14 @@ export function LocationAutocomplete({
             }}
           >
             {isSearching ? (
-              <div className="flex items-center gap-2 px-3 py-3 text-sm text-white/55">
-                <Loader2 className="h-4 w-4 animate-spin text-cyan-200" />
+              <div className="flex items-center gap-2 px-3 py-3 text-sm text-cl-muted">
+                <Loader2 className="h-4 w-4 animate-spin text-cl-accent" />
                 Searching locations...
               </div>
             ) : null}
 
             {!isSearching && error && results.length === 0 ? (
-              <div className="px-3 py-3 text-sm text-white/55">{error}</div>
+              <div className="px-3 py-3 text-sm text-cl-muted">{error}</div>
             ) : null}
 
             {!isSearching &&
@@ -242,29 +242,29 @@ export function LocationAutocomplete({
                     key={item.id || item.placeId}
                     type="button"
                     onClick={() => handleSelect(item)}
-                    className="flex w-full items-start gap-3 rounded-[14px] px-3 py-3 text-left transition hover:bg-cyan-300/10"
+                    className="flex w-full items-start gap-3 rounded-[14px] px-3 py-3 text-left transition hover:bg-cl-accent/10"
                   >
-                    <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-cyan-200" />
+                    <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-cl-accent" />
 
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-semibold text-white">
+                      <span className="block truncate text-sm font-semibold text-cl-ink">
                         {item.label || item.formattedAddress}
                       </span>
 
-                      <span className="mt-0.5 block truncate text-xs text-white/45">
+                      <span className="mt-0.5 block truncate text-xs text-cl-muted">
                         {item.city || item.placeName || "Mapbox location"}
                         {item.stateCode ? `, ${item.stateCode}` : ""}
                         {item.countryCode ? `, ${item.countryCode}` : ""}
                       </span>
 
-                      <span className="mt-0.5 block truncate text-[11px] text-cyan-100/45">
+                      <span className="mt-0.5 block truncate text-[11px] text-cl-accent">
                         {Number(item.latitude).toFixed(5)},{" "}
                         {Number(item.longitude).toFixed(5)}
                       </span>
                     </span>
 
                     {isSelected ? (
-                      <Check className="mt-1 h-4 w-4 text-cyan-200" />
+                      <Check className="mt-1 h-4 w-4 text-cl-accent" />
                     ) : null}
                   </button>
                 );
@@ -276,12 +276,12 @@ export function LocationAutocomplete({
 
   return (
     <div ref={wrapperRef} className="relative">
-      <label className="mb-2 block text-xs font-black uppercase tracking-[0.18em] text-white/60">
+      <label className="mb-2 block text-xs font-black uppercase tracking-[0.18em] text-cl-muted">
         {label}
       </label>
 
       <div className="relative">
-        <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-cyan-200/70" />
+        <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-cl-accent" />
 
         <input
           ref={inputRef}
@@ -303,7 +303,7 @@ export function LocationAutocomplete({
             setIsOpen(true);
             updateDropdownPosition();
           }}
-          className="h-12 w-full rounded-[18px] border border-cyan-300/20 bg-white/[0.055] pl-11 pr-11 text-white outline-none placeholder:text-white/35 focus:border-cyan-300/45 focus:ring-2 focus:ring-cyan-300/10"
+          className="h-12 w-full rounded-[18px] border border-cl-accent/20 bg-cl-subtle pl-11 pr-11 text-cl-ink outline-none placeholder:text-cl-muted focus:border-cl-accent/[0.45] focus:ring-2 focus:ring-cl-accent/10"
         />
 
         {query ? (
@@ -317,7 +317,7 @@ export function LocationAutocomplete({
               onTextChange("");
               setIsOpen(false);
             }}
-            className="absolute right-3 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full text-white/50 hover:bg-white/10 hover:text-white"
+            className="absolute right-3 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full text-cl-muted hover:bg-cl-subtle hover:text-cl-ink"
             aria-label="Clear location"
           >
             <X className="h-4 w-4" />
@@ -326,12 +326,12 @@ export function LocationAutocomplete({
       </div>
 
       {selectedPlaceId ? (
-        <div className="mt-2 flex items-center gap-2 text-xs text-cyan-100/70">
+        <div className="mt-2 flex items-center gap-2 text-xs text-cl-accent">
           <Check className="h-3.5 w-3.5" />
           Location selected and coordinates attached.
         </div>
       ) : cleanQuery.length >= 2 ? (
-        <div className="mt-2 text-xs text-white/40">
+        <div className="mt-2 text-xs text-cl-muted">
           Select a result from the dropdown to attach coordinates.
         </div>
       ) : null}

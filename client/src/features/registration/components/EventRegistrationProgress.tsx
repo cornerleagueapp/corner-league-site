@@ -22,25 +22,25 @@ export default function EventRegistrationProgress({
   );
 
   return (
-    <section className="rounded-[28px] border border-cyan-300/10 bg-[#07111F]/82 p-5 shadow-[0_22px_70px_rgba(0,0,0,0.22)] sm:p-6">
+    <section className="rounded-[28px] border border-cl-accent/10 bg-cl-surface p-5 shadow-cl-panel sm:p-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/15 bg-cyan-300/8 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.16em] text-cyan-200">
+          <div className="inline-flex items-center gap-2 rounded-full border border-cl-accent/[0.15] bg-cl-accent/[0.08] px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.16em] text-cl-accent">
             <TrendingUp className="h-3.5 w-3.5" />
             Live Registration Progress
           </div>
 
-          <h2 className="mt-3 text-2xl font-black uppercase tracking-[-0.035em] text-white">
+          <h2 className="mt-3 text-2xl font-black uppercase tracking-[-0.035em] text-cl-ink">
             Class entry progress
           </h2>
 
-          <p className="mt-2 text-sm leading-6 text-white/45">
+          <p className="mt-2 text-sm leading-6 text-cl-muted">
             See how registration is filling across each available race class.
           </p>
         </div>
 
-        <div className="inline-flex items-center gap-2 self-start rounded-full border border-white/10 bg-white/[0.04] px-4 py-2.5 text-[10px] font-black uppercase tracking-[0.12em] text-white/60">
-          <Users className="h-4 w-4 text-cyan-200" />
+        <div className="inline-flex items-center gap-2 self-start rounded-full border border-cl-border bg-cl-subtle px-4 py-2.5 text-[10px] font-black uppercase tracking-[0.12em] text-cl-muted">
+          <Users className="h-4 w-4 text-cl-accent" />
           {registrations.length} Public Entries
         </div>
       </div>
@@ -72,19 +72,19 @@ export default function EventRegistrationProgress({
           return (
             <article
               key={eventClass.id}
-              className="rounded-[22px] border border-white/10 bg-white/[0.03] p-4 sm:p-5"
+              className="rounded-[22px] border border-cl-border bg-cl-subtle p-4 sm:p-5"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <Flag className="h-4 w-4 shrink-0 text-cyan-200" />
+                    <Flag className="h-4 w-4 shrink-0 text-cl-accent" />
 
-                    <h3 className="truncate text-sm font-black uppercase text-white">
+                    <h3 className="truncate text-sm font-black uppercase text-cl-ink">
                       {eventClass.name}
                     </h3>
                   </div>
 
-                  <p className="mt-2 text-xs text-white/40">
+                  <p className="mt-2 text-xs text-cl-muted">
                     {capacity !== null
                       ? `${entered} of ${capacity} entries`
                       : `${entered} confirmed entries`}
@@ -92,19 +92,19 @@ export default function EventRegistrationProgress({
                 </div>
 
                 <div className="shrink-0 text-right">
-                  <p className="text-lg font-black text-white">
+                  <p className="text-lg font-black text-cl-ink">
                     {capacity !== null ? `${Math.round(percentage)}%` : entered}
                   </p>
 
-                  <p className="text-[8px] font-black uppercase tracking-[0.12em] text-white/30">
+                  <p className="text-[8px] font-black uppercase tracking-[0.12em] text-cl-muted">
                     {capacity !== null ? "Filled" : "Entries"}
                   </p>
                 </div>
               </div>
 
-              <div className="mt-4 h-3 overflow-hidden rounded-full border border-white/10 bg-black/30">
+              <div className="mt-4 h-3 overflow-hidden rounded-full border border-cl-border bg-cl-surface">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-cyan-300 to-cyan-100 transition-[width] duration-500"
+                  className="h-full rounded-full bg-gradient-to-r from-cl-accent to-cl-accent transition-[width] duration-500"
                   style={{
                     width: `${percentage}%`,
                   }}
@@ -112,7 +112,7 @@ export default function EventRegistrationProgress({
               </div>
 
               <div className="mt-3 flex items-center justify-between gap-3 text-[10px]">
-                <span className="font-bold text-white/45">
+                <span className="font-bold text-cl-muted">
                   {entered} registered
                 </span>
 
@@ -120,10 +120,10 @@ export default function EventRegistrationProgress({
                   <span
                     className={
                       remaining === 0
-                        ? "font-black uppercase text-red-200"
+                        ? "font-black uppercase text-cl-danger"
                         : remaining <= 5
-                          ? "font-black uppercase text-[#FFB199]"
-                          : "font-bold text-white/45"
+                          ? "font-black uppercase text-cl-accent"
+                          : "font-bold text-cl-muted"
                     }
                   >
                     {remaining === 0
@@ -131,7 +131,7 @@ export default function EventRegistrationProgress({
                       : `${remaining} spot${remaining === 1 ? "" : "s"} left`}
                   </span>
                 ) : (
-                  <span className="font-bold text-white/35">
+                  <span className="font-bold text-cl-muted">
                     No capacity limit
                   </span>
                 )}

@@ -27,8 +27,22 @@ export type PublicTeamSeason = {
     divisionId: string;
     name: string;
     players: TeamPlayer[];
+    recruiting?: boolean;
+    captainProfileId?: string | null;
   }[];
   games: {
+    competition?: {
+      id: string;
+      kind: "round-robin" | "double-round-robin" | "single-elimination";
+      bye?: boolean;
+      fieldSize?: number;
+      homeSource?: string;
+      awaySource?: string;
+      round: number;
+      match: number;
+      homeSeed?: number;
+      awaySeed?: number;
+    };
     id: string;
     homeTeamId: string;
     awayTeamId: string;
@@ -37,6 +51,7 @@ export type PublicTeamSeason = {
     status: string;
   }[];
   results: {
+    decision?: "regulation" | "overtime" | "shootout";
     gameId: string;
     status: string;
     homeScore: number;
@@ -47,9 +62,13 @@ export type PublicTeamSeason = {
   standings: {
     divisionId: string;
     name: string;
+    standingsMode?: "points" | "win-percentage";
     rows: {
       teamId: string;
       name: string;
+      position?: number;
+      overtimeLosses?: number;
+      winPercentage?: number;
       played: number;
       wins: number;
       draws: number;
@@ -77,7 +96,9 @@ export type TeamSeasonList = {
 };
 export type PlayerInvitation = {
   id: string;
-  status: "pending" | "accepted";
+  status: "pending" | "accepted" | "requested";
+  teamId: string;
+  isCaptain?: boolean;
   profileId: string;
   sportKey: string;
   teamName: string;
@@ -226,8 +247,12 @@ export function seasonView(
           ? g.status === "cancelled"
           : status === "final"
             ? g.status !== "cancelled" &&
-              d.results.some((r) => r.gameId === g.id && r.status === "final")
+              (g.competition?.bye ||
+                d.results.some(
+                  (r) => r.gameId === g.id && r.status === "final",
+                ))
             : g.status === "scheduled" &&
+              !g.competition?.bye &&
               !d.results.some(
                 (r) => r.gameId === g.id && r.status === "final",
               )),

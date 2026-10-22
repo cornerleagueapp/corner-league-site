@@ -1,9 +1,12 @@
 import { PageSEO } from "@/seo/usePageSEO";
 import { useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, useLocation } from "wouter";
+import { Link, useLocation, useSearch } from "wouter";
 import {
   RefreshCw,
+  Search,
+  BookOpen,
+  PenLine,
   ArrowUp,
   ArrowDown,
   Share2,
@@ -19,6 +22,7 @@ import {
   publicationPath,
   publicationRoute,
   publishingSports,
+  canonicalPublishingSport,
   publishingCategories,
   publishingLabel,
   safePublishingUrl,
@@ -60,14 +64,16 @@ export function PublicationList({
   kind,
   username,
   mine = false,
+  initialSport = "",
 }: {
   kind: PublicationKind;
   username?: string;
   mine?: boolean;
+  initialSport?: string;
 }) {
   const { user, isAuthenticated } = useAuth();
   const [page, setPage] = useState(1),
-    [sport, setSport] = useState(""),
+    [sport, setSport] = useState(initialSport),
     [category, setCategory] = useState(""),
     [input, setInput] = useState(""),
     [search, setSearch] = useState("");
@@ -97,14 +103,16 @@ export function PublicationList({
   });
   if (mine && !isAuthenticated) return <SignIn next="/writer" />;
   return (
-    <section className="space-y-4">
+    <section
+      className={`publication-list ${kind === "article" ? "publication-articles" : ""} space-y-4`}
+    >
       <form
         onSubmit={(e) => {
           e.preventDefault();
           setPage(1);
           setSearch(input.trim());
         }}
-        className="flex flex-wrap gap-2"
+        className="publication-filters"
         aria-label="Publication filters"
       >
         <input
@@ -149,7 +157,7 @@ export function PublicationList({
             ))}
           </select>
         )}
-        <button className={socialButton}>Search</button>
+        <button type="submit" className="publication-search-button"><Search size={18} aria-hidden="true" />Search</button>
         <button
           type="button"
           className={socialButton}
@@ -163,56 +171,88 @@ export function PublicationList({
       {query.isLoading && <p role="status">Loading…</p>}
       {query.isError && <SocialFailure error={query.error} />}
       {query.data?.items.length === 0 && (
-        <section className={socialBox}>
-          No {kind === "forum" ? "discussions" : "articles"} yet.
+        <section className="community-empty-state">
+          <BookOpen size={30} aria-hidden="true" />
+          <h3>
+            {search
+              ? "No matching publications"
+              : kind === "forum"
+                ? "No discussions yet"
+                : mine
+                  ? "Your next story starts here"
+                  : "No articles yet"}
+          </h3>
+          <p>
+            {mine
+              ? "Create an article to start a draft. Publish it when you are ready to share."
+              : "New stories will appear here when published."}
+          </p>
+          {mine && (
+            <Link className={socialButton} href="/writer/new">
+              Write an article
+            </Link>
+          )}
         </section>
       )}
-      {query.data?.items.map((p) => (
-        <article className={`${socialBox} space-y-3`} key={p.id}>
-          {p.coverUrl && safePublishingUrl(p.coverUrl) && (
-            <img
-              src={safePublishingUrl(p.coverUrl)!}
-              alt=""
-              className="max-h-60 w-full rounded-2xl object-cover"
-              loading="lazy"
-            />
-          )}
-          <div className="flex flex-wrap gap-2 text-xs text-cyan-200">
-            <span>{publishingLabel(p.sport)}</span>
-            {kind === "forum" && <span>· {publishingLabel(p.category)}</span>}
-            {!p.published && (
-              <span className="text-amber-200">Draft · Only you</span>
+      <div className="publication-card-grid">
+        {query.data?.items.map((p) => (
+          <article
+            className={`publication-card ${socialBox} space-y-3`}
+            key={p.id}
+          >
+            {p.coverUrl && safePublishingUrl(p.coverUrl) && (
+              <img
+                src={safePublishingUrl(p.coverUrl)!}
+                alt=""
+                className="max-h-60 w-full rounded-2xl object-cover"
+                loading="lazy"
+              />
             )}
-          </div>
-          <h2 className="text-xl font-bold">
-            <Link href={`${publicationRoute(kind)}/${p.id}`}>{p.title}</Link>
-          </h2>
-          <p className="whitespace-pre-wrap break-words text-sm text-white/60">
-            {p.excerpt}
-          </p>
-          <div className="flex flex-wrap items-center gap-3 text-sm text-white/50">
-            <Link href={`/profile/${encodeURIComponent(p.author.username)}`}>
-              By {p.author.username}
-            </Link>
-            <time dateTime={p.createdAt}>
-              {new Date(p.createdAt).toLocaleDateString()}
-            </time>
-            {kind === "forum" && (
-              <span>
-                {p.score} votes · {p.replyCount} replies
-              </span>
+            {kind === "article" && !safePublishingUrl(p.coverUrl) && (
+              <div className="publication-cover-fallback">
+                <BookOpen size={32} aria-hidden="true" />
+                <span>{publishingLabel(p.sport)}</span>
+              </div>
             )}
-            {p.canEdit && (
-              <Link
-                className={socialButton}
-                href={`${publicationRoute(kind)}/${p.id}/edit`}
-              >
-                Edit
+            <div className="flex flex-wrap gap-2 text-xs text-cl-accent">
+              <span>{publishingLabel(p.sport)}</span>
+              {kind === "forum" && <span>· {publishingLabel(p.category)}</span>}
+              {!p.published && (
+                <span className="publication-draft-label">
+                  Draft · Only you
+                </span>
+              )}
+            </div>
+            <h2 className="text-xl font-bold">
+              <Link href={`${publicationRoute(kind)}/${p.id}`}>{p.title}</Link>
+            </h2>
+            <p className="whitespace-pre-wrap break-words text-sm text-cl-muted">
+              {p.excerpt}
+            </p>
+            <div className="flex flex-wrap items-center gap-3 text-sm text-cl-muted">
+              <Link href={`/profile/${encodeURIComponent(p.author.username)}`}>
+                By {p.author.username}
               </Link>
-            )}
-          </div>
-        </article>
-      ))}
+              <time dateTime={p.createdAt}>
+                {new Date(p.createdAt).toLocaleDateString()}
+              </time>
+              {kind === "forum" && (
+                <span>
+                  {p.score} votes · {p.replyCount} replies
+                </span>
+              )}
+              {p.canEdit && (
+                <Link
+                  className={socialButton}
+                  href={`${publicationRoute(kind)}/${p.id}/edit`}
+                >
+                  Edit
+                </Link>
+              )}
+            </div>
+          </article>
+        ))}
+      </div>
       {query.data && (
         <Pagination
           page={page}
@@ -224,9 +264,12 @@ export function PublicationList({
   );
 }
 export function PublishingDirectory({ kind }: { kind: PublicationKind }) {
+  const search = useSearch();
+  const requestedSport = canonicalPublishingSport(new URLSearchParams(search).get("sport") || "");
+  const initialSport = publishingSports.includes(requestedSport) ? requestedSport : "";
   const { isAuthenticated } = useAuth();
   return (
-    <main className="mx-auto max-w-4xl space-y-6 p-4 py-8 text-white">
+    <main className="publishing-page mx-auto max-w-6xl space-y-6 py-8 text-cl-ink">
       <PageSEO
         title={
           kind === "forum" ? "Community discussions" : "Articles & stories"
@@ -234,13 +277,13 @@ export function PublishingDirectory({ kind }: { kind: PublicationKind }) {
         canonicalPath={publicationRoute(kind)}
       />
       <header className="space-y-3">
-        <p className="text-xs font-bold uppercase tracking-widest text-cyan-200">
+        <p className="text-xs font-bold uppercase tracking-widest text-cl-accent">
           Corner League community
         </p>
         <h1 className="text-3xl font-black">
           {kind === "forum" ? "Community discussions" : "Articles & stories"}
         </h1>
-        <p className="text-white/60">
+        <p className="text-cl-muted">
           {kind === "forum"
             ? "Ask questions, talk equipment, and share ideas across sports."
             : "Stories, guides, and perspectives from the people in the sport."}
@@ -258,26 +301,31 @@ export function PublishingDirectory({ kind }: { kind: PublicationKind }) {
           {kind === "forum" ? "Start a discussion" : "Become a writer"}
         </Link>
       </header>
-      <PublicationList key={kind} kind={kind} />
+      <PublicationList key={`${kind}:${initialSport}`} kind={kind} initialSport={initialSport} />
     </main>
   );
 }
 export function WriterPage() {
   return (
-    <main className="mx-auto max-w-4xl space-y-6 p-4 py-8 text-white">
+    <main className="publishing-page mx-auto max-w-6xl space-y-6 py-8 text-cl-ink">
       <PageSEO title="Writer studio" canonicalPath="/writer" noindex />
-      <header className="space-y-3">
+      <header className="writer-studio-header">
+        <p className="writer-studio-kicker">
+          <PenLine size={17} aria-hidden="true" /> Publishing workspace
+        </p>
         <h1 className="text-3xl font-black">Your writer studio</h1>
-        <p className="text-white/60">
+        <p className="text-cl-muted">
           Draft, publish, and manage your articles. Published work also appears
           on your profile.
         </p>
-        <Link className={socialButton} href="/writer/new">
-          Write an article
-        </Link>
-        <Link className={`${socialButton} ml-2`} href="/articles">
-          Browse articles
-        </Link>
+        <div className="writer-studio-actions">
+          <Link className={socialButton} href="/writer/new">
+            Write an article
+          </Link>
+          <Link className={socialButton} href="/articles">
+            Browse articles
+          </Link>
+        </div>
       </header>
       <PublicationList kind="article" mine />
     </main>
@@ -294,7 +342,7 @@ function PublicationForm({
     invalidate = usePublishing();
   const [title, setTitle] = useState(publication?.title || ""),
     [body, setBody] = useState(publication?.body || ""),
-    [sport, setSport] = useState(publication?.sport || "general"),
+    [sport, setSport] = useState(canonicalPublishingSport(publication?.sport || "general")),
     [category, setCategory] = useState(publication?.category || "discussion"),
     [published, setPublished] = useState(publication?.published || false),
     [file, setFile] = useState<File | null>(null),
@@ -413,7 +461,7 @@ function PublicationForm({
           required
         />
       </label>
-      <p className="text-xs text-white/55">
+      <p className="text-xs text-cl-muted">
         Formatting: # heading, ## subheading, **bold**, - list item, &gt; quote,
         [label](https://example.com). Include a clear disclosure for affiliate
         links.
@@ -444,7 +492,7 @@ function PublicationForm({
           }}
         />
       </label>
-      <p className="text-xs text-white/50">
+      <p className="text-xs text-cl-muted">
         JPEG, PNG, or WebP · Maximum 8 MB.
       </p>
       {publication?.coverUrl &&
@@ -511,7 +559,7 @@ function PublicationForm({
         </Link>
       </div>
       {fileError && (
-        <p role="alert" className="text-rose-200">
+        <p role="alert" className="text-cl-danger">
           {fileError}
         </p>
       )}
@@ -519,7 +567,7 @@ function PublicationForm({
       {preview && (
         <section
           aria-label="Content preview"
-          className="border-t border-white/10 pt-4"
+          className="border-t border-cl-border pt-4"
         >
           <h2 className="mb-4 text-2xl font-bold">{title}</h2>
           <PublicationBody body={body} />
@@ -544,7 +592,7 @@ export function PublicationEditor({
   });
   if (!isAuthenticated)
     return (
-      <main className="mx-auto max-w-3xl p-4 py-8 text-white">
+      <main className="mx-auto max-w-3xl p-4 py-8 text-cl-ink">
         <SignIn
           next={
             id
@@ -557,7 +605,7 @@ export function PublicationEditor({
       </main>
     );
   return (
-    <main className="mx-auto max-w-3xl space-y-5 p-4 py-8 text-white">
+    <main className="mx-auto max-w-3xl space-y-5 p-4 py-8 text-cl-ink">
       <PageSEO title="Publication editor" noindex />
       <h1 className="text-3xl font-black">
         {id ? "Edit" : kind === "forum" ? "Start a" : "Write an"}{" "}
@@ -628,17 +676,20 @@ function ForumReplies({ id }: { id: string }) {
       {query.isLoading && <p>Loading…</p>}
       {query.isError && <SocialFailure error={query.error} />}
       {query.data?.items.length === 0 && (
-        <p className="text-white/55">Be the first to reply.</p>
+        <p className="text-cl-muted">Be the first to reply.</p>
       )}
       {query.data?.items.map((r) => (
-        <article className="space-y-2 border-t border-white/10 pt-4" key={r.id}>
+        <article
+          className="space-y-2 border-t border-cl-border pt-4"
+          key={r.id}
+        >
           <Link
-            className="text-sm text-cyan-200"
+            className="text-sm text-cl-accent"
             href={`/profile/${encodeURIComponent(r.author.username)}`}
           >
             {r.author.username}
           </Link>
-          <p className="whitespace-pre-wrap break-words text-white/80">
+          <p className="whitespace-pre-wrap break-words text-cl-ink">
             {r.body}
           </p>
           {r.canDelete && (
@@ -721,7 +772,7 @@ export function PublicationPage({
   });
   const p = query.data;
   return (
-    <main className="mx-auto max-w-4xl space-y-5 p-4 py-8 text-white">
+    <main className="publishing-page mx-auto max-w-4xl space-y-5 py-8 text-cl-ink">
       <PageSEO
         title={p?.title || "Community publication"}
         canonicalPath={`${publicationRoute(kind)}/${id}`}
@@ -754,12 +805,12 @@ export function PublicationPage({
               Private draft · Only you can see this article.
             </p>
           )}
-          <div className="text-sm text-cyan-200">
+          <div className="text-sm text-cl-accent">
             {publishingLabel(p.sport)}
             {kind === "forum" ? ` · ${publishingLabel(p.category)}` : ""}
           </div>
           <h1 className="break-words text-3xl font-black">{p.title}</h1>
-          <div className="flex flex-wrap gap-3 text-sm text-white/55">
+          <div className="flex flex-wrap gap-3 text-sm text-cl-muted">
             <Link href={`/profile/${encodeURIComponent(p.author.username)}`}>
               By {p.author.username}
             </Link>

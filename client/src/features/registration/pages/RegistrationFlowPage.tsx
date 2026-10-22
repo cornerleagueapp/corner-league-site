@@ -59,7 +59,9 @@ function RegistrationFlowContent() {
     setCouponCode,
   } = useRegistrationDraft();
 
-  useEffect(() => { trackGrowth("Registration Started", event.id); }, [event.id]);
+  useEffect(() => {
+    trackGrowth("Registration Started", event.id);
+  }, [event.id]);
 
   const [highestCompletedStep, setHighestCompletedStep] = useState(
     Math.max(0, draft.currentStep - 1),
@@ -381,7 +383,7 @@ function RegistrationFlowContent() {
               onEditStep={setCurrentStep}
             />
 
-            <div className="mt-5 rounded-[22px] border border-white/10 bg-white/[0.03] p-4 sm:p-5">
+            <div className="mt-5 rounded-[22px] border border-cl-border bg-cl-subtle p-4 sm:p-5">
               <label className="flex cursor-pointer items-start gap-3">
                 <input
                   type="checkbox"
@@ -389,22 +391,22 @@ function RegistrationFlowContent() {
                   onChange={(inputEvent) =>
                     setTermsAccepted(inputEvent.target.checked)
                   }
-                  className="mt-1 h-4 w-4 accent-cyan-300"
+                  className="mt-1 h-4 w-4 accent-cl-accent"
                 />
 
                 <div>
-                  <p className="text-sm font-black text-white">
+                  <p className="text-sm font-black text-cl-ink">
                     I agree to the registration terms
                   </p>
 
-                  <p className="mt-1 text-xs leading-5 text-white/45">
+                  <p className="mt-1 text-xs leading-5 text-cl-muted">
                     By submitting this registration, you agree to the race
                     organization's registration terms, policies, eligibility
                     requirements, and applicable refund policy.
                   </p>
 
                   {event.termsText ? (
-                    <div className="mt-3 max-h-36 overflow-y-auto rounded-xl border border-white/10 bg-black/20 p-3 text-xs leading-5 text-white/45">
+                    <div className="mt-3 max-h-36 overflow-y-auto rounded-xl border border-cl-border bg-cl-surface p-3 text-xs leading-5 text-cl-muted">
                       {event.termsText}
                     </div>
                   ) : null}
@@ -413,9 +415,9 @@ function RegistrationFlowContent() {
             </div>
 
             {event.allowCoupons ? (
-              <div className="mt-4 rounded-[22px] border border-white/10 bg-white/[0.03] p-4 sm:p-5">
+              <div className="mt-4 rounded-[22px] border border-cl-border bg-cl-subtle p-4 sm:p-5">
                 <label>
-                  <span className="mb-2 block text-[10px] font-black uppercase tracking-[0.13em] text-white/50">
+                  <span className="mb-2 block text-[10px] font-black uppercase tracking-[0.13em] text-cl-muted">
                     Coupon Code
                   </span>
 
@@ -426,7 +428,7 @@ function RegistrationFlowContent() {
                     }
                     maxLength={64}
                     placeholder="Enter coupon code"
-                    className="h-12 w-full rounded-[16px] border border-white/10 bg-white/[0.045] px-4 text-sm uppercase text-white outline-none placeholder:text-white/30 focus:border-cyan-300/30"
+                    className="h-12 w-full rounded-[16px] border border-cl-border bg-cl-subtle px-4 text-sm uppercase text-cl-ink outline-none placeholder:text-cl-muted focus:border-cl-accent/30"
                   />
                 </label>
               </div>
@@ -434,7 +436,9 @@ function RegistrationFlowContent() {
 
             {submitError ? (
               <div className="mt-4 rounded-[18px] border border-red-300/20 bg-red-300/[0.06] p-4">
-                <p className="text-sm font-bold text-red-100">{submitError}</p>
+                <p className="text-sm font-bold text-cl-danger">
+                  {submitError}
+                </p>
               </div>
             ) : null}
           </>
@@ -466,7 +470,7 @@ function RegistrationFlowContent() {
 
         <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
           <div className="min-w-0">
-            <div className="rounded-[28px] border border-cyan-300/10 bg-[#050D18]/82 p-4 shadow-[0_24px_75px_rgba(0,0,0,0.24)] sm:p-6">
+            <div className="rounded-[28px] border border-cl-accent/10 bg-cl-surface p-4 shadow-cl-panel sm:p-6">
               {renderStep()}
             </div>
           </div>
@@ -482,13 +486,13 @@ function RegistrationFlowContent() {
           <RegistrationSummary event={event} draft={draft} compact />
         </div>
 
-        <div className="sticky bottom-3 z-30 rounded-[24px] border border-cyan-300/12 bg-[#07111F]/95 p-3 shadow-[0_24px_70px_rgba(0,0,0,0.42)] backdrop-blur-xl sm:p-4">
+        <div className="sticky bottom-3 z-30 rounded-[24px] border border-cl-accent/[0.12] bg-cl-surface p-3 shadow-cl-panel backdrop-blur-xl sm:p-4">
           <div className="flex items-center justify-between gap-3">
             <button
               type="button"
               onClick={goBack}
               disabled={submitting}
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-4 text-[10px] font-black uppercase tracking-[0.14em] text-white/65 transition hover:bg-white/10 hover:text-white disabled:cursor-wait disabled:opacity-60 sm:px-5"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-cl-border bg-cl-subtle px-4 text-[10px] font-black uppercase tracking-[0.14em] text-cl-muted transition hover:bg-cl-subtle hover:text-cl-ink disabled:cursor-wait disabled:opacity-60 sm:px-5"
             >
               <ArrowLeft className="h-4 w-4" />
 
@@ -500,11 +504,11 @@ function RegistrationFlowContent() {
             </button>
 
             <div className="hidden text-center sm:block">
-              <p className="text-[9px] font-black uppercase tracking-[0.13em] text-white/35">
+              <p className="text-[9px] font-black uppercase tracking-[0.13em] text-cl-muted">
                 Step {draft.currentStep} of 6
               </p>
 
-              <p className="mt-1 text-xs text-white/55">
+              <p className="mt-1 text-xs text-cl-muted">
                 Progress saves automatically
               </p>
             </div>
@@ -513,7 +517,7 @@ function RegistrationFlowContent() {
               <button
                 type="button"
                 onClick={continueToNextStep}
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#FF6B35] px-5 text-[10px] font-black uppercase tracking-[0.14em] text-white shadow-[0_0_28px_rgba(255,107,53,0.2)] transition hover:bg-[#ff7c4d] sm:px-6"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-cl-accent px-5 text-[10px] font-black uppercase tracking-[0.14em] text-cl-contrast shadow-cl-panel transition hover:bg-cl-accent sm:px-6"
               >
                 Continue
                 <ArrowRight className="h-4 w-4" />
@@ -525,7 +529,7 @@ function RegistrationFlowContent() {
                 onClick={() => {
                   void handleSubmitRegistration();
                 }}
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-cyan-300 px-5 text-[10px] font-black uppercase tracking-[0.14em] text-[#06111d] shadow-[0_0_28px_rgba(34,211,238,0.2)] transition hover:bg-cyan-200 disabled:cursor-wait disabled:opacity-60 sm:px-6"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-cl-accent px-5 text-[10px] font-black uppercase tracking-[0.14em] text-cl-contrast shadow-cl-panel transition hover:bg-cl-accent disabled:cursor-wait disabled:opacity-60 sm:px-6"
               >
                 {submitting ? (
                   <>
@@ -592,11 +596,11 @@ export default function RegistrationFlowPage({
   if (loading) {
     return (
       <RegistrationLayout hideHeader>
-        <div className="grid min-h-[70vh] place-items-center rounded-[28px] border border-cyan-300/10 bg-[#07111F]/75">
+        <div className="grid min-h-[70vh] place-items-center rounded-[28px] border border-cl-accent/10 bg-cl-surface">
           <div className="text-center">
-            <Loader2 className="mx-auto h-8 w-8 animate-spin text-cyan-200" />
+            <Loader2 className="mx-auto h-8 w-8 animate-spin text-cl-accent" />
 
-            <p className="mt-3 text-sm font-bold text-white/50">
+            <p className="mt-3 text-sm font-bold text-cl-muted">
               Preparing registration...
             </p>
           </div>
@@ -617,7 +621,7 @@ export default function RegistrationFlowPage({
         backLabel="All Events"
       >
         <div className="rounded-[28px] border border-red-300/15 bg-red-950/20 p-8 text-center">
-          <p className="text-sm text-red-100/70">
+          <p className="text-sm text-cl-danger">
             Return to the event directory and select another event.
           </p>
         </div>

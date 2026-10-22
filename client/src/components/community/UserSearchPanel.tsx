@@ -31,7 +31,7 @@ export default function UserSearchPanel() {
       <h2 id="account-user-search" className="text-xl font-bold">
         Find people
       </h2>
-      <p className="text-sm text-white/55">
+      <p className="text-sm text-cl-muted">
         Search names or usernames to view profiles, follow people, or start a
         conversation.
       </p>
@@ -85,7 +85,7 @@ export default function UserSearchPanel() {
         ) : (
           <>
             {query.data?.items.length === 0 && (
-              <p role="status" className="text-white/60">
+              <p role="status" className="text-cl-muted">
                 No matching users.
               </p>
             )}
@@ -94,12 +94,12 @@ export default function UserSearchPanel() {
                 <Link
                   key={person.id}
                   href={`/profile/${encodeURIComponent(person.username)}`}
-                  className="rounded-xl border border-white/10 p-3 hover:border-cyan-300/30 hover:bg-white/5"
+                  className="rounded-xl border border-cl-border p-3 hover:border-cl-accent/30 hover:bg-cl-subtle"
                 >
-                  <strong className="break-words text-cyan-100">
+                  <strong className="break-words text-cl-accent">
                     @{person.username}
                   </strong>
-                  <p className="text-sm text-white/55">
+                  <p className="text-sm text-cl-muted">
                     {[person.firstName, person.lastName]
                       .filter(Boolean)
                       .join(" ")}

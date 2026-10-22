@@ -5,6 +5,8 @@ import usMapOutline from "@assets/us-map-outline.svg";
 
 type Props = {
   events: EventItem[];
+  sportKey?: string;
+  sportLabel?: string;
 };
 
 type GeoMeta = {
@@ -207,7 +209,7 @@ function InlineUSMap({
   );
 }
 
-export default function NationwideMap({ events }: Props) {
+export default function NationwideMap({ events, sportKey = "jet-ski", sportLabel = "Jet Ski" }: Props) {
   const [filter, setFilter] = React.useState<FilterKey>("all");
   const [activeClusterKey, setActiveClusterKey] = React.useState<string | null>(
     null,
@@ -306,41 +308,38 @@ export default function NationwideMap({ events }: Props) {
 
   return (
     <section id="event-map-section" className="scroll-mt-24 pt-20">
-      <div className="relative overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[linear-gradient(180deg,rgba(7,17,31,0.96)_0%,rgba(4,10,19,0.98)_100%)] px-4 py-8 shadow-[0_30px_90px_rgba(0,0,0,0.38)] sm:rounded-[38px] sm:px-8 sm:py-10">
+      <div className="relative overflow-hidden rounded-[30px] border border-cl-accent/10 cl-panel-wash px-4 py-8 shadow-cl-panel sm:rounded-[38px] sm:px-8 sm:py-10">
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-cyan-400/10 blur-3xl" />
-          <div className="absolute -right-24 bottom-0 h-96 w-96 rounded-full bg-[#FF6B35]/10 blur-3xl" />
+          <div className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-cl-accent/10 blur-3xl" />
+          <div className="absolute -right-24 bottom-0 h-96 w-96 rounded-full bg-cl-accent/10 blur-3xl" />
           <div className="absolute inset-0 opacity-[0.045] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:72px_72px]" />
         </div>
 
         <div className="relative">
           <div className="mb-3 flex flex-wrap items-center gap-2 sm:gap-3">
-            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200 sm:px-4 sm:text-[11px] sm:tracking-[0.24em]">
-              <span className="h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_18px_rgba(103,232,249,0.95)]" />
+            <div className="inline-flex items-center gap-2 rounded-full border border-cl-accent/20 bg-cl-accent/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-cl-accent sm:px-4 sm:text-[11px] sm:tracking-[0.24em]">
+              <span className="h-2 w-2 rounded-full bg-cl-accent shadow-cl-panel" />
               Nationwide
             </div>
 
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#FF6B35]/20 bg-[#FF6B35]/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-[#FFB199] sm:px-4 sm:text-[11px] sm:tracking-[0.24em]">
+            <div className="inline-flex items-center gap-2 rounded-full border border-cl-accent/20 bg-cl-accent/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-cl-accent sm:px-4 sm:text-[11px] sm:tracking-[0.24em]">
               Race Footprint
             </div>
           </div>
 
           <div className="grid gap-5 lg:grid-cols-[1fr_auto] lg:items-end">
             <div>
-              <h2 className="max-w-4xl text-[2.35rem] font-black uppercase leading-[0.9] tracking-[-0.04em] text-white min-[380px]:text-4xl sm:text-5xl lg:text-6xl">
-                Event{" "}
-                <span className="bg-[linear-gradient(90deg,#19E3FF_0%,#FF7849_100%)] bg-clip-text text-transparent">
-                  Map
-                </span>
+              <h2 className="max-w-4xl text-[2.35rem] font-black uppercase leading-[0.9] tracking-[-0.04em] text-cl-ink min-[380px]:text-4xl sm:text-5xl lg:text-6xl">
+                Event <span className="cl-title-accent">Map</span>
               </h2>
 
-              <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-300 sm:text-base">
-                Explore where jet ski racing is active across the country, from
+              <p className="mt-4 max-w-3xl text-sm leading-7 text-cl-muted sm:text-base">
+                Explore where {sportLabel} is active across the country, from
                 upcoming race weekends to recent event coverage.
               </p>
             </div>
 
-            <div className="inline-flex w-fit overflow-hidden rounded-full border border-cyan-300/10 bg-white/[0.04] p-1 shadow-[0_18px_45px_rgba(0,0,0,0.22)]">
+            <div className="inline-flex w-fit overflow-hidden rounded-full border border-cl-accent/10 bg-cl-subtle p-1 shadow-cl-panel">
               {filterButtons.map((item) => (
                 <button
                   key={item.key}
@@ -348,8 +347,8 @@ export default function NationwideMap({ events }: Props) {
                   onClick={() => setFilter(item.key)}
                   className={`rounded-full px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] transition ${
                     filter === item.key
-                      ? "bg-cyan-300 text-[#06111d] shadow-[0_0_22px_rgba(34,211,238,0.2)]"
-                      : "text-white/55 hover:text-white"
+                      ? "bg-cl-accent text-cl-contrast shadow-cl-panel"
+                      : "text-cl-muted hover:text-cl-ink"
                   }`}
                 >
                   {item.label}
@@ -359,48 +358,48 @@ export default function NationwideMap({ events }: Props) {
           </div>
 
           <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-4">
-              <div className="text-2xl font-black text-white">
+            <div className="rounded-[22px] border border-cl-border bg-cl-subtle px-4 py-4">
+              <div className="text-2xl font-black text-cl-ink">
                 {filteredPoints.length}
               </div>
-              <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.2em] text-white/45">
+              <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.2em] text-cl-muted">
                 Events
               </div>
             </div>
 
-            <div className="rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-4">
-              <div className="text-2xl font-black text-white">
+            <div className="rounded-[22px] border border-cl-border bg-cl-subtle px-4 py-4">
+              <div className="text-2xl font-black text-cl-ink">
                 {uniqueStatesCount}
               </div>
-              <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.2em] text-white/45">
+              <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.2em] text-cl-muted">
                 States
               </div>
             </div>
 
-            <div className="rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-4">
-              <div className="text-2xl font-black text-white">
+            <div className="rounded-[22px] border border-cl-border bg-cl-subtle px-4 py-4">
+              <div className="text-2xl font-black text-cl-ink">
                 {uniqueOrganizationsCount}
               </div>
-              <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.2em] text-white/45">
+              <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.2em] text-cl-muted">
                 Organizations
               </div>
             </div>
 
-            <div className="rounded-[22px] border border-cyan-300/15 bg-cyan-300/[0.08] px-4 py-4">
-              <div className="truncate text-2xl font-black text-cyan-200">
+            <div className="rounded-[22px] border border-cl-accent/15 bg-cl-accent/[0.08] px-4 py-4">
+              <div className="truncate text-2xl font-black text-cl-accent">
                 {activeCluster?.stateCode || "—"}
               </div>
-              <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.2em] text-white/45">
+              <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.2em] text-cl-muted">
                 Current Focus
               </div>
             </div>
           </div>
 
-          <div className="mt-10 grid min-w-0 items-start gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:gap-8">
-            <div className="relative min-w-0 overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-3 shadow-[0_24px_70px_rgba(0,0,0,0.34)] sm:p-4">
+          <div className="map-event-layout mt-8 grid min-w-0 items-start gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:gap-8">
+            <div className="relative min-w-0 overflow-hidden rounded-[30px] border border-cl-accent/10 bg-cl-surface p-3 shadow-cl-panel sm:p-4">
               <div className="absolute inset-0 opacity-[0.05] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:48px_48px]" />
 
-              <div className="relative aspect-[16/11] min-h-[260px] w-full overflow-hidden rounded-[24px] border border-white/10 bg-[#02070b] shadow-[inset_0_0_30px_rgba(0,0,0,0.28)] sm:aspect-[16/10]">
+              <div className="relative aspect-[16/11] min-h-[260px] w-full overflow-hidden rounded-[24px] border border-cl-border cl-dark bg-[#02070b] shadow-[inset_0_0_30px_rgba(0,0,0,0.28)] sm:aspect-[16/10]">
                 <div className="absolute inset-0 rounded-[24px] bg-[radial-gradient(circle_at_center,rgba(103,232,249,0.05),transparent_55%)]" />
 
                 <InlineUSMap
@@ -426,14 +425,14 @@ export default function NationwideMap({ events }: Props) {
                       aria-label={`${cluster.stateName} event cluster`}
                     >
                       {isActive ? (
-                        <span className="absolute inset-0 animate-ping rounded-full bg-[#FF7849]/30" />
+                        <span className="absolute inset-0 animate-ping rounded-full bg-cl-accent/30" />
                       ) : null}
 
                       <span
                         className={`relative flex items-center justify-center rounded-full border-2 text-[10px] font-bold transition-all duration-200 ${
                           isActive
-                            ? "h-7 min-w-[28px] border-white bg-[#FF7849] px-1.5 text-black shadow-[0_0_0_10px_rgba(255,120,73,0.20)]"
-                            : "h-6 min-w-[24px] border-white/70 bg-cyan-300 px-1.5 text-black hover:scale-110 hover:bg-[#FF7849]"
+                            ? "h-7 min-w-[28px] border-cl-border bg-cl-accent px-1.5 text-cl-contrast shadow-cl-panel"
+                            : "h-6 min-w-[24px] border-cl-border bg-cl-accent px-1.5 text-cl-contrast hover:scale-110 hover:bg-cl-accent"
                         }`}
                       >
                         {count}
@@ -444,27 +443,27 @@ export default function NationwideMap({ events }: Props) {
               </div>
             </div>
 
-            <div className="min-w-0 overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)] sm:p-6">
-              <div className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-200/70">
+            <div className="min-w-0 overflow-hidden rounded-[30px] border border-cl-accent/10 bg-cl-surface p-5 shadow-cl-panel sm:p-6">
+              <div className="text-[10px] font-black uppercase tracking-[0.22em] text-cl-accent">
                 Highlighted Event
               </div>
 
               {!activeCluster || !activeEvent ? (
-                <div className="mt-4 text-sm leading-7 text-slate-300">
+                <div className="mt-4 text-sm leading-7 text-cl-muted">
                   Event locations will appear here as they are added.
                 </div>
               ) : (
                 <div className="mt-4 min-w-0">
-                  <div className="min-w-0 break-words text-2xl font-black uppercase leading-tight tracking-[-0.02em] text-white">
+                  <div className="min-w-0 break-words text-2xl font-black uppercase leading-tight tracking-[-0.02em] text-cl-ink">
                     {activeEvent.name}
                   </div>
 
                   <div className="mt-4 flex min-w-0 flex-wrap gap-2">
-                    <span className="max-w-full break-words rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.1em] text-white/65 sm:text-xs">
+                    <span className="max-w-full break-words rounded-full border border-cl-border bg-cl-subtle px-3 py-1 text-[11px] font-bold uppercase tracking-[0.1em] text-cl-muted sm:text-xs">
                       {activeEvent.organizationName || "Organization"}
                     </span>
 
-                    <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.1em] text-cyan-200 sm:text-xs">
+                    <span className="rounded-full border border-cl-accent/20 bg-cl-accent/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.1em] text-cl-accent sm:text-xs">
                       {activeCluster.stateName}
                     </span>
 
@@ -474,8 +473,8 @@ export default function NationwideMap({ events }: Props) {
                           activeEvent.startDate,
                           activeEvent.endDate,
                         ) === "upcoming"
-                          ? "border border-[#FF6B35]/20 bg-[#FF6B35]/10 text-[#FFB199]"
-                          : "border border-white/10 bg-white/[0.04] text-white/60"
+                          ? "border border-cl-accent/20 bg-cl-accent/10 text-cl-accent"
+                          : "border border-cl-border bg-cl-subtle text-cl-muted"
                       }`}
                     >
                       {getEventStatus(
@@ -487,7 +486,7 @@ export default function NationwideMap({ events }: Props) {
                     </span>
                   </div>
 
-                  <div className="mt-5 space-y-2 text-sm leading-7 text-slate-300">
+                  <div className="mt-5 space-y-2 text-sm leading-7 text-cl-muted">
                     <div>{activeEvent.location || "Location TBD"}</div>
                     <div>
                       {formatDateRange(
@@ -499,11 +498,11 @@ export default function NationwideMap({ events }: Props) {
 
                   <div className="mt-6">
                     <Link
-                      href={`/aqua-organizations/event-details/${activeEvent.id}?orgId=${encodeURIComponent(
+                      href={sportKey !== "jet-ski" ? `/sports/${sportKey}/organizations/${encodeURIComponent(activeEvent.organizationId || "")}?event=${encodeURIComponent(activeEvent.id)}` : `/aqua-organizations/event-details/${activeEvent.id}?orgId=${encodeURIComponent(
                         activeEvent.organizationId || "",
                       )}`}
                     >
-                      <button className="w-full rounded-full border border-cyan-300/20 bg-cyan-300/10 px-5 py-3.5 text-xs font-black uppercase tracking-[0.16em] text-cyan-100 transition duration-200 hover:-translate-y-0.5 hover:border-cyan-200/40 hover:bg-cyan-300 hover:text-[#06111d] sm:w-auto">
+                      <button className="w-full rounded-full border border-cl-accent/20 bg-cl-accent/10 px-5 py-3.5 text-xs font-black uppercase tracking-[0.16em] text-cl-accent transition duration-200 hover:-translate-y-0.5 hover:border-cl-accent/40 hover:bg-cl-accent hover:text-cl-contrast sm:w-auto">
                         View Event
                       </button>
                     </Link>
@@ -511,23 +510,23 @@ export default function NationwideMap({ events }: Props) {
 
                   {activeCluster.events.length > 1 ? (
                     <div className="mt-8">
-                      <div className="text-[10px] font-black uppercase tracking-[0.2em] text-white/45">
+                      <div className="text-[10px] font-black uppercase tracking-[0.2em] text-cl-muted">
                         More Events In This Area
                       </div>
 
-                      <div className="mt-3 max-h-[400px] space-y-3 overflow-y-auto pr-1 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-cyan-300/20">
+                      <div className="map-event-list mt-4 max-h-[520px] space-y-4 overflow-y-auto pr-2 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-cl-accent/20">
                         {activeCluster.events.slice(1).map((event) => (
                           <Link
                             key={event.id}
-                            href={`/aqua-organizations/event-details/${event.id}?orgId=${encodeURIComponent(
+                            href={sportKey !== "jet-ski" ? `/sports/${sportKey}/organizations/${encodeURIComponent(event.organizationId || "")}?event=${encodeURIComponent(event.id)}` : `/aqua-organizations/event-details/${event.id}?orgId=${encodeURIComponent(
                               event.organizationId || "",
                             )}`}
                           >
-                            <div className="group min-w-0 cursor-pointer rounded-2xl border border-white/10 bg-black/20 px-4 py-4 transition hover:border-cyan-300/30 hover:bg-cyan-300/10">
-                              <div className="break-words font-bold uppercase leading-snug text-white group-hover:text-cyan-300">
+                            <div className="group min-w-0 cursor-pointer rounded-2xl border border-cl-border bg-cl-subtle px-5 py-5 transition hover:border-cl-accent/30 hover:bg-cl-accent/10">
+                              <div className="break-words font-bold uppercase leading-snug text-cl-ink group-hover:text-cl-accent">
                                 {event.name}
                               </div>
-                              <div className="mt-1 break-words text-sm leading-6 text-white/55">
+                              <div className="mt-1 break-words text-sm leading-6 text-cl-muted">
                                 {event.organizationName || "Organization"} •{" "}
                                 {formatDateRange(
                                   event.startDate,

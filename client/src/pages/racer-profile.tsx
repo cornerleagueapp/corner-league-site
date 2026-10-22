@@ -1,8 +1,10 @@
+import AthletePerformanceCenter from "@/components/athlete-performance/AthletePerformanceCenter";
+import { PUBLIC_RACEPOD_ENABLED } from "@/lib/publicFeatures";
 import SportAthletePublic from "./sport-athlete-public";
 import { isAthleteSport } from "@/lib/sportRegistration";
 import { useSearch } from "wouter";
 import OrganizationPhotoGallery from "@/components/OrganizationPhotoGallery";
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import { PageSEO } from "@/seo/usePageSEO";
 import { apiRequest } from "@/lib/apiClient";
 import { getAccessToken } from "@/lib/token";
@@ -26,7 +28,6 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
 import SocialPostFeed from "@/components/community/SocialPosts";
-import RacerSearchModal from "@/components/RacerSearchModal";
 import { trackEvent } from "@/lib/analytics";
 import { AnalyticsEvents } from "@/lib/analytics-events";
 import {
@@ -145,7 +146,7 @@ function RacePodReplayStatCard({
   onClick: () => void;
 }) {
   return (
-    <Card className="overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
+    <Card className="overflow-hidden rounded-[30px] border border-cl-accent/10 bg-cl-surface p-5 shadow-cl-panel">
       <button
         type="button"
         onClick={onClick}
@@ -153,22 +154,22 @@ function RacePodReplayStatCard({
         className="group w-full text-left disabled:cursor-not-allowed disabled:opacity-70"
       >
         <div className="mb-3 flex items-center justify-between gap-3">
-          <div className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.16em] text-cyan-300/80">
+          <div className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.16em] text-cl-accent">
             <Radio className="h-4 w-4" />
             RacePod Replays
           </div>
 
-          <div className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-cyan-300/15 bg-cyan-300/10 text-cyan-100 transition group-hover:bg-cyan-300 group-hover:text-[#06111d]">
+          <div className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-cl-accent/15 bg-cl-accent/10 text-cl-accent transition group-hover:bg-cl-accent group-hover:text-cl-contrast">
             <ChevronRight className="h-4 w-4" />
           </div>
         </div>
 
         {loading ? (
-          <p className="text-sm text-white/60">Loading RacePod sessions…</p>
+          <p className="text-sm text-cl-muted">Loading RacePod sessions…</p>
         ) : count === 0 ? (
           <div>
-            <div className="text-3xl font-black text-white">0</div>
-            <p className="mt-2 text-sm leading-6 text-white/55">
+            <div className="text-3xl font-black text-cl-ink">0</div>
+            <p className="mt-2 text-sm leading-6 text-cl-muted">
               No published RacePod replay sessions yet.
             </p>
           </div>
@@ -177,12 +178,12 @@ function RacePodReplayStatCard({
             <div className="grid grid-cols-2 gap-3">
               <MiniStat label="Published Replays" value={count} />
 
-              <div className="rounded-[20px] border border-white/10 bg-white/[0.04] p-3">
-                <div className="text-[10px] font-black uppercase tracking-[0.14em] text-white/35">
+              <div className="rounded-[20px] border border-cl-border bg-cl-subtle p-3">
+                <div className="text-[10px] font-black uppercase tracking-[0.14em] text-cl-muted">
                   Top Speed
                 </div>
 
-                <div className="mt-1 text-lg font-black text-white">
+                <div className="mt-1 text-lg font-black text-cl-ink">
                   {latestSession?.maxSpeedMph
                     ? `${latestSession.maxSpeedMph} mph`
                     : "—"}
@@ -190,18 +191,18 @@ function RacePodReplayStatCard({
               </div>
             </div>
 
-            <div className="mt-4 rounded-[20px] border border-white/10 bg-white/[0.04] p-3">
-              <div className="text-[10px] font-black uppercase tracking-[0.16em] text-white/35">
+            <div className="mt-4 rounded-[20px] border border-cl-border bg-cl-subtle p-3">
+              <div className="text-[10px] font-black uppercase tracking-[0.16em] text-cl-muted">
                 Latest Replay
               </div>
 
-              <div className="mt-1 truncate text-sm font-semibold text-white">
+              <div className="mt-1 truncate text-sm font-semibold text-cl-ink">
                 {latestSession
                   ? getRacePodSessionTitle(latestSession)
                   : "RacePod Replay"}
               </div>
 
-              <div className="mt-1 text-xs text-white/45">
+              <div className="mt-1 text-xs text-cl-muted">
                 {latestSession
                   ? formatRacePodDate(
                       latestSession.publishedAt || latestSession.startedAt,
@@ -210,7 +211,7 @@ function RacePodReplayStatCard({
               </div>
             </div>
 
-            <div className="mt-4 inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-cyan-200">
+            <div className="mt-4 inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-cl-accent">
               View replay sessions
               <ChevronRight className="h-4 w-4 transition group-hover:translate-x-1" />
             </div>
@@ -254,24 +255,24 @@ function RacePodSessionsModal({
       <button
         type="button"
         aria-label="Close RacePod replay sessions"
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+        className="cl-dark absolute inset-0 bg-black/70 backdrop-blur-sm"
         onClick={onClose}
       />
 
-      <div className="relative z-10 flex max-h-[88vh] w-full max-w-3xl flex-col overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F] shadow-[0_30px_90px_rgba(0,0,0,0.5)]">
-        <div className="border-b border-white/10 bg-[linear-gradient(180deg,rgba(7,17,31,0.98)_0%,rgba(4,10,19,0.98)_100%)] px-5 py-5">
+      <div className="relative z-10 flex max-h-[88vh] w-full max-w-3xl flex-col overflow-hidden rounded-[30px] border border-cl-accent/10 bg-cl-surface shadow-cl-panel">
+        <div className="border-b border-cl-border cl-panel-wash px-5 py-5">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-cyan-300/15 bg-cyan-300/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-cyan-200">
+              <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-cl-accent/15 bg-cl-accent/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-cl-accent">
                 <Radio className="h-3.5 w-3.5" />
                 RacePod Replays
               </div>
 
-              <h2 className="text-2xl font-black text-white">
+              <h2 className="text-2xl font-black text-cl-ink">
                 {racerName} RacePod Sessions
               </h2>
 
-              <p className="mt-1 text-sm text-white/55">
+              <p className="mt-1 text-sm text-cl-muted">
                 Scroll and select a published replay to view the full session.
               </p>
             </div>
@@ -279,7 +280,7 @@ function RacePodSessionsModal({
             <button
               type="button"
               onClick={onClose}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white hover:bg-white/10"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-cl-border bg-cl-subtle text-cl-ink hover:bg-cl-subtle"
               aria-label="Close RacePod sessions modal"
             >
               <XIcon className="h-5 w-5" />
@@ -289,20 +290,20 @@ function RacePodSessionsModal({
 
         <div className="overflow-y-auto px-5 py-5">
           {loading ? (
-            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6 text-white/70">
+            <div className="rounded-2xl border border-cl-border bg-cl-subtle p-6 text-cl-muted">
               Loading RacePod replay sessions…
             </div>
           ) : sessions.length === 0 ? (
-            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6 text-center">
-              <div className="mx-auto grid h-12 w-12 place-items-center rounded-full border border-cyan-300/20 bg-cyan-300/10">
-                <Radio className="h-5 w-5 text-cyan-100" />
+            <div className="rounded-2xl border border-cl-border bg-cl-subtle p-6 text-center">
+              <div className="mx-auto grid h-12 w-12 place-items-center rounded-full border border-cl-accent/20 bg-cl-accent/10">
+                <Radio className="h-5 w-5 text-cl-accent" />
               </div>
 
-              <div className="mt-4 text-lg font-black text-white">
+              <div className="mt-4 text-lg font-black text-cl-ink">
                 No published replays yet
               </div>
 
-              <p className="mt-2 text-sm leading-6 text-white/50">
+              <p className="mt-2 text-sm leading-6 text-cl-muted">
                 When this racer publishes RacePod sessions, they will show here.
               </p>
             </div>
@@ -316,32 +317,32 @@ function RacePodSessionsModal({
                     key={sessionId}
                     type="button"
                     onClick={() => onOpenSession(sessionId)}
-                    className="group w-full rounded-[24px] border border-white/10 bg-white/[0.04] p-4 text-left transition hover:border-cyan-300/25 hover:bg-cyan-300/[0.055]"
+                    className="group w-full rounded-[24px] border border-cl-border bg-cl-subtle p-4 text-left transition hover:border-cl-accent/25 hover:bg-cl-accent/[0.055]"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-cyan-200">
+                          <span className="inline-flex items-center gap-2 rounded-full border border-cl-accent/20 bg-cl-accent/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-cl-accent">
                             Published Replay
                           </span>
 
-                          <span className="text-xs text-white/40">
+                          <span className="text-xs text-cl-muted">
                             {formatRacePodDate(
                               session.publishedAt || session.startedAt,
                             )}
                           </span>
                         </div>
 
-                        <div className="mt-3 truncate text-lg font-black text-white">
+                        <div className="mt-3 truncate text-lg font-black text-cl-ink">
                           {getRacePodSessionTitle(session)}
                         </div>
 
                         <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                          <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
-                            <div className="text-[10px] font-black uppercase tracking-[0.12em] text-white/35">
+                          <div className="rounded-2xl border border-cl-border bg-cl-subtle p-3">
+                            <div className="text-[10px] font-black uppercase tracking-[0.12em] text-cl-muted">
                               Distance
                             </div>
-                            <div className="mt-1 text-sm font-black text-white">
+                            <div className="mt-1 text-sm font-black text-cl-ink">
                               {formatRacePodNumber(
                                 session.distanceMiles,
                                 " mi",
@@ -349,36 +350,36 @@ function RacePodSessionsModal({
                             </div>
                           </div>
 
-                          <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
-                            <div className="text-[10px] font-black uppercase tracking-[0.12em] text-white/35">
+                          <div className="rounded-2xl border border-cl-border bg-cl-subtle p-3">
+                            <div className="text-[10px] font-black uppercase tracking-[0.12em] text-cl-muted">
                               Max Speed
                             </div>
-                            <div className="mt-1 text-sm font-black text-white">
+                            <div className="mt-1 text-sm font-black text-cl-ink">
                               {formatRacePodNumber(session.maxSpeedMph, " mph")}
                             </div>
                           </div>
 
-                          <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
-                            <div className="text-[10px] font-black uppercase tracking-[0.12em] text-white/35">
+                          <div className="rounded-2xl border border-cl-border bg-cl-subtle p-3">
+                            <div className="text-[10px] font-black uppercase tracking-[0.12em] text-cl-muted">
                               Duration
                             </div>
-                            <div className="mt-1 text-sm font-black text-white">
+                            <div className="mt-1 text-sm font-black text-cl-ink">
                               {formatRacePodDuration(session.durationSeconds)}
                             </div>
                           </div>
 
-                          <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
-                            <div className="text-[10px] font-black uppercase tracking-[0.12em] text-white/35">
+                          <div className="rounded-2xl border border-cl-border bg-cl-subtle p-3">
+                            <div className="text-[10px] font-black uppercase tracking-[0.12em] text-cl-muted">
                               Points
                             </div>
-                            <div className="mt-1 text-sm font-black text-white">
+                            <div className="mt-1 text-sm font-black text-cl-ink">
                               {session.pointCount ?? 0}
                             </div>
                           </div>
                         </div>
                       </div>
 
-                      <div className="mt-1 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-cyan-300/15 bg-cyan-300/10 text-cyan-100 transition group-hover:bg-cyan-300 group-hover:text-[#06111d]">
+                      <div className="mt-1 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-cl-accent/15 bg-cl-accent/10 text-cl-accent transition group-hover:bg-cl-accent group-hover:text-cl-contrast">
                         <ChevronRight className="h-4 w-4" />
                       </div>
                     </div>
@@ -412,7 +413,6 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
-  const [searchOpen, setSearchOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [claimOpen, setClaimOpen] = useState(false);
   const [claimLoading, setClaimLoading] = useState(false);
@@ -421,6 +421,8 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
 
   const [history, setHistory] = useState<AthleteHistoryItem[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState<string | null>(null);
+  const [historyReload, setHistoryReload] = useState(0);
 
   const [ratingCard, setRatingCard] = useState<RacerRatingCard | null>(null);
   const [ratingLoading, setRatingLoading] = useState(false);
@@ -430,6 +432,8 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryItems, setGalleryItems] = useState<RacerGalleryItem[]>([]);
   const [galleryLoading, setGalleryLoading] = useState(false);
+  const [galleryError, setGalleryError] = useState<string | null>(null);
+  const [galleryReload, setGalleryReload] = useState(0);
 
   const [sponsors, setSponsors] = useState<RacerSponsor[]>([]);
   const [sponsorsLoading, setSponsorsLoading] = useState(false);
@@ -446,38 +450,6 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
     status?: "pending" | "approved" | "rejected";
     claimId?: string;
   } | null>(null);
-
-  const seasonMotoWins = useMemo(() => {
-    return history.filter(
-      (item) => item.motoSequence != null && Number(item.position) === 1,
-    ).length;
-  }, [history]);
-
-  const overallRows = useMemo(
-    () => history.filter((item) => item.motoSequence == null),
-    [history],
-  );
-
-  const motoRows = useMemo(
-    () => history.filter((item) => item.motoSequence != null),
-    [history],
-  );
-
-  const overallWinsCount = useMemo(
-    () => overallRows.filter((item) => Number(item.position) === 1).length,
-    [overallRows],
-  );
-
-  const podiumCount = useMemo(
-    () =>
-      overallRows.filter((item) => {
-        const pos = Number(item.position);
-        return pos >= 1 && pos <= 3;
-      }).length,
-    [overallRows],
-  );
-
-  const hasTimelineOverflow = history.length > 8;
 
   function getFirstNameFromFullName(name?: string | null) {
     const parts = (name ?? "").trim().split(/\s+/).filter(Boolean);
@@ -730,6 +702,7 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
     (async () => {
       try {
         setHistoryLoading(true);
+        setHistoryError(null);
 
         const res = await apiRequest<any>(
           "GET",
@@ -743,10 +716,11 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
           (Array.isArray(res) ? res : []);
 
         if (!cancelled) {
-          setHistory(Array.isArray(list) ? list : []);
+          if (!Array.isArray(list)) throw new Error("Invalid race history response.");
+          setHistory(list);
         }
       } catch {
-        if (!cancelled) setHistory([]);
+        if (!cancelled) { setHistory([]); setHistoryError("Race history couldn’t be loaded."); }
       } finally {
         if (!cancelled) setHistoryLoading(false);
       }
@@ -755,7 +729,7 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
     return () => {
       cancelled = true;
     };
-  }, [racer?.athleteId]);
+  }, [racer?.athleteId, historyReload]);
 
   useEffect(() => {
     const hasSession =
@@ -860,6 +834,8 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
   useEffect(() => {
     if (!racer?.athleteId) {
       setGalleryItems([]);
+      setGalleryError(null);
+      setGalleryLoading(false);
       return;
     }
 
@@ -868,6 +844,8 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
     (async () => {
       try {
         setGalleryLoading(true);
+        setGalleryItems([]);
+        setGalleryError(null);
         const list = await fetchAthleteGallery(String(racer.athleteId));
 
         if (!cancelled) {
@@ -876,6 +854,7 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
       } catch {
         if (!cancelled) {
           setGalleryItems([]);
+          setGalleryError("Racer media could not load. Please try again.");
         }
       } finally {
         if (!cancelled) {
@@ -887,7 +866,7 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
     return () => {
       cancelled = true;
     };
-  }, [racer?.athleteId]);
+  }, [racer?.athleteId, galleryReload]);
 
   useEffect(() => {
     if (!racer?.athleteId) {
@@ -922,7 +901,7 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
   }, [racer?.athleteId]);
 
   useEffect(() => {
-    if (!racer?.athleteId) {
+    if (!PUBLIC_RACEPOD_ENABLED || !racer?.athleteId) {
       setRacePodSessions([]);
       return;
     }
@@ -969,20 +948,20 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
 
   if (loading || authLoading) {
     return (
-      <div className="relative grid min-h-screen place-items-center overflow-hidden bg-[#030913] text-white">
+      <div className="relative grid min-h-screen place-items-center overflow-hidden bg-cl-canvas text-cl-ink">
         <PageSEO title="Racer • Corner League" />
 
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.12),transparent_28%),radial-gradient(circle_at_80%_20%,rgba(255,107,53,0.08),transparent_24%),linear-gradient(180deg,#030913_0%,#07111F_48%,#02050A_100%)]" />
+          <div className="absolute inset-0 cl-panel-wash" />
           <div className="absolute inset-0 opacity-[0.04] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:72px_72px]" />
         </div>
 
-        <div className="relative rounded-[28px] border border-cyan-300/10 bg-[#07111F]/80 px-8 py-7 text-center shadow-[0_24px_70px_rgba(0,0,0,0.36)]">
-          <div className="mx-auto mb-4 h-10 w-10 animate-pulse rounded-full border border-cyan-300/25 bg-cyan-300/10 shadow-[0_0_26px_rgba(34,211,238,0.18)]" />
-          <div className="text-xs font-black uppercase tracking-[0.22em] text-cyan-200/70">
+        <div className="relative rounded-[28px] border border-cl-accent/10 bg-cl-surface px-8 py-7 text-center shadow-cl-panel">
+          <div className="mx-auto mb-4 h-10 w-10 animate-pulse rounded-full border border-cl-accent/25 bg-cl-accent/10 shadow-cl-panel" />
+          <div className="text-xs font-black uppercase tracking-[0.22em] text-cl-accent">
             Loading Racer Profile
           </div>
-          <div className="mt-2 text-sm text-slate-300">
+          <div className="mt-2 text-sm text-cl-muted">
             Pulling athlete data, rankings, and race history…
           </div>
         </div>
@@ -992,27 +971,27 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
 
   if (err || !racer) {
     return (
-      <div className="relative grid min-h-screen place-items-center overflow-hidden bg-[#030913] px-4 text-white">
+      <div className="relative grid min-h-screen place-items-center overflow-hidden bg-cl-canvas px-4 text-cl-ink">
         <PageSEO title="Racer • Corner League" />
 
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.12),transparent_28%),radial-gradient(circle_at_80%_20%,rgba(255,107,53,0.08),transparent_24%),linear-gradient(180deg,#030913_0%,#07111F_48%,#02050A_100%)]" />
+          <div className="absolute inset-0 cl-panel-wash" />
         </div>
 
-        <div className="relative max-w-md rounded-[30px] border border-cyan-300/10 bg-[#07111F]/85 p-7 text-center shadow-[0_24px_70px_rgba(0,0,0,0.36)]">
-          <div className="text-[10px] font-black uppercase tracking-[0.22em] text-[#FFB199]">
+        <div className="relative max-w-md rounded-[30px] border border-cl-accent/10 bg-cl-surface p-7 text-center shadow-cl-panel">
+          <div className="text-[10px] font-black uppercase tracking-[0.22em] text-cl-accent">
             Racer Profile
           </div>
-          <div className="mt-3 text-2xl font-black uppercase text-white">
+          <div className="mt-3 text-2xl font-black uppercase text-cl-ink">
             Couldn’t load this racer
           </div>
-          <div className="mt-3 text-sm leading-7 text-slate-300">
+          <div className="mt-3 text-sm leading-7 text-cl-muted">
             {err || "Not found"}
           </div>
 
           <Button
             onClick={() => window.history.back()}
-            className="mt-6 rounded-full bg-cyan-300 px-6 py-3 text-xs font-black uppercase tracking-[0.16em] text-[#06111d] hover:bg-cyan-200"
+            className="mt-6 rounded-full bg-cl-accent px-6 py-3 text-xs font-black uppercase tracking-[0.16em] text-cl-contrast hover:bg-cl-accent"
           >
             Go Back
           </Button>
@@ -1022,21 +1001,6 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
   }
 
   const title = racer.racerName || "Racer";
-
-  const stats = [
-    { label: "Season Moto Wins", value: seasonMotoWins, trophy: true },
-    { label: "Season Overall Wins", value: overallWinsCount },
-    { label: "Season Podiums", value: podiumCount },
-  ];
-
-  const motoWinPct =
-    motoRows.length > 0 ? (seasonMotoWins / motoRows.length) * 100 : 0;
-
-  const overallWinPct =
-    overallRows.length > 0 ? (overallWinsCount / overallRows.length) * 100 : 0;
-
-  const podiumPct =
-    overallRows.length > 0 ? (podiumCount / overallRows.length) * 100 : 0;
 
   const latestRacePodSession = racePodSessions[0] ?? null;
 
@@ -1100,6 +1064,8 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
         racer={racer}
         items={galleryItems}
         loading={galleryLoading}
+        error={galleryError}
+        onRetry={() => setGalleryReload(n => n + 1)}
         canUpload={canEdit}
         onBack={() => setGalleryOpen(false)}
         onUpload={async (drafts) => {
@@ -1122,10 +1088,11 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
             );
 
             uploadedItems.push(uploaded as RacerGalleryItem);
+            setGalleryItems((prev) => [uploaded as RacerGalleryItem, ...prev]);
+            setGalleryError(null);
           }
 
           if (uploadedItems.length > 0) {
-            setGalleryItems((prev) => [...uploadedItems, ...prev]);
             toast({
               title: "Gallery updated",
               description: `${uploadedItems.length} media item${
@@ -1286,18 +1253,10 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
   }
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-[#030913] text-white">
+    <div className="athlete-performance-page relative min-w-0 bg-cl-canvas text-cl-ink">
       <PageSEO title={`${title} • Corner League`} />
 
-      <div className="pointer-events-none fixed inset-0 z-0">
-        <div className="absolute inset-0 bg-[#030913]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.12),transparent_30%),radial-gradient(circle_at_82%_18%,rgba(255,107,53,0.08),transparent_28%),radial-gradient(circle_at_50%_55%,rgba(7,17,31,0.82),transparent_58%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(3,9,19,0.25)_0%,rgba(3,9,19,0.72)_52%,rgba(3,9,19,0.95)_100%)]" />
-        <div className="absolute inset-0 opacity-[0.035] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:72px_72px]" />
-        <div className="absolute left-1/2 top-0 h-[320px] w-[320px] -translate-x-1/2 rounded-full bg-cyan-400/8 blur-3xl" />
-      </div>
-
-      <div className="relative z-10 mx-auto max-w-6xl px-3 pb-12 pt-0 sm:px-4 sm:pt-10">
+      <div className="athlete-performance-page-content relative z-10 w-full pb-10">
         <PremiumRacerHero
           racer={racer}
           ratingCard={ratingCard}
@@ -1310,7 +1269,7 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
           onEdit={() => setEditOpen(true)}
           onClaim={handleClaimProfileClick}
           onGallery={() => setGalleryOpen(true)}
-          onSearch={() => setSearchOpen(true)}
+          onSearch={() => window.dispatchEvent(new Event("racer-search:open"))}
           onProfileImageClick={() => {
             if (racer.racerImage) {
               setLightboxUrl(racer.racerImage);
@@ -1334,366 +1293,31 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
           }}
         />
 
-        {racer.athleteId && (
-          <section className="mt-6">
-            <SocialPostFeed athleteId={String(racer.athleteId)} compose />
-          </section>
-        )}
-
-        <div className="mt-4 grid grid-cols-2 gap-3 rounded-[24px] border border-cyan-300/10 bg-[#07111F]/80 p-4 sm:grid-cols-4">
-          <div>
-            <div className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300/70">
-              Height
-            </div>
-            <div className="mt-2 text-sm text-white/80">
-              {formatHeightFromMeters(racer.height)}
-            </div>
-          </div>
-
-          <div>
-            <div className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300/70">
-              Age
-            </div>
-            <div className="mt-2 text-sm text-white/80">
-              {formatAgeYearsAndDays(racer.dateOfBirth)}
-            </div>
-          </div>
-
-          <div>
-            <div className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300/70">
-              Ride
-            </div>
-            <div className="mt-2 text-sm text-white/80">
-              {racer.boatManufacturers || "Coming soon"}
-            </div>
-          </div>
-
-          <div>
-            <div className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300/70">
-              Sponsored By
-            </div>
-            <div className="mt-2 text-sm text-white/80">
-              {sponsors[0]?.name || "Coming soon"}
-            </div>
-          </div>
-        </div>
-
-        <RacerRatingHero rating={ratingCard} />
-
-        <div className="mt-4 grid grid-cols-3 gap-2 sm:gap-3">
-          {stats.map((item) => (
-            <StatBox
-              key={item.label}
-              label={item.label}
-              value={item.value}
-              trophy={item.trophy}
-            />
-          ))}
-        </div>
-
-        <div className="mt-4 grid grid-cols-3 gap-2 sm:gap-3">
-          <PercentStatBox label="Moto Win %" value={motoWinPct} />
-          <PercentStatBox label="Overall Win %" value={overallWinPct} />
-          <PercentStatBox label="Podium %" value={podiumPct} />
-        </div>
-
-        <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <div className="order-2 space-y-6 lg:order-1 lg:col-span-1">
-            <Card className="overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
-              <div className="mb-3 text-sm font-semibold uppercase tracking-[0.16em] text-cyan-300/80">
-                Sponsors
-              </div>
-
-              {sponsorsLoading ? (
-                <p className="text-sm text-white/60">Loading sponsors…</p>
-              ) : sponsors.length === 0 ? (
-                <p className="text-sm text-white/55">Sponsors coming soon.</p>
-              ) : (
-                <div className="space-y-3">
-                  {sponsors.map((sponsor) => {
-                    const logo = getSponsorLogo(sponsor);
-                    const website = getSponsorWebsite(sponsor);
-
-                    const content = (
-                      <div className="flex items-center gap-3 rounded-[20px] border border-white/10 bg-white/[0.04] p-3 transition hover:bg-white/[0.06]">
-                        {logo ? (
-                          <img
-                            src={logo}
-                            alt={sponsor.name}
-                            className="h-10 w-10 rounded-xl object-contain"
-                          />
-                        ) : (
-                          <div className="grid h-10 w-10 place-items-center rounded-xl bg-cyan-300/10 text-cyan-200">
-                            <Sparkles className="h-4 w-4" />
-                          </div>
-                        )}
-
-                        <div className="min-w-0 flex-1">
-                          <div className="truncate text-sm font-semibold text-white">
-                            {sponsor.name}
-                          </div>
-                          {website ? (
-                            <div className="truncate text-xs text-white/45">
-                              {website}
-                            </div>
-                          ) : null}
-                        </div>
-
-                        {website ? (
-                          <ExternalLink className="h-4 w-4 text-white/40" />
-                        ) : null}
-                      </div>
-                    );
-
-                    return website ? (
-                      <a
-                        key={sponsor.id}
-                        href={website}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        {content}
-                      </a>
-                    ) : (
-                      <div key={sponsor.id}>{content}</div>
-                    );
-                  })}
-                </div>
-              )}
-            </Card>
-
-            <Card className="overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <div className="text-sm font-semibold uppercase tracking-[0.16em] text-cyan-300/80">
-                  World Finals
-                </div>
-
-                {canEdit ? (
-                  <Button
-                    type="button"
-                    onClick={() => setWorldFinalsOpen(true)}
-                    className="rounded-full border border-cyan-300/25 bg-cyan-300/10 px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-cyan-100 hover:bg-cyan-300 hover:text-[#06111d]"
-                  >
-                    Edit
-                  </Button>
-                ) : null}
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 text-white/80">
-                <MiniStat
-                  label="Career WF Wins"
-                  value={racer.careerWorldFinalsWins ?? 0}
-                />
-              </div>
-            </Card>
-
-            <RacePodReplayStatCard
-              loading={racePodSessionsLoading}
-              count={racePodSessions.length}
-              latestSession={latestRacePodSession}
-              onClick={() => setRacePodSessionsOpen(true)}
-            />
-          </div>
-
-          <div className="order-1 space-y-4 lg:order-2 lg:col-span-2">
-            <Card className="overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)] sm:p-6">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <div className="mb-2 text-lg font-semibold text-white">
-                    Racer Gallery
-                  </div>
-                  <p className="text-sm leading-7 text-slate-300">
-                    Videos, photos, highlights, sponsor content, and race
-                    moments.
-                  </p>
-                </div>
-
-                <Button
-                  onClick={() => setGalleryOpen(true)}
-                  className="rounded-full border border-cyan-300/25 bg-cyan-300/10 px-5 py-3 text-xs font-black uppercase tracking-[0.16em] text-cyan-100 hover:bg-cyan-300 hover:text-[#06111d]"
-                >
-                  <Play className="mr-2 h-4 w-4" />
-                  View Racer Gallery
-                </Button>
-              </div>
-
-              {galleryItems.length > 0 ? (
-                <div className="mt-5 grid grid-cols-3 gap-2">
-                  {galleryItems.slice(0, 3).map((item) => (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => setGalleryOpen(true)}
-                      className="relative aspect-[4/3] overflow-hidden rounded-[18px] border border-white/10 bg-black"
-                    >
-                      <img
-                        src={getGalleryThumb(item)}
-                        alt={item.title || "Racer media"}
-                        className="h-full w-full object-cover opacity-80"
-                      />
-                      <div className="absolute inset-0 bg-black/10" />
-                      <div className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-black/55">
-                        {item.type === "video" ? (
-                          <Play className="h-3.5 w-3.5 text-white" />
-                        ) : (
-                          <ImageIcon className="h-3.5 w-3.5 text-white" />
-                        )}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              ) : null}
-            </Card>
-
-            <OrganizationPhotoGallery
-              athleteId={racer.athleteId}
-              canRemoveTag={isOwner}
-            />
-
-            <Card className="overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/80 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)] sm:p-6">
-              <div className="mb-4 text-lg font-semibold text-white">
-                Performance Timeline
-              </div>
-
-              {historyLoading ? (
-                <p className="text-sm text-slate-300">Loading race history…</p>
-              ) : history.length === 0 ? (
-                <p className="text-sm leading-7 text-slate-300">
-                  No personal race results found yet.
-                </p>
-              ) : (
-                <div
-                  className={`overflow-x-auto rounded-[24px] border border-white/10 bg-black/25 [scrollbar-width:thin] [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-cyan-300/20 ${
-                    hasTimelineOverflow
-                      ? "max-h-[540px] overflow-y-auto pr-1"
-                      : ""
-                  }`}
-                >
-                  <table className="w-full min-w-[760px] text-sm">
-                    <thead className="bg-white/[0.04] text-white/70">
-                      <tr>
-                        <th className="px-4 py-3 text-left font-medium">
-                          Event
-                        </th>
-                        <th className="px-4 py-3 text-left font-medium">
-                          Class
-                        </th>
-                        <th className="px-4 py-3 text-left font-medium">
-                          Moto
-                        </th>
-                        <th className="px-4 py-3 text-left font-medium">
-                          Finish
-                        </th>
-                        <th className="px-4 py-3 text-left font-medium">
-                          Points
-                        </th>
-                        <th className="px-4 py-3 text-left font-medium">
-                          Status
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {history.map((item) => {
-                        const isOverall = item.motoSequence == null;
-
-                        return (
-                          <tr
-                            key={item.resultId}
-                            className={`border-t ${
-                              isOverall
-                                ? "border-cyan-400/15 bg-cyan-400/[0.045]"
-                                : "border-white/10"
-                            }`}
-                          >
-                            <td className="px-4 py-3 text-white">
-                              <div className="flex items-start gap-3">
-                                {isOverall ? (
-                                  <span className="mt-1 rounded-full border border-cyan-300/20 bg-cyan-400/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-cyan-300">
-                                    Overall
-                                  </span>
-                                ) : (
-                                  <span className="mt-1 rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/55">
-                                    Moto
-                                  </span>
-                                )}
-
-                                <div>
-                                  <div
-                                    className={`font-medium ${isOverall ? "text-cyan-100" : "text-white"}`}
-                                  >
-                                    {item.eventName || "Unknown Event"}
-                                  </div>
-                                  <div className="text-xs text-white/50">
-                                    {item.eventStartDate
-                                      ? new Date(
-                                          item.eventStartDate,
-                                        ).toLocaleDateString()
-                                      : "—"}
-                                  </div>
-                                </div>
-                              </div>
-                            </td>
-
-                            <td
-                              className={`px-4 py-3 ${isOverall ? "text-cyan-100" : "text-white/85"}`}
-                            >
-                              {item.divisionName || item.matchName || "—"}
-                            </td>
-
-                            <td className="px-4 py-3">
-                              {isOverall ? (
-                                <span className="inline-flex rounded-full border border-cyan-300/20 bg-cyan-400/10 px-2.5 py-1 text-xs font-medium text-cyan-200">
-                                  Overall
-                                </span>
-                              ) : (
-                                <span className="inline-flex rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-xs font-medium text-white/75">
-                                  Moto {item.motoSequence}
-                                </span>
-                              )}
-                            </td>
-
-                            <td
-                              className={`px-4 py-3 font-medium ${isOverall ? "text-cyan-100" : "text-white/85"}`}
-                            >
-                              {item.position ?? "—"}
-                            </td>
-
-                            <td
-                              className={`px-4 py-3 font-medium ${isOverall ? "text-cyan-100" : "text-white/85"}`}
-                            >
-                              {item.score ?? "—"}
-                            </td>
-
-                            <td className="px-4 py-3 text-white/85">
-                              {item.status ?? "—"}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </Card>
-          </div>
-        </div>
+        <AthletePerformanceCenter
+          key={String(racer.athleteId || racer.id)} racer={racer} history={history}
+          loading={historyLoading} error={historyError} onRetry={() => setHistoryReload(n => n + 1)}
+          sponsors={sponsors} sponsorsLoading={sponsorsLoading} galleryItems={galleryItems} galleryLoading={galleryLoading}
+          rating={ratingCard} canEdit={canEdit} isOwner={isOwner}
+          ageLabel={formatAgeYearsAndDays(racer.dateOfBirth)} heightLabel={formatHeightFromMeters(racer.height)}
+          onGallery={() => setGalleryOpen(true)} onWorldFinals={() => setWorldFinalsOpen(true)}
+        />
       </div>
 
       {lightboxUrl && (
         <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70"
+          className="cl-dark fixed inset-0 z-[60] flex items-center justify-center bg-black/70"
           onClick={() => setLightboxUrl(null)}
         >
           <button
             onClick={() => setLightboxUrl(null)}
-            className="absolute right-4 top-4 grid h-9 w-9 place-items-center rounded-full bg-white text-black"
+            className="absolute right-4 top-4 grid h-9 w-9 place-items-center rounded-full bg-cl-surface text-cl-ink"
             aria-label="Close image"
           >
             <XIcon size={18} />
           </button>
           <img
             src={lightboxUrl}
-            className="max-h-[85vh] max-w-[92vw] rounded-xl border border-white/10 object-contain"
+            className="max-h-[85vh] max-w-[92vw] rounded-xl border border-cl-border object-contain"
             onClick={(e) => e.stopPropagation()}
           />
         </div>
@@ -2235,17 +1859,7 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
           />
         )}
 
-      <RacerSearchModal
-        open={searchOpen}
-        onClose={() => setSearchOpen(false)}
-        onSelectRacer={(r) => {
-          setSearchOpen(false);
-          const idStr = encodeURIComponent(String(r.id));
-          navigate(`/racer/${idStr}`);
-        }}
-      />
-
-      <RacePodSessionsModal
+      {PUBLIC_RACEPOD_ENABLED && <RacePodSessionsModal
         open={racePodSessionsOpen}
         racerName={racer.racerName}
         sessions={racePodSessions}
@@ -2255,7 +1869,7 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
           setRacePodSessionsOpen(false);
           navigate(`/racepod/sessions/${encodeURIComponent(sessionId)}`);
         }}
-      />
+      />}
 
       <RacerProfileShareModal
         open={shareOpen}

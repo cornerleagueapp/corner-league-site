@@ -222,3 +222,28 @@ body {
   min-height: 100svh;
   padding-bottom: var(--consumer-safe-bottom);
 }
+
+/* Decorative homepage motion always has a pause control and respects system preferences. */
+.home-motion-paused .background-column,
+.home-motion-paused .logo-track {
+  animation-play-state: paused !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .background-column,
+  .logo-track {
+    animation: none !important;
+    transform: none !important;
+    will-change: auto;
+  }
+  .background-scrolling img,
+  .background-column > div {
+    transition: none;
+  }
+  .background-scrolling img:hover { transform: none; }
+  .consumer-document-page { scroll-behavior: auto; }
+}
+/* These custom navigation disclosures use ordinary Tab order, not menu roles. */
+.consumer-public-nav-safe button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}

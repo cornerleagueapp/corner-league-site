@@ -1,4 +1,9 @@
-import { AdmissionPage, MyTicketsPage } from '@/pages/admissions/admissions';
+import AllSportsHome from "@/features/discovery/AllSportsHome";
+import DiscoveryPage from "@/features/discovery/DiscoveryPage";
+import { MarketingInvitation } from "@/components/marketing/MarketingPreferences";
+import EmailUpdates from "./pages/email-updates";
+import ConsumerTheme from "@/components/ConsumerTheme";
+import { AdmissionPage, MyTicketsPage } from "@/pages/admissions/admissions";
 import { clearCommunityCache } from "@/lib/socialCache";
 // src/App.tsx
 import {
@@ -7,7 +12,7 @@ import {
   PublicationPage,
   WriterPage,
 } from "@/components/community/Publishing";
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 
 import { AnalyticsEvents } from "@/lib/analytics-events";
 
@@ -43,6 +48,7 @@ import AuthPage from "@/pages/auth";
 import NotFound from "@/pages/not-found";
 import ClubDetailsPage from "./pages/clubs/clubDetails";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import RacerDirectory from "./pages/racer-directory";
 import RacerProfilePage from "./pages/racer-profile";
 import CreateRacerProfilePage from "./pages/create-racer-profile";
 import AppShell from "./layout/AppShell";
@@ -91,7 +97,7 @@ import RacePodSessionPage from "@/pages/racePods/racepod-session";
 import RacePodLandingPage from "@/pages/racepod-landing";
 import RacePodPublishedSessionsPage from "@/pages/racePods/racePodPublishedSessions";
 import AquaFeaturedGalleryPage from "@/pages/organizations/aqua-featured-gallery";
-import ArcadePage from "@/pages/arcadePage";
+const ArcadePage = lazy(() => import("@/pages/arcadePage"));
 import RegistrationHomePage from "@/features/registration/pages/RegistrationHomePage";
 import RegistrationEventsPage from "@/features/registration/pages/RegistrationEventsPage";
 import RegistrationEventPage from "@/features/registration/pages/RegistrationEventPage";
@@ -382,15 +388,23 @@ function Router() {
         {() => (
           <AppShell guestMode>
             <ErrorBoundary>
-              <ScoresLandingPage />
+              <AllSportsHome />
             </ErrorBoundary>
           </AppShell>
         )}
       </Route>
+      <Route path="/search_results"><AppShell><ErrorBoundary><DiscoveryPage /></ErrorBoundary></AppShell></Route>
       <Route path="/home" component={Home} />
       <Route path="/about" component={Home} />
-      <Route path="/admissions/:key">{p=><AppShell><AdmissionPage eventKey={decodeURIComponent(p.key)}/></AppShell>}</Route>
+      <Route path="/admissions/:key">
+        {(p) => (
+          <AppShell>
+            <AdmissionPage eventKey={decodeURIComponent(p.key)} />
+          </AppShell>
+        )}
+      </Route>
       <Route path="/contact" component={ContactPage} />
+      <Route path="/email-updates" component={EmailUpdates} />
       <Route path="/terms" component={TermsPage} />
       <Route path="/auth" component={AuthPage} />
       <Route path="/welcome" component={WelcomeSplash} />
@@ -655,6 +669,7 @@ function Router() {
         </AppShell>
       </Route>
 
+      <Route path="/racer"><AppShell guestMode><ErrorBoundary><RacerDirectory /></ErrorBoundary></AppShell></Route>
       <Route path="/racer/:idOrSlug">
         {(params) => (
           <AppShell guestMode>
@@ -719,7 +734,15 @@ function Router() {
         {() => (
           <AppShell guestMode>
             <ErrorBoundary>
-              <ArcadePage />
+              <Suspense
+                fallback={
+                  <p role="status" className="p-6">
+                    Loading arcade…
+                  </p>
+                }
+              >
+                <ArcadePage />
+              </Suspense>
             </ErrorBoundary>
           </AppShell>
         )}
@@ -876,6 +899,7 @@ function AuthSessionManager() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
+      <ConsumerTheme />
       <BootSanitizeTokens />
       <AnalyticsBoot />
       <AnalyticsIdentity />
@@ -885,6 +909,7 @@ function App() {
       <TooltipProvider>
         <Toaster />
         <Router />
+        <MarketingInvitation />
       </TooltipProvider>
     </QueryClientProvider>
   );

@@ -112,34 +112,34 @@ function ClubEditForm({ clubId }: { clubId: string }) {
   return (
     <form onSubmit={saveAll} className="space-y-6">
       <div>
-        <label className="block text-sm text-gray-300 mb-2">Club Name</label>
+        <label className="block text-sm text-cl-muted mb-2">Club Name</label>
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full px-3 py-2 rounded-md bg-gray-900 border border-gray-700"
+          className="w-full px-3 py-2 rounded-md bg-cl-subtle border border-cl-border"
           required
         />
       </div>
 
       <div>
-        <label className="block text-sm text-gray-300 mb-2">Description</label>
+        <label className="block text-sm text-cl-muted mb-2">Description</label>
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="w-full px-3 py-2 rounded-md bg-gray-900 border border-gray-700"
+          className="w-full px-3 py-2 rounded-md bg-cl-subtle border border-cl-border"
           rows={3}
         />
       </div>
 
       <div>
-        <label className="block text-sm text-gray-300 mb-2">Club Picture</label>
+        <label className="block text-sm text-cl-muted mb-2">Club Picture</label>
         {preview && (
           <img
             src={preview}
-            className="mb-2 h-40 w-full object-cover rounded-md border border-gray-700"
+            className="mb-2 h-40 w-full object-cover rounded-md border border-cl-border"
           />
         )}
-        <label className="inline-flex items-center gap-2 px-3 py-2 rounded-md border border-white/10 bg-white/5 hover:bg-white/10 cursor-pointer">
+        <label className="inline-flex items-center gap-2 px-3 py-2 rounded-md border border-cl-border bg-cl-subtle hover:bg-cl-subtle cursor-pointer">
           <span>Choose image</span>
           <input
             type="file"
@@ -161,7 +161,7 @@ function ClubEditForm({ clubId }: { clubId: string }) {
         <button
           type="submit"
           disabled={updateDetails.isPending || updateImage.isPending}
-          className="px-4 py-2 rounded-md bg-white text-black hover:bg-gray-200 disabled:opacity-60"
+          className="px-4 py-2 rounded-md bg-cl-surface text-cl-ink hover:bg-cl-subtle disabled:opacity-60"
         >
           {updateDetails.isPending || updateImage.isPending
             ? "Saving…"

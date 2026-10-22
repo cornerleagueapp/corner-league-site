@@ -28,7 +28,7 @@ function compile(file, overrides = {}) {
   );
   assert.equal(navigation.routeSport("/scores/aqua"), "jet-ski");
   assert.equal(navigation.routeSport("/aqua-organizations"), "jet-ski");
-  assert.equal(navigation.routeSport("/aqua-organizations/one"), undefined);
+  assert.equal(navigation.routeSport("/aqua-organizations/one"), "jet-ski");
   assert.equal(navigation.routeSport("/sports/.."), undefined);
   const sports = [
     { key: "jet-ski", label: "Jet Ski" },

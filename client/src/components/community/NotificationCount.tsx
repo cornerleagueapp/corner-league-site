@@ -31,7 +31,7 @@ export function NotificationCount({ count }: { count?: number }) {
   return (
     <span
       aria-label={`${count} unread notifications`}
-      className="inline-flex min-w-5 shrink-0 items-center justify-center rounded-full bg-cyan-300 px-1.5 py-0.5 text-[10px] font-black leading-4 text-[#06111d]"
+      className="consumer-notification-count inline-flex min-w-5 shrink-0 items-center justify-center rounded-full bg-cl-accent px-1.5 py-0.5 text-[10px] font-black leading-4 text-cl-contrast"
     >
       {count > 99 ? "99+" : count}
     </span>

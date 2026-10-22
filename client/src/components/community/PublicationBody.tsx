@@ -18,7 +18,7 @@ function inline(text: string) {
             href={url}
             target="_blank"
             rel="noopener noreferrer ugc sponsored"
-            className="break-words text-cyan-200 underline"
+            className="break-words text-cl-accent underline"
           >
             {match[1]}
           </a>
@@ -34,17 +34,17 @@ function inline(text: string) {
 }
 export default function PublicationBody({ body }: { body: string }) {
   return (
-    <div className="space-y-3 break-words text-white/80 leading-7">
+    <div className="space-y-3 break-words text-cl-ink leading-7">
       {body.split("\n").map((line, i) => {
         if (line.startsWith("## "))
           return (
-            <h3 className="pt-4 text-xl font-bold text-white" key={i}>
+            <h3 className="pt-4 text-xl font-bold text-cl-ink" key={i}>
               {inline(line.slice(3))}
             </h3>
           );
         if (line.startsWith("# "))
           return (
-            <h2 className="pt-4 text-2xl font-bold text-white" key={i}>
+            <h2 className="pt-4 text-2xl font-bold text-cl-ink" key={i}>
               {inline(line.slice(2))}
             </h2>
           );
@@ -56,7 +56,7 @@ export default function PublicationBody({ body }: { body: string }) {
           );
         if (line.startsWith("> "))
           return (
-            <blockquote className="border-l-2 border-cyan-200/30 pl-4" key={i}>
+            <blockquote className="border-l-2 border-cl-accent/30 pl-4" key={i}>
               {inline(line.slice(2))}
             </blockquote>
           );

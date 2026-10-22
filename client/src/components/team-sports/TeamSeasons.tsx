@@ -1,4 +1,7 @@
-import { AdmissionOffer } from "@/components/admissions/AdmissionOffer";
+import TeamBracket from "./TeamBracket";
+import ConsumerBrandingHero from "@/components/branding/ConsumerBrandingHero";
+// Phase 2/3: AdmissionOffer remains in @/components/admissions/AdmissionOffer.
+import TeamRecruitment from "./TeamRecruitment";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useSearch, useLocation } from "wouter";
@@ -77,7 +80,7 @@ function SeasonBrowser({
     navigate(`${location}${query.size ? `?${query}` : ""}`);
   }
   return (
-    <section className="mt-6 space-y-5 rounded-2xl border border-white/15 bg-[#07111f] p-5 text-white">
+    <section className="mt-6 space-y-5 rounded-2xl border border-cl-border bg-cl-surface p-5 text-cl-ink">
       <h2 className="text-2xl font-bold">Leagues & seasons</h2>
       {list.isPending ? (
         <p role="status">Loading seasons…</p>
@@ -96,14 +99,14 @@ function SeasonBrowser({
                 key={s.id}
                 aria-pressed={id === s.id}
                 onClick={() => select(s.id)}
-                className={`min-h-11 rounded-xl border px-4 py-2 ${id === s.id ? "border-cyan-300 text-cyan-200" : "border-white/20"}`}
+                className={`min-h-11 rounded-xl border px-4 py-2 ${id === s.id ? "border-cl-accent text-cl-accent" : "border-cl-border"}`}
               >
                 {s.leagueName} · {s.name}
               </button>
             ))}
           </div>
           {!list.data.items.length && (
-            <p className="text-slate-300">No published seasons yet.</p>
+            <p className="text-cl-muted">No published seasons yet.</p>
           )}
           <div className="flex flex-wrap items-center gap-4">
             <button
@@ -160,18 +163,25 @@ export function SeasonDetails({
   const name = (id: string) => d.teams.find((t) => t.id === id)?.name ?? "Team";
   return (
     <div className="min-w-0 space-y-6">
+      <ConsumerBrandingHero
+        kind="season"
+        id={d.id}
+        organizationId={d.organizationId}
+        sport={d.sportKey}
+        name={`${d.leagueName} · ${d.name}`}
+      />
       <div>
         <h3 className="text-xl font-bold">
           {d.leagueName} · {d.name}
         </h3>
-        <p className="text-slate-300">
+        <p className="text-cl-muted">
           {d.startsOn} – {d.endsOn} · Published season
         </p>
       </div>
       <label className="block space-y-2">
         Division
         <select
-          className="block w-full min-h-11 rounded-xl border border-white/20 bg-[#07111f] p-3"
+          className="block w-full min-h-11 rounded-xl border border-cl-border bg-cl-surface p-3"
           value={division}
           onChange={(e) => {
             setDivision(e.target.value);
@@ -187,20 +197,28 @@ export function SeasonDetails({
           ))}
         </select>
       </label>
+      <TeamBracket season={d} division={division} />
       <div>
         <h4 className="mb-3 text-lg font-bold">Teams & players</h4>
         <div className="grid gap-4 md:grid-cols-2">
           {teams.items.map((t) => (
             <article
               key={t.id}
-              className="rounded-xl border border-white/10 p-4"
+              className="rounded-xl border border-cl-border p-4"
             >
               <h5 className="font-bold">{t.name}</h5>
-              <p className="text-sm text-slate-400">
+              {!sandbox && t.recruiting && (
+                <TeamRecruitment
+                  seasonId={d.id}
+                  teamId={t.id}
+                  sportKey={d.sportKey}
+                />
+              )}
+              <p className="text-sm text-cl-muted">
                 {d.divisions.find((v) => v.id === t.divisionId)?.name}
               </p>
               {!t.players.length && (
-                <p className="mt-3 text-slate-400">
+                <p className="mt-3 text-cl-muted">
                   No published player roster yet.
                 </p>
               )}
@@ -211,15 +229,16 @@ export function SeasonDetails({
                       <span>{p.name}</span>
                     ) : (
                       <Link
-                        className="text-cyan-200 underline"
+                        className="text-cl-accent underline"
                         href={`/racer/${encodeURIComponent(p.profileId)}?sport=${encodeURIComponent(d.sportKey)}`}
                       >
                         {p.name}
                       </Link>
                     )}{" "}
-                    <span className="text-sm text-slate-300">
+                    <span className="text-sm text-cl-muted">
                       {p.number ? `#${p.number} ` : ""}
                       {p.position}
+                      {t.captainProfileId === p.profileId ? " · Captain" : ""}
                     </span>
                   </li>
                 ))}
@@ -242,7 +261,7 @@ export function SeasonDetails({
         <label className="mb-3 block">
           Game status
           <select
-            className="ml-2 min-h-11 rounded-xl border border-white/20 bg-[#07111f] p-2"
+            className="ml-2 min-h-11 rounded-xl border border-cl-border bg-cl-surface p-2"
             value={status}
             onChange={(e) => {
               setStatus(e.target.value);
@@ -255,11 +274,11 @@ export function SeasonDetails({
             <option value="cancelled">Cancelled</option>
           </select>
         </label>
-        <p className="mb-3 text-sm text-slate-400">
+        <p className="mb-3 text-sm text-cl-muted">
           Game start times use your device’s local time zone.
         </p>
         {!view.games.length && (
-          <p className="text-slate-400">
+          <p className="text-cl-muted">
             No published games match these filters.
           </p>
         )}
@@ -269,36 +288,59 @@ export function SeasonDetails({
             return (
               <article
                 key={g.id}
-                className="rounded-xl border border-white/10 p-4"
+                className="rounded-xl border border-cl-border p-4"
               >
+                {g.competition && (
+                  <p className="text-sm text-cl-muted">
+                    {g.competition.kind === "single-elimination"
+                      ? "Single elimination"
+                      : g.competition.kind === "double-round-robin"
+                        ? "Home & away"
+                        : "Round robin"}{" "}
+                    · Round {g.competition.round} · Match {g.competition.match}
+                    {g.competition.homeSeed
+                      ? ` · Seeds ${g.competition.homeSeed} and ${g.competition.awaySeed}`
+                      : ""}
+                  </p>
+                )}
                 <h5 className="font-bold">
-                  {name(g.homeTeamId)} vs {name(g.awayTeamId)}
+                  {name(g.homeTeamId)}{" "}
+                  {g.competition?.bye
+                    ? "· BYE / automatic advancement"
+                    : `vs ${name(g.awayTeamId)}`}
                 </h5>
-                <p className="text-sm text-slate-300">
+                <p className="text-sm text-cl-muted">
                   <time dateTime={g.startsAt}>
                     {new Date(g.startsAt).toLocaleString()}
                   </time>{" "}
                   · {g.venue || "Venue to be announced"}
                 </p>
                 <p className="mt-2 font-bold">
-                  {g.status === "cancelled"
-                    ? "Cancelled"
-                    : r
-                      ? `${r.homeScore} – ${r.awayScore} · ${r.status === "final" ? "Final" : "In progress"}`
-                      : "Scheduled"}
+                  {g.competition?.bye
+                    ? "Advanced by bye"
+                    : g.status === "cancelled"
+                      ? "Cancelled"
+                      : r
+                        ? `${r.homeScore} – ${r.awayScore} · ${r.status === "final" ? "Final" : "In progress"}`
+                        : "Scheduled"}
                 </p>
-                {g.status !== "cancelled" && (
+                {/* Phase 2/3: deferred ticket offers; retained for restoration.
+{g.status !== "cancelled" && !g.competition?.bye && (
                   <AdmissionOffer
                     eventKey={`game:${d.id}:${g.id}`}
                     sandbox={sandbox}
                   />
+                )}
+                */}
+                {r?.decision && r.decision !== "regulation" && (
+                  <p>Decided in {r.decision}</p>
                 )}
                 {r?.tiebreakWinnerId && (
                   <p>Tiebreak winner: {name(r.tiebreakWinnerId)}</p>
                 )}
                 {!!r?.periods.length && (
                   <details className="mt-2">
-                    <summary className="min-h-11 cursor-pointer text-cyan-200">
+                    <summary className="min-h-11 cursor-pointer text-cl-accent">
                       {d.periodLabel} scores
                     </summary>
                     <ul>
@@ -323,13 +365,19 @@ export function SeasonDetails({
       />
       <div>
         <h4 className="mb-3 text-lg font-bold">Standings</h4>
-        <p className="mb-3 text-sm text-slate-400">
-          Final games only. Ordered by standings points, score difference and
-          scores for; teams with equal values remain tied.
+        <p className="mb-3 text-sm text-cl-muted">
+          Final league games only; tournament games are excluded. Each division
+          ranks by points or win percentage, then score difference and scores
+          for. Equal values share a place.
         </p>
         {view.standings.map((s) => (
           <div key={s.divisionId} className="mb-5">
-            <h5 className="mb-2 font-bold">{s.name}</h5>
+            <h5 className="mb-2 font-bold">
+              {s.name} ·{" "}
+              {s.standingsMode === "win-percentage"
+                ? "Win percentage"
+                : "Standings points"}
+            </h5>
             <ul
               className="space-y-3 sm:hidden"
               aria-label={`${s.name} standings`}
@@ -337,15 +385,17 @@ export function SeasonDetails({
               {s.rows.map((r) => (
                 <li
                   key={r.teamId}
-                  className="rounded-xl border border-white/10 p-3"
+                  className="rounded-xl border border-cl-border p-3"
                 >
                   <p className="font-bold">
-                    {r.name} · {r.points} points
+                    #{r.position ?? "—"} {r.name} · {r.points} points ·{" "}
+                    {((r.winPercentage ?? 0) * 100).toFixed(1)}%
                   </p>
-                  <p className="text-sm text-slate-300">
-                    Played {r.played} · W {r.wins} · D {r.draws} · L {r.losses}
+                  <p className="text-sm text-cl-muted">
+                    Played {r.played} · W {r.wins} · D {r.draws} · L {r.losses}{" "}
+                    · OT losses {r.overtimeLosses ?? 0}
                   </p>
-                  <p className="text-sm text-slate-300">
+                  <p className="text-sm text-cl-muted">
                     {d.scoreLabel}: {r.scoredFor} for · {r.scoredAgainst}{" "}
                     against · Difference {r.difference}
                   </p>
@@ -359,6 +409,7 @@ export function SeasonDetails({
                   <tr>
                     {[
                       "Team",
+                      "Place",
                       "Played",
                       "Wins",
                       "Draws",
@@ -367,11 +418,13 @@ export function SeasonDetails({
                       `${d.scoreLabel} against`,
                       "Difference",
                       "Standings points",
+                      "Win %",
+                      "OT losses",
                     ].map((h) => (
                       <th
                         key={h}
                         scope="col"
-                        className="whitespace-nowrap border-b border-white/20 p-3"
+                        className="whitespace-nowrap border-b border-cl-border p-3"
                       >
                         {h}
                       </th>
@@ -385,6 +438,7 @@ export function SeasonDetails({
                         {r.name}
                       </th>
                       {[
+                        r.position ?? "—",
                         r.played,
                         r.wins,
                         r.draws,
@@ -393,6 +447,8 @@ export function SeasonDetails({
                         r.scoredAgainst,
                         r.difference,
                         r.points,
+                        ((r.winPercentage ?? 0) * 100).toFixed(1),
+                        r.overtimeLosses ?? 0,
                       ].map((v, i) => (
                         <td key={i} className="p-3">
                           {v}

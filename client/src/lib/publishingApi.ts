@@ -1,12 +1,18 @@
 import { socialRequest, parsePage, type Person, type Page } from "./socialApi";
 export const publishingSports = [
   "general",
+  "american-football",
+  "soccer",
+  "hockey",
+  "track-running",
+  "marathon",
+  "onewheel-racing",
+  "rc-racing",
+
   "jet-ski",
   "motocross",
   "boat-racing",
-  "running",
   "baseball",
-  "football",
   "basketball",
   "golf",
   "other",
@@ -157,8 +163,13 @@ export function safePublishingUrl(value: unknown): string | null {
   }
 }
 export function publishingLabel(value: string) {
+  if (value === "american-football" || value === "football") return "Football";
+  if (value === "rc-racing") return "RC Racing";
+  if (value === "running" || value === "track-running") return "Track & Running";
   return value
     .split("-")
     .map((x) => x[0]?.toUpperCase() + x.slice(1))
     .join(" ");
 }
+
+export function canonicalPublishingSport(value: string) { return value === "football" ? "american-football" : value === "running" ? "track-running" : value; }

@@ -1,13 +1,11 @@
+import { SidebarSports } from "./navigation/SportNavigation";
 import { useSportSelection } from "@/hooks/useSportSelection";
 import { sportDirectory, sportHub } from "@/lib/sportNavigation";
 import { hasMoreBelow } from "@/lib/sidebarScroll";
 import { useAuth } from "@/hooks/useAuth";
-import { CreateOrganizationLink } from "./CreateOrganizationLink";
 // src/components/sidebarPanel.tsx
 import { Link, useLocation } from "wouter";
 import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
-import { useMyOrganizationAdminOrganizations } from "@/features/organization-admin/hooks/useMyOrganizationAdminOrganizations";
-import { OrgDashboardLink, canOpenOrgDashboard } from "./OrgDashboardLink";
 import {
   Ticket,
   ChevronDown,
@@ -108,42 +106,8 @@ export function useAppSidebarSections(opts?: {
   const { isAuthenticated } = useAuth();
   const guest = !!opts?.guestMode;
   const { sportKey, sport, isJetSki } = useSportSelection();
-  const myOrganizationsQuery = useMyOrganizationAdminOrganizations(!guest);
-  const showOrgDashboard = canOpenOrgDashboard(
-    !guest && myOrganizationsQuery.isSuccess && !myOrganizationsQuery.isError,
-    myOrganizationsQuery.data,
-  );
-
   return useMemo<SidebarSection[]>(() => {
     const base: SidebarSection[] = [
-      ...(!guest && isAuthenticated
-        ? [
-            {
-              title: "Create organization",
-              organizationCreation: true,
-              items: [],
-            },
-          ]
-        : []),
-      ...(showOrgDashboard
-        ? [
-            {
-              title: "Organizer workspace",
-              organizationDashboard: true,
-              items: [],
-            },
-          ]
-        : []),
-
-      {
-        title: "Community",
-        items: [
-          ...(!guest && isAuthenticated ? [{key:"my-tickets",label:"My tickets",selectable:false,matchPaths:["/tickets"],onSelect:()=>navigate("/tickets")}] : []),
-          {key:"community-forum",label:"Community Forum",selectable:false,matchPaths:["/community","/community/*"],onSelect:()=>navigate("/community")},
-          {key:"community-articles",label:"Articles & Blogs",selectable:false,matchPaths:["/articles","/articles/*"],onSelect:()=>navigate("/articles")},
-          ...(isAuthenticated ? [{key:"writer-studio",label:"Writer Studio",selectable:false,matchPaths:["/writer","/writer/*"],onSelect:()=>navigate("/writer")}] : []),
-        ],
-      },
       {
         title: "Explore",
         items: [
@@ -161,44 +125,40 @@ export function useAppSidebarSections(opts?: {
             matchPaths: isJetSki ? ["/scores", "/scores/aqua"] : [],
             onSelect: () => navigate(sportHub(sportKey)),
           },
-          ...(isJetSki ? [{
-            key: "race-registration",
-            label: "Race Registration",
-            selectable: false,
-            badge: "New",
-            matchPaths: ["/registration", "/registration/*"],
-            onSelect: () => navigate("/registration"),
-          },
-          {
-            key: "search-racers",
-            label: "Search Racers",
-            selectable: false,
-            matchPaths: ["/racer/*"],
-            onSelect: () => {
-              window.dispatchEvent(new CustomEvent("racer-search:open"));
-            },
-          }] : []),
+          ...(isJetSki
+            ? [
+                {
+                  key: "race-registration",
+                  label: "Race Registration",
+                  selectable: false,
+                  badge: "New",
+                  matchPaths: ["/registration", "/registration/*"],
+                  onSelect: () => navigate("/registration"),
+                },
+              ]
+            : []),
           {
             key: "race-organizations",
-            label: isJetSki ? "Race Organizations" : `${sport?.label ?? "Sport"} Organizations`,
+            label: isJetSki
+              ? "Race Organizations"
+              : `${sport?.label ?? "Sport"} Organizations`,
             selectable: false,
-            matchPaths: isJetSki ? ["/aqua-organizations", "/aqua-organizations/*"] : [`/sports/${sportKey}`, `/sports/${sportKey}/*`],
+            matchPaths: isJetSki
+              ? ["/aqua-organizations", "/aqua-organizations/*"]
+              : [`/sports/${sportKey}`, `/sports/${sportKey}/*`],
             onSelect: () => navigate(sportDirectory(sportKey)),
           },
-          ...(isJetSki ? [{
-            key: "event-map",
-            label: "Event Map",
-            selectable: false,
-            matchPaths: ["/event-map"],
-            onSelect: () => navigate("/event-map"),
-          }] : []),
-          {
-            key: "podcast-episodes",
-            label: "Podcast Episodes",
-            selectable: false,
-            matchPaths: ["/podcast-episodes"],
-            onSelect: () => navigate("/podcast-episodes"),
-          },
+          ...(isJetSki
+            ? [
+                {
+                  key: "event-map",
+                  label: "Event Map",
+                  selectable: false,
+                  matchPaths: ["/event-map"],
+                  onSelect: () => navigate("/event-map"),
+                },
+              ]
+            : []),
           {
             key: "top-trends",
             label: "Top Trends",
@@ -225,7 +185,15 @@ export function useAppSidebarSections(opts?: {
     ];
 
     return opts?.extra?.length ? [...base, ...opts.extra] : base;
-  }, [navigate, opts?.extra, showOrgDashboard, guest, isAuthenticated, sportKey, sport?.label, isJetSki]);
+  }, [
+    navigate,
+    opts?.extra,
+    guest,
+    isAuthenticated,
+    sportKey,
+    sport?.label,
+    isJetSki,
+  ]);
 }
 
 type Props = {
@@ -576,28 +544,29 @@ export default function SidebarPanel({
         <button
           type="button"
           aria-label="Close navigation"
-          className="fixed inset-0 z-[990] bg-black/70 backdrop-blur-sm md:hidden"
+          className="cl-dark fixed inset-0 z-[990] bg-black/70 backdrop-blur-sm md:hidden"
           onClick={onClose}
         />
       ) : null}
 
       <aside
-        className={`consumer-safe-sidebar fixed inset-y-0 left-0 z-[1000] flex h-dvh flex-col border-r border-cyan-300/10 bg-[#030913] shadow-[0_30px_90px_rgba(0,0,0,0.55)] transition-[width,transform] duration-150 ease-out ${
+        id="consumer-sidebar"
+        className={`cl-dark consumer-safe-sidebar fixed inset-y-0 left-0 z-[1000] flex h-dvh flex-col border-r border-cl-accent/10 bg-cl-canvas shadow-cl-panel transition-[width,transform] duration-150 ease-out ${
           effectiveCollapsed ? "md:w-[88px]" : "md:w-72"
         } w-[86vw] max-w-[330px] ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         } md:translate-x-0`}
       >
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-cyan-400/10 blur-3xl" />
+          <div className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-cl-accent/10 blur-3xl" />
 
-          <div className="absolute -right-24 bottom-0 h-96 w-96 rounded-full bg-[#FF6B35]/10 blur-3xl" />
+          <div className="absolute -right-24 bottom-0 h-96 w-96 rounded-full bg-cl-accent/10 blur-3xl" />
 
           <div className="absolute inset-0 opacity-[0.045] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:64px_64px]" />
         </div>
 
         <header
-          className={`relative z-20 shrink-0 overflow-hidden border-b border-cyan-300/10 bg-[#030913]/95 backdrop-blur-xl ${
+          className={`relative z-20 shrink-0 overflow-hidden border-b border-cl-accent/10 bg-cl-canvas backdrop-blur-xl ${
             renderCollapsed ? "p-3" : "p-4"
           }`}
         >
@@ -612,24 +581,24 @@ export default function SidebarPanel({
               <button
                 type="button"
                 onClick={onClose}
-                className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-cyan-300/15 bg-cyan-300/[0.06] transition hover:border-cyan-300/30 hover:bg-cyan-300/[0.1]"
+                className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-cl-accent/15 bg-cl-accent/[0.06] transition hover:border-cl-accent/30 hover:bg-cl-accent/[0.1]"
                 aria-label="Go home"
               >
                 {logoSrc ? (
                   <img src={logoSrc} alt={logoAlt} className="h-7 w-auto" />
                 ) : (
-                  <span className="text-sm font-black text-white">CL</span>
+                  <span className="text-sm font-black text-cl-ink">CL</span>
                 )}
               </button>
             </Link>
 
             {!renderCollapsed ? (
               <div className="min-w-0 flex-1">
-                <div className="truncate text-[11px] font-black uppercase tracking-[0.22em] text-white">
+                <div className="truncate text-[11px] font-black uppercase tracking-[0.22em] text-cl-ink">
                   Corner League
                 </div>
 
-                <div className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-cyan-200/55">
+                <div className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-cl-accent">
                   Sports
                 </div>
               </div>
@@ -641,7 +610,7 @@ export default function SidebarPanel({
                 setTooltip(null);
                 onCollapsedChange?.(!effectiveCollapsed);
               }}
-              className="hidden h-10 w-10 shrink-0 place-items-center rounded-full border border-white/10 bg-white/[0.05] text-white/60 transition hover:border-cyan-300/25 hover:bg-cyan-300/10 hover:text-cyan-100 md:grid"
+              className="hidden h-10 w-10 shrink-0 place-items-center rounded-full border border-cl-border bg-cl-subtle text-cl-muted transition hover:border-cl-accent/25 hover:bg-cl-accent/10 hover:text-cl-accent md:grid"
               aria-label={
                 effectiveCollapsed ? "Expand sidebar" : "Collapse sidebar"
               }
@@ -659,41 +628,25 @@ export default function SidebarPanel({
         <div className="relative z-10 min-h-0 flex-1">
           <div
             ref={navScrollRef}
-            className={`h-full overflow-x-hidden overflow-y-auto overscroll-contain [scrollbar-width:thin] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-cyan-300/20 ${
+            className={`h-full overflow-x-hidden overflow-y-auto overscroll-contain [scrollbar-width:thin] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-cl-accent/20 ${
               renderCollapsed ? "px-2 py-3" : "p-4"
             }`}
           >
             <div ref={navContentRef} className="pb-11">
-              {sections.map((section) => {
-                if (section.organizationCreation)
-                  return (
-                    <CreateOrganizationLink
-                      key={section.title}
-                      collapsed={renderCollapsed}
-                      onNavigate={onClose}
-                    />
-                  );
-                if (section.organizationDashboard) {
-                  return (
-                    <OrgDashboardLink
-                      key={section.title}
-                      collapsed={renderCollapsed}
-                      onNavigate={onClose}
-                    />
-                  );
-                }
+              <SidebarSports collapsed={renderCollapsed} onNavigate={onClose} />
+              {sections.filter(section => section.title !== "Explore" || (location !== "/" && location !== "/search_results")).map((section) => {
                 const open = renderCollapsed ? true : !!openMap[section.title];
 
                 return (
                   <section
-                    className={renderCollapsed ? "mb-4" : "mb-2"}
+                    className={`${renderCollapsed ? "mb-4" : "mb-2"} ${section.title === "Explore" ? "cl-mobile-explore" : ""}`}
                     key={section.title}
                   >
                     {!renderCollapsed ? (
                       <button
                         type="button"
                         onClick={() => toggleSection(section.title)}
-                        className="flex w-full items-center justify-between rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-3 text-[11px] font-black uppercase tracking-[0.18em] text-white/70 transition hover:border-cyan-300/20 hover:bg-cyan-300/[0.06] hover:text-white"
+                        className="flex w-full items-center justify-between rounded-2xl border border-cl-border bg-cl-subtle px-3 py-3 text-[11px] font-black uppercase tracking-[0.18em] text-cl-muted transition hover:border-cl-accent/20 hover:bg-cl-accent/[0.06] hover:text-cl-ink"
                         aria-expanded={open}
                       >
                         <span>{section.title}</span>
@@ -701,7 +654,7 @@ export default function SidebarPanel({
                       </button>
                     ) : (
                       <div
-                        className="mx-auto mb-2 h-px w-8 bg-white/10"
+                        className="mx-auto mb-2 h-px w-8 bg-cl-subtle"
                         aria-hidden="true"
                       />
                     )}
@@ -741,31 +694,31 @@ export default function SidebarPanel({
                                         switcherOpen ? null : section.title,
                                       );
                                     }}
-                                    className="w-full rounded-[20px] border border-cyan-300/20 bg-cyan-300/[0.07] p-3 text-left transition hover:border-cyan-300/35 hover:bg-cyan-300/[0.1] disabled:opacity-50"
+                                    className="w-full rounded-[20px] border border-cl-accent/20 bg-cl-accent/[0.07] p-3 text-left transition hover:border-cl-accent/35 hover:bg-cl-accent/[0.1] disabled:opacity-50"
                                   >
                                     <div className="flex items-center gap-3">
-                                      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-cyan-300/15 bg-cyan-300/[0.08] text-cyan-100">
+                                      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-cl-accent/15 bg-cl-accent/[0.08] text-cl-accent">
                                         <Building2 className="h-5 w-5" />
                                       </div>
 
                                       <div className="min-w-0 flex-1">
-                                        <div className="text-[8px] font-black uppercase tracking-[0.16em] text-cyan-200/45">
+                                        <div className="text-[8px] font-black uppercase tracking-[0.16em] text-cl-accent">
                                           Active Organization
                                         </div>
 
-                                        <div className="mt-1 truncate text-sm font-black text-white">
+                                        <div className="mt-1 truncate text-sm font-black text-cl-ink">
                                           {switcher.loading
                                             ? "Loading organizations..."
                                             : activeLabel}
                                         </div>
 
                                         {activeRole ? (
-                                          <div className="mt-0.5 text-[10px] font-bold text-white/35">
+                                          <div className="mt-0.5 text-[10px] font-bold text-cl-muted">
                                             {activeRole}
                                           </div>
                                         ) : switcher.isGlobalAdmin &&
                                           switcher.activeOrganizationId ? (
-                                          <div className="mt-0.5 text-[10px] font-bold text-white/35">
+                                          <div className="mt-0.5 text-[10px] font-bold text-cl-muted">
                                             Corner League Administrator
                                           </div>
                                         ) : null}
@@ -776,10 +729,10 @@ export default function SidebarPanel({
                                   </button>
 
                                   {switcherOpen ? (
-                                    <div className="mt-2 overflow-hidden rounded-[18px] border border-white/10 bg-[#07111F] shadow-[0_18px_55px_rgba(0,0,0,0.45)]">
+                                    <div className="mt-2 overflow-hidden rounded-[18px] border border-cl-border bg-cl-surface shadow-cl-panel">
                                       {switcher.organizations.length > 0 ? (
                                         <div className="p-2">
-                                          <div className="px-3 pb-2 pt-1 text-[8px] font-black uppercase tracking-[0.16em] text-white/25">
+                                          <div className="px-3 pb-2 pt-1 text-[8px] font-black uppercase tracking-[0.16em] text-cl-muted">
                                             Your Organizations
                                           </div>
 
@@ -814,16 +767,16 @@ export default function SidebarPanel({
                                                     }}
                                                     className={`w-full rounded-xl border px-3 py-3 text-left transition ${
                                                       isCurrent
-                                                        ? "border-cyan-300/20 bg-cyan-300/10"
-                                                        : "border-transparent hover:border-white/10 hover:bg-white/[0.05]"
+                                                        ? "border-cl-accent/20 bg-cl-accent/10"
+                                                        : "border-transparent hover:border-cl-border hover:bg-cl-subtle"
                                                     }`}
                                                   >
                                                     <div className="flex items-start gap-3">
                                                       <div
                                                         className={`mt-0.5 h-2.5 w-2.5 shrink-0 rounded-full ${
                                                           isCurrent
-                                                            ? "bg-cyan-300 shadow-[0_0_10px_rgba(103,232,249,0.5)]"
-                                                            : "bg-white/15"
+                                                            ? "bg-cl-accent shadow-cl-panel"
+                                                            : "bg-cl-subtle"
                                                         }`}
                                                       />
 
@@ -831,8 +784,8 @@ export default function SidebarPanel({
                                                         <div
                                                           className={`truncate text-xs font-black ${
                                                             isCurrent
-                                                              ? "text-cyan-100"
-                                                              : "text-white/75"
+                                                              ? "text-cl-accent"
+                                                              : "text-cl-muted"
                                                           }`}
                                                         >
                                                           {
@@ -842,7 +795,7 @@ export default function SidebarPanel({
 
                                                         <div className="mt-1 flex flex-wrap items-center gap-2">
                                                           {organization.organizationAbbreviation ? (
-                                                            <span className="text-[9px] font-bold uppercase tracking-[0.1em] text-white/30">
+                                                            <span className="text-[9px] font-bold uppercase tracking-[0.1em] text-cl-muted">
                                                               {
                                                                 organization.organizationAbbreviation
                                                               }
@@ -850,7 +803,7 @@ export default function SidebarPanel({
                                                           ) : null}
 
                                                           {role ? (
-                                                            <span className="text-[9px] font-bold text-white/30">
+                                                            <span className="text-[9px] font-bold text-cl-muted">
                                                               {role}
                                                             </span>
                                                           ) : null}
@@ -858,7 +811,7 @@ export default function SidebarPanel({
                                                       </div>
 
                                                       {isCurrent ? (
-                                                        <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-2 py-1 text-[7px] font-black uppercase tracking-[0.12em] text-cyan-100">
+                                                        <span className="rounded-full border border-cl-accent/20 bg-cl-accent/10 px-2 py-1 text-[7px] font-black uppercase tracking-[0.12em] text-cl-accent">
                                                           Active
                                                         </span>
                                                       ) : null}
@@ -875,7 +828,7 @@ export default function SidebarPanel({
                                       switcher.organizations.length === 0 ? (
                                         <>
                                           {switcher.organizations.length > 0 ? (
-                                            <div className="border-t border-white/[0.07]" />
+                                            <div className="border-t border-cl-border" />
                                           ) : null}
 
                                           <button
@@ -887,9 +840,9 @@ export default function SidebarPanel({
 
                                               onClose();
                                             }}
-                                            className="flex w-full items-center gap-3 px-4 py-3 text-left text-xs font-bold text-white/55 transition hover:bg-white/[0.05] hover:text-white"
+                                            className="flex w-full items-center gap-3 px-4 py-3 text-left text-xs font-bold text-cl-muted transition hover:bg-cl-subtle hover:text-cl-ink"
                                           >
-                                            <Building2 className="h-4 w-4 text-cyan-200/60" />
+                                            <Building2 className="h-4 w-4 text-cl-accent" />
 
                                             {switcher.isGlobalAdmin
                                               ? "Browse All Organizations"
@@ -937,16 +890,16 @@ export default function SidebarPanel({
                                   disabled={item.disabled}
                                   className={`relative grid h-12 w-12 place-items-center rounded-2xl border transition ${
                                     item.disabled
-                                      ? "cursor-not-allowed border-white/5 bg-white/[0.02] text-white/20"
+                                      ? "cursor-not-allowed border-cl-border bg-cl-subtle text-cl-muted"
                                       : isActive
-                                        ? "border-cyan-300/30 bg-cyan-300/12 text-cyan-100 shadow-[0_0_24px_rgba(34,211,238,0.12)]"
-                                        : "border-transparent bg-transparent text-white/45 hover:border-cyan-300/15 hover:bg-cyan-300/[0.07] hover:text-white"
+                                        ? "border-cl-accent/30 bg-cl-accent/[0.12] text-cl-accent shadow-cl-panel"
+                                        : "border-transparent bg-transparent text-cl-muted hover:border-cl-accent/15 hover:bg-cl-accent/[0.07] hover:text-cl-ink"
                                   }`}
                                 >
                                   <ItemIcon className="h-5 w-5" />
 
                                   {item.badge ? (
-                                    <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full border-2 border-[#030913] bg-[#FF6B35]" />
+                                    <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full border-2 border-[#030913] bg-cl-accent" />
                                   ) : null}
                                 </button>
                               </div>
@@ -961,10 +914,10 @@ export default function SidebarPanel({
                               disabled={item.disabled}
                               className={`group w-full rounded-2xl border px-3 py-3 text-left transition ${
                                 item.disabled
-                                  ? "cursor-not-allowed border-white/5 bg-white/[0.02] text-white/25"
+                                  ? "cursor-not-allowed border-cl-border bg-cl-subtle text-cl-muted"
                                   : isActive
-                                    ? "border-cyan-300/25 bg-cyan-300/10 text-cyan-100 shadow-[0_0_24px_rgba(34,211,238,0.08)]"
-                                    : "border-transparent bg-transparent text-white/55 hover:border-cyan-300/15 hover:bg-cyan-300/[0.06] hover:text-white"
+                                    ? "border-cl-accent/25 bg-cl-accent/10 text-cl-accent shadow-cl-panel"
+                                    : "border-transparent bg-transparent text-cl-muted hover:border-cl-accent/15 hover:bg-cl-accent/[0.06] hover:text-cl-ink"
                               }`}
                             >
                               <div className="flex min-w-0 items-center gap-3">
@@ -975,14 +928,14 @@ export default function SidebarPanel({
                                 </span>
 
                                 {item.badge ? (
-                                  <span className="shrink-0 rounded-full border border-[#FF6B35]/20 bg-[#FF6B35]/10 px-2 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-[#FFB199]">
+                                  <span className="shrink-0 rounded-full border border-cl-accent/20 bg-cl-accent/10 px-2 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-cl-accent">
                                     {item.badge}
                                   </span>
                                 ) : null}
                               </div>
 
                               {item.helper ? (
-                                <div className="mt-1 pl-7 text-xs leading-5 text-white/35">
+                                <div className="mt-1 pl-7 text-xs leading-5 text-cl-muted">
                                   {item.helper}
                                 </div>
                               ) : null}
@@ -1008,7 +961,7 @@ export default function SidebarPanel({
                     behavior: "smooth",
                   });
               }}
-              className="absolute bottom-0 left-2 right-2 flex min-h-10 items-center justify-center gap-2 rounded-lg border border-cyan-300/20 bg-[#10283C] text-xs font-semibold text-cyan-100"
+              className="absolute bottom-0 left-2 right-2 flex min-h-10 items-center justify-center gap-2 rounded-lg border border-cl-accent/20 bg-cl-surface text-xs font-semibold text-cl-accent"
             >
               {!renderCollapsed && <span>More below</span>}
               <ChevronDown className="h-5 w-5" />
@@ -1017,7 +970,7 @@ export default function SidebarPanel({
         </div>
 
         <footer
-          className={`relative z-20 shrink-0 overflow-hidden border-t border-cyan-300/10 bg-[#030913]/95 backdrop-blur-xl ${
+          className={`relative z-20 shrink-0 overflow-hidden border-t border-cl-accent/10 bg-cl-canvas backdrop-blur-xl ${
             renderCollapsed
               ? "p-3"
               : "p-4 pb-8 pb-[calc(env(safe-area-inset-bottom)+2rem)] md:pb-4"
@@ -1032,7 +985,7 @@ export default function SidebarPanel({
                   onMouseEnter={showHomeTooltip}
                   onMouseLeave={() => setTooltip(null)}
                   aria-label="Go to Home"
-                  className="grid h-12 w-12 place-items-center rounded-2xl border border-cyan-300/20 bg-cyan-300/10 text-cyan-100 transition hover:bg-cyan-300 hover:text-[#06111d]"
+                  className="grid h-12 w-12 place-items-center rounded-2xl border border-cl-accent/20 bg-cl-accent/10 text-cl-accent transition hover:bg-cl-accent hover:text-cl-contrast"
                 >
                   <Home className="h-5 w-5" />
                 </button>
@@ -1044,20 +997,19 @@ export default function SidebarPanel({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="w-full rounded-full border border-cyan-300/20 bg-cyan-300/10 px-4 py-3 text-left text-xs font-black uppercase tracking-[0.14em] text-cyan-100 transition hover:border-cyan-300/35 hover:bg-cyan-300 hover:text-[#06111d]"
+                  className="w-full rounded-full border border-cl-accent/20 bg-cl-accent/10 px-4 py-3 text-left text-xs font-black uppercase tracking-[0.14em] text-cl-accent transition hover:border-cl-accent/35 hover:bg-cl-accent hover:text-cl-contrast"
                 >
                   ← Go to Home
                 </button>
               </Link>
 
-              <div className="rounded-2xl border border-white/10 bg-white/[0.035] px-4 py-3">
-                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-200/55">
+              <div className="rounded-2xl border border-cl-border bg-cl-subtle px-4 py-3">
+                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-cl-accent">
                   Corner League Sports
                 </div>
 
-                <div className="mt-1 text-xs leading-5 text-white/35">
-                  Jet ski racing results, rankings, events, and athlete
-                  profiles.
+                <div className="mt-1 text-xs leading-5 text-cl-muted">
+                  Explore sports clubs, events, and athlete profiles.
                 </div>
               </div>
             </div>
@@ -1068,7 +1020,7 @@ export default function SidebarPanel({
       {tooltip && renderCollapsed && isDesktop ? (
         <div
           role="tooltip"
-          className="pointer-events-none fixed z-[200] -translate-y-1/2 whitespace-nowrap rounded-xl border border-cyan-300/15 bg-[#07111F] px-3 py-2.5 text-xs font-bold text-white shadow-[0_18px_50px_rgba(0,0,0,0.55)]"
+          className="pointer-events-none fixed z-[200] -translate-y-1/2 whitespace-nowrap rounded-xl border border-cl-accent/15 bg-cl-surface px-3 py-2.5 text-xs font-bold text-cl-ink shadow-cl-panel"
           style={{
             left: tooltip.left,
             top: tooltip.top,
@@ -1077,7 +1029,7 @@ export default function SidebarPanel({
           <span>{tooltip.label}</span>
 
           {tooltip.badge ? (
-            <span className="ml-2 rounded-full border border-[#FF6B35]/20 bg-[#FF6B35]/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.12em] text-[#FFB199]">
+            <span className="ml-2 rounded-full border border-cl-accent/20 bg-cl-accent/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.12em] text-cl-accent">
               {tooltip.badge}
             </span>
           ) : null}

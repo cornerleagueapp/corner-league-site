@@ -30,16 +30,16 @@ export default function PollDetailsPage({ params }: PollDetailsPageProps) {
   }, [poll?.id]);
 
   return (
-    <div className="min-h-screen bg-[#030913] text-white">
+    <div className="min-h-screen bg-cl-canvas text-cl-ink">
       <div className="pointer-events-none fixed inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.12),transparent_28%),radial-gradient(circle_at_82%_18%,rgba(255,107,53,0.08),transparent_24%),linear-gradient(180deg,#030913_0%,#07111F_48%,#02050A_100%)]" />
+        <div className="absolute inset-0 cl-panel-wash" />
         <div className="absolute inset-0 opacity-[0.04] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:72px_72px]" />
       </div>
 
       <main className="relative mx-auto w-full max-w-[1100px] px-4 py-10 sm:px-6 lg:px-8">
         <div className="mb-6">
           <Link href="/polls">
-            <button className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-white/70 hover:bg-white/10 hover:text-white">
+            <button className="inline-flex items-center gap-2 rounded-full border border-cl-border bg-cl-subtle px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-cl-muted hover:bg-cl-subtle hover:text-cl-ink">
               <ArrowLeft className="h-4 w-4" />
               Back to Polls
             </button>
@@ -47,7 +47,7 @@ export default function PollDetailsPage({ params }: PollDetailsPageProps) {
         </div>
 
         {isLoading ? (
-          <div className="rounded-[28px] border border-white/10 bg-white/[0.03] p-8 text-white/50">
+          <div className="rounded-[28px] border border-cl-border bg-cl-subtle p-8 text-cl-muted">
             Loading poll...
           </div>
         ) : isError ? (
@@ -55,13 +55,13 @@ export default function PollDetailsPage({ params }: PollDetailsPageProps) {
             {(error as any)?.message || "Failed to load poll."}
           </div>
         ) : !poll ? (
-          <div className="rounded-[28px] border border-white/10 bg-white/[0.03] p-8 text-white/50">
+          <div className="rounded-[28px] border border-cl-border bg-cl-subtle p-8 text-cl-muted">
             Poll not found.
           </div>
         ) : (
           <>
             {poll.coverImageUrl ? (
-              <div className="mb-6 overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[#07111F]/90">
+              <div className="mb-6 overflow-hidden rounded-[30px] border border-cl-accent/10 bg-cl-surface">
                 <img
                   src={poll.coverImageUrl}
                   alt={poll.title}
@@ -69,7 +69,7 @@ export default function PollDetailsPage({ params }: PollDetailsPageProps) {
                 />
               </div>
             ) : (
-              <div className="mb-6 flex h-[220px] items-center justify-center rounded-[30px] border border-cyan-300/10 bg-[#07111F]/90 text-cyan-200/40">
+              <div className="mb-6 flex h-[220px] items-center justify-center rounded-[30px] border border-cl-accent/10 bg-cl-surface text-cl-accent">
                 <Vote className="h-16 w-16" />
               </div>
             )}

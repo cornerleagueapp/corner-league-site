@@ -8,10 +8,10 @@ type ContactInformationStepProps = {
 };
 
 const inputClassName =
-  "h-12 w-full rounded-[16px] border border-white/10 bg-white/[0.045] px-4 text-sm text-white outline-none placeholder:text-white/30 transition focus:border-cyan-300/30 focus:bg-cyan-300/[0.05] focus:ring-2 focus:ring-cyan-300/10";
+  "h-12 w-full rounded-[16px] border border-cl-border bg-cl-subtle px-4 text-sm text-cl-ink outline-none placeholder:text-cl-muted transition focus:border-cl-accent/30 focus:bg-cl-accent/[0.05] focus:ring-2 focus:ring-cl-accent/10";
 
 const labelClassName =
-  "mb-2 block text-[10px] font-black uppercase tracking-[0.13em] text-white/50";
+  "mb-2 block text-[10px] font-black uppercase tracking-[0.13em] text-cl-muted";
 
 export function isContactInformationComplete(contact: RegistrationContact) {
   return (
@@ -36,15 +36,15 @@ export default function ContactInformationStep({
   return (
     <div className="space-y-5">
       <div>
-        <div className="text-[9px] font-black uppercase tracking-[0.18em] text-cyan-200/60">
+        <div className="text-[9px] font-black uppercase tracking-[0.18em] text-cl-accent">
           Step 2 of 6
         </div>
 
-        <h2 className="mt-2 text-2xl font-black uppercase tracking-[-0.035em] text-white sm:text-3xl">
+        <h2 className="mt-2 text-2xl font-black uppercase tracking-[-0.035em] text-cl-ink sm:text-3xl">
           Contact information
         </h2>
 
-        <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-400">
+        <p className="mt-2 max-w-2xl text-sm leading-7 text-cl-muted">
           This information is used for registration confirmation, race updates,
           payment communication, and organizer contact. It will not appear on
           the public racer list.
@@ -52,16 +52,16 @@ export default function ContactInformationStep({
       </div>
 
       {accountEmail ? (
-        <div className="flex flex-col gap-3 rounded-[20px] border border-cyan-300/15 bg-cyan-300/[0.055] p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 rounded-[20px] border border-cl-accent/[0.15] bg-cl-accent/[0.055] p-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 items-start gap-3">
-            <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-cyan-200" />
+            <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-cl-accent" />
 
             <div className="min-w-0">
-              <p className="text-xs font-black uppercase tracking-[0.11em] text-white">
+              <p className="text-xs font-black uppercase tracking-[0.11em] text-cl-ink">
                 Corner League account email
               </p>
 
-              <p className="mt-1 truncate text-sm text-white/55">
+              <p className="mt-1 truncate text-sm text-cl-muted">
                 {accountEmail}
               </p>
             </div>
@@ -72,8 +72,8 @@ export default function ContactInformationStep({
             onClick={() => onChange({ email: accountEmail })}
             className={`shrink-0 rounded-full border px-4 py-2.5 text-[9px] font-black uppercase tracking-[0.13em] transition ${
               usingAccountEmail
-                ? "border-emerald-300/20 bg-emerald-300/10 text-emerald-200"
-                : "border-cyan-300/20 bg-cyan-300/10 text-cyan-100 hover:bg-cyan-300 hover:text-[#06111d]"
+                ? "border-emerald-300/20 bg-emerald-300/10 text-cl-success"
+                : "border-cl-accent/20 bg-cl-accent/10 text-cl-accent hover:bg-cl-accent hover:text-cl-contrast"
             }`}
           >
             {usingAccountEmail ? "Account Email Applied" : "Use Account Email"}
@@ -81,13 +81,13 @@ export default function ContactInformationStep({
         </div>
       ) : null}
 
-      <div className="rounded-[26px] border border-cyan-300/10 bg-[#07111F]/82 p-4 sm:p-5">
+      <div className="rounded-[26px] border border-cl-accent/10 bg-cl-surface p-4 sm:p-5">
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="sm:col-span-2">
             <span className={labelClassName}>Email address *</span>
 
             <div className="relative">
-              <AtSign className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/30" />
+              <AtSign className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-cl-muted" />
 
               <input
                 type="email"
@@ -99,7 +99,7 @@ export default function ContactInformationStep({
               />
             </div>
 
-            <p className="mt-2 text-[11px] leading-5 text-white/35">
+            <p className="mt-2 text-[11px] leading-5 text-cl-muted">
               Registration confirmation and payment details will be sent to this
               address.
             </p>
@@ -109,7 +109,7 @@ export default function ContactInformationStep({
             <span className={labelClassName}>Phone number *</span>
 
             <div className="relative">
-              <Phone className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/30" />
+              <Phone className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-cl-muted" />
 
               <input
                 type="tel"
@@ -125,11 +125,11 @@ export default function ContactInformationStep({
         </div>
       </div>
 
-      <div className="rounded-[26px] border border-cyan-300/10 bg-[#07111F]/82 p-4 sm:p-5">
+      <div className="rounded-[26px] border border-cl-accent/10 bg-cl-surface p-4 sm:p-5">
         <div className="mb-4 flex items-center gap-2">
-          <MapPin className="h-4 w-4 text-[#FFB199]" />
+          <MapPin className="h-4 w-4 text-cl-accent" />
 
-          <h3 className="text-xs font-black uppercase tracking-[0.12em] text-white">
+          <h3 className="text-xs font-black uppercase tracking-[0.12em] text-cl-ink">
             Registrant Location
           </h3>
         </div>
@@ -174,18 +174,18 @@ export default function ContactInformationStep({
               placeholder="US"
             />
 
-            <p className="mt-2 text-[11px] leading-5 text-white/35">
+            <p className="mt-2 text-[11px] leading-5 text-cl-muted">
               Use a short country code such as US, CA, GB, AU, or JP.
             </p>
           </label>
         </div>
       </div>
 
-      <div className="rounded-[20px] border border-white/10 bg-white/[0.025] p-4">
+      <div className="rounded-[20px] border border-cl-border bg-cl-subtle p-4">
         <div className="flex items-start gap-3">
-          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-cyan-200" />
+          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-cl-accent" />
 
-          <p className="text-xs leading-6 text-white/45">
+          <p className="text-xs leading-6 text-cl-muted">
             Contact information remains private and will only be available to
             the race organization and authorized Corner League administrators.
           </p>

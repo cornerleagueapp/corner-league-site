@@ -23,6 +23,8 @@ function compile(relative) {
   m.paths = module.paths;
   const fallback = m.require.bind(m);
   m.require = (name) => {
+    if (name === "./NavbarSearch")
+      return { default: () => null, __esModule: true };
     if (name === "react")
       return {
         ...React,
@@ -40,6 +42,19 @@ function compile(relative) {
           if (payload instanceof Error) throw payload;
           return payload;
         },
+      };
+    if (name === "@/components/marketing/MarketingPreferences")
+      return { MarketingPreferences: () => null };
+    if (
+      name ===
+      "@/features/organization-admin/hooks/useMyOrganizationAdminOrganizations"
+    )
+      return {
+        useMyOrganizationAdminOrganizations: () => ({
+          isSuccess: true,
+          isError: false,
+          data: { organizations: [] },
+        }),
       };
     if (name === "@/hooks/useAuth") return { useAuth: () => auth };
     if (
@@ -132,6 +147,9 @@ const render = (component, props = {}) =>
   accountOpen = true;
   const nav = render(Nav);
   assert.match(nav, /Notifications/);
+  // Admissions navigation is deferred; keep notification/account coverage active.
+  assert.doesNotMatch(nav, /My tickets/);
+  assert.match(nav, /Writer studio/);
   assert.match(nav, /137 unread notifications/);
   assert.ok(
     options.some(

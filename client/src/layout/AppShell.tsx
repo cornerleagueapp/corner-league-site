@@ -1,7 +1,11 @@
+import "@/styles/consumer-motion.css";
+import Breadcrumbs from "@/components/navigation/Breadcrumbs";
+import { publicPageAvailable } from "@/lib/publicFeatures";
+import { useSportSelection } from "@/hooks/useSportSelection";
+import { sportThemeStyle } from "@/lib/sportTheme";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "wouter";
 import SidebarPanel, { useAppSidebarSections } from "@/components/sidebarPanel";
-import RacerSearchModal from "@/components/RacerSearchModal";
 import cornerLeagueLogo from "@assets/CL_Logo.png";
 import { logout } from "@/lib/logout";
 import { useAuth } from "@/hooks/useAuth";
@@ -171,6 +175,7 @@ export default function AppShell({
   });
 
   const [location, navigate] = useLocation();
+  const { sportKey } = useSportSelection();
 
   const organizationAdminMatch = location.match(
     /^\/organizations\/([^/]+)\/admin(?:\/|$)/,
@@ -190,7 +195,6 @@ export default function AppShell({
 
   const [clubsSubKey, setClubsSubKey] = useState<"" | "my" | "discover">("");
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const [racerSearchOpen, setRacerSearchOpen] = useState(false);
 
   useEffect(() => {
     const hardLogout = () => {
@@ -251,18 +255,6 @@ export default function AppShell({
   }, []);
 
   useEffect(() => {
-    const onOpenRacerSearch = () => {
-      setRacerSearchOpen(true);
-    };
-
-    window.addEventListener("racer-search:open", onOpenRacerSearch);
-
-    return () => {
-      window.removeEventListener("racer-search:open", onOpenRacerSearch);
-    };
-  }, []);
-
-  useEffect(() => {
     setIsSidebarOpen(false);
   }, [location]);
 
@@ -314,11 +306,20 @@ export default function AppShell({
   }
 
   return (
-    <div className="consumer-app-shell relative flex overflow-hidden bg-black text-white">
+    <div
+      className="consumer-app-shell relative flex overflow-hidden bg-black text-white"
+      data-consumer-sport={sportKey}
+      style={sportThemeStyle(location === "/" || location === "/search_results" ? "all" : sportKey)}
+    >
+      <a className="consumer-skip-link" href="#consumer-main">
+        Skip to content
+      </a>
       <button
         type="button"
         onClick={() => setIsSidebarOpen((value) => !value)}
-        className="consumer-menu-toggle fixed z-[1010] rounded-2xl border border-cyan-300/15 bg-[#07111F]/95 p-2 text-white shadow-[0_18px_45px_rgba(0,0,0,0.35)] backdrop-blur transition hover:border-cyan-300/30 hover:bg-cyan-300/10 md:hidden"
+        className="cl-dark consumer-menu-toggle fixed z-[1010] rounded-2xl border border-cl-accent/[0.15] bg-cl-surface/95 p-2 text-white shadow-[0_18px_45px_rgba(0,0,0,0.35)] backdrop-blur transition hover:border-cl-accent/30 hover:bg-cl-accent/10 md:hidden"
+        aria-expanded={isSidebarOpen}
+        aria-controls="consumer-sidebar"
         aria-label={isSidebarOpen ? "Close main menu" : "Open main menu"}
       >
         <svg
@@ -438,23 +439,29 @@ export default function AppShell({
       >
         <PublicTopNav sticky={false} />
 
-        <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden">
-          {children}
+        <div
+          id="consumer-main"
+          tabIndex={-1}
+          className="consumer-content min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden"
+        >
+          <div
+            key={location}
+            className={`consumer-page-frame consumer-page-enter${location === "/messages" ? " consumer-page-frame--workspace" : ""}`}
+          >
+            <Breadcrumbs />
+            {publicPageAvailable(location) ? (
+              children
+            ) : (
+              <section className="sport-hub-empty">
+                <h1>Page unavailable</h1>
+                <p>This feature is not currently available.</p>
+                <a href="/">Return home</a>
+              </section>
+            )}
+          </div>
           {location !== "/messages" && <SiteFooter />}
         </div>
       </div>
-
-      <RacerSearchModal
-        open={racerSearchOpen}
-        onClose={() => setRacerSearchOpen(false)}
-        onSelectRacer={(racer) => {
-          setRacerSearchOpen(false);
-
-          const id = encodeURIComponent(String(racer.id));
-
-          navigate(`/racer/${id}`);
-        }}
-      />
 
       {showLogoutConfirm ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
@@ -469,7 +476,7 @@ export default function AppShell({
             role="dialog"
             aria-modal="true"
             aria-labelledby="logout-title"
-            className="relative z-10 w-full max-w-sm rounded-[30px] border border-cyan-300/10 bg-[#07111F] p-5 shadow-[0_30px_90px_rgba(0,0,0,0.5)]"
+            className="cl-dark relative z-10 w-full max-w-sm rounded-[30px] border border-cyan-300/10 bg-[#07111F] p-5 shadow-[0_30px_90px_rgba(0,0,0,0.5)]"
           >
             <div className="text-[10px] font-black uppercase tracking-[0.22em] text-[#FFB199]">
               Account

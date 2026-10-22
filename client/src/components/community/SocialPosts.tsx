@@ -1,3 +1,4 @@
+import AccountAvatar from "./AccountAvatar";
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
@@ -24,14 +25,14 @@ import {
   type SocialPost,
 } from "@/lib/socialApi";
 export const socialBox =
-  "rounded-3xl border border-white/10 bg-[#07111f] p-4 sm:p-6";
+  "rounded-3xl border border-cl-border bg-cl-surface p-4 sm:p-6";
 export const socialInput =
-  "w-full rounded-xl border border-white/15 bg-black/20 p-3 text-white outline-none focus:border-cyan-300";
+  "w-full rounded-xl border border-cl-border bg-cl-subtle p-3 text-cl-ink outline-none focus:border-cl-accent";
 export const socialButton =
-  "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/15 px-4 py-2 text-sm font-semibold text-cyan-100 hover:bg-white/10 disabled:opacity-40";
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-cl-border px-4 py-2 text-sm font-semibold text-cl-accent hover:bg-cl-subtle disabled:opacity-40";
 export function SocialFailure({ error }: { error: unknown }) {
   return (
-    <p role="alert" className="mt-3 text-sm text-rose-200">
+    <p role="alert" className="mt-3 text-sm text-cl-danger">
       {socialError(error)}
     </p>
   );
@@ -106,7 +107,7 @@ export function PostComposer({ athleteId }: { athleteId?: string }) {
   if (!canCompose) return null;
   return (
     <form
-      className={socialBox}
+      className={`social-post-composer ${socialBox}`}
       onSubmit={(event) => {
         event.preventDefault();
         setError("");
@@ -139,7 +140,7 @@ export function PostComposer({ athleteId }: { athleteId?: string }) {
                 onClick={() =>
                   setFiles((value) => value.filter((_, i) => i !== index))
                 }
-                className="min-h-11 text-xs text-rose-200"
+                className="min-h-11 text-xs text-cl-danger"
               >
                 Remove image {index + 1}
               </button>
@@ -174,7 +175,7 @@ export function PostComposer({ athleteId }: { athleteId?: string }) {
           />
         </label>
         {!athleteId && ownAthlete && (
-          <label className="flex min-h-11 items-center gap-2 text-sm text-white/70">
+          <label className="flex min-h-11 items-center gap-2 text-sm text-cl-muted">
             <input
               type="checkbox"
               checked={asAthlete}
@@ -187,17 +188,17 @@ export function PostComposer({ athleteId }: { athleteId?: string }) {
         <button
           type="submit"
           disabled={publish.isPending}
-          className={`${socialButton} bg-cyan-300/15`}
+          className={`${socialButton} bg-cl-accent/15`}
         >
           <Send size={16} />
           {publish.isPending ? "Publishing…" : "Publish"}
         </button>
       </div>
-      <p className="mt-3 text-xs text-white/45">
+      <p className="mt-3 text-xs text-cl-muted">
         Posts are public. JPEG, PNG, and WebP · up to 4 images · 8 MB each.
       </p>
       {error && (
-        <p role="alert" className="mt-2 text-sm text-rose-200">
+        <p role="alert" className="mt-2 text-sm text-cl-danger">
           {error}
         </p>
       )}
@@ -259,7 +260,7 @@ function CommentsPanel({ postId }: { postId: string }) {
   });
   return (
     <section
-      className="mt-4 border-t border-white/10 pt-4"
+      className="mt-4 border-t border-cl-border pt-4"
       aria-label="Comments"
     >
       {query.isPending ? (
@@ -276,12 +277,12 @@ function CommentsPanel({ postId }: { postId: string }) {
           {query.data.items.map((comment) => (
             <article
               key={comment.id}
-              className="mb-3 rounded-xl bg-white/5 p-3"
+              className="mb-3 rounded-xl bg-cl-subtle p-3"
             >
               <div className="flex items-center justify-between">
                 <Link
                   href={`/profile/${encodeURIComponent(comment.author.username)}`}
-                  className="text-sm font-bold text-cyan-100"
+                  className="text-sm font-bold text-cl-accent"
                 >
                   @{comment.author.username}
                 </Link>
@@ -294,19 +295,19 @@ function CommentsPanel({ postId }: { postId: string }) {
                       if (window.confirm("Delete your comment?"))
                         remove.mutate(comment.id);
                     }}
-                    className="min-h-11 px-3 text-rose-200"
+                    className="min-h-11 px-3 text-cl-danger"
                   >
                     <Trash2 size={14} />
                   </button>
                 )}
               </div>
-              <p className="whitespace-pre-wrap break-words text-sm text-white/80">
+              <p className="whitespace-pre-wrap break-words text-sm text-cl-ink">
                 {comment.content}
               </p>
             </article>
           ))}
           {!query.data.items.length && (
-            <p className="text-sm text-white/50">No comments yet.</p>
+            <p className="text-sm text-cl-muted">No comments yet.</p>
           )}
           <Pagination
             page={page}
@@ -340,7 +341,7 @@ function CommentsPanel({ postId }: { postId: string }) {
       ) : (
         <Link
           href={`/auth?next=${encodeURIComponent(`/posts/${postId}`)}`}
-          className="inline-flex min-h-11 items-center text-sm text-cyan-200"
+          className="inline-flex min-h-11 items-center text-sm text-cl-accent"
         >
           Sign in to comment
         </Link>
@@ -369,7 +370,7 @@ export function Pagination({
       >
         Previous
       </button>
-      <span className="text-sm text-white/50">Page {page}</span>
+      <span className="text-sm text-cl-muted">Page {page}</span>
       <button
         className={socialButton}
         disabled={!hasNext}
@@ -407,20 +408,20 @@ export function PostCard({ post }: { post: SocialPost }) {
   const signIn = () =>
     navigate(`/auth?next=${encodeURIComponent(`/posts/${post.id}`)}`);
   return (
-    <article className={socialBox}>
+    <article className={`social-post-card ${socialBox}`}>
       <div className="mb-4 flex flex-wrap items-start justify-between gap-2">
-        <div>
+        <div className="social-post-author"><AccountAvatar picture={post.author.profilePicture} username={post.author.username} /><div>
           <Link
             href={`/profile/${encodeURIComponent(post.author.username)}`}
-            className="text-sm font-bold text-cyan-100"
+            className="text-sm font-bold text-cl-accent"
           >
             @{post.author.username}
           </Link>
-          <p className="mt-1 text-xs text-white/45">
+          <p className="mt-1 text-xs text-cl-muted">
             {post.athlete ? `Athlete update · ${post.athlete.name} · ` : ""}
             {new Date(post.createdAt).toLocaleString()}
           </p>
-        </div>
+        </div></div>
         {post.canEdit && (
           <div className="flex gap-2">
             <button
@@ -483,12 +484,12 @@ export function PostCard({ post }: { post: SocialPost }) {
           </div>
         </form>
       ) : (
-        <p className="whitespace-pre-wrap break-words leading-relaxed text-white/85">
+        <p className="whitespace-pre-wrap break-words leading-relaxed text-cl-ink">
           {post.content}
         </p>
       )}
       {post.mediaUrls.length > 0 && (
-        <div className="mt-4 grid gap-2 sm:grid-cols-2">
+        <div className={`social-post-media mt-4 grid gap-2 ${post.mediaUrls.length > 1 ? "sm:grid-cols-2" : ""}`}>
           {post.mediaUrls.map((url, index) => (
             <a
               key={`${url}-${index}`}
@@ -554,7 +555,7 @@ export function PostCard({ post }: { post: SocialPost }) {
         </Link>
       </div>
       {shareText && (
-        <p role="status" className="mt-2 break-all text-xs text-cyan-200">
+        <p role="status" className="mt-2 break-all text-xs text-cl-accent">
           {shareText}
         </p>
       )}
@@ -593,7 +594,7 @@ function Feed({
     enabled: feed !== "following" || isAuthenticated,
   });
   return (
-    <div className="space-y-4">
+    <div className="social-post-feed space-y-4">
       {compose && <PostComposer key={String(user?.id)} athleteId={athleteId} />}
       <div className="flex items-center justify-between">
         <h2 className="font-bold">{athleteId ? "Athlete updates" : "Posts"}</h2>
@@ -621,7 +622,7 @@ function Feed({
         <>
           {!query.data.items.length && (
             <div className={socialBox}>
-              <p className="text-white/60">
+              <p className="text-cl-muted">
                 {feed === "following"
                   ? "Follow people or athletes to see their updates here."
                   : "No posts yet."}
@@ -662,7 +663,7 @@ export function SocialPostPage({ id }: { id: string }) {
     retry: false,
   });
   return (
-    <main className="mx-auto max-w-3xl space-y-5 p-4 py-8 text-white">
+    <main className="mx-auto max-w-3xl space-y-5 p-4 py-8 text-cl-ink">
       <Link href="/feed" className={socialButton}>
         Back to feed
       </Link>

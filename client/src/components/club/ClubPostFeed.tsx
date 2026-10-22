@@ -72,7 +72,7 @@ const EMOJI: Record<string, string> = {
 function makeMentionRefresher(
   ctrl: ReturnType<typeof buildMentionController>,
   setState: (s: { open: boolean; list: MentionUser[] }) => void,
-  tag: string
+  tag: string,
 ) {
   let raf: number | null = null;
   return () => {
@@ -89,7 +89,7 @@ const TLD_PART = "(com|org|net|io|app|ai|dev|co|tv|xyz|gg|gov|edu)";
 const SCHEME_RE = /\bhttps?:\/\/[^\s)]+/gi;
 const BARE_RE = new RegExp(
   `\\b(?:[a-z0-9-]+\\.)+${TLD_PART}(?:\\/[^\\s)]*)?`,
-  "gi"
+  "gi",
 );
 const MENTION_RE = /(^|[\s.,;:!?()'"[\]-])@([a-z0-9_]{2,30})\b/gi;
 
@@ -111,7 +111,7 @@ function execAll(re: RegExp, text: string) {
 
 function renderTextWithLinks(
   text: string,
-  onLinkClick: (url: string) => void
+  onLinkClick: (url: string) => void,
 ): ReactNode[] {
   if (!text) return [""];
   const linkMatches = [...execAll(SCHEME_RE, text), ...execAll(BARE_RE, text)];
@@ -141,22 +141,22 @@ function renderTextWithLinks(
       out.push(
         <button
           key={`lnk-${idx}-${m.start}`}
-          className="text-[#4ea1ff] underline hover:opacity-90"
+          className="text-cl-accent underline hover:opacity-90"
           onClick={() => onLinkClick(normalizeUrl(raw))}
           type="button"
         >
           {raw}
-        </button>
+        </button>,
       );
     } else {
       const disp = text.slice(m.start, m.end);
       out.push(
         <span
           key={`men-${idx}-${m.start}`}
-          className="text-amber-400 font-medium"
+          className="text-cl-warning font-medium"
         >
           {disp}
-        </span>
+        </span>,
       );
     }
     i = m.end;
@@ -212,7 +212,7 @@ function buildWebPostUrl(postId: string, openComments = false) {
 
 function onlyTopLevelCount(list: any[]) {
   return (Array.isArray(list) ? list : []).filter(
-    (c) => c?.parentComment == null
+    (c) => c?.parentComment == null,
   ).length;
 }
 
@@ -245,8 +245,8 @@ async function searchUsers(query: string) {
     const raw: MentionUser[] = Array.isArray(r?.data?.users)
       ? r.data.users
       : Array.isArray(r?.data)
-      ? r.data
-      : [];
+        ? r.data
+        : [];
 
     // “@” only: show first 8 so the UI proves it’s working
     if (!q) {
@@ -293,28 +293,28 @@ async function createComment(postId: string, userId: string, content: string) {
 async function getReaction(postId: string, userId: string) {
   const r = await apiRequest<any>(
     "GET",
-    `/club-social/club-post-reactions/${postId}/${userId}`
+    `/club-social/club-post-reactions/${postId}/${userId}`,
   );
   return r?.data?.reaction?.reaction ?? null;
 }
 async function getReactionCount(postId: string) {
   const r = await apiRequest<any>(
     "GET",
-    `/club-social/club-post-reactions/count/${postId}`
+    `/club-social/club-post-reactions/count/${postId}`,
   );
   return r?.data?.count ?? 0;
 }
 async function getComments(postId: string) {
   const r = await apiRequest<any>(
     "GET",
-    `/club-social/club-comments/${postId}/comments`
+    `/club-social/club-comments/${postId}/comments`,
   );
   return r?.data?.comments ?? [];
 }
 async function createReaction(
   postId: string,
   userId: string,
-  reaction: string
+  reaction: string,
 ) {
   return apiRequest("POST", "/club-social/club-post-reactions", {
     clubPostId: postId,
@@ -325,13 +325,13 @@ async function createReaction(
 async function deleteReaction(postId: string, userId: string) {
   return apiRequest(
     "DELETE",
-    `/club-social/club-post-reactions/${postId}/${userId}`
+    `/club-social/club-post-reactions/${postId}/${userId}`,
   );
 }
 async function deletePost(clubId: string, postId: string, userId: string) {
   return apiRequest(
     "DELETE",
-    `/club-social/club-posts/${clubId}/${postId}/${userId}`
+    `/club-social/club-posts/${clubId}/${postId}/${userId}`,
   );
 }
 
@@ -350,9 +350,9 @@ function MentionSuggestions({
 }) {
   if (!open) return null;
   return (
-    <div className="absolute bottom-full mb-2 left-0 right-0 max-h-60 overflow-y-auto rounded-lg border border-white/10 bg-[#1a1a1a] shadow-lg z-[9999]">
+    <div className="absolute bottom-full mb-2 left-0 right-0 max-h-60 overflow-y-auto rounded-lg border border-cl-border bg-cl-canvas shadow-lg z-[9999]">
       {users.length === 0 ? (
-        <div className="px-3 py-2 text-sm text-white/50">No matches</div>
+        <div className="px-3 py-2 text-sm text-cl-muted">No matches</div>
       ) : (
         users.map((u) => (
           <button
@@ -361,7 +361,7 @@ function MentionSuggestions({
               e.preventDefault();
               onPick(u);
             }}
-            className="w-full flex items-center gap-3 px-3 py-2 hover:bg-white/5 text-left"
+            className="w-full flex items-center gap-3 px-3 py-2 hover:bg-cl-subtle text-left"
             type="button"
           >
             <img
@@ -370,8 +370,8 @@ function MentionSuggestions({
               alt=""
             />
             <div className="text-sm">
-              <div className="font-medium text-white">@{u.username}</div>
-              <div className="text-white/50 text-xs">
+              <div className="font-medium text-cl-ink">@{u.username}</div>
+              <div className="text-cl-muted text-xs">
                 {u.firstName} {u.lastName}
               </div>
             </div>
@@ -388,7 +388,7 @@ function MentionSuggestions({
 
 function buildMentionController(
   getText: () => string,
-  setText: (v: string) => void
+  setText: (v: string) => void,
 ) {
   let caret = 0;
   return {
@@ -413,7 +413,7 @@ function buildMentionController(
       const right = text.slice(caret);
 
       const insertion =
-        `@${user.username}` + (opts?.addSpace ?? true ? " " : "");
+        `@${user.username}` + ((opts?.addSpace ?? true) ? " " : "");
 
       const triggerMatch = /[@＠][^\s@＠]{0,30}$/u.exec(left);
       const start = triggerMatch
@@ -489,7 +489,7 @@ function CommentsModal({
     queryFn: async () => {
       const r = await apiRequest<any>(
         "GET",
-        `/club-social/club-comments/${post.id}/comments`
+        `/club-social/club-comments/${post.id}/comments`,
       );
       return (r?.data?.comments ?? []) as Array<{
         id: string;
@@ -521,13 +521,13 @@ function CommentsModal({
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-2xl rounded-xl border border-white/10 bg-[#151515] text-white shadow-xl max-h-[80vh] flex flex-col"
+        className="relative w-full max-w-2xl rounded-xl border border-cl-border bg-cl-canvas text-cl-ink shadow-xl max-h-[80vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
       >
         <button
-          className="absolute right-3 top-3 m-2 text-white/60 hover:text-white"
+          className="absolute right-3 top-3 m-2 text-cl-muted hover:text-cl-ink"
           onClick={onClose}
           aria-label="Close"
           type="button"
@@ -536,7 +536,7 @@ function CommentsModal({
         </button>
 
         {/* Post preview */}
-        <div className="p-5 border-b border-white/10 shrink-0">
+        <div className="p-5 border-b border-cl-border shrink-0">
           <header className="flex items-center gap-3">
             <img
               src={
@@ -549,12 +549,12 @@ function CommentsModal({
               <div className="font-medium flex items-center gap-1">
                 {post.user?.firstName} {post.user?.lastName}
                 {post.user?.username ? (
-                  <span className="text-white/60 text-[11px]">
+                  <span className="text-cl-muted text-[11px]">
                     @{post.user.username}
                   </span>
                 ) : null}
               </div>
-              <div className="text-white/50 text-xs">
+              <div className="text-cl-muted text-xs">
                 {formatWhen(post.createdAt)}
               </div>
             </div>
@@ -567,7 +567,7 @@ function CommentsModal({
           {post.mediaUrls?.[0] && (
             <img
               src={post.mediaUrls[0]}
-              className="mt-3 rounded-lg border border-gray-800 w-full max-h-[240px] object-contain"
+              className="mt-3 rounded-lg border border-cl-border w-full max-h-[240px] object-contain"
               alt=""
             />
           )}
@@ -575,13 +575,13 @@ function CommentsModal({
           <div className="mt-3 flex items-center gap-3">
             <button
               onClick={() => onToggleLike(post)}
-              className="rounded-full px-3 py-1 bg-white/5 border border-white/10 hover:bg-white/10 text-sm"
+              className="rounded-full px-3 py-1 bg-cl-subtle border border-cl-border hover:bg-cl-subtle text-sm"
               title="Like"
               type="button"
             >
-              {post.reaction ? EMOJI[post.reaction] ?? "👍" : "♡"}
+              {post.reaction ? (EMOJI[post.reaction] ?? "👍") : "♡"}
             </button>
-            <div className="text-white/70 text-sm">
+            <div className="text-cl-muted text-sm">
               {post.reactionCount ?? 0}
             </div>
 
@@ -593,7 +593,7 @@ function CommentsModal({
                   toast({ title: "Link copied to clipboard" });
                 } catch {}
               }}
-              className="rounded-full px-3 py-1 bg-white/5 border border-white/10 hover:bg-white/10 text-sm"
+              className="rounded-full px-3 py-1 bg-cl-subtle border border-cl-border hover:bg-cl-subtle text-sm"
               type="button"
             >
               Share
@@ -620,13 +620,13 @@ function CommentsModal({
           <div className="text-lg font-semibold mb-4">Comments</div>
 
           {isLoading ? (
-            <div className="text-white/70">Loading…</div>
+            <div className="text-cl-muted">Loading…</div>
           ) : comments && comments.length ? (
             <div className="space-y-4">
               {comments.map((c) => (
                 <div
                   key={c.id}
-                  className="flex gap-3 border-b border-white/5 pb-4 last:border-b-0"
+                  className="flex gap-3 border-b border-cl-border pb-4 last:border-b-0"
                 >
                   <img
                     src={
@@ -637,16 +637,16 @@ function CommentsModal({
                     alt=""
                   />
                   <div className="flex-1">
-                    <div className="text-xs text-white/60 mb-1 flex items-center gap-1">
-                      <span className="text-white font-medium">
+                    <div className="text-xs text-cl-muted mb-1 flex items-center gap-1">
+                      <span className="text-cl-ink font-medium">
                         {c.user?.firstName} {c.user?.lastName}
                       </span>
                       {c.user?.username ? (
-                        <span className="text-white/60 text-[11px]">
+                        <span className="text-cl-muted text-[11px]">
                           @{c.user.username}
                         </span>
                       ) : null}
-                      <span className="text-white/40">
+                      <span className="text-cl-muted">
                         • {timeAgo(c.createdAt)}
                       </span>
                     </div>
@@ -659,12 +659,12 @@ function CommentsModal({
               ))}
             </div>
           ) : (
-            <div className="text-white/70">No comments yet.</div>
+            <div className="text-cl-muted">No comments yet.</div>
           )}
         </div>
 
         {/* Composer (sticky) */}
-        <div className="p-5 border-t border-white/10 shrink-0">
+        <div className="p-5 border-t border-cl-border shrink-0">
           <div className="relative">
             <div className="flex items-end gap-2">
               <textarea
@@ -696,12 +696,12 @@ function CommentsModal({
                 }}
                 rows={2}
                 placeholder="Write a comment…"
-                className="flex-1 resize-none rounded-lg bg-white/5 border border-white/10 p-2 text-sm text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/20"
+                className="flex-1 resize-none rounded-lg bg-cl-subtle border border-cl-border p-2 text-sm text-cl-ink placeholder-cl-muted focus:outline-none focus:ring-2 focus:ring-cl-accent/20"
               />
               <button
                 onClick={submitComment}
                 disabled={!draft.trim() || !userId}
-                className="shrink-0 px-4 py-2 rounded-lg bg-white text-black disabled:opacity-50"
+                className="shrink-0 px-4 py-2 rounded-lg bg-cl-surface text-cl-ink disabled:opacity-50"
                 type="button"
               >
                 Comment
@@ -714,7 +714,7 @@ function CommentsModal({
               onPick={(u) => {
                 if (inputRef.current) {
                   ctrlCmt.setCaret(
-                    inputRef.current.selectionStart ?? draft.length
+                    inputRef.current.selectionStart ?? draft.length,
                   );
                 }
                 const pos = ctrlCmt.applyPick(u, { addSpace: true });
@@ -789,7 +789,7 @@ export default function ClubPostsFeed({
     queryFn: async () => {
       const base = await apiRequest<any>(
         "GET",
-        `/club-social/club-posts-feed/${userId ?? ""}/${clubId}`
+        `/club-social/club-posts-feed/${userId ?? ""}/${clubId}`,
       );
       const raw = base?.data?.posts ?? [];
       const enriched = await Promise.all(
@@ -817,7 +817,7 @@ export default function ClubPostsFeed({
               commentCount: 0,
             };
           }
-        })
+        }),
       );
       return enriched as FeedPost[];
     },
@@ -855,7 +855,7 @@ export default function ClubPostsFeed({
   // Optimistic sync between modal and feed
   function patchIfModalTarget(id: string, patch: Partial<FeedPost>) {
     setCommentsFor((cur) =>
-      cur && cur.id === id ? { ...cur, ...patch } : cur
+      cur && cur.id === id ? { ...cur, ...patch } : cur,
     );
   }
 
@@ -1000,7 +1000,7 @@ export default function ClubPostsFeed({
     <div className="max-w-3xl">
       {/* Composer */}
       {canPost && (
-        <div className="mb-4 rounded-xl border border-gray-800 bg-[#121212] p-4">
+        <div className="mb-4 rounded-xl border border-cl-border bg-cl-canvas p-4">
           <div className="relative">
             <textarea
               ref={feedRef}
@@ -1035,7 +1035,7 @@ export default function ClubPostsFeed({
               onPick={(u) => {
                 if (feedRef.current) {
                   ctrlFeed.setCaret(
-                    feedRef.current.selectionStart ?? composer.length
+                    feedRef.current.selectionStart ?? composer.length,
                   );
                 }
                 const pos = ctrlFeed.applyPick(u, { addSpace: true });
@@ -1049,7 +1049,7 @@ export default function ClubPostsFeed({
             <button
               onClick={onCreatePost}
               disabled={!composer.trim()}
-              className="px-4 py-2 rounded-md bg-white text-black hover:bg-gray-200 disabled:opacity-60"
+              className="px-4 py-2 rounded-md bg-cl-surface text-cl-ink hover:bg-cl-subtle disabled:opacity-60"
               type="button"
             >
               Post
@@ -1060,7 +1060,7 @@ export default function ClubPostsFeed({
 
       {/* Empty state */}
       {!isLoading && (!posts || posts.length === 0) && (
-        <div className="text-white/60 text-sm">
+        <div className="text-cl-muted text-sm">
           {isMember
             ? "No posts yet in this club."
             : `Join ${clubName ?? "this club"} to view posts.`}
@@ -1070,7 +1070,7 @@ export default function ClubPostsFeed({
       {/* Feed */}
       <div className="space-y-4">
         {isLoading ? (
-          <div className="text-white/70">Loading posts…</div>
+          <div className="text-cl-muted">Loading posts…</div>
         ) : (
           // render only the first `visibleCount` posts (with their date headers)
           (() => {
@@ -1097,14 +1097,14 @@ export default function ClubPostsFeed({
                   key={`d-${i}`}
                   className="flex items-center justify-center gap-3 my-3"
                 >
-                  <div className="h-px bg-gray-700 flex-1" />
-                  <div className="text-sm text-white/80">{row.date}</div>
-                  <div className="h-px bg-gray-700 flex-1" />
+                  <div className="h-px bg-cl-subtle flex-1" />
+                  <div className="text-sm text-cl-ink">{row.date}</div>
+                  <div className="h-px bg-cl-subtle flex-1" />
                 </div>
               ) : (
                 <article
                   key={row.post!.id}
-                  className="rounded-xl border border-gray-800 bg-[#111111] p-4"
+                  className="rounded-xl border border-cl-border bg-cl-canvas p-4"
                 >
                   <header className="flex items-center gap-3">
                     <img
@@ -1119,12 +1119,12 @@ export default function ClubPostsFeed({
                       <div className="font-medium flex items-center gap-1">
                         {row.post!.user?.firstName} {row.post!.user?.lastName}
                         {row.post!.user?.username ? (
-                          <span className="text-white/60 text-[11px]">
+                          <span className="text-cl-muted text-[11px]">
                             @{row.post!.user!.username}
                           </span>
                         ) : null}
                       </div>
-                      <div className="text-white/50 text-xs">
+                      <div className="text-cl-muted text-xs">
                         {formatWhen(row.post!.createdAt)}
                       </div>
                     </div>
@@ -1132,14 +1132,14 @@ export default function ClubPostsFeed({
 
                   <div className="mt-3 text-sm whitespace-pre-wrap">
                     {renderTextWithLinks(row.post!.content, (url) =>
-                      setLinkToOpen(url)
+                      setLinkToOpen(url),
                     )}
                   </div>
 
                   {row.post!.mediaUrls?.[0] && (
                     <img
                       src={row.post!.mediaUrls[0]}
-                      className="mt-3 rounded-lg border border-gray-800 max-h-[420px] object-cover"
+                      className="mt-3 rounded-lg border border-cl-border max-h-[420px] object-cover"
                       alt=""
                     />
                   )}
@@ -1178,20 +1178,20 @@ export default function ClubPostsFeed({
                             longPress.current.tid = null;
                           }
                         }}
-                        className="rounded-full px-3 py-1 bg-white/5 border border-white/10 hover:bg-white/10 text-sm"
+                        className="rounded-full px-3 py-1 bg-cl-subtle border border-cl-border hover:bg-cl-subtle text-sm"
                         title="Like"
                         type="button"
                       >
                         {row.post!.reaction
-                          ? EMOJI[row.post!.reaction] ?? "👍"
+                          ? (EMOJI[row.post!.reaction] ?? "👍")
                           : "♡"}
                       </button>
-                      <div className="text-white/70 text-sm">
+                      <div className="text-cl-muted text-sm">
                         {row.post!.reactionCount ?? 0}
                       </div>
                       <button
                         onClick={() => setCommentsFor(row.post!)}
-                        className="text-white/50 text-sm hover:underline"
+                        className="text-cl-muted text-sm hover:underline"
                         title="View comments"
                         type="button"
                       >
@@ -1202,7 +1202,7 @@ export default function ClubPostsFeed({
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => share(row.post!)}
-                        className="rounded-full px-3 py-1 bg-white text-black hover:bg-gray-200 text-sm"
+                        className="rounded-full px-3 py-1 bg-cl-surface text-cl-ink hover:bg-cl-subtle text-sm"
                         type="button"
                       >
                         Share
@@ -1210,7 +1210,7 @@ export default function ClubPostsFeed({
                       {row.post!.user?.id === userId && (
                         <button
                           onClick={() => onDelete(row.post!)}
-                          className="rounded-full px-3 py-1 bg-red-600 hover:bg-red-700 text-sm"
+                          className="rounded-full px-3 py-1 bg-red-600 text-white hover:bg-red-700 text-sm"
                           type="button"
                         >
                           Delete
@@ -1218,7 +1218,7 @@ export default function ClubPostsFeed({
                       )}
                       <button
                         onClick={() => speak(row.post!)}
-                        className="rounded-full px-3 py-1 bg-white/5 border border-white/10 hover:bg-white/10 text-sm"
+                        className="rounded-full px-3 py-1 bg-cl-subtle border border-cl-border hover:bg-cl-subtle text-sm"
                         type="button"
                       >
                         🔊
@@ -1229,7 +1229,7 @@ export default function ClubPostsFeed({
                   {/* Reaction picker */}
                   {showPickerFor === row.post!.id && (
                     <div
-                      className="mt-2 flex gap-2 rounded-full border border-gray-700 bg-[#222] px-3 py-2"
+                      className="mt-2 flex gap-2 rounded-full border border-cl-border bg-cl-canvas px-3 py-2"
                       onMouseLeave={() => setShowPickerFor(null)}
                     >
                       {REACTIONS.map((r) => (
@@ -1246,7 +1246,7 @@ export default function ClubPostsFeed({
                     </div>
                   )}
                 </article>
-              )
+              ),
             );
           })()
         )}
@@ -1256,7 +1256,7 @@ export default function ClubPostsFeed({
         <div className="mt-4 flex justify-center">
           <button
             onClick={() => setVisibleCount((v) => v + 20)}
-            className="px-4 py-2 rounded-full bg-white text-black hover:bg-gray-200"
+            className="px-4 py-2 rounded-full bg-cl-surface text-cl-ink hover:bg-cl-subtle"
             type="button"
           >
             Load more
@@ -1273,11 +1273,11 @@ export default function ClubPostsFeed({
           aria-modal="true"
         >
           <div
-            className="relative w-full max-w-md rounded-xl border border-white/10 bg-[#151515] p-5 text-white shadow-xl"
+            className="relative w-full max-w-md rounded-xl border border-cl-border bg-cl-canvas p-5 text-cl-ink shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
             <button
-              className="absolute right-3 top-3 text-white/60 hover:text-white"
+              className="absolute right-3 top-3 text-cl-muted hover:text-cl-ink"
               onClick={() => setLinkToOpen(null)}
               aria-label="Close"
               type="button"
@@ -1286,11 +1286,11 @@ export default function ClubPostsFeed({
             </button>
 
             <div className="text-lg font-semibold mb-2">You clicked on</div>
-            <div className="break-all text-white/80 mb-4">{linkToOpen}</div>
+            <div className="break-all text-cl-ink mb-4">{linkToOpen}</div>
 
             <div className="flex items-center justify-end gap-2">
               <button
-                className="rounded-lg border border-white/15 bg-white/5 px-3 py-2 hover:bg-white/10"
+                className="rounded-lg border border-cl-border bg-cl-subtle px-3 py-2 hover:bg-cl-subtle"
                 onClick={async () => {
                   try {
                     await navigator.clipboard.writeText(linkToOpen);
@@ -1302,7 +1302,7 @@ export default function ClubPostsFeed({
                 Copy link
               </button>
               <button
-                className="rounded-lg bg-white px-3 py-2 text-black hover:bg-gray-200"
+                className="rounded-lg bg-cl-surface px-3 py-2 text-cl-ink hover:bg-cl-subtle"
                 onClick={() => {
                   window.open(linkToOpen!, "_blank", "noopener,noreferrer");
                   setLinkToOpen(null);

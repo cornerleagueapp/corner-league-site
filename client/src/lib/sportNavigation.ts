@@ -6,8 +6,7 @@ export function routeSport(path: string): string | undefined {
   const key = path.match(/^\/sports\/([^/]+)(?:\/|$)/)?.[1];
   if (validSportKey(key)) return key;
   if (
-    path === "/aqua-organizations" ||
-    path === "/event-map" ||
+    /^\/aqua-organizations(?:\/|$)/.test(path) ||
     /^\/(?:registration|racepod)(?:\/|$)/.test(path) ||
     /^\/scores\/aqua(?:\/|$)/.test(path)
   )

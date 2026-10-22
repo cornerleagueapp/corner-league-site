@@ -27,7 +27,7 @@ export default function SocialPreferences() {
   return (
     <section className={socialBox}>
       <h2 className="text-xl font-bold">Notifications & messages</h2>
-      <p className="mt-2 text-sm text-white/60">
+      <p className="mt-2 text-sm text-cl-muted">
         Choose your in-app alerts, optional emails and who can send you a direct
         message.
       </p>
@@ -57,7 +57,7 @@ export default function SocialPreferences() {
               key={key}
               className="flex min-h-11 items-center justify-between gap-4"
             >
-              <span className="text-sm text-white/85">{label}</span>
+              <span className="text-sm text-cl-ink">{label}</span>
               <input
                 type="checkbox"
                 checked={query.data[key]}
@@ -65,13 +65,13 @@ export default function SocialPreferences() {
                 onChange={(event) =>
                   change.mutate({ [key]: event.target.checked })
                 }
-                className="h-5 w-5 accent-cyan-300"
+                className="h-5 w-5 accent-cl-accent"
               />
             </label>
           ))}
-          <fieldset className="border-t border-white/10 pt-4">
+          <fieldset className="border-t border-cl-border pt-4">
             <legend className="font-semibold">Email notifications</legend>
-            <p className="mb-3 text-xs text-white/60">
+            <p className="mb-3 text-xs text-cl-muted">
               Emails are off by default. Enable the matching in-app alert above
               to receive emails for new activity. Message emails never include
               the message body. Ticket receipts are separate.
@@ -89,7 +89,7 @@ export default function SocialPreferences() {
                 key={key}
                 className="flex min-h-11 items-center justify-between gap-4"
               >
-                <span className="text-sm text-white/85">{label}</span>
+                <span className="text-sm text-cl-ink">{label}</span>
                 <input
                   type="checkbox"
                   checked={query.data[key]}
@@ -97,12 +97,12 @@ export default function SocialPreferences() {
                   onChange={(event) =>
                     change.mutate({ [key]: event.target.checked })
                   }
-                  className="h-5 w-5 accent-cyan-300"
+                  className="h-5 w-5 accent-cl-accent"
                 />
               </label>
             ))}
           </fieldset>
-          <label className="block border-t border-white/10 pt-4 text-sm">
+          <label className="block border-t border-cl-border pt-4 text-sm">
             Who can message me?
             <select
               aria-label="Who can message me"
@@ -114,21 +114,21 @@ export default function SocialPreferences() {
                     .value as Preferences["allowMessages"],
                 })
               }
-              className="mt-2 w-full rounded-xl border border-white/15 bg-[#07111f] p-3"
+              className="mt-2 w-full rounded-xl border border-cl-border bg-cl-surface p-3"
             >
               <option value="everyone">Everyone</option>
               <option value="following">People I follow</option>
               <option value="nobody">Nobody</option>
             </select>
           </label>
-          <p className="text-xs text-white/50">
+          <p className="text-xs text-cl-muted">
             These settings control new in-app alerts. You can still read earlier
             conversations.
           </p>
         </div>
       )}
       {change.isSuccess && (
-        <p role="status" className="mt-3 text-sm text-cyan-100">
+        <p role="status" className="mt-3 text-sm text-cl-accent">
           Preferences saved.
         </p>
       )}

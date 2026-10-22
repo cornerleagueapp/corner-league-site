@@ -79,7 +79,9 @@ export default function RegistrationEventPage({
 
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => { if (event?.id) trackGrowth("Event Viewed", event.id); }, [event?.id]);
+  useEffect(() => {
+    if (event?.id) trackGrowth("Event Viewed", event.id);
+  }, [event?.id]);
 
   useEffect(() => {
     let cancelled = false;
@@ -205,11 +207,11 @@ export default function RegistrationEventPage({
   if (loading) {
     return (
       <RegistrationLayout hideHeader>
-        <div className="grid min-h-[70vh] place-items-center rounded-[28px] border border-cyan-300/10 bg-[#07111F]/75">
+        <div className="grid min-h-[70vh] place-items-center rounded-[28px] border border-cl-accent/10 bg-cl-surface">
           <div className="text-center">
-            <Loader2 className="mx-auto h-8 w-8 animate-spin text-cyan-200" />
+            <Loader2 className="mx-auto h-8 w-8 animate-spin text-cl-accent" />
 
-            <p className="mt-3 text-sm font-bold text-white/50">
+            <p className="mt-3 text-sm font-bold text-cl-muted">
               Loading race event...
             </p>
           </div>
@@ -233,7 +235,7 @@ export default function RegistrationEventPage({
           <button
             type="button"
             onClick={() => navigate("/registration/events")}
-            className="rounded-full bg-cyan-300 px-5 py-3 text-[10px] font-black uppercase tracking-[0.14em] text-[#06111d]"
+            className="rounded-full bg-cl-accent px-5 py-3 text-[10px] font-black uppercase tracking-[0.14em] text-cl-contrast"
           >
             Browse Events
           </button>
@@ -262,7 +264,7 @@ export default function RegistrationEventPage({
               href={eventLivestreamUrl(event.livestreamUrl)!}
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-full bg-cyan-300 px-5 py-3 text-sm font-black text-[#06111d]"
+              className="rounded-full bg-cl-accent px-5 py-3 text-sm font-black text-cl-contrast"
             >
               Watch stream ↗
             </a>
@@ -280,7 +282,7 @@ export default function RegistrationEventPage({
               navigate(`/registration/events/${event.slug}/register`)
             }
             disabled={!registrationOpen}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#FF6B35] px-5 py-3 text-[10px] font-black uppercase tracking-[0.14em] text-white shadow-[0_0_26px_rgba(255,107,53,0.2)] transition hover:bg-[#ff7c4d] disabled:cursor-not-allowed disabled:bg-white/15 disabled:text-white/35"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-cl-accent px-5 py-3 text-[10px] font-black uppercase tracking-[0.14em] text-cl-contrast shadow-cl-panel transition hover:bg-cl-accent disabled:cursor-not-allowed disabled:bg-cl-subtle disabled:text-cl-muted"
           >
             Register Now
             <ArrowRight className="h-4 w-4" />
@@ -290,58 +292,58 @@ export default function RegistrationEventPage({
     >
       <div className="space-y-6">
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-[22px] border border-cyan-200/[0.14] bg-[#0A1828] p-5 shadow-[0_18px_48px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.035)]">
-            <div className="grid h-10 w-10 place-items-center rounded-2xl border border-cyan-300/15 bg-[#0D2633]">
-              <CalendarDays className="h-5 w-5 text-cyan-200" />
+          <div className="rounded-[22px] border border-cl-accent/[0.14] bg-cl-canvas p-5 shadow-cl-panel">
+            <div className="grid h-10 w-10 place-items-center rounded-2xl border border-cl-accent/[0.15] bg-cl-canvas">
+              <CalendarDays className="h-5 w-5 text-cl-accent" />
             </div>
 
-            <p className="mt-4 text-xs font-black uppercase tracking-[0.12em] text-white/50">
+            <p className="mt-4 text-xs font-black uppercase tracking-[0.12em] text-cl-muted">
               Race dates
             </p>
 
-            <p className="mt-2 text-sm font-bold leading-6 text-white">
+            <p className="mt-2 text-sm font-bold leading-6 text-cl-ink">
               {formatDateRange(event.startDate, event.endDate)}
             </p>
           </div>
 
-          <div className="rounded-[22px] border border-[#FF6B35]/15 bg-[#17151D] p-5 shadow-[0_18px_48px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.035)]">
-            <div className="grid h-10 w-10 place-items-center rounded-2xl border border-[#FF6B35]/15 bg-[#2B1B1B]">
-              <MapPin className="h-5 w-5 text-[#FFB199]" />
+          <div className="rounded-[22px] border border-cl-accent/[0.15] bg-cl-canvas p-5 shadow-cl-panel">
+            <div className="grid h-10 w-10 place-items-center rounded-2xl border border-cl-accent/[0.15] bg-cl-canvas">
+              <MapPin className="h-5 w-5 text-cl-accent" />
             </div>
 
-            <p className="mt-4 text-xs font-black uppercase tracking-[0.12em] text-white/50">
+            <p className="mt-4 text-xs font-black uppercase tracking-[0.12em] text-cl-muted">
               Location
             </p>
 
-            <p className="mt-2 text-sm font-bold leading-6 text-white">
+            <p className="mt-2 text-sm font-bold leading-6 text-cl-ink">
               {event.formattedLocation || "Location to be announced"}
             </p>
           </div>
 
-          <div className="rounded-[22px] border border-cyan-200/[0.14] bg-[#0A1828] p-5 shadow-[0_18px_48px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.035)]">
-            <div className="grid h-10 w-10 place-items-center rounded-2xl border border-cyan-300/15 bg-[#0D2633]">
-              <Clock3 className="h-5 w-5 text-cyan-200" />
+          <div className="rounded-[22px] border border-cl-accent/[0.14] bg-cl-canvas p-5 shadow-cl-panel">
+            <div className="grid h-10 w-10 place-items-center rounded-2xl border border-cl-accent/[0.15] bg-cl-canvas">
+              <Clock3 className="h-5 w-5 text-cl-accent" />
             </div>
 
-            <p className="mt-4 text-xs font-black uppercase tracking-[0.12em] text-white/50">
+            <p className="mt-4 text-xs font-black uppercase tracking-[0.12em] text-cl-muted">
               Registration closes
             </p>
 
-            <p className="mt-2 text-sm font-bold leading-6 text-white">
+            <p className="mt-2 text-sm font-bold leading-6 text-cl-ink">
               {formatDeadline(event.registrationClosesAt)}
             </p>
           </div>
 
-          <div className="rounded-[22px] border border-[#FF6B35]/15 bg-[#17151D] p-5 shadow-[0_18px_48px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.035)]">
-            <div className="grid h-10 w-10 place-items-center rounded-2xl border border-[#FF6B35]/15 bg-[#2B1B1B]">
-              <Users className="h-5 w-5 text-[#FFB199]" />
+          <div className="rounded-[22px] border border-cl-accent/[0.15] bg-cl-canvas p-5 shadow-cl-panel">
+            <div className="grid h-10 w-10 place-items-center rounded-2xl border border-cl-accent/[0.15] bg-cl-canvas">
+              <Users className="h-5 w-5 text-cl-accent" />
             </div>
 
-            <p className="mt-4 text-xs font-black uppercase tracking-[0.12em] text-white/50">
+            <p className="mt-4 text-xs font-black uppercase tracking-[0.12em] text-cl-muted">
               Confirmed racers
             </p>
 
-            <p className="mt-2 text-3xl font-black text-white">
+            <p className="mt-2 text-3xl font-black text-cl-ink">
               {event.confirmedRacerCount}
             </p>
           </div>
@@ -352,16 +354,16 @@ export default function RegistrationEventPage({
         <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_330px]">
           <div className="min-w-0 space-y-4">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/15 bg-cyan-300/8 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.16em] text-cyan-200">
+              <div className="inline-flex items-center gap-2 rounded-full border border-cl-accent/[0.15] bg-cl-accent/[0.08] px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.16em] text-cl-accent">
                 <Flag className="h-3.5 w-3.5" />
                 Available classes
               </div>
 
-              <h2 className="mt-3 text-2xl font-black uppercase tracking-[-0.035em] text-white">
+              <h2 className="mt-3 text-2xl font-black uppercase tracking-[-0.035em] text-cl-ink">
                 Choose your competition
               </h2>
 
-              <p className="mt-2 text-sm leading-6 text-slate-400">
+              <p className="mt-2 text-sm leading-6 text-cl-muted">
                 Final class selection and event-day choices will be completed
                 during registration.
               </p>
@@ -382,18 +384,18 @@ export default function RegistrationEventPage({
           <aside className="space-y-4">
             <RecentRegistrations registrations={racers} />
 
-            <div className="rounded-[26px] border border-cyan-300/15 bg-[#07111F]/92 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
+            <div className="rounded-[26px] border border-cl-accent/[0.15] bg-cl-surface p-5 shadow-cl-panel">
               <div className="flex items-center gap-3">
-                <div className="grid h-11 w-11 place-items-center rounded-2xl border border-cyan-300/15 bg-cyan-300/10 text-cyan-200">
+                <div className="grid h-11 w-11 place-items-center rounded-2xl border border-cl-accent/[0.15] bg-cl-accent/10 text-cl-accent">
                   <CreditCard className="h-5 w-5" />
                 </div>
 
                 <div>
-                  <h3 className="font-black uppercase text-white">
+                  <h3 className="font-black uppercase text-cl-ink">
                     Registration payment
                   </h3>
 
-                  <p className="text-xs text-white/40">
+                  <p className="text-xs text-cl-muted">
                     Available payment methods
                   </p>
                 </div>
@@ -401,15 +403,15 @@ export default function RegistrationEventPage({
 
               <div className="mt-5 space-y-3">
                 {event.allowOnlinePayment ? (
-                  <div className="flex items-start gap-3 rounded-[18px] border border-white/10 bg-white/[0.035] p-3">
-                    <WalletCards className="mt-0.5 h-4 w-4 shrink-0 text-cyan-200" />
+                  <div className="flex items-start gap-3 rounded-[18px] border border-cl-border bg-cl-subtle p-3">
+                    <WalletCards className="mt-0.5 h-4 w-4 shrink-0 text-cl-accent" />
 
                     <div>
-                      <p className="text-sm font-bold text-white">
+                      <p className="text-sm font-bold text-cl-ink">
                         Online card payment
                       </p>
 
-                      <p className="mt-1 text-xs leading-5 text-white/45">
+                      <p className="mt-1 text-xs leading-5 text-cl-muted">
                         Secure online checkout is processed through Stripe.
                       </p>
                     </div>
@@ -417,15 +419,15 @@ export default function RegistrationEventPage({
                 ) : null}
 
                 {event.allowCashPayment ? (
-                  <div className="flex items-start gap-3 rounded-[18px] border border-white/10 bg-white/[0.035] p-3">
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#FFB199]" />
+                  <div className="flex items-start gap-3 rounded-[18px] border border-cl-border bg-cl-subtle p-3">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-cl-accent" />
 
                     <div>
-                      <p className="text-sm font-bold text-white">
+                      <p className="text-sm font-bold text-cl-ink">
                         Pay cash in person
                       </p>
 
-                      <p className="mt-1 text-xs leading-5 text-white/45">
+                      <p className="mt-1 text-xs leading-5 text-cl-muted">
                         Cash entries remain pending until confirmed by the
                         organization.
                       </p>
@@ -434,15 +436,15 @@ export default function RegistrationEventPage({
                 ) : null}
 
                 {event.allowManualPayment ? (
-                  <div className="flex items-start gap-3 rounded-[18px] border border-white/10 bg-white/[0.035] p-3">
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-200" />
+                  <div className="flex items-start gap-3 rounded-[18px] border border-cl-border bg-cl-subtle p-3">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-cl-success" />
 
                     <div>
-                      <p className="text-sm font-bold text-white">
+                      <p className="text-sm font-bold text-cl-ink">
                         Organizer-managed payment
                       </p>
 
-                      <p className="mt-1 text-xs leading-5 text-white/45">
+                      <p className="mt-1 text-xs leading-5 text-cl-muted">
                         Additional organizer-approved payment options may be
                         available.
                       </p>
@@ -457,7 +459,7 @@ export default function RegistrationEventPage({
                 onClick={() =>
                   navigate(`/registration/events/${event.slug}/register`)
                 }
-                className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-[#FF6B35] px-5 py-3.5 text-[10px] font-black uppercase tracking-[0.15em] text-white transition hover:bg-[#ff7c4d] disabled:cursor-not-allowed disabled:bg-white/15 disabled:text-white/35"
+                className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-cl-accent px-5 py-3.5 text-[10px] font-black uppercase tracking-[0.15em] text-cl-contrast transition hover:bg-cl-accent disabled:cursor-not-allowed disabled:bg-cl-subtle disabled:text-cl-muted"
               >
                 {registrationOpen
                   ? "Begin Registration"
@@ -467,30 +469,30 @@ export default function RegistrationEventPage({
               </button>
             </div>
 
-            <div className="rounded-[26px] border border-cyan-300/10 bg-[#07111F]/78 p-5">
+            <div className="rounded-[26px] border border-cl-accent/10 bg-cl-surface p-5">
               <div className="flex items-center gap-3">
-                <Building2 className="h-5 w-5 text-cyan-200" />
+                <Building2 className="h-5 w-5 text-cl-accent" />
 
                 <div>
-                  <p className="text-[9px] font-black uppercase tracking-[0.14em] text-white/35">
+                  <p className="text-[9px] font-black uppercase tracking-[0.14em] text-cl-muted">
                     Hosted by
                   </p>
 
-                  <p className="mt-1 text-sm font-black text-white">
+                  <p className="mt-1 text-sm font-black text-cl-ink">
                     {event.organization.name}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-[26px] border border-cyan-300/10 bg-[#07111F]/78 p-5">
-              <ShieldCheck className="h-5 w-5 text-[#FFB199]" />
+            <div className="rounded-[26px] border border-cl-accent/10 bg-cl-surface p-5">
+              <ShieldCheck className="h-5 w-5 text-cl-accent" />
 
-              <h3 className="mt-3 text-sm font-black uppercase text-white">
+              <h3 className="mt-3 text-sm font-black uppercase text-cl-ink">
                 Refund and transfer policy
               </h3>
 
-              <p className="mt-2 whitespace-pre-line text-xs leading-6 text-white/45">
+              <p className="mt-2 whitespace-pre-line text-xs leading-6 text-cl-muted">
                 {event.refundPolicyText ||
                   "Refund and class-transfer terms are controlled by the race organization."}
               </p>
@@ -499,18 +501,18 @@ export default function RegistrationEventPage({
         </section>
 
         {event.showPublicEntryList !== false ? (
-          <section className="rounded-[28px] border border-cyan-300/10 bg-[#07111F]/78 p-5 sm:p-6">
+          <section className="rounded-[28px] border border-cl-accent/10 bg-cl-surface p-5 sm:p-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <div className="text-[9px] font-black uppercase tracking-[0.16em] text-cyan-200/55">
+                <div className="text-[9px] font-black uppercase tracking-[0.16em] text-cl-accent">
                   Public entry list
                 </div>
 
-                <h2 className="mt-2 text-2xl font-black uppercase tracking-[-0.035em] text-white">
+                <h2 className="mt-2 text-2xl font-black uppercase tracking-[-0.035em] text-cl-ink">
                   Confirmed racers
                 </h2>
 
-                <p className="mt-2 text-sm text-white/45">
+                <p className="mt-2 text-sm text-cl-muted">
                   Registered entries approved for public display.
                 </p>
               </div>
@@ -520,7 +522,7 @@ export default function RegistrationEventPage({
                 onClick={() =>
                   navigate(`/registration/events/${event.slug}/racers`)
                 }
-                className="inline-flex items-center gap-2 self-start rounded-full border border-white/10 bg-white/[0.05] px-4 py-3 text-[9px] font-black uppercase tracking-[0.13em] text-white/70 transition hover:border-cyan-300/25 hover:bg-cyan-300/10 hover:text-white"
+                className="inline-flex items-center gap-2 self-start rounded-full border border-cl-border bg-cl-subtle px-4 py-3 text-[9px] font-black uppercase tracking-[0.13em] text-cl-muted transition hover:border-cl-accent/25 hover:bg-cl-accent/10 hover:text-cl-ink"
               >
                 View Full Entry List
                 <ArrowRight className="h-4 w-4" />
@@ -528,10 +530,10 @@ export default function RegistrationEventPage({
             </div>
 
             {visibleRacers.length === 0 ? (
-              <div className="mt-5 rounded-[22px] border border-dashed border-white/10 bg-black/15 px-5 py-10 text-center">
-                <Users className="mx-auto h-7 w-7 text-white/20" />
+              <div className="mt-5 rounded-[22px] border border-dashed border-cl-border bg-cl-surface px-5 py-10 text-center">
+                <Users className="mx-auto h-7 w-7 text-cl-muted" />
 
-                <p className="mt-3 text-sm text-white/45">
+                <p className="mt-3 text-sm text-cl-muted">
                   No public registrations have been published yet.
                 </p>
               </div>
@@ -540,10 +542,10 @@ export default function RegistrationEventPage({
                 {visibleRacers.map((registration) => (
                   <div
                     key={registration.registrationId}
-                    className="rounded-[20px] border border-white/10 bg-white/[0.035] p-4"
+                    className="rounded-[20px] border border-cl-border bg-cl-subtle p-4"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-cyan-300/15 bg-cyan-300/10 text-sm font-black text-cyan-200">
+                      <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-cl-accent/[0.15] bg-cl-accent/10 text-sm font-black text-cl-accent">
                         {registration.racer.name
                           .split(" ")
                           .map((part) => part[0])
@@ -553,11 +555,11 @@ export default function RegistrationEventPage({
                       </div>
 
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-black uppercase text-white">
+                        <p className="truncate text-sm font-black uppercase text-cl-ink">
                           {registration.racer.name}
                         </p>
 
-                        <p className="mt-1 truncate text-xs text-white/40">
+                        <p className="mt-1 truncate text-xs text-cl-muted">
                           {registration.racer.formattedLocation ||
                             "Location not listed"}
                         </p>
@@ -568,7 +570,7 @@ export default function RegistrationEventPage({
                       {registration.selectedClasses.map((selection) => (
                         <span
                           key={selection.classId}
-                          className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.1em] text-white/60"
+                          className="rounded-full border border-cl-border bg-cl-surface px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.1em] text-cl-muted"
                         >
                           {selection.className}
                         </span>

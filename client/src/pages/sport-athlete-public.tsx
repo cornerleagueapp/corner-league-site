@@ -28,7 +28,7 @@ export default function SportAthletePublic({
   });
   const p = query.isError ? undefined : query.data;
   return (
-    <main className="mx-auto max-w-4xl p-4 py-10 text-white">
+    <main className="mx-auto max-w-4xl p-4 py-10 text-cl-ink">
       <PageSEO
         title={p ? `${p.name} · ${sportLabels[sportKey]}` : "Athlete profile"}
         canonicalPath={`/racer/${id}?sport=${sportKey}`}
@@ -40,26 +40,26 @@ export default function SportAthletePublic({
         <p role="alert">Athlete profile unavailable for this sport.</p>
       ) : (
         p && (
-          <article className="rounded-3xl border border-cyan-300/20 bg-[#07111f] p-7">
-            <p className="text-sm font-bold uppercase tracking-widest text-cyan-200">
+          <article className="rounded-3xl border border-cl-accent/20 bg-cl-surface p-7">
+            <p className="text-sm font-bold uppercase tracking-widest text-cl-accent">
               {sportLabels[sportKey]} · {p.skillLevel}
             </p>
             <h1 className="mt-4 text-4xl font-black">{p.nickname || p.name}</h1>
-            {p.nickname && <p className="mt-3 text-slate-300">{p.name}</p>}
-            <p className="mt-4 text-slate-400">
+            {p.nickname && <p className="mt-3 text-cl-muted">{p.name}</p>}
+            <p className="mt-4 text-cl-muted">
               {p.location}{" "}
               {p.competitorNumber ? `· #${p.competitorNumber}` : ""}
             </p>
             <p className="mt-5 whitespace-pre-wrap leading-7">{p.bio}</p>
             {p.ownershipVerified && (
-              <p className="mt-5 text-sm text-cyan-200">
+              <p className="mt-5 text-sm text-cl-accent">
                 Account ownership verified
               </p>
             )}
             {p.ownerUsername && (
               <Link
                 href={`/profile/${encodeURIComponent(p.ownerUsername)}`}
-                className="mt-4 inline-block text-cyan-200 underline"
+                className="mt-4 inline-block text-cl-accent underline"
               >
                 View account profile
               </Link>

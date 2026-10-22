@@ -40,7 +40,7 @@ function toAthleteLite(rec: any): AthleteLite | null {
       a?.name,
       rec?.fullName,
       rec?.displayName,
-      a?.firstName && a?.lastName ? `${a.firstName} ${a.lastName}` : null
+      a?.firstName && a?.lastName ? `${a.firstName} ${a.lastName}` : null,
     ) ?? "";
   if (!name.trim()) return null;
 
@@ -92,8 +92,8 @@ function extractAthletes(payload: any, usedLimit: number) {
     typeof meta?.hasNextPage === "boolean"
       ? meta.hasNextPage
       : typeof meta?.nextPage === "number"
-      ? true
-      : undefined;
+        ? true
+        : undefined;
 
   const hasMore = hasMoreExplicit ?? athletes.length === usedLimit;
   return { athletes, hasMore };
@@ -263,22 +263,22 @@ export default function AthleteSearchModal({
       <div className="relative z-10 mx-auto md:mt-20 md:max-w-xl">
         <div
           className={cn(
-            "bg-[#0b0f18] border border-white/10 rounded-none md:rounded-xl w-full",
-            "fixed inset-0 md:static md:h-auto"
+            "bg-cl-canvas border border-cl-border rounded-none md:rounded-xl w-full",
+            "fixed inset-0 md:static md:h-auto",
           )}
         >
-          <div className="p-4 border-b border-white/10 sticky top-0 bg-[#0b0f18]">
+          <div className="p-4 border-b border-cl-border sticky top-0 bg-cl-canvas">
             <div className="flex items-center gap-2">
               <input
                 autoFocus
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Search racers…"
-                className="flex-1 h-10 rounded-lg bg-white/5 border border-white/10 px-3 text-sm outline-none placeholder:text-white/60 focus:bg-white/7 text-white"
+                className="flex-1 h-10 rounded-lg bg-cl-subtle border border-cl-border px-3 text-sm outline-none placeholder:text-cl-muted focus:bg-cl-subtle text-cl-ink"
               />
               <button
                 onClick={onClose}
-                className="h-9 px-3 rounded-md border border-white/10 text-white/80 hover:text-white"
+                className="h-9 px-3 rounded-md border border-cl-border text-cl-ink hover:text-cl-ink"
               >
                 Close
               </button>
@@ -290,16 +290,16 @@ export default function AthleteSearchModal({
             className="p-2 max-h-[calc(100vh-60px)] overflow-y-auto"
           >
             {qNorm.length < MIN_QUERY_LENGTH ? (
-              <div className="py-12 text-center text-white/60">
+              <div className="py-12 text-center text-cl-muted">
                 Start typing at least {MIN_QUERY_LENGTH} characters to search
                 racers…
               </div>
             ) : error ? (
-              <div className="py-12 text-center text-red-400">{error}</div>
+              <div className="py-12 text-center text-cl-danger">{error}</div>
             ) : loading && all.length === 0 ? (
-              <div className="py-12 text-center text-white/60">Loading…</div>
+              <div className="py-12 text-center text-cl-muted">Loading…</div>
             ) : filtered.length === 0 ? (
-              <div className="py-12 text-center text-white/60">
+              <div className="py-12 text-center text-cl-muted">
                 No racers found.
               </div>
             ) : (
@@ -311,7 +311,7 @@ export default function AthleteSearchModal({
                       onPick(r);
                       onClose();
                     }}
-                    className="w-full flex items-center gap-3 p-3 rounded-lg border border-white/10 bg-white/5 hover:bg-white/7 text-left"
+                    className="w-full flex items-center gap-3 p-3 rounded-lg border border-cl-border bg-cl-subtle hover:bg-cl-subtle text-left"
                   >
                     <img
                       src={r.image || stockAvatar}
@@ -322,10 +322,10 @@ export default function AthleteSearchModal({
                       className="h-9 w-9 rounded-full object-cover"
                     />
                     <div className="min-w-0">
-                      <div className="text-sm font-medium text-white truncate">
+                      <div className="text-sm font-medium text-cl-ink truncate">
                         {r.name}
                       </div>
-                      <div className="text-xs text-white/70 truncate">
+                      <div className="text-xs text-cl-muted truncate">
                         {(r.location || "").toString()}
                         {r.boatManufacturers ? ` • ${r.boatManufacturers}` : ""}
                       </div>
@@ -333,7 +333,7 @@ export default function AthleteSearchModal({
                   </button>
                 ))}
                 {loadingMore && (
-                  <div className="py-4 text-center text-xs text-white/50">
+                  <div className="py-4 text-center text-xs text-cl-muted">
                     Loading more…
                   </div>
                 )}

@@ -17,7 +17,8 @@ function compile(relative) {
   compiled.paths = module.paths;
   const load = compiled.require.bind(compiled);
   compiled.require = (name) => {
-    if (name === "@/pages/organizations/SandboxContext") return { useOrganizationPageApi: () => ({ sandbox: null }) };
+    if (name === "@/pages/organizations/SandboxContext")
+      return { useOrganizationPageApi: () => ({ sandbox: null }) };
     if (name === "wouter")
       return {
         Link: ({ href, children, ...props }) =>
@@ -94,6 +95,26 @@ assert.deepEqual(queryOptions.queryKey, [
   1,
 ]);
 assert.equal(queryOptions.refetchInterval, 60000);
+queryState = {
+  data: {
+    articles: [post, { ...post, id: "post-2" }, { ...post, id: "post-3" }],
+    meta: { hasNextPage: true },
+  },
+};
+const preview = renderToStaticMarkup(
+  React.createElement(OrganizationPosts, {
+    organizationId: "org-1",
+    previewLimit: 2,
+  }),
+);
+assert.equal((preview.match(/href="\/organization-posts\//g) || []).length, 2);
+assert.doesNotMatch(preview, /Page 1|>Next</);
+const fullFeed = renderToStaticMarkup(
+  React.createElement(OrganizationPosts, { organizationId: "org-1" }),
+);
+assert.equal((fullFeed.match(/href="\/organization-posts\//g) || []).length, 3);
+assert.match(fullFeed, /Page 1/);
+
 queryState = { isLoading: true };
 assert.match(
   renderToStaticMarkup(

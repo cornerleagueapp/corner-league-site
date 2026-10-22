@@ -10,7 +10,24 @@ export default {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      boxShadow: {
+        "cl-panel": "0 10px 32px rgb(24 38 47 / 0.07)",
+      },
       colors: {
+        cl: {
+          canvas: "rgb(var(--cl-canvas) / <alpha-value>)",
+          surface: "rgb(var(--cl-surface) / <alpha-value>)",
+          subtle: "rgb(var(--cl-subtle) / <alpha-value>)",
+          ink: "rgb(var(--cl-ink) / <alpha-value>)",
+          muted: "rgb(var(--cl-muted) / <alpha-value>)",
+          border: "rgb(var(--cl-border) / <alpha-value>)",
+          accent: "rgb(var(--cl-accent) / <alpha-value>)",
+          contrast: "rgb(var(--cl-accent-contrast) / <alpha-value>)",
+          bright: "rgb(var(--cl-sport-bright) / <alpha-value>)",
+          danger: "rgb(var(--cl-danger) / <alpha-value>)",
+          success: "rgb(var(--cl-success) / <alpha-value>)",
+          warning: "rgb(var(--cl-warning) / <alpha-value>)",
+        },
         background: "var(--background)",
         foreground: "var(--foreground)",
         card: {

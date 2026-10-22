@@ -20,10 +20,10 @@ type CreateRegistrationRacerModalProps = {
 };
 
 const inputClassName =
-  "h-12 w-full rounded-[16px] border border-white/10 bg-white/[0.045] px-4 text-sm text-white outline-none placeholder:text-white/30 transition focus:border-cyan-300/30 focus:bg-cyan-300/[0.05] focus:ring-2 focus:ring-cyan-300/10";
+  "h-12 w-full rounded-[16px] border border-cl-border bg-cl-subtle px-4 text-sm text-cl-ink outline-none placeholder:text-cl-muted transition focus:border-cl-accent/30 focus:bg-cl-accent/[0.05] focus:ring-2 focus:ring-cl-accent/10";
 
 const labelClassName =
-  "mb-2 block text-[10px] font-black uppercase tracking-[0.13em] text-white/50";
+  "mb-2 block text-[10px] font-black uppercase tracking-[0.13em] text-cl-muted";
 
 const EMPTY_FORM: NewRegistrationRacerInput = {
   firstName: "",
@@ -180,24 +180,24 @@ export default function CreateRegistrationRacerModal({
         className="absolute inset-0 bg-black/75 backdrop-blur-sm"
       />
 
-      <div className="relative z-10 max-h-[94dvh] w-full overflow-y-auto rounded-t-[30px] border border-cyan-300/10 bg-[#07111F] shadow-[0_30px_100px_rgba(0,0,0,0.65)] sm:max-w-2xl sm:rounded-[30px]">
-        <div className="sticky top-0 z-10 border-b border-white/10 bg-[#07111F]/95 p-5 backdrop-blur-xl sm:p-6">
+      <div className="relative z-10 max-h-[94dvh] w-full overflow-y-auto rounded-t-[30px] border border-cl-accent/10 bg-cl-canvas shadow-cl-panel sm:max-w-2xl sm:rounded-[30px]">
+        <div className="sticky top-0 z-10 border-b border-cl-border bg-cl-surface p-5 backdrop-blur-xl sm:p-6">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-start gap-3">
-              <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-cyan-300/15 bg-cyan-300/10 text-cyan-200">
+              <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-cl-accent/[0.15] bg-cl-accent/10 text-cl-accent">
                 <UserPlus className="h-5 w-5" />
               </div>
 
               <div>
-                <div className="text-[9px] font-black uppercase tracking-[0.18em] text-cyan-200/60">
+                <div className="text-[9px] font-black uppercase tracking-[0.18em] text-cl-accent">
                   Corner League Racer
                 </div>
 
-                <h2 className="mt-1 text-xl font-black uppercase tracking-[-0.025em] text-white sm:text-2xl">
+                <h2 className="mt-1 text-xl font-black uppercase tracking-[-0.025em] text-cl-ink sm:text-2xl">
                   Create New Racer
                 </h2>
 
-                <p className="mt-2 max-w-lg text-xs leading-5 text-white/45">
+                <p className="mt-2 max-w-lg text-xs leading-5 text-cl-muted">
                   Create a real Corner League racer profile and immediately
                   select it for this registration.
                 </p>
@@ -208,7 +208,7 @@ export default function CreateRegistrationRacerModal({
               type="button"
               disabled={submitting}
               onClick={onClose}
-              className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/10 bg-white/[0.05] text-white/60 transition hover:bg-white/10 hover:text-white disabled:cursor-wait disabled:opacity-50"
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-cl-border bg-cl-subtle text-cl-muted transition hover:bg-cl-subtle hover:text-cl-ink disabled:cursor-wait disabled:opacity-50"
               aria-label="Close"
             >
               <X className="h-4 w-4" />
@@ -258,11 +258,11 @@ export default function CreateRegistrationRacerModal({
             />
           </label>
 
-          <div className="rounded-[22px] border border-white/10 bg-white/[0.025] p-4 sm:p-5">
+          <div className="rounded-[22px] border border-cl-border bg-cl-subtle p-4 sm:p-5">
             <div className="mb-4 flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-cyan-200" />
+              <MapPin className="h-4 w-4 text-cl-accent" />
 
-              <h3 className="text-xs font-black uppercase tracking-[0.12em] text-white">
+              <h3 className="text-xs font-black uppercase tracking-[0.12em] text-cl-ink">
                 Racer Location
               </h3>
             </div>
@@ -313,7 +313,7 @@ export default function CreateRegistrationRacerModal({
                   placeholder="US"
                 />
 
-                <p className="mt-2 text-[11px] leading-5 text-white/35">
+                <p className="mt-2 text-[11px] leading-5 text-cl-muted">
                   Use the standard two-letter country code, such as US, CA, GB,
                   AU, or JP.
                 </p>
@@ -321,20 +321,20 @@ export default function CreateRegistrationRacerModal({
             </div>
           </div>
 
-          <div className="rounded-[18px] border border-cyan-300/10 bg-cyan-300/[0.04] p-4">
-            <p className="text-xs leading-5 text-white/45">
+          <div className="rounded-[18px] border border-cl-accent/10 bg-cl-accent/[0.04] p-4">
+            <p className="text-xs leading-5 text-cl-muted">
               Racer identity information is stored on the Corner League athlete
               profile. Race-specific information such as watercraft and class
               selections is collected separately during this registration.
             </p>
           </div>
 
-          <div className="sticky bottom-0 -mx-5 -mb-5 border-t border-white/10 bg-[#07111F]/95 p-4 backdrop-blur-xl sm:-mx-6 sm:-mb-6 sm:flex sm:justify-end sm:gap-3 sm:p-5">
+          <div className="sticky bottom-0 -mx-5 -mb-5 border-t border-cl-border bg-cl-surface p-4 backdrop-blur-xl sm:-mx-6 sm:-mb-6 sm:flex sm:justify-end sm:gap-3 sm:p-5">
             <button
               type="button"
               disabled={submitting}
               onClick={onClose}
-              className="hidden min-h-12 rounded-full border border-white/10 bg-white/[0.05] px-5 text-[10px] font-black uppercase tracking-[0.14em] text-white/65 transition hover:bg-white/10 hover:text-white disabled:opacity-50 sm:inline-flex sm:items-center sm:justify-center"
+              className="hidden min-h-12 rounded-full border border-cl-border bg-cl-subtle px-5 text-[10px] font-black uppercase tracking-[0.14em] text-cl-muted transition hover:bg-cl-subtle hover:text-cl-ink disabled:opacity-50 sm:inline-flex sm:items-center sm:justify-center"
             >
               Cancel
             </button>
@@ -342,7 +342,7 @@ export default function CreateRegistrationRacerModal({
             <button
               type="submit"
               disabled={!canSubmit}
-              className="flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-cyan-300 px-6 text-[10px] font-black uppercase tracking-[0.15em] text-[#06111d] shadow-[0_0_28px_rgba(34,211,238,0.2)] transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:bg-white/15 disabled:text-white/35 sm:w-auto"
+              className="flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-cl-accent px-6 text-[10px] font-black uppercase tracking-[0.15em] text-cl-contrast shadow-cl-panel transition hover:bg-cl-accent disabled:cursor-not-allowed disabled:bg-cl-subtle disabled:text-cl-muted sm:w-auto"
             >
               {submitting ? (
                 <>

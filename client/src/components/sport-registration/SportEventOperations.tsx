@@ -1,3 +1,4 @@
+import GolfEventResults from "./GolfEventResults";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { publicSportData, sandboxSportData } from "@/lib/sportRegistration";
@@ -9,6 +10,10 @@ type Participant = {
   number: string;
 };
 type Heat = {
+  golfScoring?: "gross" | "net" | "stableford";
+  strokeIndexes?: number[];
+  checkpoints?: { id: string; label: string; distanceMeters: number }[];
+  holePars?: number[];
   id: string;
   classId: string;
   className: string;
@@ -21,6 +26,14 @@ type Heat = {
   participants: Participant[];
 };
 type Finish = Participant & {
+  splits?: { checkpointId: string; elapsedMs: number }[];
+  holeScores?: { hole: number; strokes: number }[];
+  netStrokes?: number | null;
+  netToPar?: number | null;
+  stablefordPoints?: number | null;
+  playingHandicap?: number;
+  grossStrokes?: number | null;
+  toPar?: number | null;
   status: string;
   position: number | null;
   laps: number;
@@ -37,6 +50,24 @@ export type PublicOperations = {
   workflow: string;
   schedule: Heat[];
   results: { heatId: string; rows: Finish[] }[];
+  golfStandings?: {
+    classId: string;
+    className: string;
+    scoring?: "gross" | "net" | "stableford";
+    rows: {
+      profileId: string;
+      name: string;
+      completedRounds: number;
+      totalRounds: number;
+      netStrokes?: number;
+      netToPar?: number;
+      stablefordPoints?: number;
+      grossStrokes: number;
+      toPar: number;
+      eligible: boolean;
+      position: number | null;
+    }[];
+  }[];
   standings: {
     classId: string;
     className: string;
@@ -138,19 +169,25 @@ export default function SportEventOperations({
       <span>{a.name}</span>
     ) : (
       <Link
-        className="text-cyan-200 underline"
+        className="text-cl-accent underline"
         href={`/racer/${encodeURIComponent(a.profileId)}?sport=${encodeURIComponent(sportKey)}`}
       >
         {a.name}
       </Link>
     );
+  if (data?.workflow === "round-scoring")
+    return <GolfEventResults data={data} />;
   return (
     <section
       aria-label="Schedule and results"
-      className="space-y-5 rounded-3xl border border-white/10 bg-[#07111f] p-5 sm:p-7"
+      className="space-y-5 rounded-3xl border border-cl-border bg-cl-surface p-5 sm:p-7"
     >
       <h2 className="text-2xl font-black">
-        {running ? "Start waves & finish results" : "Race schedule & results"}
+        {sportKey === "golf"
+          ? "Golf rounds & scores"
+          : running
+            ? "Start waves & finish results"
+            : "Race schedule & results"}
       </h2>
       {query.isLoading ? (
         <p role="status">Loading schedule and results…</p>
@@ -158,7 +195,7 @@ export default function SportEventOperations({
         <div role="alert">
           <p>Schedule and results are temporarily unavailable.</p>
           <button
-            className="mt-3 min-h-11 rounded-xl border border-white/20 px-4"
+            className="mt-3 min-h-11 rounded-xl border border-cl-border px-4"
             onClick={() => void query.refetch()}
           >
             Try again
@@ -168,7 +205,7 @@ export default function SportEventOperations({
         data && (
           <>
             {!data.schedule.length && (
-              <p className="text-slate-300">
+              <p className="text-cl-muted">
                 The organizer has not published a schedule yet.
               </p>
             )}
@@ -177,10 +214,10 @@ export default function SportEventOperations({
               return (
                 <article
                   key={h.id}
-                  className="space-y-4 rounded-2xl border border-cyan-200/15 p-4"
+                  className="space-y-4 rounded-2xl border border-cl-accent/15 p-4"
                 >
                   <h3 className="text-xl font-bold">{h.label}</h3>
-                  <p className="text-slate-300">
+                  <p className="text-cl-muted">
                     {h.className}
                     {h.distanceMeters
                       ? ` · ${(h.distanceMeters / 1000).toLocaleString()} km`
@@ -191,7 +228,7 @@ export default function SportEventOperations({
                     {running ? ` · ${h.timingBasis} timing` : ""}
                   </p>
                   <details>
-                    <summary className="min-h-11 cursor-pointer py-2 text-cyan-200">
+                    <summary className="min-h-11 cursor-pointer py-2 text-cl-accent">
                       {h.participants.length} athletes · View{" "}
                       {running ? "wave" : "race list"}
                     </summary>
@@ -228,7 +265,10 @@ export default function SportEventOperations({
                         </thead>
                         <tbody>
                           {result.rows.map((r) => (
-                            <tr key={r.id} className="border-t border-white/10">
+                            <tr
+                              key={r.id}
+                              className="border-t border-cl-border"
+                            >
                               <td className="p-2">
                                 {r.status === "finished"
                                   ? r.position
@@ -237,6 +277,29 @@ export default function SportEventOperations({
                               <td className="p-2">
                                 {athlete(r)}
                                 {r.number ? ` · #${r.number}` : ""}
+                                {running && !!h.checkpoints?.length && (
+                                  <details>
+                                    <summary className="min-h-11 cursor-pointer py-2">
+                                      Checkpoint splits
+                                    </summary>
+                                    <ul>
+                                      {h.checkpoints.map((p) => (
+                                        <li key={p.id}>
+                                          {p.label} · {p.distanceMeters}m ·{" "}
+                                          {formatFinishTime(
+                                            r.splits?.find(
+                                              (s) => s.checkpointId === p.id,
+                                            )?.elapsedMs ?? null,
+                                          )}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                    <p className="text-xs text-cl-muted">
+                                      Cumulative {h.timingBasis} time before
+                                      penalties.
+                                    </p>
+                                  </details>
+                                )}
                               </td>
                               {!running && <td className="p-2">{r.laps}</td>}
                               <td className="whitespace-nowrap p-2">
@@ -259,7 +322,7 @@ export default function SportEventOperations({
                       </table>
                     </div>
                   ) : (
-                    <p className="text-slate-400">
+                    <p className="text-cl-muted">
                       Results have not been published for this{" "}
                       {running ? "wave" : "heat"}.
                     </p>
@@ -280,7 +343,7 @@ export default function SportEventOperations({
                       </li>
                     ))}
                   </ol>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-cl-muted">
                     Totals use the published heats for this event. Equal points
                     and finishes are tied.
                   </p>
