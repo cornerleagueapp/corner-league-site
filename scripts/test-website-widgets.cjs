@@ -243,3 +243,8 @@ const flush = async () => {
   console.error(e);
   process.exitCode = 1;
 });
+
+for (const kind of ["event-card", "team-schedule", "athlete-spotlight", "sponsor-spotlight", "event-recap", "announcement"]) {
+  assert.equal(contract.requireWidget({...data, kind}, "widget", "https://www.cornerleague.com").kind, kind);
+}
+console.log("PASS enhanced media widget contracts");

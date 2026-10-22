@@ -2,7 +2,7 @@ export type OrgPost = {
   id: string;
   title: string;
   content: string;
-  postType: "announcement" | "update" | "article";
+  postType: "announcement" | "update" | "article" | "athlete-spotlight" | "sponsor-spotlight" | "event-recap" | "press-release";
   contentFormat: "plain" | "markdown";
   summary?: string | null;
   accentColor?: string;

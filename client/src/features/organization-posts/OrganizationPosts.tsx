@@ -35,7 +35,7 @@ const postLabel = (type: string) =>
     ? "Article / Blog"
     : type === "announcement"
       ? "Announcement"
-      : "Update";
+      : type.replace(/-/g, " ");
 const dateLabel = (value?: string | null) =>
   value
     ? new Date(value).toLocaleDateString(undefined, {

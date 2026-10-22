@@ -6,6 +6,12 @@ export const kinds = [
   "event-schedule",
   "event-results",
   "upcoming-events",
+  "event-card",
+  "team-schedule",
+  "athlete-spotlight",
+  "sponsor-spotlight",
+  "event-recap",
+  "announcement",
 ] as const;
 export type WidgetRow = {
   id: string;
