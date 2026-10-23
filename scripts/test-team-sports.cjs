@@ -108,6 +108,7 @@ const d = {
     },
   ],
 };
+let listRows = [{ id: "season", name: "Fall", leagueName: "League" }];
 let sandbox = null,
   queries = [],
   search = "?season=season",
@@ -115,6 +116,9 @@ let sandbox = null,
 const component = compile("client/src/components/team-sports/TeamSeasons.tsx", {
   "@/components/admissions/AdmissionOffer": { AdmissionOffer: () => null },
   "@/lib/teamSports": team,
+  "./TeamBracket": { default: () => null },
+  "./TeamRecruitment": { default: () => null },
+  "@/components/branding/ConsumerBrandingHero": { default: () => null },
   "@/pages/organizations/SandboxContext": { useSandbox: () => sandbox },
   wouter: {
     useSearch: () => search,
@@ -131,8 +135,8 @@ const component = compile("client/src/components/team-sports/TeamSeasons.tsx", {
         data:
           q.queryKey[0] === "team-seasons"
             ? {
-                items: [{ id: "season", name: "Fall", leagueName: "League" }],
-                total: 1,
+                items: listRows,
+                total: listRows.length,
               }
             : d,
       };
@@ -144,7 +148,7 @@ const component = compile("client/src/components/team-sports/TeamSeasons.tsx", {
     assert(registration.isAthleteSport(key));
     assert(!registration.isRacingSport(key));
   }
-  assert(!registration.isAthleteSport("golf"));
+  assert(registration.isAthleteSport("golf"));
   response = [{ id: "player", sportKey: "soccer" }];
   assert.equal((await registration.mySportAthletes())[0].sportKey, "soccer");
   response = { items: "broken", total: 1 };
@@ -193,6 +197,13 @@ const component = compile("client/src/components/team-sports/TeamSeasons.tsx", {
   assert(html.includes("Player"));
   assert(html.includes("/racer/player?sport=soccer"));
   assert(!html.includes("Race Results"));
+  assert(html.includes("Refresh seasons"));
+  assert(!html.includes("Previous seasons"));
+  search = ""; listRows = [];
+  const empty = renderToStaticMarkup(React.createElement(component.default, {organizationId:"org",sportKey:"soccer"}));
+  assert(empty.includes("once the organizer publishes a season"));
+  assert(!empty.includes("Previous seasons"));
+  search = "?season=season"; listRows = [{id:"season",name:"Fall",leagueName:"League"}];
   queries = [];
   sandbox = { id: "org", account: "super-admin" };
   html = renderToStaticMarkup(
@@ -248,6 +259,7 @@ const component = compile("client/src/components/team-sports/TeamSeasons.tsx", {
     "client/src/components/team-sports/TeamRosterInvites.tsx",
     {
       react: hooks,
+      "./TeamRecruitment": { CaptainRequests: () => null },
       "@/hooks/useAuth": { useAuth: () => ({ isAuthenticated: !!user, user }) },
       "@/lib/teamSports": {
         myTeamInvitations: async () => {},

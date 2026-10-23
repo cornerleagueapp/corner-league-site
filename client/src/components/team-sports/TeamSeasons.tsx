@@ -81,7 +81,14 @@ function SeasonBrowser({
   }
   return (
     <section className="mt-6 space-y-5 rounded-2xl border border-cl-border bg-cl-surface p-5 text-cl-ink">
-      <h2 className="text-2xl font-bold">Leagues & seasons</h2>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-2xl font-bold">Leagues & seasons</h2>
+        <button type="button" disabled={list.isFetching || season.isFetching}
+          className="min-h-11 rounded-xl border border-cl-border px-4 py-2 disabled:opacity-50"
+          onClick={() => { void list.refetch(); if (id) void season.refetch(); }}>
+          {list.isFetching || season.isFetching ? "Refreshing…" : "Refresh seasons"}
+        </button>
+      </div>
       {list.isPending ? (
         <p role="status">Loading seasons…</p>
       ) : list.isError ? (
@@ -106,9 +113,9 @@ function SeasonBrowser({
             ))}
           </div>
           {!list.data.items.length && (
-            <p className="text-cl-muted">No published seasons yet.</p>
+            <p className="text-cl-muted">No published seasons yet. Leagues and seasons appear here once the organizer publishes a season.</p>
           )}
-          <div className="flex flex-wrap items-center gap-4">
+          {(page > 1 || list.data.total > 20) && <div className="flex flex-wrap items-center gap-4">
             <button
               disabled={page === 1}
               className="min-h-11 disabled:opacity-40"
@@ -124,7 +131,7 @@ function SeasonBrowser({
             >
               Next seasons
             </button>
-          </div>
+          </div>}
         </>
       )}
       {id &&
