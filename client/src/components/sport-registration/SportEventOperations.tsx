@@ -170,7 +170,7 @@ export default function SportEventOperations({
     ) : (
       <Link
         className="text-cl-accent underline"
-        href={`/racer/${encodeURIComponent(a.profileId)}?sport=${encodeURIComponent(sportKey)}`}
+        href={`/athlete/${encodeURIComponent(a.profileId)}?sport=${encodeURIComponent(sportKey)}`}
       >
         {a.name}
       </Link>

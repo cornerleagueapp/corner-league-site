@@ -1,3 +1,4 @@
+import GameCard, {teamHref} from "./GameCard";
 import TeamBracket from "./TeamBracket";
 import ConsumerBrandingHero from "@/components/branding/ConsumerBrandingHero";
 // Phase 2/3: AdmissionOffer remains in @/components/admissions/AdmissionOffer.
@@ -205,65 +206,12 @@ export function SeasonDetails({
         </select>
       </label>
       <TeamBracket season={d} division={division} />
-      <div>
-        <h4 className="mb-3 text-lg font-bold">Teams & players</h4>
-        <div className="grid gap-4 md:grid-cols-2">
-          {teams.items.map((t) => (
-            <article
-              key={t.id}
-              className="rounded-xl border border-cl-border p-4"
-            >
-              <h5 className="font-bold">{t.name}</h5>
-              {!sandbox && t.recruiting && (
-                <TeamRecruitment
-                  seasonId={d.id}
-                  teamId={t.id}
-                  sportKey={d.sportKey}
-                />
-              )}
-              <p className="text-sm text-cl-muted">
-                {d.divisions.find((v) => v.id === t.divisionId)?.name}
-              </p>
-              {!t.players.length && (
-                <p className="mt-3 text-cl-muted">
-                  No published player roster yet.
-                </p>
-              )}
-              <ul className="mt-3 space-y-2">
-                {t.players.map((p) => (
-                  <li key={p.profileId}>
-                    {sandbox ? (
-                      <span>{p.name}</span>
-                    ) : (
-                      <Link
-                        className="text-cl-accent underline"
-                        href={`/racer/${encodeURIComponent(p.profileId)}?sport=${encodeURIComponent(d.sportKey)}`}
-                      >
-                        {p.name}
-                      </Link>
-                    )}{" "}
-                    <span className="text-sm text-cl-muted">
-                      {p.number ? `#${p.number} ` : ""}
-                      {p.position}
-                      {t.captainProfileId === p.profileId ? " · Captain" : ""}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </article>
-          ))}
-        </div>
-        {!view.teams.length && <p>No teams in this division yet.</p>}
-        <Pages
-          label="teams"
-          page={teams.page}
-          pages={teams.pages}
-          onChange={setTeamPage}
-        />
-      </div>
+      <section className="space-y-5"><h4 className="text-xl font-black">Teams by division</h4>
+        {d.divisions.filter(v=>!division||v.id===division).map(v=><div key={v.id} className="cl-division-card"><header><h5>{v.name}</h5><span>{d.teams.filter(t=>t.divisionId===v.id).length} teams</span></header><div className="cl-division-teams">{d.teams.filter(t=>t.divisionId===v.id).map(t=>{const record=d.standings.find(s=>s.divisionId===v.id)?.rows.find(r=>r.teamId===t.id);return <div key={t.id}>{sandbox?<strong>{t.name}</strong>:<Link href={teamHref(d.sportKey,d.id,t.id,d.organizationId)}><strong>{t.name}</strong><span>{record?`${record.wins}–${record.losses}`:'—'} <span aria-hidden="true">→</span></span></Link>}{!sandbox&&t.recruiting&&<TeamRecruitment seasonId={d.id} teamId={t.id} sportKey={d.sportKey}/>}</div>})}</div></div>)}
+      </section>
       <div>
         <h4 className="mb-3 text-lg font-bold">
-          Games & {d.scoreLabel.toLowerCase()}
+          Games
         </h4>
         <label className="mb-3 block">
           Game status
@@ -290,78 +238,7 @@ export function SeasonDetails({
           </p>
         )}
         <div className="space-y-3">
-          {games.items.map((g) => {
-            const r = d.results.find((r) => r.gameId === g.id);
-            return (
-              <article
-                key={g.id}
-                className="rounded-xl border border-cl-border p-4"
-              >
-                {g.competition && (
-                  <p className="text-sm text-cl-muted">
-                    {g.competition.kind === "single-elimination"
-                      ? "Single elimination"
-                      : g.competition.kind === "double-round-robin"
-                        ? "Home & away"
-                        : "Round robin"}{" "}
-                    · Round {g.competition.round} · Match {g.competition.match}
-                    {g.competition.homeSeed
-                      ? ` · Seeds ${g.competition.homeSeed} and ${g.competition.awaySeed}`
-                      : ""}
-                  </p>
-                )}
-                <h5 className="font-bold">
-                  {name(g.homeTeamId)}{" "}
-                  {g.competition?.bye
-                    ? "· BYE / automatic advancement"
-                    : `vs ${name(g.awayTeamId)}`}
-                </h5>
-                <p className="text-sm text-cl-muted">
-                  <time dateTime={g.startsAt}>
-                    {new Date(g.startsAt).toLocaleString()}
-                  </time>{" "}
-                  · {g.venue || "Venue to be announced"}
-                </p>
-                <p className="mt-2 font-bold">
-                  {g.competition?.bye
-                    ? "Advanced by bye"
-                    : g.status === "cancelled"
-                      ? "Cancelled"
-                      : r
-                        ? `${r.homeScore} – ${r.awayScore} · ${r.status === "final" ? "Final" : "In progress"}`
-                        : "Scheduled"}
-                </p>
-                {/* Phase 2/3: deferred ticket offers; retained for restoration.
-{g.status !== "cancelled" && !g.competition?.bye && (
-                  <AdmissionOffer
-                    eventKey={`game:${d.id}:${g.id}`}
-                    sandbox={sandbox}
-                  />
-                )}
-                */}
-                {r?.decision && r.decision !== "regulation" && (
-                  <p>Decided in {r.decision}</p>
-                )}
-                {r?.tiebreakWinnerId && (
-                  <p>Tiebreak winner: {name(r.tiebreakWinnerId)}</p>
-                )}
-                {!!r?.periods.length && (
-                  <details className="mt-2">
-                    <summary className="min-h-11 cursor-pointer text-cl-accent">
-                      {d.periodLabel} scores
-                    </summary>
-                    <ul>
-                      {r.periods.map((p, i) => (
-                        <li key={i}>
-                          {p.label}: {p.homeScore} – {p.awayScore}
-                        </li>
-                      ))}
-                    </ul>
-                  </details>
-                )}
-              </article>
-            );
-          })}
+          {games.items.map(g=><GameCard key={g.id} sandbox={sandbox} data={{seasonId:d.id,organizationId:d.organizationId,sportKey:d.sportKey,periodLabel:d.periodLabel,scoreLabel:d.scoreLabel,game:g,result:d.results.find(r=>r.gameId===g.id)||null,teams:d.teams,playerStats:d.playerStats||[]}}/>)}
         </div>
       </div>
       <Pages
@@ -442,7 +319,7 @@ export function SeasonDetails({
                   {s.rows.map((r) => (
                     <tr key={r.teamId}>
                       <th scope="row" className="whitespace-nowrap p-3">
-                        {r.name}
+                        {sandbox?r.name:<Link href={teamHref(d.sportKey,d.id,r.teamId,d.organizationId)}>{r.name}</Link>}
                       </th>
                       {[
                         r.position ?? "—",

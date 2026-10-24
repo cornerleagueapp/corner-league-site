@@ -112,13 +112,6 @@ export function useAppSidebarSections(opts?: {
         title: "Explore",
         items: [
           {
-            key: "home",
-            label: "Home",
-            selectable: false,
-            matchPaths: ["/"],
-            onSelect: () => navigate(isJetSki ? "/" : sportHub(sportKey)),
-          },
-          {
             key: "racing-hub",
             label: isJetSki ? "Racing Hub" : `${sport?.label ?? "Sport"} Hub`,
             selectable: false,
@@ -148,17 +141,9 @@ export function useAppSidebarSections(opts?: {
               : [`/sports/${sportKey}`, `/sports/${sportKey}/*`],
             onSelect: () => navigate(sportDirectory(sportKey)),
           },
-          ...(isJetSki
-            ? [
-                {
-                  key: "event-map",
-                  label: "Event Map",
-                  selectable: false,
-                  matchPaths: ["/event-map"],
-                  onSelect: () => navigate("/event-map"),
-                },
-              ]
-            : []),
+          {key: "event-map", label: "Events", selectable: false,
+            matchPaths: [`/sports/${sportKey}/events`],
+            onSelect: () => navigate(`/sports/${sportKey}/events`)},
           {
             key: "top-trends",
             label: "Top Trends",

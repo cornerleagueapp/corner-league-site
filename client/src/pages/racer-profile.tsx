@@ -2,7 +2,7 @@ import AthletePerformanceCenter from "@/components/athlete-performance/AthletePe
 import { PUBLIC_RACEPOD_ENABLED } from "@/lib/publicFeatures";
 import SportAthletePublic from "./sport-athlete-public";
 import { isAthleteSport } from "@/lib/sportRegistration";
-import { useSearch } from "wouter";
+import { useSearch, Redirect } from "wouter";
 import OrganizationPhotoGallery from "@/components/OrganizationPhotoGallery";
 import React, { useEffect, useState } from "react";
 import { PageSEO } from "@/seo/usePageSEO";
@@ -397,7 +397,7 @@ function RacePodSessionsModal({
 export default function RacerProfilePage(props: { idOrSlugParam?: string }) {
   const sport = new URLSearchParams(useSearch()).get("sport") ?? "";
   return isAthleteSport(sport) && props.idOrSlugParam ? (
-    <SportAthletePublic id={props.idOrSlugParam} sportKey={sport} />
+    <LegacyAthlete id={props.idOrSlugParam} sport={sport} />
   ) : (
     <JetSkiRacerProfilePage {...props} />
   );
@@ -1881,4 +1881,9 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
       />
     </div>
   );
+}
+
+function LegacyAthlete({id,sport}: {id:string;sport:string}) {
+ const [path] = useLocation();
+ return path.startsWith("/racer/") ? <Redirect to={`/athlete/${encodeURIComponent(id)}?sport=${encodeURIComponent(sport)}`} replace /> : <SportAthletePublic id={id} sportKey={sport} />;
 }

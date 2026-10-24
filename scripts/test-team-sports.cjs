@@ -113,7 +113,9 @@ let sandbox = null,
   queries = [],
   search = "?season=season",
   location = "/sports/soccer/organizations/org";
+const gameCard = compile("client/src/components/team-sports/GameCard.tsx", {wouter:{Link:({href,children})=>React.createElement('a',{href},children)}});
 const component = compile("client/src/components/team-sports/TeamSeasons.tsx", {
+  "./GameCard": gameCard,
   "@/components/admissions/AdmissionOffer": { AdmissionOffer: () => null },
   "@/lib/teamSports": team,
   "./TeamBracket": { default: () => null },
@@ -193,9 +195,10 @@ const component = compile("client/src/components/team-sports/TeamSeasons.tsx", {
     }),
   );
   assert(html.includes("Goals for"));
-  assert(html.includes("2 – 1"));
-  assert(html.includes("Player"));
-  assert(html.includes("/racer/player?sport=soccer"));
+  assert(html.includes("First"));
+  assert(html.includes("Teams by division"));
+  assert(html.includes("/sports/soccer/teams/season/home?org=org"));
+  assert(!html.includes("/athlete/player"));
   assert(!html.includes("Race Results"));
   assert(html.includes("Refresh seasons"));
   assert(!html.includes("Previous seasons"));

@@ -1,3 +1,6 @@
+import SportEventsPage from "@/pages/sport-events";
+import PublicTeamPage from "@/pages/public-team";
+import SportOrganizationDirectory from "@/pages/organizations/sport-organization-directory";
 import AllSportsHome from "@/features/discovery/AllSportsHome";
 import DiscoveryPage from "@/features/discovery/DiscoveryPage";
 import { MarketingInvitation } from "@/components/marketing/MarketingPreferences";
@@ -207,11 +210,7 @@ function PrivateRouter() {
             path="/internal/test-organizations/:id"
             component={TestOrganizationPreview}
           />
-          <Route
-            path="/sports/:sportKey/organizations/:id"
-            component={SportOrganizationDetailsPage}
-          />
-          <Route path="/sports/:sportKey" component={SportOrganizationsPage} />
+
 
           <Route path="/profile/:username">
             {(params) => <UserProfilePage username={params.username} />}
@@ -384,6 +383,11 @@ function PrivateRouter() {
 function Router() {
   return (
     <Switch>
+      <Route path="/sports/:sportKey/organizations/:id"><AppShell guestMode><ErrorBoundary><SportOrganizationDetailsPage /></ErrorBoundary></AppShell></Route>
+      <Route path="/sports/:sportKey/events"><AppShell guestMode><ErrorBoundary><SportEventsPage /></ErrorBoundary></AppShell></Route>
+      <Route path="/sports/:sportKey/organizations"><AppShell guestMode><ErrorBoundary><SportOrganizationDirectory /></ErrorBoundary></AppShell></Route>
+      <Route path="/sports/:sportKey/teams/:seasonId/:teamId"><AppShell guestMode><ErrorBoundary><PublicTeamPage /></ErrorBoundary></AppShell></Route>
+      <Route path="/sports/:sportKey"><AppShell guestMode><ErrorBoundary><SportOrganizationsPage /></ErrorBoundary></AppShell></Route>
       <Route path="/">
         {() => (
           <AppShell guestMode>
@@ -670,6 +674,9 @@ function Router() {
       </Route>
 
       <Route path="/racer"><AppShell guestMode><ErrorBoundary><RacerDirectory /></ErrorBoundary></AppShell></Route>
+      <Route path="/athlete/:idOrSlug">
+        {(params) => <AppShell guestMode><ErrorBoundary><RacerProfilePage idOrSlugParam={params.idOrSlug} /></ErrorBoundary></AppShell>}
+      </Route>
       <Route path="/racer/:idOrSlug">
         {(params) => (
           <AppShell guestMode>

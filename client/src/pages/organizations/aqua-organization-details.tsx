@@ -1,3 +1,4 @@
+import TeamGameDirectory from "@/components/team-sports/TeamGameDirectory";
 // Future: OrganizationFacilities and OrganizationShop remain available in their feature modules.
 import TeamSeasons from "@/components/team-sports/TeamSeasons";
 import { isTeamSport } from "@/lib/sportRegistration";
@@ -92,7 +93,7 @@ function OrganizationCommunityPage(props: Props) {
     !!org &&
     (sandbox
       ? !team
-      : !!org.sportProfile?.capabilities?.eventManagement ||
+      : team || !!org.sportProfile?.capabilities?.eventManagement ||
         primarySportKey === "jet-ski");
   const sections = organizationSections(team, hasEvents, !!sandbox);
   const section = organizationSection(search, sections);
@@ -107,7 +108,7 @@ function OrganizationCommunityPage(props: Props) {
       eventPage,
     ],
     enabled:
-      !!org && hasEvents && (section === "overview" || section === "events"),
+      !!org && !team && hasEvents && (section === "overview" || section === "events"),
     queryFn: async ({ signal }) => {
       const response = await pageFetch(
         `/sport-event/organization/${encodeURIComponent(orgId)}?page=${eventPage}&limit=12&order=DESC&sortBy=startDate`,
@@ -346,7 +347,8 @@ function OrganizationCommunityPage(props: Props) {
                 </Link>
               </div>
             )}
-            {section === "events" && (
+            {section === "events" && team && !sandbox && <TeamGameDirectory sport={primarySportKey} organizationId={org.id} />}
+            {section === "events" && !team && (
               <div>
                 <div className="sport-section-heading">
                   <h2>Events & schedules</h2>

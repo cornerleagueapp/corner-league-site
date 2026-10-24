@@ -39,9 +39,9 @@ export function parseDirectory(
     const expected =
       kind === "users"
         ? `/profile/${encodeURIComponent(item.username || "")}`
-        : `/racer/${encodeURIComponent(item.id)}${sport === "jet-ski" ? "" : `?sport=${encodeURIComponent(sport)}`}`;
+        : `/${sport === "jet-ski" ? "racer" : "athlete"}/${encodeURIComponent(item.id)}${sport === "jet-ski" ? "" : `?sport=${encodeURIComponent(sport)}`}`;
     if (
-      item.profileUrl !== expected ||
+      (item.profileUrl !== expected && item.profileUrl !== expected.replace("/athlete/", "/racer/")) ||
       (kind === "athletes" && item.sportKey !== sport)
     )
       throw new Error("Search result does not match this sport.");

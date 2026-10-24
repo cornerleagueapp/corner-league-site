@@ -27,8 +27,11 @@ const labels: Record<string, string> = {
   "podcast-episodes": "Podcast episodes",
   athletes: "Athletes",
   racer: "Athlete",
+  athlete: "Athlete",
 };
 export function breadcrumbsFor(path: string): Breadcrumb[] {
+  // Team pages render named organization/season breadcrumbs from their loaded data.
+  if (/^\/sports\/[^/]+\/teams\//.test(path)) return [];
   const parts = path.split(/[?#]/)[0].split("/").filter(Boolean);
   if (
     !parts.length ||
@@ -60,7 +63,7 @@ export function breadcrumbsFor(path: string): Breadcrumb[] {
     const identity =
       entityParent === "profile"
         ? "User profile"
-        : entityParent === "racer"
+        : ["racer", "athlete"].includes(entityParent)
           ? "Athlete profile"
           : ["organizations", "aqua-organizations"].includes(entityParent)
             ? "Organization"

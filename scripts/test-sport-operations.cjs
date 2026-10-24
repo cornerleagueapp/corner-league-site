@@ -72,6 +72,7 @@ const data = {
 const page = compile(
   "client/src/components/sport-registration/SportEventOperations.tsx",
   {
+    "./GolfEventResults": {default:()=>null},
     "@tanstack/react-query": {
       useQuery: (q) => {
         queries.push(q);
@@ -124,7 +125,7 @@ const page = compile(
   assert.match(html, /5 km/);
   assert.match(html, /0:20:01.000/);
   assert.match(html, /chip time/);
-  assert.match(html, /\/racer\/athlete\?sport=marathon/);
+  assert.match(html, /\/athlete\/athlete\?sport=marathon/);
   assert(!html.includes("Laps"));
   await queries.at(-1).queryFn();
   assert.deepEqual(requests.at(-1), [
@@ -139,7 +140,7 @@ const page = compile(
     "sandbox-org",
     "/sport-operations/events/event",
   ]);
-  assert(!html.includes("/racer/athlete"));
+  assert(!html.includes("/athlete/athlete"));
   assert(queries.at(-1).queryKey.includes("super-admin"));
   assert(queries.at(-1).queryKey.includes("sandbox-org"));
   data.workflow = "heat-racing";

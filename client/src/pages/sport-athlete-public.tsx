@@ -1,12 +1,16 @@
 import AthleteTeamPerformance from "@/components/team-sports/AthleteTeamPerformance";
 import { Link } from "wouter";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PageSEO } from "@/seo/usePageSEO";
 import {
   publicSportData,
   SportAthlete,
   sportLabels,
+  isTeamSport,
 } from "@/lib/sportRegistration";
+import { stockHeader, brandingImage } from "@/lib/consumerBranding";
+import stockAvatar from "@/assets/stockprofilepicture.jpeg";
 export default function SportAthletePublic({
   id,
   sportKey,
@@ -14,7 +18,10 @@ export default function SportAthletePublic({
   id: string;
   sportKey: string;
 }) {
-  const query = useQuery({
+  const [tab, setTab] = useState(
+    isTeamSport(sportKey) ? "performance" : "about",
+  );
+  const q = useQuery({
     queryKey: ["sport-athlete-public", sportKey, id],
     queryFn: async () => {
       const p = await publicSportData<SportAthlete>(
@@ -25,69 +32,110 @@ export default function SportAthletePublic({
       return p;
     },
     retry: false,
-    staleTime: 60_000,
+    staleTime: 60000,
   });
-  const p = query.isError ? undefined : query.data;
+  const p = q.isError ? undefined : q.data;
   return (
-    <main className="mx-auto max-w-4xl p-4 py-10 text-cl-ink">
+    <main className="consumer-document-page min-w-0 p-3 py-6 sm:p-6 text-cl-ink">
       <PageSEO
         title={p ? `${p.name} · ${sportLabels[sportKey]}` : "Athlete profile"}
-        canonicalPath={`/racer/${id}?sport=${sportKey}`}
-        noindex={query.isError || !!p?.isDemo}
+        canonicalPath={`/athlete/${id}?sport=${sportKey}`}
+        noindex={q.isError || !!p?.isDemo}
       />
-      {query.isPending ? (
-        <p role="status">Loading athlete profile…</p>
-      ) : query.isError ? (
-        <p role="alert">Athlete profile unavailable for this sport.</p>
+      {q.isPending ? (
+        <p role="status" className="cl-sport-empty">
+          Loading athlete profile…
+        </p>
+      ) : q.isError ? (
+        <div role="alert" className="cl-sport-empty">
+          Athlete profile unavailable for this sport.{" "}
+          <button className="underline" onClick={() => q.refetch()}>
+            Try again
+          </button>
+        </div>
       ) : (
         p && (
-          <div className="min-w-0">
-            <article className="rounded-3xl border border-cl-accent/20 bg-cl-surface p-7">
-              {p.isDemo && (
-                <p className="mb-4 rounded-lg border border-cl-border p-3 text-sm font-semibold">
-                  Demo athlete · Fictional identity and generated statistics
-                </p>
-              )}
-              <p className="text-sm font-bold uppercase tracking-widest text-cl-accent">
-                {sportLabels[sportKey]} · {p.skillLevel}
+          <>
+            <section
+              className="athlete-performance-hero"
+              aria-label="Athlete profile"
+            >
+              <img
+                className="athlete-hero-photo"
+                src={stockHeader(sportKey)}
+                alt=""
+              />
+              <div className="athlete-hero-identity">
+                <div className="athlete-hero-portrait">
+                  <img
+                    src={brandingImage(p.imageUrl) || stockAvatar}
+                    alt={p.name}
+                    onError={e=>{e.currentTarget.onerror=null;e.currentTarget.src=stockAvatar}}
+                  />
+                </div>
+                <div className="athlete-hero-name">
+                  <p>
+                    {sportLabels[sportKey]?.toUpperCase()} ·{" "}
+                    {p.skillLevel.toUpperCase()}
+                  </p>
+                  <h1>{p.name}</h1>
+                  {p.nickname && (
+                    <p className="athlete-nickname">“{p.nickname}”</p>
+                  )}
+                  <p>
+                    {p.location}
+                    {p.competitorNumber ? ` · #${p.competitorNumber}` : ""}
+                  </p>
+                </div>
+              </div>
+            </section>
+            {p.isDemo && (
+              <p className="mt-4 rounded-xl border border-cl-border bg-cl-surface p-3 text-sm text-cl-muted">
+                Demo athlete · Fictional identity and generated statistics
               </p>
-              <h1 className="mt-4 text-4xl font-black">
-                {p.nickname || p.name}
-              </h1>
-              {p.nickname && <p className="mt-3 text-cl-muted">{p.name}</p>}
-              <p className="mt-4 text-cl-muted">
-                {p.location}{" "}
-                {p.competitorNumber ? `· #${p.competitorNumber}` : ""}
-              </p>
-              <p className="mt-5 whitespace-pre-wrap leading-7">{p.bio}</p>
-              {p.ownershipVerified && (
-                <p className="mt-5 text-sm text-cl-accent">
-                  Account ownership verified
-                </p>
-              )}
-              {p.ownerUsername && (
-                <Link
-                  href={`/profile/${encodeURIComponent(p.ownerUsername)}`}
-                  className="mt-4 inline-block text-cl-accent underline"
+            )}
+            <nav className="cl-sport-tabs" aria-label="Athlete sections">
+              {(isTeamSport(sportKey)
+                ? ["performance", "about"]
+                : ["about"]
+              ).map((v) => (
+                <button
+                  key={v}
+                  aria-pressed={tab === v}
+                  onClick={() => setTab(v)}
                 >
-                  View account profile
-                </Link>
-              )}
-            </article>
-            {[
-              "basketball",
-              "soccer",
-              "hockey",
-              "baseball",
-              "american-football",
-            ].includes(sportKey) && (
+                  {v === "performance" ? "Performance Center" : "About athlete"}
+                </button>
+              ))}
+            </nav>
+            {tab === "performance" ? (
               <AthleteTeamPerformance
                 key={`${id}:${sportKey}`}
                 id={id}
                 sportKey={sportKey}
               />
+            ) : (
+              <section className="cl-team-panel">
+                <h2>About {p.name}</h2>
+                <p className="whitespace-pre-wrap leading-7">
+                  {p.bio || "This athlete hasn’t added a bio yet."}
+                </p>
+                {p.ownershipVerified && (
+                  <p className="mt-4 text-cl-accent">
+                    Account ownership verified
+                  </p>
+                )}
+                {p.ownerUsername && (
+                  <Link
+                    className="mt-4 inline-block text-cl-accent underline"
+                    href={`/profile/${encodeURIComponent(p.ownerUsername)}`}
+                  >
+                    View account profile
+                  </Link>
+                )}
+              </section>
             )}
-          </div>
+          </>
         )
       )}
     </main>

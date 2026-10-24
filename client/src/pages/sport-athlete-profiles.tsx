@@ -282,7 +282,7 @@ function ProfileForm({
       </h2>
       {profile && (
         <Link
-          href={`/racer/${profile.id}?sport=${sportKey}`}
+          href={`/athlete/${profile.id}?sport=${sportKey}`}
           className="inline-block text-cl-accent underline"
         >
           View public athlete profile

@@ -28,7 +28,7 @@ export default function AthleteAccountLinks({
       {query.data.map((p) => (
         <Link
           key={p.id}
-          href={`/racer/${p.id}?sport=${p.sportKey}`}
+          href={`/athlete/${p.id}?sport=${p.sportKey}`}
           className="inline-flex min-h-11 items-center rounded-full border border-cl-accent/20 bg-cl-accent/10 px-4 text-sm text-cl-accent"
         >
           {sportLabels[p.sportKey]} athlete · Account ownership verified

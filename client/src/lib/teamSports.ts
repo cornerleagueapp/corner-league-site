@@ -11,6 +11,7 @@ export type TeamPlayer = {
   position: string;
 };
 export type PublicTeamSeason = {
+  playerStats?: {gameId:string;teamId:string;profileId:string;name:string;values:Record<string,number>}[];
   id: string;
   organizationId: string;
   sportKey: string;

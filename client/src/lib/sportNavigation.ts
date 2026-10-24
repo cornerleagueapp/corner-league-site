@@ -16,15 +16,15 @@ export function routeSport(path: string): string | undefined {
 export function sportDirectory(key: string): string {
   return key === "jet-ski"
     ? "/aqua-organizations"
-    : `/sports/${encodeURIComponent(key)}`;
+    : `/sports/${encodeURIComponent(key)}/organizations`;
 }
 export function sportHub(key: string): string {
-  return key === "jet-ski" ? "/scores/aqua" : sportDirectory(key);
+  return key === "jet-ski" ? "/scores/aqua" : `/sports/${encodeURIComponent(key)}`;
 }
 export function sportOrganization(key: string, id: string): string {
   return key === "jet-ski"
     ? `/aqua-organizations/${encodeURIComponent(id)}`
-    : `${sportDirectory(key)}/organizations/${encodeURIComponent(id)}`;
+    : `/sports/${encodeURIComponent(key)}/organizations/${encodeURIComponent(id)}`;
 }
 export function resolveSport(
   path: string,

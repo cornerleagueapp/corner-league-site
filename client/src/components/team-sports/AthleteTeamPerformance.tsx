@@ -1,3 +1,5 @@
+import { Link } from "wouter";
+import { teamHref } from "./GameCard";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { publicSportData } from "@/lib/sportRegistration";
@@ -11,6 +13,7 @@ type Performance = {
     leagueName: string;
     organizationId: string;
     teamName: string;
+    teamId?: string;
     summary: null | {
       games: number;
       totals: Record<string, number>;
@@ -107,7 +110,7 @@ export default function AthleteTeamPerformance({
             </select>
           </label>
           <p className="font-semibold">
-            {season.teamName} · {season.summary?.games || 0} games with stats
+            {season.teamId ? <Link className="text-cl-accent underline" href={teamHref(sportKey,season.id,season.teamId,season.organizationId)}>{season.teamName}</Link> : season.teamName} · {season.summary?.games || 0} games with stats
           </p>
           {!season.summary ? (
             <p>

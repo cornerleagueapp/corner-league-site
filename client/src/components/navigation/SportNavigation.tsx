@@ -87,10 +87,9 @@ export function DesktopExploreNavigation({ sportKey }: { sportKey: string }) {
   const isJetSki = sportKey === "jet-ski";
   const [location] = useLocation();
   const links = [
-    { label: "Home", href: "/" },
     { label: "Hub", href: sportHub(sportKey) },
     { label: "Organizations", href: sportDirectory(sportKey) },
-    { label: "Events", href: "/event-map" },
+    { label: "Events", href: `/sports/${sportKey}/events` },
   ];
   const more = [
     { label: isJetSki ? "Racers" : "Athletes", href: "/racer" },
@@ -110,7 +109,7 @@ export function DesktopExploreNavigation({ sportKey }: { sportKey: string }) {
           key={link.label}
           href={link.href}
           aria-current={
-            location === link.href && (i !== 2 || links[1].href !== link.href)
+            location === link.href
               ? "page"
               : undefined
           }

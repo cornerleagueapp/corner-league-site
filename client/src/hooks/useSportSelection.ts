@@ -1,6 +1,6 @@
 import { SPORT_VISUALS } from "@/lib/sportVisuals";
 import { useEffect, useSyncExternalStore } from "react";
-import { useLocation } from "wouter";
+import { useLocation, useSearch } from "wouter";
 import { usePublicSports } from "./usePublicSports";
 import {
   resolveSport,
@@ -42,6 +42,8 @@ export function rememberSport(key: string) {
 }
 export function useSportSelection() {
   const [location] = useLocation();
+  const querySport = new URLSearchParams(useSearch()).get("sport");
+  const athleteSport = /^\/(?:athlete|racer)\//.test(location) && validSportKey(querySport) ? querySport : undefined;
   const saved = useSyncExternalStore(subscribe, snapshot, () => undefined);
   const availability = usePublicSports();
   const populated =
@@ -57,10 +59,10 @@ export function useSportSelection() {
     ...populated.find((s) => s.key === key),
   }));
   const pending = availability.isPending;
-  const sportKey =
+  const sportKey = athleteSport ?? (
     (pending || availability.isError) && saved && !routeSport(location)
       ? saved
-      : resolveSport(location, saved, sports);
+      : resolveSport(location, saved, sports));
   const sport = sports.find((row) => row.key === sportKey);
   useEffect(() => {
     if (!sport || saved === sport.key) return;

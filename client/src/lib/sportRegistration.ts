@@ -53,6 +53,7 @@ export const sportLabels: Record<string, string> = {
   "rc-racing": "RC racing",
 };
 export type SportAthlete = {
+  imageUrl?: string | null;
   isDemo?: boolean;
   id: string;
   sportKey: string;

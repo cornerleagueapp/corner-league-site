@@ -24,9 +24,12 @@ function compile(rel, overrides) {
 }
 let query = { isPending: true };
 let options;
+const gameCard = compile("client/src/components/team-sports/GameCard.tsx", {wouter:{Link:({href,children})=>React.createElement('a',{href},children)}});
 const Screen = compile(
   "client/src/components/team-sports/AthleteTeamPerformance.tsx",
   {
+    "./GameCard": gameCard,
+    wouter: {Link:({href,children})=>React.createElement("a",{href},children)},
     "@tanstack/react-query": {
       useQuery: (o) => {
         options = o;

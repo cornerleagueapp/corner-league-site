@@ -3,6 +3,7 @@ let search = '', listRefresh = 0, detailRefresh = 0, navigated = '';
 const list = {data:{items:[],total:0},isPending:false,isError:false,isFetching:false,refetch:async()=>{listRefresh++}};
 const detail = {isPending:true,isError:false,isFetching:false,refetch:async()=>{detailRefresh++}};
 const mocks = {
+  "./GameCard": {default:()=>null,teamHref:()=>""},
   react:{...React,useState:initial=>[initial,()=>{}]},
   './TeamBracket':{default:()=>null}, './TeamRecruitment':{default:()=>null},
   '@/components/branding/ConsumerBrandingHero':{default:()=>null},
