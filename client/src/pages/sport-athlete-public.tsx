@@ -1,3 +1,4 @@
+import AthleteTeamPerformance from "@/components/team-sports/AthleteTeamPerformance";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { PageSEO } from "@/seo/usePageSEO";
@@ -32,7 +33,7 @@ export default function SportAthletePublic({
       <PageSEO
         title={p ? `${p.name} · ${sportLabels[sportKey]}` : "Athlete profile"}
         canonicalPath={`/racer/${id}?sport=${sportKey}`}
-        noindex={query.isError}
+        noindex={query.isError || !!p?.isDemo}
       />
       {query.isPending ? (
         <p role="status">Loading athlete profile…</p>
@@ -40,31 +41,53 @@ export default function SportAthletePublic({
         <p role="alert">Athlete profile unavailable for this sport.</p>
       ) : (
         p && (
-          <article className="rounded-3xl border border-cl-accent/20 bg-cl-surface p-7">
-            <p className="text-sm font-bold uppercase tracking-widest text-cl-accent">
-              {sportLabels[sportKey]} · {p.skillLevel}
-            </p>
-            <h1 className="mt-4 text-4xl font-black">{p.nickname || p.name}</h1>
-            {p.nickname && <p className="mt-3 text-cl-muted">{p.name}</p>}
-            <p className="mt-4 text-cl-muted">
-              {p.location}{" "}
-              {p.competitorNumber ? `· #${p.competitorNumber}` : ""}
-            </p>
-            <p className="mt-5 whitespace-pre-wrap leading-7">{p.bio}</p>
-            {p.ownershipVerified && (
-              <p className="mt-5 text-sm text-cl-accent">
-                Account ownership verified
+          <div className="min-w-0">
+            <article className="rounded-3xl border border-cl-accent/20 bg-cl-surface p-7">
+              {p.isDemo && (
+                <p className="mb-4 rounded-lg border border-cl-border p-3 text-sm font-semibold">
+                  Demo athlete · Fictional identity and generated statistics
+                </p>
+              )}
+              <p className="text-sm font-bold uppercase tracking-widest text-cl-accent">
+                {sportLabels[sportKey]} · {p.skillLevel}
               </p>
+              <h1 className="mt-4 text-4xl font-black">
+                {p.nickname || p.name}
+              </h1>
+              {p.nickname && <p className="mt-3 text-cl-muted">{p.name}</p>}
+              <p className="mt-4 text-cl-muted">
+                {p.location}{" "}
+                {p.competitorNumber ? `· #${p.competitorNumber}` : ""}
+              </p>
+              <p className="mt-5 whitespace-pre-wrap leading-7">{p.bio}</p>
+              {p.ownershipVerified && (
+                <p className="mt-5 text-sm text-cl-accent">
+                  Account ownership verified
+                </p>
+              )}
+              {p.ownerUsername && (
+                <Link
+                  href={`/profile/${encodeURIComponent(p.ownerUsername)}`}
+                  className="mt-4 inline-block text-cl-accent underline"
+                >
+                  View account profile
+                </Link>
+              )}
+            </article>
+            {[
+              "basketball",
+              "soccer",
+              "hockey",
+              "baseball",
+              "american-football",
+            ].includes(sportKey) && (
+              <AthleteTeamPerformance
+                key={`${id}:${sportKey}`}
+                id={id}
+                sportKey={sportKey}
+              />
             )}
-            {p.ownerUsername && (
-              <Link
-                href={`/profile/${encodeURIComponent(p.ownerUsername)}`}
-                className="mt-4 inline-block text-cl-accent underline"
-              >
-                View account profile
-              </Link>
-            )}
-          </article>
+          </div>
         )
       )}
     </main>

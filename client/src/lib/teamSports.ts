@@ -239,7 +239,7 @@ export function seasonView(
   const teams = d.teams.filter((t) => !division || t.divisionId === division),
     ids = new Set(teams.map((t) => t.id));
   const games = d.games
-    .filter((g) => ids.has(g.homeTeamId) && ids.has(g.awayTeamId))
+    .filter((g) => ids.has(g.homeTeamId) || ids.has(g.awayTeamId))
     .filter(
       (g) =>
         status === "all" ||
