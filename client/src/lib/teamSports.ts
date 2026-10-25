@@ -11,7 +11,13 @@ export type TeamPlayer = {
   position: string;
 };
 export type PublicTeamSeason = {
-  playerStats?: {gameId:string;teamId:string;profileId:string;name:string;values:Record<string,number>}[];
+  playerStats?: {
+    gameId: string;
+    teamId: string;
+    profileId: string;
+    name: string;
+    values: Record<string, number>;
+  }[];
   id: string;
   organizationId: string;
   sportKey: string;
@@ -27,6 +33,9 @@ export type PublicTeamSeason = {
     id: string;
     divisionId: string;
     name: string;
+    logoUrl?: string;
+    primaryColor?: string;
+    secondaryColor?: string;
     players: TeamPlayer[];
     recruiting?: boolean;
     captainProfileId?: string | null;

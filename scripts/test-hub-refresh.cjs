@@ -111,7 +111,11 @@ const api = compile("client/src/lib/hubGames.ts", {
     "@/lib/hubGames": { ...api, loadHubGames: async () => [] },
     "@/lib/teamSports": { readTeamSeason: () => {} },
     "@/lib/sportNavigation": nav,
-    "@/components/team-sports/GameCard": { gameStatus: () => "past" },
+    "@/components/team-sports/TeamLogo": { default: () => null },
+    "@/components/team-sports/GameCard": {
+      gameStatus: () => "past",
+      gameHref: (s, se, g, o) => `/sports/${s}/games/${se}/${g}?org=${o}`,
+    },
     "@tanstack/react-query": {
       useQuery: (config) => {
         if (config.queryKey[0] === "sport-hub-score-strip")

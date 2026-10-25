@@ -1,6 +1,7 @@
 import SportRegistrationPage from "@/pages/sport-registration";
 import SportGalleryPage from "@/pages/sport-gallery";
 import SportEventsPage from "@/pages/sport-events";
+import PublicGamePage from "@/pages/public-game";
 import PublicTeamPage from "@/pages/public-team";
 import SportOrganizationDirectory from "@/pages/organizations/sport-organization-directory";
 import AllSportsHome from "@/features/discovery/AllSportsHome";
@@ -213,7 +214,6 @@ function PrivateRouter() {
             component={TestOrganizationPreview}
           />
 
-
           <Route path="/profile/:username">
             {(params) => <UserProfilePage username={params.username} />}
           </Route>
@@ -382,17 +382,65 @@ function PrivateRouter() {
   );
 }
 
-
 function Router() {
   return (
     <Switch>
-      <Route path="/sports/:sportKey/organizations/:id"><AppShell guestMode><ErrorBoundary><SportOrganizationDetailsPage /></ErrorBoundary></AppShell></Route>
-      <Route path="/sports/:sportKey/registration"><AppShell guestMode><ErrorBoundary><SportRegistrationPage /></ErrorBoundary></AppShell></Route>
-      <Route path="/sports/:sportKey/gallery"><AppShell guestMode><ErrorBoundary><SportGalleryPage /></ErrorBoundary></AppShell></Route>
-      <Route path="/sports/:sportKey/events"><AppShell guestMode><ErrorBoundary><SportEventsPage /></ErrorBoundary></AppShell></Route>
-      <Route path="/sports/:sportKey/organizations"><AppShell guestMode><ErrorBoundary><SportOrganizationDirectory /></ErrorBoundary></AppShell></Route>
-      <Route path="/sports/:sportKey/teams/:seasonId/:teamId"><AppShell guestMode><ErrorBoundary><PublicTeamPage /></ErrorBoundary></AppShell></Route>
-      <Route path="/sports/:sportKey"><AppShell guestMode><ErrorBoundary><SportOrganizationsPage /></ErrorBoundary></AppShell></Route>
+      <Route path="/sports/:sportKey/organizations/:id">
+        <AppShell guestMode>
+          <ErrorBoundary>
+            <SportOrganizationDetailsPage />
+          </ErrorBoundary>
+        </AppShell>
+      </Route>
+      <Route path="/sports/:sportKey/registration">
+        <AppShell guestMode>
+          <ErrorBoundary>
+            <SportRegistrationPage />
+          </ErrorBoundary>
+        </AppShell>
+      </Route>
+      <Route path="/sports/:sportKey/gallery">
+        <AppShell guestMode>
+          <ErrorBoundary>
+            <SportGalleryPage />
+          </ErrorBoundary>
+        </AppShell>
+      </Route>
+      <Route path="/sports/:sportKey/events">
+        <AppShell guestMode>
+          <ErrorBoundary>
+            <SportEventsPage />
+          </ErrorBoundary>
+        </AppShell>
+      </Route>
+      <Route path="/sports/:sportKey/organizations">
+        <AppShell guestMode>
+          <ErrorBoundary>
+            <SportOrganizationDirectory />
+          </ErrorBoundary>
+        </AppShell>
+      </Route>
+      <Route path="/sports/:sportKey/games/:seasonId/:gameId">
+        <AppShell guestMode>
+          <ErrorBoundary>
+            <PublicGamePage />
+          </ErrorBoundary>
+        </AppShell>
+      </Route>
+      <Route path="/sports/:sportKey/teams/:seasonId/:teamId">
+        <AppShell guestMode>
+          <ErrorBoundary>
+            <PublicTeamPage />
+          </ErrorBoundary>
+        </AppShell>
+      </Route>
+      <Route path="/sports/:sportKey">
+        <AppShell guestMode>
+          <ErrorBoundary>
+            <SportOrganizationsPage />
+          </ErrorBoundary>
+        </AppShell>
+      </Route>
       <Route path="/">
         {() => (
           <AppShell guestMode>
@@ -402,7 +450,13 @@ function Router() {
           </AppShell>
         )}
       </Route>
-      <Route path="/search_results"><AppShell><ErrorBoundary><DiscoveryPage /></ErrorBoundary></AppShell></Route>
+      <Route path="/search_results">
+        <AppShell>
+          <ErrorBoundary>
+            <DiscoveryPage />
+          </ErrorBoundary>
+        </AppShell>
+      </Route>
       <Route path="/home" component={Home} />
       <Route path="/about" component={Home} />
       <Route path="/admissions/:key">
@@ -678,9 +732,21 @@ function Router() {
         </AppShell>
       </Route>
 
-      <Route path="/racer"><AppShell guestMode><ErrorBoundary><RacerDirectory /></ErrorBoundary></AppShell></Route>
+      <Route path="/racer">
+        <AppShell guestMode>
+          <ErrorBoundary>
+            <RacerDirectory />
+          </ErrorBoundary>
+        </AppShell>
+      </Route>
       <Route path="/athlete/:idOrSlug">
-        {(params) => <AppShell guestMode><ErrorBoundary><RacerProfilePage idOrSlugParam={params.idOrSlug} /></ErrorBoundary></AppShell>}
+        {(params) => (
+          <AppShell guestMode>
+            <ErrorBoundary>
+              <RacerProfilePage idOrSlugParam={params.idOrSlug} />
+            </ErrorBoundary>
+          </AppShell>
+        )}
       </Route>
       <Route path="/racer/:idOrSlug">
         {(params) => (

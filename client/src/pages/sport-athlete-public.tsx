@@ -1,3 +1,5 @@
+import AthleteProfileActions from "@/components/team-sports/AthleteProfileActions";
+import ConsumerMediaDialog from "@/components/ui/ConsumerMediaDialog";
 import AthleteTeamPerformance from "@/components/team-sports/AthleteTeamPerformance";
 import { Link } from "wouter";
 import { useState } from "react";
@@ -18,6 +20,9 @@ export default function SportAthletePublic({
   id: string;
   sportKey: string;
 }) {
+  const [photo, setPhoto] = useState<{ url: string; title: string } | null>(
+    null,
+  );
   const [tab, setTab] = useState(
     isTeamSport(sportKey) ? "performance" : "about",
   );
@@ -62,7 +67,10 @@ export default function SportAthletePublic({
             >
               <img
                 className="athlete-hero-photo"
-                src={stockHeader(sportKey)}
+                src={
+                  brandingImage(p.presentation?.headerImageUrl) ||
+                  stockHeader(sportKey)
+                }
                 alt=""
               />
               <div className="athlete-hero-identity">
@@ -70,7 +78,10 @@ export default function SportAthletePublic({
                   <img
                     src={brandingImage(p.imageUrl) || stockAvatar}
                     alt={p.name}
-                    onError={e=>{e.currentTarget.onerror=null;e.currentTarget.src=stockAvatar}}
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = stockAvatar;
+                    }}
                   />
                 </div>
                 <div className="athlete-hero-name">
@@ -94,21 +105,63 @@ export default function SportAthletePublic({
                 Demo athlete · Fictional identity and generated statistics
               </p>
             )}
+            <AthleteProfileActions athlete={p} />
             <nav className="cl-sport-tabs" aria-label="Athlete sections">
               {(isTeamSport(sportKey)
-                ? ["performance", "about"]
-                : ["about"]
+                ? ["performance", "about", "gallery"]
+                : ["about", "gallery"]
               ).map((v) => (
                 <button
                   key={v}
                   aria-pressed={tab === v}
                   onClick={() => setTab(v)}
                 >
-                  {v === "performance" ? "Performance Center" : "About athlete"}
+                  {v === "performance"
+                    ? "Performance Center"
+                    : v === "gallery"
+                      ? "Photos"
+                      : "About athlete"}
                 </button>
               ))}
             </nav>
-            {tab === "performance" ? (
+            {tab === "gallery" ? (
+              <section className="cl-team-panel">
+                <h2>Photo gallery</h2>
+                {p.presentation?.gallery?.length ? (
+                  <div className="cl-athlete-gallery">
+                    {p.presentation.gallery.map((v) => (
+                      <button key={v.id} onClick={() => setPhoto(v)}>
+                        <img
+                          src={v.url}
+                          alt={v.title || p.name}
+                          loading="lazy"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <p>No photos published yet.</p>
+                )}
+                {photo && (
+                  <ConsumerMediaDialog
+                    onClose={() => setPhoto(null)}
+                    description="Athlete photo gallery"
+                    title={photo.title || p.name}
+                  >
+                    <button className="p-4" onClick={() => setPhoto(null)}>
+                      Close photo
+                    </button>
+                    {photo && (
+                      <img
+                        src={photo.url}
+                        alt={photo.title}
+                        className="max-h-[75vh] w-full object-contain"
+                      />
+                    )}
+                  </ConsumerMediaDialog>
+                )}
+              </section>
+            ) : tab === "performance" ? (
               <AthleteTeamPerformance
                 key={`${id}:${sportKey}`}
                 id={id}
@@ -120,6 +173,17 @@ export default function SportAthletePublic({
                 <p className="whitespace-pre-wrap leading-7">
                   {p.bio || "This athlete hasn’t added a bio yet."}
                 </p>
+                {p.presentation?.website &&
+                  /^https:\/\//.test(p.presentation.website) && (
+                    <a
+                      className="block mt-4 underline text-cl-accent"
+                      href={p.presentation.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Website / social profile ↗
+                    </a>
+                  )}
                 {p.ownershipVerified && (
                   <p className="mt-4 text-cl-accent">
                     Account ownership verified

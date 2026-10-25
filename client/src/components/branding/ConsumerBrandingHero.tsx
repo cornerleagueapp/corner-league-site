@@ -1,3 +1,4 @@
+import OrganizationSummary from "@/components/team-sports/OrganizationSummary";
 import { OrganizationFollowButton } from "@/components/community/OrganizationFollowing";
 import SportArtwork from "@/components/sport-hub/SportArtwork";
 import { sportLogo } from "@/lib/sportVisuals";
@@ -123,6 +124,9 @@ export default function ConsumerBrandingHero({
             />
           )}
         </div>
+        {kind === "organization" && !sandbox && (
+          <OrganizationSummary id={organizationId} sport={sport} />
+        )}
       </div>
     </section>
   );

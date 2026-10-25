@@ -3,7 +3,7 @@ import TeamGameDirectory from "@/components/team-sports/TeamGameDirectory";
 import TeamSeasons from "@/components/team-sports/TeamSeasons";
 import { isTeamSport } from "@/lib/sportRegistration";
 import { rememberSport } from "@/hooks/useSportSelection";
-import { sportOrganization } from "@/lib/sportNavigation";
+import { sportRegistration, sportOrganization } from "@/lib/sportNavigation";
 import { sportVisual } from "@/lib/sportVisuals";
 import { useOrganizationPageApi } from "./SandboxContext";
 import { OrganizationPosts } from "@/features/organization-posts/OrganizationPosts";
@@ -93,7 +93,8 @@ function OrganizationCommunityPage(props: Props) {
     !!org &&
     (sandbox
       ? !team
-      : team || !!org.sportProfile?.capabilities?.eventManagement ||
+      : team ||
+        !!org.sportProfile?.capabilities?.eventManagement ||
         primarySportKey === "jet-ski");
   const sections = organizationSections(team, hasEvents, !!sandbox);
   const section = organizationSection(search, sections);
@@ -108,7 +109,10 @@ function OrganizationCommunityPage(props: Props) {
       eventPage,
     ],
     enabled:
-      !!org && !team && hasEvents && (section === "overview" || section === "events"),
+      !!org &&
+      !team &&
+      hasEvents &&
+      (section === "overview" || section === "events"),
     queryFn: async ({ signal }) => {
       const response = await pageFetch(
         `/sport-event/organization/${encodeURIComponent(orgId)}?page=${eventPage}&limit=12&order=DESC&sortBy=startDate`,
@@ -271,7 +275,7 @@ function OrganizationCommunityPage(props: Props) {
           >
             {section === "overview" && (
               <div className="org-community-overview">
-                <section className="org-community-card">
+                <section className="cl-org-shortcut-section">
                   <div className="sport-section-heading">
                     <h2>Welcome to {org.name}</h2>
                   </div>
@@ -294,6 +298,14 @@ function OrganizationCommunityPage(props: Props) {
                         <strong>Leagues & seasons</strong>
                         <span>
                           Follow teams, standings, games and brackets →
+                        </span>
+                      </Link>
+                    )}
+                    {!team && (
+                      <Link href={sportRegistration(primarySportKey)}>
+                        <strong>Registration</strong>
+                        <span>
+                          Find upcoming events and register to compete →
                         </span>
                       </Link>
                     )}
@@ -347,7 +359,12 @@ function OrganizationCommunityPage(props: Props) {
                 </Link>
               </div>
             )}
-            {section === "events" && team && !sandbox && <TeamGameDirectory sport={primarySportKey} organizationId={org.id} />}
+            {section === "events" && team && !sandbox && (
+              <TeamGameDirectory
+                sport={primarySportKey}
+                organizationId={org.id}
+              />
+            )}
             {section === "events" && !team && (
               <div>
                 <div className="sport-section-heading">

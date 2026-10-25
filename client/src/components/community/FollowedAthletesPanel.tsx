@@ -1,3 +1,4 @@
+import FollowedSportAthletes from "@/components/team-sports/FollowedSportAthletes";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
@@ -150,5 +151,13 @@ export default function FollowedAthletesPanel(props: {
   username: string;
   isOwn: boolean;
 }) {
-  return <AthletePage key={props.username} {...props} />;
+  return (
+    <>
+      <AthletePage key={props.username} {...props} />
+      <FollowedSportAthletes
+        key={`sports:${props.username}`}
+        username={props.username}
+      />
+    </>
+  );
 }

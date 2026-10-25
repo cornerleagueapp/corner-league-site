@@ -7,7 +7,7 @@ import GameCard, {
   teamHref,
 } from "@/components/team-sports/GameCard";
 import { PageSEO } from "@/seo/usePageSEO";
-import { sportLogo } from "@/lib/sportVisuals";
+import TeamLogo, { teamColor } from "@/components/team-sports/TeamLogo";
 export default function PublicTeamPage() {
   const [, p] = useRoute("/sports/:sportKey/teams/:seasonId/:teamId");
   const params = new URLSearchParams(useSearch());
@@ -22,7 +22,14 @@ export default function PublicTeamPage() {
   });
   const d = q.data,
     t = d?.teams.find((t) => t.id === p?.teamId);
-  const tabs = ["roster", "schedule", "stats", "standings", "record"];
+  const tabs = [
+    "roster",
+    ...(d?.games.length ? ["schedule"] : []),
+    ...(d?.playerStats?.some((r) => r.teamId === t?.id) ? ["stats"] : []),
+    ...(d?.standings.some((s) => s.rows.some((r) => r.teamId === t?.id))
+      ? ["standings", "record"]
+      : []),
+  ];
   const tab = tabs.includes(params.get("tab") || "")
     ? params.get("tab")!
     : "roster";
@@ -77,8 +84,14 @@ export default function PublicTeamPage() {
         </Link>{" "}
         / {t.name}
       </nav>
-      <header className="cl-team-hero">
-        <img src={sportLogo(p.sportKey)} alt="" />
+      <header
+        className="cl-team-hero"
+        style={{
+          borderTop: `5px solid ${teamColor(t.primaryColor)}`,
+          borderBottom: `3px solid ${teamColor(t.secondaryColor)}`,
+        }}
+      >
+        <TeamLogo team={t} large />
         <div>
           <p className="cl-eyebrow">
             {d.leagueName} · {standing?.name || "Team"}

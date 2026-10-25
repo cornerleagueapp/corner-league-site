@@ -1,0 +1,343 @@
+.cl-match-page {
+  max-width: 1440px;
+  margin: auto;
+  padding: 24px;
+  color: rgb(var(--cl-ink));
+  min-width: 0;
+}
+.cl-match-crumb {
+  font-size: 14px;
+  margin-bottom: 20px;
+  color: rgb(var(--cl-muted));
+}
+.cl-match-scoreboard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 300px) minmax(0, 1fr);
+  gap: 18px;
+  align-items: center;
+  background: rgb(var(--cl-surface));
+  padding: 28px;
+  border-radius: 18px;
+}
+.cl-match-side {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+.cl-match-side-0 {
+  grid-column: 1;
+  grid-row: 1;
+}
+.cl-match-side-1 {
+  grid-column: 3;
+  grid-row: 1;
+  flex-direction: row-reverse;
+  text-align: right;
+}
+.cl-match-side a {
+  font-size: 18px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+.cl-match-side small {
+  display: block;
+  color: rgb(var(--cl-muted));
+  margin-top: 6px;
+}
+.cl-match-side > strong {
+  font-size: 38px;
+}
+.cl-match-periods {
+  grid-column: 2;
+  grid-row: 1;
+  max-width: 100%;
+  min-width: 0;
+  width: 100%;
+  text-align: center;
+}
+.cl-match-periods table {
+  min-width: 0 !important;
+  font-size: 12px;
+}
+.cl-match-periods th,
+.cl-match-periods td {
+  padding: 8px !important;
+}
+.cl-team-logo {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  display: inline-flex;
+  vertical-align: middle;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+  background: rgb(var(--cl-surface));
+  border-radius: 8px;
+}
+.cl-team-logo img,
+.cl-team-logo svg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.cl-team-logo-large {
+  width: 72px;
+  height: 72px;
+}
+.cl-team-hero .cl-team-logo-large img {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+}
+.cl-boxscore-link {
+  float: right;
+  color: rgb(var(--cl-accent));
+  font-weight: 700;
+  padding: 4px 0 4px 16px;
+}
+.cl-match-layout {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) minmax(0, 2.2fr);
+  gap: 20px;
+}
+.cl-match-layout > * {
+  min-width: 0;
+}
+.cl-match-layout .cl-team-panel {
+  margin-top: 0;
+  margin-bottom: 20px;
+  padding: 22px;
+}
+.cl-match-layout h1 {
+  font-size: 28px;
+  font-weight: 850;
+}
+.cl-match-layout h3 {
+  font-weight: 700;
+  text-transform: capitalize;
+  margin: 16px 0 10px;
+}
+.cl-match-layout p {
+  margin: 10px 0;
+  line-height: 1.6;
+}
+.cl-match-layout a:hover,
+.cl-match-crumb a:hover {
+  text-decoration: underline;
+}
+.cl-leader-category {
+  border-top: 1px solid rgb(var(--cl-border));
+  padding-bottom: 12px;
+}
+.cl-leader-category > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+}
+.cl-leader-category small {
+  color: rgb(var(--cl-muted));
+}
+.cl-leader-category p strong {
+  display: block;
+  font-size: 23px;
+}
+.cl-box-team {
+  margin-top: 20px;
+}
+.cl-box-team h2 {
+  display: flex;
+  align-items: center;
+}
+.cl-comparison {
+  padding: 12px 0;
+}
+.cl-comparison > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  text-transform: capitalize;
+}
+.cl-comparison-bar {
+  display: flex;
+  height: 8px;
+  gap: 5px;
+  margin-top: 8px;
+}
+.cl-comparison-bar span {
+  border-radius: 6px;
+}
+.cl-org-shortcut-section {
+  padding: 0 !important;
+  background: none !important;
+  border: 0 !important;
+}
+.cl-org-shortcut-section > .sport-section-heading,
+.cl-org-shortcut-section > p {
+  display: none;
+}
+.cl-org-shortcut-section .org-community-shortcuts {
+  margin: 0;
+}
+.cl-org-shortcut-section .org-community-shortcuts a {
+  padding: 28px;
+  background: rgb(var(--cl-surface));
+  border: 1px solid rgb(var(--cl-border));
+  border-radius: 16px;
+  min-height: 130px;
+}
+.cl-org-summary {
+  display: flex;
+  gap: 28px;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+.cl-org-summary div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.cl-org-summary strong {
+  font-size: 26px;
+}
+.cl-org-summary span {
+  font-size: 12px;
+  color: rgb(var(--cl-muted));
+}
+.sport-branding-copy {
+  flex-wrap: wrap;
+}
+.cl-profile-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 20px 0;
+}
+.cl-profile-actions button,
+.cl-profile-editor button {
+  min-height: 44px;
+  border: 1px solid rgb(var(--cl-border));
+  border-radius: 12px;
+  padding: 10px 18px;
+  font-weight: 700;
+}
+.cl-profile-editor {
+  display: grid;
+  gap: 16px;
+}
+.cl-profile-editor label {
+  display: grid;
+  gap: 6px;
+}
+.cl-profile-editor input,
+.cl-profile-editor textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid rgb(var(--cl-border));
+  border-radius: 10px;
+  background: rgb(var(--cl-surface));
+  color: rgb(var(--cl-ink));
+}
+.cl-athlete-gallery {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.cl-athlete-gallery img {
+  width: 100%;
+  aspect-ratio: 4/3;
+  object-fit: cover;
+  border-radius: 12px;
+}
+.cl-match-page a:focus-visible,
+.cl-match-page button:focus-visible {
+  outline: 3px solid rgb(var(--cl-accent));
+  outline-offset: 4px;
+}
+@media (max-width: 1000px) {
+  .cl-match-scoreboard {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .cl-match-side-1 {
+    grid-column: 2;
+  }
+  .cl-match-periods {
+    grid-row: 2;
+    grid-column: 1/-1;
+    justify-self: center;
+  }
+  .cl-match-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .cl-match-layout > aside {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 20px;
+  }
+  .cl-match-layout > div {
+    grid-row: 1;
+  }
+  .cl-match-side .cl-team-logo-large {
+    width: 48px;
+    height: 48px;
+  }
+}
+@media (max-width: 600px) {
+  .cl-match-page {
+    padding: 12px;
+  }
+  .cl-match-scoreboard {
+    padding: 14px;
+    gap: 16px;
+  }
+  .cl-match-side,
+  .cl-match-side-1 {
+    display: grid;
+    grid-template-columns: 1fr;
+    text-align: center;
+    justify-items: center;
+    gap: 8px;
+  }
+  .cl-match-side a {
+    font-size: 14px;
+  }
+  .cl-match-side > strong {
+    font-size: 32px;
+  }
+  .cl-match-side .cl-team-logo {
+    margin: 0;
+  }
+  .cl-match-layout > aside {
+    display: block;
+  }
+  .cl-match-layout .cl-team-panel {
+    padding: 16px;
+  }
+  .cl-org-summary {
+    margin-left: 0;
+    gap: 20px;
+  }
+  .cl-athlete-gallery {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .cl-match-periods th,
+  .cl-match-periods td {
+    padding: 6px !important;
+    font-size: 11px;
+  }
+  .cl-match-periods th:first-child {
+    min-width: 0 !important;
+  }
+  .cl-match-scoreboard {
+    min-width: 0;
+  }
+  .cl-match-periods .cl-score-scroll {
+    max-width: 100%;
+  }
+}
+@media(max-width:640px){.cl-org-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;gap:12px;margin-top:12px;padding-top:16px;border-top:1px solid rgb(var(--cl-border))}.cl-org-summary span{font-size:11px;line-height:1.45}.cl-org-summary strong{font-size:24px}}

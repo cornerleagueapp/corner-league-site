@@ -1,3 +1,4 @@
+import TeamLogo from "./TeamLogo";
 import { Link } from "wouter";
 import type { PublicTeamSeason } from "@/lib/teamSports";
 export const teamHref = (
@@ -17,7 +18,13 @@ export type GameData = {
   scoreLabel: string;
   game: PublicTeamSeason["games"][number];
   result: PublicTeamSeason["results"][number] | null;
-  teams: { id: string; name: string }[];
+  teams: {
+    id: string;
+    name: string;
+    logoUrl?: string;
+    primaryColor?: string;
+    secondaryColor?: string;
+  }[];
   playerStats: NonNullable<PublicTeamSeason["playerStats"]>;
 };
 export function gameStatus(
@@ -102,6 +109,7 @@ export default function GameCard({
               return (
                 <tr key={id} className={won ? "cl-game-winner" : ""}>
                   <th scope="row">
+                    <TeamLogo team={d.teams.find((t) => t.id === id)} />
                     {sandbox ? (
                       <span>{name}</span>
                     ) : (
@@ -167,6 +175,14 @@ export default function GameCard({
         </div>
       )}
       <footer>
+        {!sandbox && (
+          <Link
+            className="cl-boxscore-link"
+            href={gameHref(d.sportKey, d.seasonId, g.id, d.organizationId)}
+          >
+            Box score →
+          </Link>
+        )}
         {g.venue || "Venue to be announced"}
         {r?.decision && r.decision !== "regulation" ? ` · ${r.decision}` : ""}
         {g.competition ? ` · Round ${g.competition.round}` : ""}
@@ -174,3 +190,11 @@ export default function GameCard({
     </article>
   );
 }
+
+export const gameHref = (
+  sport: string,
+  season: string,
+  game: string,
+  org: string,
+) =>
+  `/sports/${encodeURIComponent(sport)}/games/${encodeURIComponent(season)}/${encodeURIComponent(game)}?org=${encodeURIComponent(org)}`;

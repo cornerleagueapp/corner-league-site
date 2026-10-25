@@ -1,3 +1,5 @@
+import TeamLogo from "@/components/team-sports/TeamLogo";
+import { gameHref } from "@/components/team-sports/GameCard";
 import { useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
@@ -94,7 +96,7 @@ function CompactGame({ data: d }: { data: HubGame }) {
   return (
     <Link
       className="cl-compact-game"
-      href={`${sportOrganization(d.sportKey, d.organizationId)}?section=competition&season=${encodeURIComponent(d.seasonId)}#game-${encodeURIComponent(d.game.id)}`}
+      href={gameHref(d.sportKey, d.seasonId, d.game.id, d.organizationId)}
       aria-label={`${d.teams.map((t) => t.name).join(" versus ")}, ${date.toLocaleString()}`}
     >
       <div className="cl-compact-game-meta">
@@ -123,9 +125,7 @@ function CompactGame({ data: d }: { data: HubGame }) {
             .find((r) => r.teamId === id);
         return (
           <div className="cl-compact-team" key={id}>
-            <span className="cl-team-monogram" aria-hidden="true">
-              {shortName(team?.name || "TBD").slice(0, 2)}
-            </span>
+            <TeamLogo team={team} />
             <strong title={team?.name}>
               {team?.name || "To be determined"}
             </strong>

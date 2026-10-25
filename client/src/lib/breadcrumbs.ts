@@ -31,7 +31,7 @@ const labels: Record<string, string> = {
 };
 export function breadcrumbsFor(path: string): Breadcrumb[] {
   // Team pages render named organization/season breadcrumbs from their loaded data.
-  if (/^\/sports\/[^/]+\/teams\//.test(path)) return [];
+  if (/^\/sports\/[^/]+\/(teams|games)\//.test(path)) return [];
   const parts = path.split(/[?#]/)[0].split("/").filter(Boolean);
   if (
     !parts.length ||

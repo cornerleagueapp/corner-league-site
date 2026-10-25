@@ -28,6 +28,7 @@ const wouter = {
 };
 const cards = compile("client/src/components/team-sports/GameCard.tsx", {
   wouter,
+  "./TeamLogo": { default: () => null },
 });
 const game = {
   id: "g",

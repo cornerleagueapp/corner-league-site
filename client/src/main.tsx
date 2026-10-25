@@ -1,5 +1,6 @@
 import "./styles/team-public.css";
 import "./styles/sport-hub-refresh.css";
+import "./styles/game-center.css";
 // src/main.tsx
 import { createRoot } from "react-dom/client";
 import App from "./App";
