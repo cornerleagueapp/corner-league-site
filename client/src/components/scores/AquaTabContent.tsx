@@ -16,6 +16,7 @@ import {
 import { apiFetch } from "@/lib/apiClient";
 import AquaScoresSection from "@/components/AquaScoresSection";
 import AccordionSection from "@/components/AccordionSection";
+import OrganizationPromoCard from "@/components/OrganizationPromoCard";
 import SportCommunitySection from "@/components/sport-hub/SportCommunitySection";
 import { trackEvent } from "@/lib/analytics";
 import { AnalyticsEvents } from "@/lib/analytics-events";
@@ -616,7 +617,8 @@ function AquaHubSection({
 
       <FeaturedRacerGallerySection sourcePage="aqua_hub" limit={7} compact />
 
-      <SportCommunitySection sport="jet-ski" />
+      <div className="cl-hub-community-spacing"><SportCommunitySection sport="jet-ski" /></div>
+      <OrganizationPromoCard />
     </div>
   );
 }

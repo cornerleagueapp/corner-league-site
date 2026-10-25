@@ -1,3 +1,5 @@
+import NationwideMap from "@/components/landing/NationwideMap";
+import EventOrganizationFilter from "@/components/sport-hub/EventOrganizationFilter";
 import { useRoute, Link } from "wouter";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -41,12 +43,13 @@ export default function SportEventsPage() {
 function RaceEvents({ sport }: { sport: string }) {
   const [page, setPage] = useState(1),
     [status, setStatus] = useState("all"),
-    [year, setYear] = useState(String(new Date().getFullYear()));
+    [year, setYear] = useState(""),
+    [organizationId, setOrganizationId] = useState("");
   const q = useQuery({
-    queryKey: ["sport-event-directory", sport, page, status, year],
+    queryKey: ["sport-event-directory", sport, page, status, year, organizationId],
     queryFn: async ({ signal }) => {
       const r = await apiFetch(
-        `/sport-event?sportKey=${encodeURIComponent(sport)}&status=${status}${year ? `&year=${year}` : ""}&page=${page}&limit=24&order=DESC&sortBy=startDate`,
+        `/sport-event?sportKey=${encodeURIComponent(sport)}&status=${status}${organizationId ? `&organizationId=${encodeURIComponent(organizationId)}` : ""}${year ? `&year=${year}` : ""}&page=${page}&limit=24&order=DESC&sortBy=startDate`,
         { signal, skipAuth: true, noRefresh: true },
       );
       if (!r.ok) throw new Error("Events unavailable");
@@ -70,6 +73,7 @@ function RaceEvents({ sport }: { sport: string }) {
   return (
     <section className="space-y-5">
       <div className="cl-sport-filters">
+        <EventOrganizationFilter sport={sport} value={organizationId} onChange={value => { setOrganizationId(value); setPage(1); }} />
         <label>
           Status
           <select
@@ -141,6 +145,7 @@ function RaceEvents({ sport }: { sport: string }) {
           No published events match these filters.
         </p>
       )}
+      {!q.isPending && !q.isError && <NationwideMap key={`${sport}:${organizationId}:${status}:${year}:${page}`} events={rows} sportKey={sport} sportLabel={sportVisual(sport).label} pageOnly />}
       <nav className="cl-sport-pagination" aria-label="Event pages">
         <button
           disabled={page === 1 || q.isFetching}

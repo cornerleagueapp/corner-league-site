@@ -4,6 +4,7 @@ import { useLocation, useSearch } from "wouter";
 import { usePublicSports } from "./usePublicSports";
 import {
   resolveSport,
+  isShowcaseSport,
   routeSport,
   SPORT_STORAGE_KEY,
   validSportKey,
@@ -43,14 +44,14 @@ export function rememberSport(key: string) {
 export function useSportSelection() {
   const [location] = useLocation();
   const querySport = new URLSearchParams(useSearch()).get("sport");
-  const athleteSport = /^\/(?:athlete|racer)\//.test(location) && validSportKey(querySport) ? querySport : undefined;
+  const explicitSport = routeSport(location) ?? (validSportKey(querySport) && Object.prototype.hasOwnProperty.call(SPORT_VISUALS, querySport) ? querySport : /^\/racer\//.test(location) ? "jet-ski" : undefined);
   const saved = useSyncExternalStore(subscribe, snapshot, () => undefined);
   const availability = usePublicSports();
   const populated =
     !availability.isError && Array.isArray(availability.data)
       ? availability.data
       : [];
-  const sports = Object.entries(SPORT_VISUALS).map(([key, visual]) => ({
+  const sports = Object.entries(SPORT_VISUALS).filter(([key]) => isShowcaseSport(key)).map(([key, visual]) => ({
     key,
     label: visual.label,
     organizationCount: 0,
@@ -59,16 +60,13 @@ export function useSportSelection() {
     ...populated.find((s) => s.key === key),
   }));
   const pending = availability.isPending;
-  const sportKey = athleteSport ?? (
-    (pending || availability.isError) && saved && !routeSport(location)
-      ? saved
-      : resolveSport(location, saved, sports));
+  const sportKey = explicitSport ?? resolveSport(location, saved, sports);
   const sport = sports.find((row) => row.key === sportKey);
   useEffect(() => {
-    if (!sport || saved === sport.key) return;
-    // A direct sport URL takes precedence; removed choices fall back to a populated sport.
-    if (routeSport(location) || saved) rememberSport(sport.key);
-  }, [location, sport?.key, saved]);
+    // Only explicit navigation may update the shared selection. Catalog refreshes,
+    // fallback renders and generic pages must never overwrite a user's choice.
+    if (explicitSport && snapshot() !== explicitSport) rememberSport(explicitSport);
+  }, [explicitSport]);
   return {
     sports,
     sport,

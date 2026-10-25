@@ -7,6 +7,7 @@ type Props = {
   events: EventItem[];
   sportKey?: string;
   sportLabel?: string;
+  pageOnly?: boolean;
 };
 
 type GeoMeta = {
@@ -67,7 +68,7 @@ function getEventStatus(
   return compare >= Date.now() ? "upcoming" : "past";
 }
 
-function deriveGeoMeta(location?: string | null): GeoMeta {
+function deriveGeoMeta(location?: string | null): GeoMeta | null {
   const text = (location || "").toLowerCase();
 
   if (
@@ -125,7 +126,7 @@ function deriveGeoMeta(location?: string | null): GeoMeta {
     return { x: 51, y: 49, stateCode: "KS", stateName: "Kansas" };
   }
 
-  return { x: 50, y: 50, stateCode: "US", stateName: "United States" };
+  return null; // Never invent a US location for an unknown venue.
 }
 
 function InlineUSMap({
@@ -209,19 +210,16 @@ function InlineUSMap({
   );
 }
 
-export default function NationwideMap({ events, sportKey = "jet-ski", sportLabel = "Jet Ski" }: Props) {
+export default function NationwideMap({ events, sportKey = "jet-ski", sportLabel = "Jet Ski", pageOnly = false }: Props) {
   const [filter, setFilter] = React.useState<FilterKey>("all");
   const [activeClusterKey, setActiveClusterKey] = React.useState<string | null>(
     null,
   );
 
   const points = React.useMemo<MapPoint[]>(() => {
-    return events.map((event) => {
+    return events.flatMap((event) => {
       const geo = deriveGeoMeta(event.location);
-      return {
-        ...event,
-        ...geo,
-      };
+      return geo ? [{ ...event, ...geo }] : [];
     });
   }, [events]);
 
@@ -307,7 +305,8 @@ export default function NationwideMap({ events, sportKey = "jet-ski", sportLabel
   ];
 
   return (
-    <section id="event-map-section" className="scroll-mt-24 pt-20">
+    <section id="event-map-section" className="scroll-mt-24 pt-6 min-w-0">
+      <p className="mb-3 text-sm text-cl-muted">{pageOnly ? "Map of this results page. " : ""}Pins show approximate event areas in the United States. {events.length - points.length > 0 ? `${events.length - points.length} events have no mapped location; they remain in the event list.` : ""}</p>
       <div className="relative overflow-hidden rounded-[30px] border border-cl-accent/10 cl-panel-wash px-4 py-8 shadow-cl-panel sm:rounded-[38px] sm:px-8 sm:py-10">
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-cl-accent/10 blur-3xl" />
@@ -498,9 +497,9 @@ export default function NationwideMap({ events, sportKey = "jet-ski", sportLabel
 
                   <div className="mt-6">
                     <Link
-                      href={sportKey !== "jet-ski" ? `/sports/${sportKey}/organizations/${encodeURIComponent(activeEvent.organizationId || "")}?event=${encodeURIComponent(activeEvent.id)}` : `/aqua-organizations/event-details/${activeEvent.id}?orgId=${encodeURIComponent(
+                      href={activeEvent.href ?? (sportKey !== "jet-ski" ? `/sports/${sportKey}/organizations/${encodeURIComponent(activeEvent.organizationId || "")}?event=${encodeURIComponent(activeEvent.id)}` : `/aqua-organizations/event-details/${activeEvent.id}?orgId=${encodeURIComponent(
                         activeEvent.organizationId || "",
-                      )}`}
+                      )}`)}
                     >
                       <button className="w-full rounded-full border border-cl-accent/20 bg-cl-accent/10 px-5 py-3.5 text-xs font-black uppercase tracking-[0.16em] text-cl-accent transition duration-200 hover:-translate-y-0.5 hover:border-cl-accent/40 hover:bg-cl-accent hover:text-cl-contrast sm:w-auto">
                         View Event
@@ -518,9 +517,9 @@ export default function NationwideMap({ events, sportKey = "jet-ski", sportLabel
                         {activeCluster.events.slice(1).map((event) => (
                           <Link
                             key={event.id}
-                            href={sportKey !== "jet-ski" ? `/sports/${sportKey}/organizations/${encodeURIComponent(event.organizationId || "")}?event=${encodeURIComponent(event.id)}` : `/aqua-organizations/event-details/${event.id}?orgId=${encodeURIComponent(
+                            href={event.href ?? (sportKey !== "jet-ski" ? `/sports/${sportKey}/organizations/${encodeURIComponent(event.organizationId || "")}?event=${encodeURIComponent(event.id)}` : `/aqua-organizations/event-details/${event.id}?orgId=${encodeURIComponent(
                               event.organizationId || "",
-                            )}`}
+                            )}`)}
                           >
                             <div className="group min-w-0 cursor-pointer rounded-2xl border border-cl-border bg-cl-subtle px-5 py-5 transition hover:border-cl-accent/30 hover:bg-cl-accent/10">
                               <div className="break-words font-bold uppercase leading-snug text-cl-ink group-hover:text-cl-accent">

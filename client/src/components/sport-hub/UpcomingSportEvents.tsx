@@ -1,3 +1,5 @@
+import { isTeamSport } from "@/lib/sportRegistration";
+import TeamGameDirectory from "@/components/team-sports/TeamGameDirectory";
 import LoadingCards from "@/components/ui/LoadingCards";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -28,6 +30,9 @@ function EventPhoto({ event, sport }: { event: HubEvent; sport: string }) {
   );
 }
 export default function UpcomingSportEvents({ sport }: { sport: string }) {
+  return isTeamSport(sport) ? <TeamGameDirectory key={sport} sport={sport} /> : <UpcomingRaceEvents key={sport} sport={sport} />;
+}
+function UpcomingRaceEvents({ sport }: { sport: string }) {
   const [count, setCount] = useState(6);
   const query = useQuery({
     queryKey: ["sport-hub-events", sport],

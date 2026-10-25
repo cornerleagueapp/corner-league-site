@@ -1,3 +1,5 @@
+import SportRegistrationPage from "@/pages/sport-registration";
+import SportGalleryPage from "@/pages/sport-gallery";
 import SportEventsPage from "@/pages/sport-events";
 import PublicTeamPage from "@/pages/public-team";
 import SportOrganizationDirectory from "@/pages/organizations/sport-organization-directory";
@@ -380,10 +382,13 @@ function PrivateRouter() {
   );
 }
 
+
 function Router() {
   return (
     <Switch>
       <Route path="/sports/:sportKey/organizations/:id"><AppShell guestMode><ErrorBoundary><SportOrganizationDetailsPage /></ErrorBoundary></AppShell></Route>
+      <Route path="/sports/:sportKey/registration"><AppShell guestMode><ErrorBoundary><SportRegistrationPage /></ErrorBoundary></AppShell></Route>
+      <Route path="/sports/:sportKey/gallery"><AppShell guestMode><ErrorBoundary><SportGalleryPage /></ErrorBoundary></AppShell></Route>
       <Route path="/sports/:sportKey/events"><AppShell guestMode><ErrorBoundary><SportEventsPage /></ErrorBoundary></AppShell></Route>
       <Route path="/sports/:sportKey/organizations"><AppShell guestMode><ErrorBoundary><SportOrganizationDirectory /></ErrorBoundary></AppShell></Route>
       <Route path="/sports/:sportKey/teams/:seasonId/:teamId"><AppShell guestMode><ErrorBoundary><PublicTeamPage /></ErrorBoundary></AppShell></Route>

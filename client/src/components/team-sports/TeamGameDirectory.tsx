@@ -1,3 +1,6 @@
+import NationwideMap from "@/components/landing/NationwideMap";
+import EventOrganizationFilter from "@/components/sport-hub/EventOrganizationFilter";
+import { sportVisual } from "@/lib/sportVisuals";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
@@ -23,15 +26,17 @@ export default function TeamGameDirectory({
   organizationId?: string;
 }) {
   const [year, setYear] = useState(
-      organizationId ? "" : String(new Date().getFullYear()),
+      "",
     ),
     [status, setStatus] = useState("all"),
-    [page, setPage] = useState(1);
+    [page, setPage] = useState(1),
+    [selectedOrg, setSelectedOrg] = useState("");
+  const scopedOrg = organizationId || selectedOrg;
   const q = useQuery({
     queryKey: [
       "public-team-games",
       sport,
-      organizationId || "",
+      scopedOrg,
       year,
       status,
       page,
@@ -44,7 +49,7 @@ export default function TeamGameDirectory({
         limit: "12",
       });
       if (year) params.set("year", year);
-      if (organizationId) params.set("organizationId", organizationId);
+      if (scopedOrg) params.set("organizationId", scopedOrg);
       const d = await publicSportData<Page>(`/team-sports/games?${params}`);
       if (
         d.sportKey !== sport ||
@@ -52,7 +57,7 @@ export default function TeamGameDirectory({
         d.items.some(
           (i) =>
             i.sportKey !== sport ||
-            (organizationId && i.organizationId !== organizationId),
+            (scopedOrg && i.organizationId !== scopedOrg),
         )
       )
         throw new Error("Events do not match this sport.");
@@ -73,6 +78,7 @@ export default function TeamGameDirectory({
         </span>
       </div>
       <div className="cl-sport-filters">
+        {!organizationId && <EventOrganizationFilter sport={sport} value={selectedOrg} onChange={value => {setSelectedOrg(value);setPage(1);}} />}
         <label>
           Status
           <select
@@ -148,6 +154,13 @@ export default function TeamGameDirectory({
           ))}
         </div>
       )}
+      {!organizationId && q.data && <NationwideMap key={`${sport}:${scopedOrg}:${year}:${status}:${page}`} sportKey={sport} sportLabel={sportVisual(sport).label} pageOnly events={q.data.items.map(d => ({
+        id: `${d.seasonId}:${d.game.id}`,
+        name: d.teams.map(t => t.name).join(" vs "),
+        startDate: d.game.startsAt, endDate: d.game.startsAt,
+        location: d.game.venue, organizationId: d.organizationId, organizationName: d.organizationName,
+        href: `${sportOrganization(sport, d.organizationId)}?section=competition&season=${encodeURIComponent(d.seasonId)}#game-${encodeURIComponent(d.game.id)}`,
+      }))} />}
       {(page > 1 || (q.data?.total || 0) > 12) && (
         <nav className="cl-sport-pagination" aria-label="Games pages">
           <button

@@ -10,6 +10,7 @@ export type OrgItem = {
 };
 
 export type EventItem = {
+  href?: string;
   id: string;
   name: string;
   startDate: string;

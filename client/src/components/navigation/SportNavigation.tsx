@@ -1,7 +1,7 @@
 import { SportIcon } from "./SportIcon";
 import { Link, useLocation } from "wouter";
 import { useSportSelection } from "@/hooks/useSportSelection";
-import { sportDirectory, sportHub } from "@/lib/sportNavigation";
+import { sportDirectory, sportHub, sportMoreLinks } from "@/lib/sportNavigation";
 import { useId, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import {
@@ -84,27 +84,16 @@ export function SidebarSports({
   );
 }
 export function DesktopExploreNavigation({ sportKey }: { sportKey: string }) {
-  const isJetSki = sportKey === "jet-ski";
   const [location] = useLocation();
   const links = [
     { label: "Hub", href: sportHub(sportKey) },
     { label: "Organizations", href: sportDirectory(sportKey) },
     { label: "Events", href: `/sports/${sportKey}/events` },
   ];
-  const more = [
-    { label: isJetSki ? "Racers" : "Athletes", href: "/racer" },
-    ...(isJetSki
-      ? [
-          { label: "Registration", href: "/registration" },
-          { label: "Trending", href: "/top-trends" },
-          { label: "Polls", href: "/polls" },
-          { label: "Arcade", href: "/arcade" },
-        ]
-      : []),
-  ];
+  const more = sportMoreLinks(sportKey);
   return (
     <nav className="cl-desktop-explore" aria-label="Explore">
-      {links.map((link, i) => (
+      {links.map((link) => (
         <Link
           key={link.label}
           href={link.href}

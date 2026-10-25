@@ -4,7 +4,8 @@ import { safeProfileImage } from '@/lib/profileDirectory';
 import { sportVisual } from '@/lib/sportVisuals';
 import { DiscoveryItem, labels } from './api';
 export function DiscoveryCard({item,feed=false}:{item:DiscoveryItem;feed?:boolean}){
- return <Link href={item.href} className={`discovery-card ${feed?'discovery-feed-card':''}`}>
+ const href = item.sport ? (() => { const url = new URL(item.href, "https://cornerleague.com"); url.searchParams.set("sport", item.sport); return `${url.pathname}${url.search}${url.hash}`; })() : item.href;
+ return <Link href={href} className={`discovery-card ${feed?'discovery-feed-card':''}`}>
  <DiscoveryImage item={item}/>
  <span className="discovery-card-copy"><span className="discovery-meta">{item.kind==='users'?'USER ACCOUNT':item.kind==='athletes'?'ATHLETE PROFILE':item.contentType?.replace(/-/g,' ')||labels[item.kind]||item.kind}{item.sport&&<> · {sportVisual(item.sport).label}</>}</span><strong>{item.name}</strong>{item.detail&&<span>{item.detail}</span>}{item.date&&<time dateTime={item.date}>{new Date(item.date).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}</time>}</span>
  </Link>;

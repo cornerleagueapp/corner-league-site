@@ -1,6 +1,6 @@
 import { SidebarSports } from "./navigation/SportNavigation";
 import { useSportSelection } from "@/hooks/useSportSelection";
-import { sportDirectory, sportHub } from "@/lib/sportNavigation";
+import { sportDirectory, sportHub, sportMoreLinks } from "@/lib/sportNavigation";
 import { hasMoreBelow } from "@/lib/sidebarScroll";
 import { useAuth } from "@/hooks/useAuth";
 // src/components/sidebarPanel.tsx
@@ -113,28 +113,14 @@ export function useAppSidebarSections(opts?: {
         items: [
           {
             key: "racing-hub",
-            label: isJetSki ? "Racing Hub" : `${sport?.label ?? "Sport"} Hub`,
+            label: "Hub",
             selectable: false,
             matchPaths: isJetSki ? ["/scores", "/scores/aqua"] : [],
             onSelect: () => navigate(sportHub(sportKey)),
           },
-          ...(isJetSki
-            ? [
-                {
-                  key: "race-registration",
-                  label: "Race Registration",
-                  selectable: false,
-                  badge: "New",
-                  matchPaths: ["/registration", "/registration/*"],
-                  onSelect: () => navigate("/registration"),
-                },
-              ]
-            : []),
           {
             key: "race-organizations",
-            label: isJetSki
-              ? "Race Organizations"
-              : `${sport?.label ?? "Sport"} Organizations`,
+            label: "Organizations",
             selectable: false,
             matchPaths: isJetSki
               ? ["/aqua-organizations", "/aqua-organizations/*"]
@@ -144,27 +130,7 @@ export function useAppSidebarSections(opts?: {
           {key: "event-map", label: "Events", selectable: false,
             matchPaths: [`/sports/${sportKey}/events`],
             onSelect: () => navigate(`/sports/${sportKey}/events`)},
-          {
-            key: "top-trends",
-            label: "Top Trends",
-            selectable: false,
-            matchPaths: ["/top-trends"],
-            onSelect: () => navigate("/top-trends"),
-          },
-          {
-            key: "polls",
-            label: "Polls",
-            selectable: false,
-            matchPaths: ["/polls", "/polls/*"],
-            onSelect: () => navigate("/polls"),
-          },
-          {
-            key: "arcade",
-            label: "Arcade",
-            selectable: false,
-            matchPaths: ["/arcade"],
-            onSelect: () => navigate("/arcade"),
-          },
+          { key: "sport-more", label: "More", selectable: false },
         ],
       },
     ];
@@ -844,6 +810,7 @@ export default function SidebarPanel({
                         ) : null}
 
                         {section.items.map((item) => {
+                          if (item.key === "sport-more") return <MobileSportMore key={item.key} onNavigate={() => selectItem(item)} />;
                           const ItemIcon = getSidebarItemIcon(item.key);
 
                           const isActive =
@@ -1022,4 +989,14 @@ export default function SidebarPanel({
       ) : null}
     </>
   );
+}
+
+function MobileSportMore({ onNavigate }: { onNavigate: () => void }) {
+  const { sportKey } = useSportSelection();
+  return <details className="rounded-xl border border-cl-border p-3 text-cl-ink">
+    <summary className="cursor-pointer font-semibold">More</summary>
+    <nav aria-label="More sport pages" className="mt-2 flex flex-col gap-1">
+      {sportMoreLinks(sportKey).map(link => <Link key={link.href} href={link.href} onClick={onNavigate} className="rounded-lg px-3 py-3 hover:bg-cl-subtle">{link.label}</Link>)}
+    </nav>
+  </details>;
 }
