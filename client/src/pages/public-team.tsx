@@ -239,7 +239,7 @@ export default function PublicTeamPage() {
               role="region"
               aria-label="Division standings, scroll horizontally"
             >
-              <table>
+              <table className="cl-ranked-standings">
                 <thead>
                   <tr>
                     {[

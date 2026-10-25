@@ -1,3 +1,4 @@
+import LeagueInvitation from "@/pages/league-invitation";
 import SportRegistrationPage from "@/pages/sport-registration";
 import SportGalleryPage from "@/pages/sport-gallery";
 import SportEventsPage from "@/pages/sport-events";
@@ -385,6 +386,7 @@ function PrivateRouter() {
 function Router() {
   return (
     <Switch>
+      <Route path="/league-invitation" component={LeagueInvitation} />
       <Route path="/sports/:sportKey/organizations/:id">
         <AppShell guestMode>
           <ErrorBoundary>
