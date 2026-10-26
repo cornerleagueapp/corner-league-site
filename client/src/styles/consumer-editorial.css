@@ -243,3 +243,14 @@
 .consumer-marketing-pilot + footer {
   padding-inline: var(--consumer-page-gutter);
 }
+
+/* Keep the inbox header clear of the fixed navigation and page-frame reset. */
+.consumer-messages-page,
+.consumer-page-frame main.consumer-messages-page {
+  padding-top: clamp(24px, 3vw, 40px);
+}
+
+/* Mobile account controls hide ordinary text spans; keep the DM signal visible. */
+.consumer-account-trigger > span.consumer-direct-message-indicator {
+  display: inline-flex !important;
+}

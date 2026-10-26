@@ -35,8 +35,12 @@ function Conversation({ threadId, name }: { threadId: string; name?: string }) {
   const read = useMutation({
     mutationFn: (sequence: number) =>
       socialRequest("PUT", `me/threads/${threadId}/read`, { sequence }),
-    onSuccess: () =>
-      void cache.invalidateQueries({ queryKey: ["direct-threads"] }),
+    onSuccess: () => {
+      void cache.invalidateQueries({ queryKey: ["direct-threads", user?.id] });
+      void cache.invalidateQueries({
+        queryKey: ["direct-message-count", user?.id],
+      });
+    },
   });
   useEffect(() => {
     const lastVisible = query.data?.items.at(-1)?.sequence;
@@ -74,6 +78,9 @@ function Conversation({ threadId, name }: { threadId: string; name?: string }) {
         queryKey: ["direct-messages", user?.id, threadId],
       });
       void cache.invalidateQueries({ queryKey: ["direct-threads", user?.id] });
+      void cache.invalidateQueries({
+        queryKey: ["direct-message-count", user?.id],
+      });
     },
   });
   return (
@@ -211,7 +218,7 @@ export default function MessagesPage() {
     (thread) => thread.id === selected,
   )?.peer;
   return (
-    <main className="mx-auto max-w-6xl space-y-5 p-4 py-8 text-cl-ink">
+    <main className="consumer-messages-page mx-auto max-w-6xl space-y-5 p-4 py-8 text-cl-ink">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-xs font-bold uppercase tracking-widest text-cl-accent">

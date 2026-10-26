@@ -33,7 +33,10 @@ function compile(relative) {
   mod.paths = module.paths;
   const requireOriginal = mod.require.bind(mod);
   mod.require = (name) => {
-    if (name === "@/lib/apiClient")
+    if (
+      name === "@/lib/apiClient" ||
+      (name === "./apiClient" && filename.includes("/lib/"))
+    )
       return {
         apiRequest: async (...args) => {
           request = args;

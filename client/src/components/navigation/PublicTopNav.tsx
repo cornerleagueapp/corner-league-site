@@ -1,3 +1,5 @@
+import { MessageCircle } from "lucide-react";
+import { useUnreadMessages } from "@/components/community/DirectMessageCount";
 import ColorModeToggle from "./ColorModeToggle";
 import { DesktopExploreNavigation } from "./SportNavigation";
 import NavbarSearch from "./NavbarSearch";
@@ -85,6 +87,7 @@ export default function PublicTopNav({
     isJetSki,
   } = useSportSelection();
   const notifications = useUnreadNotifications();
+  const directMessages = useUnreadMessages();
   const organizationAccess =
     useMyOrganizationAdminOrganizations(isAuthenticated);
   const showOrgDashboard = canOpenOrgDashboard(
@@ -290,9 +293,11 @@ export default function PublicTopNav({
           <NavbarSearch
             key={`${selectedSport?.key ?? "sport"}:${user?.id ?? "guest"}`}
           />
-          {location !== "/" && location !== "/search_results" && <DesktopExploreNavigation
-            sportKey={selectedSport?.key ?? "jet-ski"}
-          />}
+          {location !== "/" && location !== "/search_results" && (
+            <DesktopExploreNavigation
+              sportKey={selectedSport?.key ?? "jet-ski"}
+            />
+          )}
           <ColorModeToggle />
           {isAuthenticated ? (
             <div ref={accountRef} className="relative min-w-0">
@@ -306,7 +311,7 @@ export default function PublicTopNav({
                   setAccountOpen((current) => !current);
                 }}
                 className="consumer-account-trigger"
-                aria-label={`Account options for @${username || "member"}`}
+                aria-label={`Account options for @${username || "member"}${directMessages.data?.unreadCount ? `, ${directMessages.data.unreadCount} unread direct messages` : ""}`}
               >
                 <AccountAvatar
                   picture={user?.profilePicture}
@@ -316,6 +321,18 @@ export default function PublicTopNav({
                   {username || "Your profile"}
                 </span>
                 <NotificationCount count={notifications.data?.unreadCount} />
+                {!!directMessages.data?.unreadCount && (
+                  <span
+                    aria-label={`${directMessages.data.unreadCount} unread direct messages`}
+                    className="consumer-direct-message-indicator relative shrink-0"
+                  >
+                    <MessageCircle className="h-4 w-4 text-cl-accent" />
+                    <span
+                      aria-hidden="true"
+                      className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-cl-accent"
+                    />
+                  </span>
+                )}
 
                 <ChevronDown
                   className={`h-4 w-4 shrink-0 transition-transform ${
@@ -367,6 +384,20 @@ export default function PublicTopNav({
                     <span className="ml-auto">
                       <NotificationCount
                         count={notifications.data?.unreadCount}
+                      />
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => navigateFromAccount("/messages")}
+                    className="flex w-full items-center gap-3 rounded-[15px] px-3 py-3 text-left text-sm font-bold text-cl-muted transition hover:bg-cl-subtle hover:text-cl-ink"
+                  >
+                    <MessageCircle className="h-4 w-4 shrink-0 text-cl-accent" />
+                    <span>Direct Messages</span>
+                    <span className="ml-auto">
+                      <NotificationCount
+                        count={directMessages.data?.unreadCount}
+                        label="direct messages"
                       />
                     </span>
                   </button>

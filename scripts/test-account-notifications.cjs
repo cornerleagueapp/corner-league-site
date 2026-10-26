@@ -72,6 +72,7 @@ function compile(relative) {
         Link: ({ children, ...props }) =>
           React.createElement("a", props, children),
         useLocation: () => ["/profile/jake", () => {}],
+        useSearch: () => "",
       };
     if (name === "@tanstack/react-query")
       return {
@@ -147,6 +148,8 @@ const render = (component, props = {}) =>
   accountOpen = true;
   const nav = render(Nav);
   assert.match(nav, /Notifications/);
+  assert.match(nav, /Direct Messages/);
+  assert.match(nav, /137 unread direct messages/);
   // Admissions navigation is deferred; keep notification/account coverage active.
   assert.doesNotMatch(nav, /My tickets/);
   assert.match(nav, /Writer studio/);
