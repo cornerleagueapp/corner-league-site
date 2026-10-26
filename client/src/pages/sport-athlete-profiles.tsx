@@ -1,3 +1,4 @@
+import PrivateTeamContact from "@/components/team-sports/PrivateTeamContact";
 import TeamRosterInvites from "@/components/team-sports/TeamRosterInvites";
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -144,6 +145,21 @@ export default function SportAthleteProfiles() {
               />
             )
           )}
+          {[
+            "basketball",
+            "soccer",
+            "hockey",
+            "baseball",
+            "american-football",
+          ].includes(selected) &&
+            profiles.data?.find((p) => p.sportKey === selected)?.id && (
+              <PrivateTeamContact
+                profileId={
+                  profiles.data.find((p) => p.sportKey === selected)!.id
+                }
+                sport={selected}
+              />
+            )}
           <TeamRosterInvites />
           <section className="rounded-2xl border border-cl-border bg-cl-surface p-5">
             <h2 className="text-xl font-bold">Your sport registrations</h2>
