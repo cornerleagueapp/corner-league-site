@@ -1,3 +1,4 @@
+import ProfileHonors from "@/components/team-sports/ProfileHonors";
 import AthleteProfileActions from "@/components/team-sports/AthleteProfileActions";
 import ConsumerMediaDialog from "@/components/ui/ConsumerMediaDialog";
 import AthleteTeamPerformance from "@/components/team-sports/AthleteTeamPerformance";
@@ -106,6 +107,7 @@ export default function SportAthletePublic({
               </p>
             )}
             <AthleteProfileActions athlete={p} />
+            {isTeamSport(sportKey) && <ProfileHonors id={id} />}
             <nav className="cl-sport-tabs" aria-label="Athlete sections">
               {(isTeamSport(sportKey)
                 ? ["performance", "about", "gallery"]

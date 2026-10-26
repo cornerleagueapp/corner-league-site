@@ -1,3 +1,4 @@
+import ProfileHonors from "@/components/team-sports/ProfileHonors";
 import PeopleDialog from "@/components/community/PeopleDialog";
 import FollowedResults from "@/components/community/FollowedResults";
 import { FollowedOrganizations } from "@/components/community/OrganizationFollowing";
@@ -179,6 +180,7 @@ export default function UserProfilePage({ username }: { username: string }) {
           )}
         </div>
       </header>
+      <ProfileHonors id={person.id} kind="users" />
       {people && (
         <PeopleDialog
           username={username}
