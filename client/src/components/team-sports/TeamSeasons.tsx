@@ -171,6 +171,8 @@ export function SeasonDetails({
   const name = (id: string) => d.teams.find((t) => t.id === id)?.name ?? "Team";
   return (
     <div className="min-w-0 space-y-6">
+      {!sandbox && <Link href={`/season-registration?season=${encodeURIComponent(d.id)}`} className="inline-flex min-h-11 items-center rounded-xl border border-cl-border bg-cl-surface px-4 py-2 font-semibold text-cl-ink">Season registration</Link>}
+
       <ConsumerBrandingHero
         kind="season"
         id={d.id}

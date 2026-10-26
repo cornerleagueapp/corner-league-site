@@ -144,6 +144,8 @@ function nodes(tree, predicate, result = []) {
     undefined,
   );
   assert.equal(contract.registrationReturnPath("//evil.example"), undefined);
+  assert.equal(contract.registrationReturnPath("/season-registration?season=11111111-1111-4111-8111-111111111111"), "/season-registration?season=11111111-1111-4111-8111-111111111111");
+  assert.equal(contract.registrationReturnPath("/season-registration?season=11111111-1111-4111-8111-111111111111&next=https://evil.example"), undefined);
   assert.equal(
     contract.registrationReturnPath(
       "/sports/motocross/organizations/org?event=event",

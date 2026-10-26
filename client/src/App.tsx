@@ -1,3 +1,4 @@
+import SeasonRegistration from "@/pages/season-registration";
 import LeagueInvitation from "@/pages/league-invitation";
 import SportRegistrationPage from "@/pages/sport-registration";
 import SportGalleryPage from "@/pages/sport-gallery";
@@ -386,6 +387,7 @@ function PrivateRouter() {
 function Router() {
   return (
     <Switch>
+      <Route path="/season-registration" component={SeasonRegistration} />
       <Route path="/league-invitation" component={LeagueInvitation} />
       <Route path="/sports/:sportKey/organizations/:id">
         <AppShell guestMode>
