@@ -14,7 +14,11 @@ export function racerResponseData(payload: unknown): any {
   }
   const response = payload as Record<string, unknown>;
   if (typeof response.status === "boolean") {
-    if (!response.status || !response.data || typeof response.data !== "object") {
+    if (
+      !response.status ||
+      !response.data ||
+      typeof response.data !== "object"
+    ) {
       throw new Error("Unable to load racer data. Please try again.");
     }
     return response.data;
@@ -39,18 +43,20 @@ export type MyRacerIdentity = {
 
 export function parseRacerIdentity(payload: unknown): MyRacerIdentity {
   const data = racerResponseData(payload);
-  const validProfile = data.profile === null || (
-    data.profile && typeof data.profile.athleteId === "string" &&
-    typeof data.profile.name === "string" &&
-    typeof data.profile.isVerifiedAthlete === "boolean" &&
-    (data.profile.profileUrl === null ||
-      (typeof data.profile.profileUrl === "string" &&
-        /^\/racer\/[^/?#]+$/.test(data.profile.profileUrl)))
-  );
-  const validClaim = data.pendingClaim === null || (
-    data.pendingClaim && typeof data.pendingClaim.athleteId === "string" &&
-    typeof data.pendingClaim.name === "string"
-  );
+  const validProfile =
+    data.profile === null ||
+    (data.profile &&
+      typeof data.profile.athleteId === "string" &&
+      typeof data.profile.name === "string" &&
+      typeof data.profile.isVerifiedAthlete === "boolean" &&
+      (data.profile.profileUrl === null ||
+        (typeof data.profile.profileUrl === "string" &&
+          /^\/racer\/[^/?#]+$/.test(data.profile.profileUrl))));
+  const validClaim =
+    data.pendingClaim === null ||
+    (data.pendingClaim &&
+      typeof data.pendingClaim.athleteId === "string" &&
+      typeof data.pendingClaim.name === "string");
   if (!validProfile || !validClaim) {
     throw new Error("We couldn’t check your racer profile. Please try again.");
   }
@@ -58,13 +64,24 @@ export function parseRacerIdentity(payload: unknown): MyRacerIdentity {
 }
 
 export async function getMyRacerIdentity(): Promise<MyRacerIdentity> {
-  return parseRacerIdentity(await apiRequest<unknown>("GET", "/athletes/me/racer-profile"));
+  return parseRacerIdentity(
+    await apiRequest<unknown>("GET", "/athletes/me/racer-profile"),
+  );
 }
 
 export async function createMyRacerIdentity(body: {
-  name: string; nickname: string; origin: string; bio: string; skillLevel: string;
+  name: string;
+  nickname: string;
+  origin: string;
+  bio: string;
+  skillLevel: string;
+  height?: number | null;
+  weight?: number | null;
+  school?: string | null;
 }): Promise<MyRacerIdentity> {
-  return parseRacerIdentity(await apiRequest<unknown>("POST", "/athletes/me/racer-profile", body));
+  return parseRacerIdentity(
+    await apiRequest<unknown>("POST", "/athletes/me/racer-profile", body),
+  );
 }
 
 export async function searchSelfRacers(search: string): Promise<RacerMatch[]> {
@@ -75,16 +92,29 @@ export async function searchSelfRacers(search: string): Promise<RacerMatch[]> {
     sortBy: "createdAt",
     order: "DESC",
   });
-  const data = racerResponseData(await apiRequest<unknown>("GET", `/jet-ski-racer-details?${query}`));
-  if (!Array.isArray(data.racers) || data.racers.some((racer: any) =>
-    !racer || typeof racer.id !== "string" || typeof racer.athlete?.name !== "string"
-  )) {
+  const data = racerResponseData(
+    await apiRequest<unknown>("GET", `/jet-ski-racer-details?${query}`),
+  );
+  if (
+    !Array.isArray(data.racers) ||
+    data.racers.some(
+      (racer: any) =>
+        !racer ||
+        typeof racer.id !== "string" ||
+        typeof racer.athlete?.name !== "string",
+    )
+  ) {
     throw new Error("Unable to read racer search results. Please try again.");
   }
-  return data.racers.map((racer: { id: string; athlete: { name: string; origin?: string | null } }) => ({
-    id: racer.id,
-    name: racer.athlete.name,
-    formattedLocation: racer.athlete.origin || "",
-    profileUrl: `/racer/${encodeURIComponent(racer.id)}`,
-  }));
+  return data.racers.map(
+    (racer: {
+      id: string;
+      athlete: { name: string; origin?: string | null };
+    }) => ({
+      id: racer.id,
+      name: racer.athlete.name,
+      formattedLocation: racer.athlete.origin || "",
+      profileUrl: `/racer/${encodeURIComponent(racer.id)}`,
+    }),
+  );
 }

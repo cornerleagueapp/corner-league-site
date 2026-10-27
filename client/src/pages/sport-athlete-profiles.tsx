@@ -1,3 +1,4 @@
+import AthleteDetailsFields from "@/components/community/AthleteDetailsFields";
 import PrivateTeamContact from "@/components/team-sports/PrivateTeamContact";
 import TeamRosterInvites from "@/components/team-sports/TeamRosterInvites";
 import { useEffect, useRef, useState } from "react";
@@ -145,15 +146,12 @@ export default function SportAthleteProfiles() {
               />
             )
           )}
-          {
-            profiles.data?.find((p) => p.sportKey === selected)?.id && (
-              <PrivateTeamContact
-                profileId={
-                  profiles.data.find((p) => p.sportKey === selected)!.id
-                }
-                sport={selected}
-              />
-            )}
+          {profiles.data?.find((p) => p.sportKey === selected)?.id && (
+            <PrivateTeamContact
+              profileId={profiles.data.find((p) => p.sportKey === selected)!.id}
+              sport={selected}
+            />
+          )}
           <TeamRosterInvites />
           <section className="rounded-2xl border border-cl-border bg-cl-surface p-5">
             <h2 className="text-xl font-bold">Your sport registrations</h2>
@@ -263,10 +261,18 @@ function ProfileForm({
     setBusy(true);
     setError("");
     try {
-      if (!profile && !/^(?=(?:\D*\d){7,15}\D*$)\+?[0-9() .-]{7,40}$/.test(phone.trim()))
-        throw new Error("Enter a valid contact phone number, including area code.");
+      if (
+        !profile &&
+        !/^(?=(?:\D*\d){7,15}\D*$)\+?[0-9() .-]{7,40}$/.test(phone.trim())
+      )
+        throw new Error(
+          "Enter a valid contact phone number, including area code.",
+        );
       await saveSportAthlete({
         ...(!profile ? { contactPhone: phone.trim() } : {}),
+        height: form.height,
+        weight: form.weight,
+        school: form.school,
         sportKey: form.sportKey,
         name: form.name,
         nickname: form.nickname,
@@ -326,17 +332,35 @@ function ProfileForm({
           />
         </label>
       ))}
-      {!profile && <label className="block">
-        Contact phone number
-        <input type="tel" autoComplete="tel" required maxLength={40}
-          value={phone} disabled={busy}
-          onChange={e => setPhone(e.target.value)} className={inputClass}
-          aria-describedby="athlete-phone-help" />
-        <span id="athlete-phone-help" className="mt-2 block text-sm text-cl-muted">
-          Private contact information for season registration. It will not appear on your public profile.
-          You can update it in Private team contact after creating your profile.
-        </span>
-      </label>}
+      <AthleteDetailsFields
+        value={form}
+        onChange={(details) => setForm((f) => ({ ...f, ...details }))}
+        disabled={busy}
+      />
+      {!profile && (
+        <label className="block">
+          Contact phone number
+          <input
+            type="tel"
+            autoComplete="tel"
+            required
+            maxLength={40}
+            value={phone}
+            disabled={busy}
+            onChange={(e) => setPhone(e.target.value)}
+            className={inputClass}
+            aria-describedby="athlete-phone-help"
+          />
+          <span
+            id="athlete-phone-help"
+            className="mt-2 block text-sm text-cl-muted"
+          >
+            Private contact information for season registration. It will not
+            appear on your public profile. You can update it in Private team
+            contact after creating your profile.
+          </span>
+        </label>
+      )}
       <label className="block">
         Skill level
         <select

@@ -182,7 +182,7 @@ export default function UserProfilePage({ username }: { username: string }) {
       )}
       <div className="grid min-w-0 gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
         <aside className="profile-about space-y-5">
-          <RacerIdentityCard profile={racer} isOwn={isOwn} />
+          <RacerIdentityCard key={person.id} username={person.username} profile={racer} isOwn={isOwn} />
           <section className={socialBox}>
             <h2 className="font-bold">About</h2>
             <p className="mt-3 whitespace-pre-wrap break-words text-sm text-cl-muted">

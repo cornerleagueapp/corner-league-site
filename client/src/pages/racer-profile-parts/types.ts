@@ -34,6 +34,7 @@ export type Racer = {
   careerWorldFinalsWins?: number;
   height?: number | null;
   weight?: number | null;
+  school?: string | null;
   claimedByUserId?: string | null;
   claimedByUsername?: string | null;
   isClaimed?: boolean;
@@ -145,6 +146,8 @@ export type EditValues = {
   dateOfBirth?: string;
   bio?: string;
   heightInches?: number | string;
+  weightPounds?: number | string;
+  school?: string;
   origin?: string | null;
   boatManufacturers?: string;
 

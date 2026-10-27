@@ -1,3 +1,4 @@
+import AthleteDetailsFields from "@/components/community/AthleteDetailsFields";
 import SportAthleteProfiles from "./sport-athlete-profiles";
 import { useSearch } from "wouter";
 import React, { useState } from "react";
@@ -25,6 +26,11 @@ function JetSkiRacerProfilePage() {
   const identity = useMyRacerProfile();
   const cache = useQueryClient();
   const [, navigate] = useLocation();
+  const [details, setDetails] = useState<{
+    height?: number | null;
+    weight?: number | null;
+    school?: string | null;
+  }>({});
   const [name, setName] = useState("");
   const [nickname, setNickname] = useState("");
   const [origin, setOrigin] = useState("");
@@ -56,6 +62,7 @@ function JetSkiRacerProfilePage() {
     setError("");
     try {
       const result = await createMyRacerIdentity({
+        ...details,
         name: name.trim(),
         nickname,
         origin,
@@ -229,6 +236,11 @@ function JetSkiRacerProfilePage() {
                 onChange={(e) => setBio(e.target.value)}
               />
             </label>
+            <AthleteDetailsFields
+              value={details}
+              onChange={setDetails}
+              disabled={busy}
+            />
             <Button disabled={busy || !name.trim()} type="submit">
               {busy ? "Please wait…" : "Create racer profile"}
             </Button>

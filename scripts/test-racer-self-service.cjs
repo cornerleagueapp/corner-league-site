@@ -24,6 +24,10 @@ function compile(relative) {
   compiled.paths = module.paths;
   const load = compiled.require.bind(compiled);
   compiled.require = (name) => {
+    if (name === "@/components/community/AthleteDetailsFields")
+      return compile(
+        "client/src/components/community/AthleteDetailsFields.tsx",
+      );
     if (name === "@/hooks/useAuth") return { useAuth: () => auth };
     if (name === "@/hooks/useMyRacerProfile")
       return { useMyRacerProfile: () => identity };

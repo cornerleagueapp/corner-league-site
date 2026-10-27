@@ -178,6 +178,26 @@ export default function SportAthletePublic({
                 <p className="whitespace-pre-wrap leading-7">
                   {p.bio || "This athlete hasn’t added a bio yet."}
                 </p>
+                <dl className="mt-4 flex flex-wrap gap-6 text-sm">
+                  {p.height != null && (
+                    <div>
+                      <dt className="text-cl-muted">Height</dt>
+                      <dd>{Math.round((p.height / 0.0254) * 10) / 10} in</dd>
+                    </div>
+                  )}
+                  {p.weight != null && (
+                    <div>
+                      <dt className="text-cl-muted">Weight</dt>
+                      <dd>{Math.round(p.weight / 0.45359237)} lb</dd>
+                    </div>
+                  )}
+                  {!!p.school && (
+                    <div>
+                      <dt className="text-cl-muted">School</dt>
+                      <dd className="break-words">{p.school}</dd>
+                    </div>
+                  )}
+                </dl>
                 {p.presentation?.website &&
                   /^https:\/\//.test(p.presentation.website) && (
                     <a

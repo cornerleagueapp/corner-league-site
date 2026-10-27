@@ -114,7 +114,10 @@ function RegistrationDirectory({
           </button>
         </p>
       ) : !q.data.items.length ? (
-        <p>No {label.toLowerCase()} are published yet.</p>
+        <p>
+          No current or upcoming {label.toLowerCase()} are available. Ended
+          seasons are not listed for registration.
+        </p>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {q.data.items.map((s) => (

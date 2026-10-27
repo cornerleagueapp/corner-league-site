@@ -16,6 +16,7 @@ type Preview = {
   startsOn: string;
   endsOn: string;
   open: boolean;
+  closedReason?: string | null;
   instructions: string;
   linkedEventRequired: boolean;
   logoUrl?: string;
@@ -123,8 +124,8 @@ export default function SeasonRegistration() {
               )}
               {!data.open ? (
                 <p role="status" className="rounded-xl bg-muted p-4">
-                  Registration is closed for this season. Contact the organizer
-                  for help.
+                  {data.closedReason ||
+                    "Registration is closed for this season. Contact the organizer for help."}
                 </p>
               ) : isLoading ? null : !isAuthenticated ? (
                 <Button asChild>
@@ -177,7 +178,12 @@ function RegistrationForm({
   });
   const p = profile.data,
     edit = `/create-racer-profile?athletes=1&sport=${encodeURIComponent(sport)}&next=${encodeURIComponent(`/season-registration?season=${id}`)}`,
-    ready = !!p?.email && !!p?.phone && p?.age != null;
+    missing = [
+      !p?.email?.trim() && "contact email",
+      !p?.phone?.trim() && "phone number",
+      p?.age == null && "date of birth",
+    ].filter(Boolean),
+    ready = missing.length === 0;
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!p || !ready || writing.current) return;
@@ -264,8 +270,8 @@ function RegistrationForm({
       </Link>
       {!ready && (
         <p role="alert">
-          Add your date of birth and private contact email/phone to your athlete
-          profile, then return here.
+          Missing: {missing.join(", ")}. Update your athlete profile or private
+          contact details, then return here.
         </p>
       )}
       <label className="block font-medium">
@@ -293,7 +299,21 @@ function RegistrationForm({
         information above with this league’s owners/admins for this season.
         These contact details are not published. No payment is collected here.
       </p>
-      <Button type="submit" disabled={busy || !ready}>
+      {!ready && (
+        <p
+          id="registration-blocked-reason"
+          role="status"
+          className="rounded-xl border border-border bg-muted p-3 text-sm"
+        >
+          Registration cannot be confirmed yet. Please add: {missing.join(", ")}
+          .
+        </p>
+      )}
+      <Button
+        type="submit"
+        aria-describedby={!ready ? "registration-blocked-reason" : undefined}
+        disabled={busy || !ready}
+      >
         {busy ? "Registering…" : "Confirm season registration"}
       </Button>
       {!!error && (

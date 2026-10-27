@@ -53,6 +53,9 @@ export const sportLabels: Record<string, string> = {
   "rc-racing": "RC racing",
 };
 export type SportAthlete = {
+  height?: number | null;
+  weight?: number | null;
+  school?: string | null;
   age?: number | null;
   presentation?: {
     revision?: number;
@@ -78,6 +81,9 @@ export type SportAthlete = {
   profileUrl?: string;
 };
 export type AthleteInput = {
+  height?: number | null;
+  weight?: number | null;
+  school?: string | null;
   contactPhone?: string;
   sportKey: string;
   name: string;

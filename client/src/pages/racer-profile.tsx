@@ -716,11 +716,15 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
           (Array.isArray(res) ? res : []);
 
         if (!cancelled) {
-          if (!Array.isArray(list)) throw new Error("Invalid race history response.");
+          if (!Array.isArray(list))
+            throw new Error("Invalid race history response.");
           setHistory(list);
         }
       } catch {
-        if (!cancelled) { setHistory([]); setHistoryError("Race history couldn’t be loaded."); }
+        if (!cancelled) {
+          setHistory([]);
+          setHistoryError("Race history couldn’t be loaded.");
+        }
       } finally {
         if (!cancelled) setHistoryLoading(false);
       }
@@ -1065,7 +1069,7 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
         items={galleryItems}
         loading={galleryLoading}
         error={galleryError}
-        onRetry={() => setGalleryReload(n => n + 1)}
+        onRetry={() => setGalleryReload((n) => n + 1)}
         canUpload={canEdit}
         onBack={() => setGalleryOpen(false)}
         onUpload={async (drafts) => {
@@ -1161,6 +1165,8 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
       dateOfBirth?: string;
       bio?: string;
       heightMeters?: number;
+      weight?: number | null;
+      school?: string;
       origin?: string | null;
       formattedAddress?: string | null;
       latitude?: string | null;
@@ -1188,6 +1194,9 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
     if (edited.nickname !== undefined) {
       body.nickname = edited.nickname;
     }
+
+    if (edited.weight !== undefined) body.weight = edited.weight;
+    if (edited.school !== undefined) body.school = edited.school;
 
     if (edited.skillLevel !== undefined) {
       body.skillLevel = edited.skillLevel;
@@ -1294,12 +1303,23 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
         />
 
         <AthletePerformanceCenter
-          key={String(racer.athleteId || racer.id)} racer={racer} history={history}
-          loading={historyLoading} error={historyError} onRetry={() => setHistoryReload(n => n + 1)}
-          sponsors={sponsors} sponsorsLoading={sponsorsLoading} galleryItems={galleryItems} galleryLoading={galleryLoading}
-          rating={ratingCard} canEdit={canEdit} isOwner={isOwner}
-          ageLabel={formatAgeYearsAndDays(racer.dateOfBirth)} heightLabel={formatHeightFromMeters(racer.height)}
-          onGallery={() => setGalleryOpen(true)} onWorldFinals={() => setWorldFinalsOpen(true)}
+          key={String(racer.athleteId || racer.id)}
+          racer={racer}
+          history={history}
+          loading={historyLoading}
+          error={historyError}
+          onRetry={() => setHistoryReload((n) => n + 1)}
+          sponsors={sponsors}
+          sponsorsLoading={sponsorsLoading}
+          galleryItems={galleryItems}
+          galleryLoading={galleryLoading}
+          rating={ratingCard}
+          canEdit={canEdit}
+          isOwner={isOwner}
+          ageLabel={formatAgeYearsAndDays(racer.dateOfBirth)}
+          heightLabel={formatHeightFromMeters(racer.height)}
+          onGallery={() => setGalleryOpen(true)}
+          onWorldFinals={() => setWorldFinalsOpen(true)}
         />
       </div>
 
@@ -1335,6 +1355,11 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
             skillLevel: racer.skillLevel ?? "amateur",
             dateOfBirth: toDateInputValue(racer.dateOfBirth),
             bio: racer.bio ?? "",
+            school: racer.school ?? "",
+            weightPounds:
+              racer.weight == null
+                ? ""
+                : Math.round((racer.weight / 0.45359237) * 10) / 10,
             heightInches:
               typeof racer.height === "number"
                 ? Math.round(racer.height / 0.0254)
@@ -1377,6 +1402,8 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
               dateOfBirth?: string;
               bio?: string;
               heightMeters?: number;
+              weight?: number | null;
+              school?: string;
               origin?: string | null;
               formattedAddress?: string | null;
               latitude?: string | null;
@@ -1447,6 +1474,19 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
               if (newMeters !== currentMeters) edited.heightMeters = newMeters;
             }
 
+            const pounds = toNumOrUndefined(vals.weightPounds);
+            if (
+              pounds !== undefined &&
+              (!Number.isFinite(pounds) || pounds < 3 || pounds > 1543)
+            ) {
+              toast({
+                title: "Please fix the form",
+                description: "Weight must be between 3 and 1543 lb.",
+              });
+              return;
+            }
+            edited.weight = pounds === undefined ? null : pounds * 0.45359237;
+            edited.school = (vals.school ?? "").trim();
             const newOrigin = (vals.origin ?? "").trim();
             const newFormattedAddress = (vals.formattedAddress ?? "").trim();
             const newLatitude = (vals.latitude ?? "").trim();
@@ -1582,6 +1622,11 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
                     ...prev,
                     racerName:
                       edited.name !== undefined ? edited.name : prev.racerName,
+                    school: edited.school ?? racer.school,
+                    weight:
+                      edited.weight !== undefined
+                        ? edited.weight
+                        : racer.weight,
                     nickname:
                       edited.nickname !== undefined
                         ? edited.nickname || null
@@ -1859,17 +1904,19 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
           />
         )}
 
-      {PUBLIC_RACEPOD_ENABLED && <RacePodSessionsModal
-        open={racePodSessionsOpen}
-        racerName={racer.racerName}
-        sessions={racePodSessions}
-        loading={racePodSessionsLoading}
-        onClose={() => setRacePodSessionsOpen(false)}
-        onOpenSession={(sessionId) => {
-          setRacePodSessionsOpen(false);
-          navigate(`/racepod/sessions/${encodeURIComponent(sessionId)}`);
-        }}
-      />}
+      {PUBLIC_RACEPOD_ENABLED && (
+        <RacePodSessionsModal
+          open={racePodSessionsOpen}
+          racerName={racer.racerName}
+          sessions={racePodSessions}
+          loading={racePodSessionsLoading}
+          onClose={() => setRacePodSessionsOpen(false)}
+          onOpenSession={(sessionId) => {
+            setRacePodSessionsOpen(false);
+            navigate(`/racepod/sessions/${encodeURIComponent(sessionId)}`);
+          }}
+        />
+      )}
 
       <RacerProfileShareModal
         open={shareOpen}
@@ -1883,7 +1930,14 @@ function JetSkiRacerProfilePage({ idOrSlugParam }: { idOrSlugParam?: string }) {
   );
 }
 
-function LegacyAthlete({id,sport}: {id:string;sport:string}) {
- const [path] = useLocation();
- return path.startsWith("/racer/") ? <Redirect to={`/athlete/${encodeURIComponent(id)}?sport=${encodeURIComponent(sport)}`} replace /> : <SportAthletePublic id={id} sportKey={sport} />;
+function LegacyAthlete({ id, sport }: { id: string; sport: string }) {
+  const [path] = useLocation();
+  return path.startsWith("/racer/") ? (
+    <Redirect
+      to={`/athlete/${encodeURIComponent(id)}?sport=${encodeURIComponent(sport)}`}
+      replace
+    />
+  ) : (
+    <SportAthletePublic id={id} sportKey={sport} />
+  );
 }

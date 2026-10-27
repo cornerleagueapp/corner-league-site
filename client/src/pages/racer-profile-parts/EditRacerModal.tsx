@@ -269,6 +269,26 @@ export function EditRacerModal({
                   />
                 </Field>
 
+                <Field label="Weight (lb)">
+                  <input
+                    type="number"
+                    inputMode="decimal"
+                    min={3}
+                    max={1543}
+                    step={0.1}
+                    value={vals.weightPounds ?? ""}
+                    onChange={set("weightPounds")}
+                    className={inputClass}
+                  />
+                </Field>
+                <Field label="School attended / attending">
+                  <input
+                    maxLength={160}
+                    value={vals.school ?? ""}
+                    onChange={set("school")}
+                    className={inputClass}
+                  />
+                </Field>
                 <LocationAutocomplete
                   label="Location / Hometown"
                   value={vals.origin ?? ""}
