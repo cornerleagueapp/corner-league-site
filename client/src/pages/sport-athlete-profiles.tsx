@@ -1,3 +1,4 @@
+import SeasonRegistrationHistory from "@/components/team-sports/SeasonRegistrationHistory";
 import AthleteDetailsFields from "@/components/community/AthleteDetailsFields";
 import PrivateTeamContact from "@/components/team-sports/PrivateTeamContact";
 import TeamRosterInvites from "@/components/team-sports/TeamRosterInvites";
@@ -153,8 +154,12 @@ export default function SportAthleteProfiles() {
             />
           )}
           <TeamRosterInvites />
+          <SeasonRegistrationHistory
+            key={auth.user!.id}
+            account={String(auth.user!.id)}
+          />
           <section className="rounded-2xl border border-cl-border bg-cl-surface p-5">
-            <h2 className="text-xl font-bold">Your sport registrations</h2>
+            <h2 className="text-xl font-bold">Your event registrations</h2>
             {registrations.isPending ? (
               <p role="status">Loading registrations…</p>
             ) : registrations.isError ? (

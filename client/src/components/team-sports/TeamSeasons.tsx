@@ -56,6 +56,8 @@ function SeasonBrowser({
       sportKey,
       page,
     ],
+    retry: false,
+    refetchOnWindowFocus: false,
     queryFn: () => listTeamSeasons(organizationId, sportKey, page, sandboxId),
     gcTime: sandboxId ? 0 : undefined,
     staleTime: sandboxId ? 0 : 30_000,
@@ -69,6 +71,8 @@ function SeasonBrowser({
       sportKey,
       id,
     ],
+    retry: false,
+    refetchOnWindowFocus: false,
     queryFn: () => readTeamSeason(id, organizationId, sportKey, sandboxId),
     enabled: !!id,
     gcTime: sandboxId ? 0 : undefined,
@@ -153,7 +157,8 @@ function SeasonBrowser({
           <p role="status">Loading season…</p>
         ) : season.isError ? (
           <p role="alert">
-            This season is unavailable or no longer published.{" "}
+            {season.error.message ||
+              "The season could not load. Please try again shortly."}{" "}
             <button className="underline" onClick={() => void season.refetch()}>
               Try again
             </button>{" "}

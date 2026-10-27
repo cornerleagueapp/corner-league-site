@@ -218,7 +218,7 @@ function RegistrationForm({
           details.
         </p>
         <Button asChild variant="outline">
-          <Link href="/profile/notifications">View notifications</Link>
+          <Link href="/notifications">View notifications</Link>
         </Button>
       </div>
     );

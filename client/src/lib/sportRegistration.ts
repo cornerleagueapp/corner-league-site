@@ -156,9 +156,54 @@ export function unwrapSportData<T>(json: unknown): T {
     Object.prototype.hasOwnProperty.call(value, "data") ? value.data : json
   ) as T;
 }
-export async function publicSportData<T>(path: string): Promise<T> {
-  const response = await apiFetch(path, { skipAuth: true, noRefresh: true });
-  if (!response.ok) throw new Error("This sport information is unavailable.");
+const pendingPublicReads = new Map<string, Promise<unknown>>();
+let publicRetryAt = 0;
+export function publicSportData<T>(path: string): Promise<T> {
+  if (Date.now() < publicRetryAt)
+    return Promise.reject(
+      new Error(
+        `Too many requests. Try again in ${Math.ceil((publicRetryAt - Date.now()) / 1000)} seconds.`,
+      ),
+    );
+  const pending = pendingPublicReads.get(path);
+  if (pending) return pending as Promise<T>;
+  const work = readPublicSportData<T>(path);
+  if (pendingPublicReads.size < 100) {
+    pendingPublicReads.set(path, work);
+    void work.finally(() => pendingPublicReads.delete(path)).catch(() => {});
+  }
+  return work;
+}
+async function readPublicSportData<T>(path: string): Promise<T> {
+  let response: Response;
+  try {
+    response = await apiFetch(path, { skipAuth: true, noRefresh: true });
+  } catch {
+    throw new Error(
+      "The server could not be reached. Please wait and try again. If this continues, contact support.",
+    );
+  }
+  if (!response.ok) {
+    if (response.status === 429) {
+      const header = response.headers?.get("Retry-After") || "";
+      const seconds = /^\d+$/.test(header)
+        ? Number(header)
+        : Math.ceil((Date.parse(header) - Date.now()) / 1000);
+      publicRetryAt =
+        Date.now() +
+        Math.max(1, Math.min(Number.isFinite(seconds) ? seconds : 60, 3600)) *
+          1000;
+    }
+    const error = new Error(
+      response.status === 429
+        ? "Too many requests. Please wait before trying again."
+        : response.status === 404
+          ? "This season or sport information is not available."
+          : "The server could not load this sport information. Please try again shortly.",
+    );
+    Object.assign(error, { status: response.status });
+    throw error;
+  }
   return unwrapSportData<T>(await response.json());
 }
 export async function mySportAthletes(): Promise<SportAthlete[]> {

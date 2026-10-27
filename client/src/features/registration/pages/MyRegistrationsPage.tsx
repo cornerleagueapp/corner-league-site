@@ -1,3 +1,5 @@
+import SeasonRegistrationHistory from "@/components/team-sports/SeasonRegistrationHistory";
+import { useAuth } from "@/hooks/useAuth";
 import { useEffect, useState } from "react";
 
 import {
@@ -71,6 +73,7 @@ function getEventSlug(registration: RegistrationAccountItem) {
 }
 
 export default function MyRegistrationsPage() {
+  const { user } = useAuth();
   const [, navigate] = useLocation();
 
   const [items, setItems] = useState<RegistrationAccountItem[]>([]);
@@ -117,10 +120,13 @@ export default function MyRegistrationsPage() {
     <RegistrationLayout
       eyebrow="Account Registrations"
       title="My registrations"
-      description="View race entries connected to your Corner League account."
+      description="View season enrollments and race entries connected to your Corner League account."
       backHref="/registration"
       backLabel="Registration Home"
     >
+      {user?.id && (
+        <SeasonRegistrationHistory key={user.id} account={String(user.id)} />
+      )}
       {loading ? (
         <div className="grid min-h-[420px] place-items-center rounded-[28px] border border-cl-accent/[0.12] bg-cl-canvas">
           <Loader2 className="h-8 w-8 animate-spin text-cl-accent" />
@@ -134,7 +140,7 @@ export default function MyRegistrationsPage() {
           <CalendarDays className="mx-auto h-9 w-9 text-cl-muted" />
 
           <h2 className="mt-4 text-xl font-black uppercase text-cl-ink">
-            No registrations yet
+            No race registrations yet
           </h2>
 
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-cl-muted">

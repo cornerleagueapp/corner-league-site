@@ -27,7 +27,7 @@ import { lazy, Suspense, useEffect, useState } from "react";
 import { AnalyticsEvents } from "@/lib/analytics-events";
 
 import { initAnalytics, persistUtmParams, trackEvent } from "@/lib/analytics";
-import { Switch, Route, useLocation } from "wouter";
+import { Redirect, Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -218,6 +218,9 @@ function PrivateRouter() {
             component={TestOrganizationPreview}
           />
 
+          <Route path="/profile/notifications">
+            <Redirect to="/notifications" />
+          </Route>
           <Route path="/profile/:username">
             {(params) => <UserProfilePage username={params.username} />}
           </Route>
@@ -648,6 +651,9 @@ function Router() {
             </ErrorBoundary>
           </AppShell>
         )}
+      </Route>
+      <Route path="/profile/notifications">
+        <Redirect to="/notifications" />
       </Route>
       <Route path="/profile/:username">
         {(params) => (
