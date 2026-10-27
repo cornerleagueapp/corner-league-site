@@ -70,6 +70,15 @@ export default function OfficialAssignments() {
         noindex
       />
       <h1 className="text-3xl font-bold">My official assignments</h1>
+      {valid && isAuthenticated && (
+        <Button asChild>
+          <a
+            href={`https://admin.cornerleague.com/sign-in?next=${encodeURIComponent(`/my-schedule?season=${season}`)}`}
+          >
+            Open My Schedule in Corner League OS
+          </a>
+        </Button>
+      )}
       {!valid ? (
         <p role="alert">
           Open the season link from your invitation or assignment notification.

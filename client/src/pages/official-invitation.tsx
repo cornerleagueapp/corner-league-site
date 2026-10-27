@@ -112,9 +112,11 @@ export default function OfficialInvitation() {
               </Button>
             ) : d.status === "active" ? (
               <Button asChild>
-                <Link href={`/official-assignments?season=${season}`}>
-                  View my assignments
-                </Link>
+                <a
+                  href={`https://admin.cornerleague.com/sign-in?next=${encodeURIComponent(`/my-schedule?season=${season}`)}`}
+                >
+                  Open My Schedule in Corner League OS
+                </a>
               </Button>
             ) : d.status === "invited" && !d.expired ? (
               <>
