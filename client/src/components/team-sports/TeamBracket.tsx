@@ -1,3 +1,4 @@
+import TeamLogo from "./TeamLogo";
 import type { PublicTeamSeason } from "@/lib/teamSports";
 import { tournamentRounds, tournamentWinner } from "@/lib/teamTournament";
 export default function TeamBracket({
@@ -93,7 +94,14 @@ export default function TeamBracket({
                               {game.competition?.homeSeed
                                 ? `#${game.competition.homeSeed} `
                                 : ""}
-                              {name(game.homeTeamId)}
+                              <span className="inline-flex items-center gap-2">
+                                <TeamLogo
+                                  team={season.teams.find(
+                                    (t) => t.id === game.homeTeamId,
+                                  )}
+                                />
+                                {name(game.homeTeamId)}
+                              </span>
                             </p>
                             <p
                               className={
@@ -102,9 +110,21 @@ export default function TeamBracket({
                                   : "font-semibold"
                               }
                             >
-                              {game.competition?.bye
-                                ? "BYE"
-                                : `${game.competition?.awaySeed ? `#${game.competition.awaySeed} ` : ""}${name(game.awayTeamId)}`}
+                              {game.competition?.bye ? (
+                                "BYE"
+                              ) : (
+                                <span className="inline-flex items-center gap-2">
+                                  <TeamLogo
+                                    team={season.teams.find(
+                                      (t) => t.id === game.awayTeamId,
+                                    )}
+                                  />
+                                  {game.competition?.awaySeed
+                                    ? `#${game.competition.awaySeed} `
+                                    : ""}
+                                  {name(game.awayTeamId)}
+                                </span>
+                              )}
                             </p>
                             <p className="mt-2 font-bold">
                               {game.competition?.bye

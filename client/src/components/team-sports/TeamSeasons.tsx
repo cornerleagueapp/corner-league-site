@@ -1,3 +1,4 @@
+import TeamLogo from "./TeamLogo";
 import SeasonCalendar from "./SeasonCalendar";
 import GameCard, { teamHref } from "./GameCard";
 import TeamBracket from "./TeamBracket";
@@ -256,7 +257,10 @@ export function SeasonDetails({
                     return (
                       <div key={t.id}>
                         {sandbox ? (
-                          <strong>{t.name}</strong>
+                          <span className="inline-flex min-w-0 items-center gap-2">
+                            <TeamLogo team={t} />
+                            <strong className="break-words">{t.name}</strong>
+                          </span>
                         ) : (
                           <Link
                             href={teamHref(
@@ -266,7 +270,10 @@ export function SeasonDetails({
                               d.organizationId,
                             )}
                           >
-                            <strong>{t.name}</strong>
+                            <span className="inline-flex min-w-0 items-center gap-2">
+                              <TeamLogo team={t} />
+                              <strong className="break-words">{t.name}</strong>
+                            </span>
                             <span>
                               {record ? `${record.wins}–${record.losses}` : "—"}{" "}
                               <span aria-hidden="true">→</span>
@@ -385,7 +392,11 @@ export function SeasonDetails({
                   className="rounded-xl border border-cl-border p-3"
                 >
                   <p className="font-bold">
-                    #{r.position ?? "—"} {r.name} · {r.points} points ·{" "}
+                    <span className="inline-flex items-center gap-2">
+                      <TeamLogo team={d.teams.find((t) => t.id === r.teamId)} />
+                      {r.name}
+                    </span>{" "}
+                    · #{r.position ?? "—"} · {r.points} points ·{" "}
                     {((r.winPercentage ?? 0) * 100).toFixed(1)}%
                   </p>
                   <p className="text-sm text-cl-muted">
@@ -433,7 +444,12 @@ export function SeasonDetails({
                     <tr key={r.teamId}>
                       <th scope="row" className="whitespace-nowrap p-3">
                         {sandbox ? (
-                          r.name
+                          <span className="inline-flex items-center gap-2">
+                            <TeamLogo
+                              team={d.teams.find((t) => t.id === r.teamId)}
+                            />
+                            {r.name}
+                          </span>
                         ) : (
                           <Link
                             href={teamHref(
@@ -443,7 +459,12 @@ export function SeasonDetails({
                               d.organizationId,
                             )}
                           >
-                            {r.name}
+                            <span className="inline-flex items-center gap-2">
+                              <TeamLogo
+                                team={d.teams.find((t) => t.id === r.teamId)}
+                              />
+                              {r.name}
+                            </span>
                           </Link>
                         )}
                       </th>

@@ -1,3 +1,4 @@
+import TeamLogo from "./TeamLogo";
 import { Link } from "wouter";
 import { teamHref } from "./GameCard";
 import { useState } from "react";
@@ -13,6 +14,8 @@ type Performance = {
     leagueName: string;
     organizationId: string;
     teamName: string;
+    teamLogoUrl?: string;
+    primaryColor?: string;
     teamId?: string;
     summary: null | {
       games: number;
@@ -110,7 +113,31 @@ export default function AthleteTeamPerformance({
             </select>
           </label>
           <p className="font-semibold">
-            {season.teamId ? <Link className="text-cl-accent underline" href={teamHref(sportKey,season.id,season.teamId,season.organizationId)}>{season.teamName}</Link> : season.teamName} · {season.summary?.games || 0} games with stats
+            {season.teamId ? (
+              <Link
+                className="text-cl-accent underline"
+                href={teamHref(
+                  sportKey,
+                  season.id,
+                  season.teamId,
+                  season.organizationId,
+                )}
+              >
+                <span className="inline-flex items-center gap-2">
+                  <TeamLogo
+                    team={{
+                      name: season.teamName,
+                      logoUrl: season.teamLogoUrl,
+                      primaryColor: season.primaryColor,
+                    }}
+                  />
+                  {season.teamName}
+                </span>
+              </Link>
+            ) : (
+              season.teamName
+            )}{" "}
+            · {season.summary?.games || 0} games with stats
           </p>
           {!season.summary ? (
             <p>

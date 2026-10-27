@@ -130,3 +130,35 @@ assert.equal(
 console.log(
   "PASS null profile envelope, missing-name logo fallback, create-profile path and existing-athlete form",
 );
+
+for (const [status, copy] of [
+  ["registered", "already registered"],
+  ["assigned", "already registered"],
+  ["withdrawn", "Registration cancelled"],
+  ["invited", "Invitation awaiting acceptance"],
+  ["requested", "Join request pending"],
+]) {
+  profile = {
+    ...athlete,
+    enrollment: { status, teamName: status === "assigned" ? "Comets" : null },
+  };
+  const receipt = form.type({ ...form.props, open: false });
+  assert.notEqual(receipt.type, "form");
+  assert.ok(JSON.stringify(receipt).includes(copy));
+  assert.equal(
+    walk(receipt, (n) => n.type === "button" && n.props.type === "submit")
+      .length,
+    0,
+  );
+}
+profile = athlete;
+const closed = form.type({
+  ...form.props,
+  open: false,
+  closedReason: "This season has ended.",
+});
+assert.ok(JSON.stringify(closed).includes("This season has ended."));
+assert.notEqual(closed.type, "form");
+console.log(
+  "PASS existing enrollment receipts, assigned/withdrawn/pending states, closed seasons and no duplicate registration form",
+);

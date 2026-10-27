@@ -11,15 +11,27 @@ export default function TeamLogo({
   team?: { name: string; logoUrl?: string; primaryColor?: string };
   large?: boolean;
 }) {
-  const [failed, setFailed] = useState("");
-  const src = brandingImage(team?.logoUrl);
+  const [failed, setFailed] = useState<string[]>([]);
+  const fallback = "/branding/team-default.svg";
+  const custom = brandingImage(team?.logoUrl);
+  const src = custom && !failed.includes(custom) ? custom : fallback;
   return (
     <span
       className={`cl-team-logo ${large ? "cl-team-logo-large" : ""}`}
       style={{ color: teamColor(team?.primaryColor) }}
     >
-      {src && failed !== src ? (
-        <img src={src} alt="" onError={() => setFailed(src)} />
+      {!failed.includes(src) ? (
+        <img
+          src={src}
+          alt=""
+          loading={large ? "eager" : "lazy"}
+          decoding="async"
+          onError={() =>
+            setFailed((previous) =>
+              previous.includes(src) ? previous : [...previous, src],
+            )
+          }
+        />
       ) : (
         <Shield aria-hidden="true" />
       )}

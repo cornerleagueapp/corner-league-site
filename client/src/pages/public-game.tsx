@@ -330,7 +330,16 @@ export default function PublicGamePage() {
                             }
                           >
                             <th>
-                              <Link href={teamLink(v.teamId)}>{v.name}</Link>
+                              <Link href={teamLink(v.teamId)}>
+                                <span className="inline-flex items-center gap-2">
+                                  <TeamLogo
+                                    team={d.teams.find(
+                                      (t) => t.id === v.teamId,
+                                    )}
+                                  />
+                                  {v.name}
+                                </span>
+                              </Link>
                             </th>
                             <td>{v.played}</td>
                             <td>{v.wins}</td>

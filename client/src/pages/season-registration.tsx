@@ -29,6 +29,7 @@ type Athlete = {
   email: string;
   phone: string;
   contactName: string;
+  enrollment?: { status: string; teamName: string | null } | null;
   imageUrl?: string;
 };
 export default function SeasonRegistration() {
@@ -122,21 +123,25 @@ export default function SeasonRegistration() {
                   event first. Contact the organizer for that link.
                 </p>
               )}
-              {!data.open ? (
-                <p role="status" className="rounded-xl bg-muted p-4">
-                  {data.closedReason ||
-                    "Registration is closed for this season. Contact the organizer for help."}
-                </p>
-              ) : isLoading ? null : !isAuthenticated ? (
-                <Button asChild>
-                  <Link href={`/auth?next=${encodeURIComponent(next)}`}>
-                    Sign in or create an account
-                  </Link>
-                </Button>
+              {isLoading ? null : !isAuthenticated ? (
+                !data.open ? (
+                  <p role="status" className="rounded-xl bg-muted p-4">
+                    {data.closedReason ||
+                      "Registration is closed for this season."}
+                  </p>
+                ) : (
+                  <Button asChild>
+                    <Link href={`/auth?next=${encodeURIComponent(next)}`}>
+                      Sign in or create an account
+                    </Link>
+                  </Button>
+                )
               ) : (
                 <RegistrationForm
                   key={`${user?.id}:${id}`}
                   id={id}
+                  open={data.open}
+                  closedReason={data.closedReason}
                   sport={data.sportKey}
                   account={String(user?.id)}
                   onRefresh={() => void preview.refetch()}
@@ -154,11 +159,15 @@ function RegistrationForm({
   sport,
   account,
   onRefresh,
+  open = true,
+  closedReason,
 }: {
   id: string;
   sport: string;
   account: string;
   onRefresh: () => void;
+  open?: boolean;
+  closedReason?: string | null;
 }) {
   const [busy, setBusy] = useState(false),
     [done, setDone] = useState(false),
@@ -230,6 +239,46 @@ function RegistrationForm({
         <p>{profile.error.message}</p>
         <Button onClick={() => void profile.refetch()}>Try again</Button>
       </div>
+    );
+  if (p?.enrollment) {
+    const status = p.enrollment.status,
+      active = ["registered", "assigned"].includes(status);
+    return (
+      <div
+        role="status"
+        className="space-y-3 rounded-xl border border-border bg-muted p-4"
+      >
+        <h2 className="text-xl font-bold">
+          {active
+            ? "You’re already registered"
+            : status === "withdrawn"
+              ? "Registration cancelled"
+              : status === "invited"
+                ? "Invitation awaiting acceptance"
+                : "Join request pending"}
+        </h2>
+        <p>
+          {active
+            ? p.enrollment.teamName
+              ? `Your team: ${p.enrollment.teamName}.`
+              : "Your place in this season’s player pool is confirmed. Team assignment happens separately."
+            : status === "withdrawn"
+              ? "The organizer has removed your entry from this season. Contact them if you need to rejoin."
+              : "Contact the organizer or use your invitation email to complete the next step."}
+        </p>
+        {active && (
+          <Button asChild variant="outline">
+            <Link href="/notifications">View notifications</Link>
+          </Button>
+        )}
+      </div>
+    );
+  }
+  if (!open)
+    return (
+      <p role="status" className="rounded-xl bg-muted p-4">
+        {closedReason || "Registration is closed for this season."}
+      </p>
     );
   if (!p)
     return (

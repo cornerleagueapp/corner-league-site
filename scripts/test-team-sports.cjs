@@ -120,6 +120,7 @@ const gameCard = compile("client/src/components/team-sports/GameCard.tsx", {
   },
 });
 const component = compile("client/src/components/team-sports/TeamSeasons.tsx", {
+  "./TeamLogo": { default: () => null },
   "./SeasonCalendar": { default: () => null, SeasonCalendar: () => null },
   "./GameCard": gameCard,
   "@/components/admissions/AdmissionOffer": { AdmissionOffer: () => null },

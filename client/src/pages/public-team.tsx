@@ -266,7 +266,14 @@ export default function PublicTeamPage() {
                       <td>{r.position || "—"}</td>
                       <th>
                         <Link href={teamHref(p.sportKey, d.id, r.teamId, org)}>
-                          {r.name}
+                          <span className="inline-flex items-center gap-2">
+                            <TeamLogo
+                              team={d.teams.find(
+                                (team) => team.id === r.teamId,
+                              )}
+                            />
+                            {r.name}
+                          </span>
                         </Link>
                       </th>
                       {[
