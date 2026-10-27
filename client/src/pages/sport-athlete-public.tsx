@@ -91,6 +91,9 @@ export default function SportAthletePublic({
                     {p.skillLevel.toUpperCase()}
                   </p>
                   <h1>{p.name}</h1>
+                  {p.age != null && (
+                    <p className="text-cl-muted">Age {p.age}</p>
+                  )}
                   {p.nickname && (
                     <p className="athlete-nickname">“{p.nickname}”</p>
                   )}

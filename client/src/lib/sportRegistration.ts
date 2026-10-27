@@ -53,6 +53,7 @@ export const sportLabels: Record<string, string> = {
   "rc-racing": "RC racing",
 };
 export type SportAthlete = {
+  age?: number | null;
   presentation?: {
     revision?: number;
     website?: string;
@@ -241,7 +242,13 @@ export async function sandboxSportData<T>(
 export function registrationReturnPath(
   path: string | null,
 ): string | undefined {
-  if (path && /^\/season-registration\?season=[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(path)) return path;
+  if (
+    path &&
+    /^\/season-registration\?season=[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      path,
+    )
+  )
+    return path;
   return path &&
     /^\/sports\/(motocross|boat-racing|onewheel-racing|rc-racing|track-running|marathon|golf)\/organizations\/[a-zA-Z0-9-]+\?event=[a-zA-Z0-9-]+$/.test(
       path,

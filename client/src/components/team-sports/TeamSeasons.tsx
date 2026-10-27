@@ -2,7 +2,6 @@ import GameCard, {teamHref} from "./GameCard";
 import TeamBracket from "./TeamBracket";
 import ConsumerBrandingHero from "@/components/branding/ConsumerBrandingHero";
 // Phase 2/3: AdmissionOffer remains in @/components/admissions/AdmissionOffer.
-import TeamRecruitment from "./TeamRecruitment";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useSearch, useLocation } from "wouter";
@@ -209,7 +208,7 @@ export function SeasonDetails({
       </label>
       <TeamBracket season={d} division={division} />
       <section className="space-y-5"><h4 className="text-xl font-black">Teams by division</h4>
-        {d.divisions.filter(v=>!division||v.id===division).map(v=><div key={v.id} className="cl-division-card"><header><h5>{v.name}</h5><span>{d.teams.filter(t=>t.divisionId===v.id).length} teams</span></header><div className="cl-division-teams">{d.teams.filter(t=>t.divisionId===v.id).map(t=>{const record=d.standings.find(s=>s.divisionId===v.id)?.rows.find(r=>r.teamId===t.id);return <div key={t.id}>{sandbox?<strong>{t.name}</strong>:<Link href={teamHref(d.sportKey,d.id,t.id,d.organizationId)}><strong>{t.name}</strong><span>{record?`${record.wins}–${record.losses}`:'—'} <span aria-hidden="true">→</span></span></Link>}{!sandbox&&t.recruiting&&<TeamRecruitment seasonId={d.id} teamId={t.id} sportKey={d.sportKey}/>}</div>})}</div></div>)}
+        {d.divisions.filter(v=>!division||v.id===division).map(v=><div key={v.id} className="cl-division-card"><header><h5>{v.name}</h5><span>{d.teams.filter(t=>t.divisionId===v.id).length} teams</span></header><div className="cl-division-teams">{d.teams.filter(t=>t.divisionId===v.id).map(t=>{const record=d.standings.find(s=>s.divisionId===v.id)?.rows.find(r=>r.teamId===t.id);return <div key={t.id}>{sandbox?<strong>{t.name}</strong>:<Link href={teamHref(d.sportKey,d.id,t.id,d.organizationId)}><strong>{t.name}</strong><span>{record?`${record.wins}–${record.losses}`:'—'} <span aria-hidden="true">→</span></span></Link>}{/* Enrollment is season-wide via the Season registration link above. */}</div>})}</div></div>)}
       </section>
       <div>
         <h4 className="mb-3 text-lg font-bold">

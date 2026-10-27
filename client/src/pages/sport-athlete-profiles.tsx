@@ -74,7 +74,7 @@ export default function SportAthleteProfiles() {
       <h1 className="text-3xl font-black">Your athlete profiles</h1>
       {returnTo && (
         <Link href={returnTo} className="inline-block text-cl-accent underline">
-          Return to event registration
+          Return to registration
         </Link>
       )}
       <p className="text-cl-muted">

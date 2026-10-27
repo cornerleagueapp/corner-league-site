@@ -2,13 +2,9 @@ import { useState } from "react";
 import { Link, Redirect, useRoute } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { isTeamSport } from "@/lib/sportRegistration";
-import { listTeamSeasons, readTeamSeason } from "@/lib/teamSports";
 import { sportVisual } from "@/lib/sportVisuals";
 import { apiFetch } from "@/lib/apiClient";
 import { hubEventHref, upcomingHubEvents } from "@/lib/sportHubEvents";
-import PublicOrganizationChooser from "@/components/sport-hub/PublicOrganizationChooser";
-import TeamRecruitment from "@/components/team-sports/TeamRecruitment";
-import { useAuth } from "@/hooks/useAuth";
 import { PageSEO } from "@/seo/usePageSEO";
 export default function SportRegistrationPage() {
   const [, p] = useRoute("/sports/:sportKey/registration");
@@ -27,7 +23,7 @@ export default function SportRegistrationPage() {
         </h1>
         <p>
           {isTeamSport(sport)
-            ? "Choose an organization and season to find teams accepting players. Requests follow the organization’s existing approval process."
+            ? "Choose a league, then a published season. Register as an athlete for the season; team assignments happen separately."
             : "Choose an event to view its registration options, eligibility and availability."}
         </p>
       </header>
@@ -39,140 +35,164 @@ export default function SportRegistrationPage() {
     </main>
   );
 }
+type DirectoryItem = {
+  id: string;
+  name: string;
+  organizationName?: string;
+  startsOn?: string;
+  endsOn?: string;
+  logoUrl?: string | null;
+  headerUrl?: string | null;
+};
 function TeamRegistration({ sport }: { sport: string }) {
-  const [org, setOrg] = useState("");
+  const [league, setLeague] = useState<DirectoryItem | null>(null);
   return (
-    <>
-      <PublicOrganizationChooser sport={sport} value={org} onChange={setOrg} />
-      {org && <SeasonChooser key={org} org={org} sport={sport} />}
-    </>
-  );
-}
-function SeasonChooser({ org, sport }: { org: string; sport: string }) {
-  const [page, setPage] = useState(1),
-    [season, setSeason] = useState("");
-  const q = useQuery({
-    queryKey: ["registration-seasons", sport, org, page],
-    queryFn: () => listTeamSeasons(org, sport, page),
-    staleTime: 60000,
-    retry: false,
-  });
-  return (
-    <section className="cl-hub-registration">
-      <h2>Choose a season</h2>
-      {q.isPending ? (
-        <p role="status">Loading seasons…</p>
-      ) : q.isError ? (
-        <p role="alert">
-          Seasons couldn’t load.{" "}
-          <button onClick={() => q.refetch()}>Try again</button>
-        </p>
-      ) : !q.data.items.length ? (
-        <p>
-          No published seasons yet. Check back when this organization opens a
-          season.
-        </p>
-      ) : (
-        <>
-          <div className="cl-hub-season-list">
-            {q.data.items.map((s) => (
-              <button
-                key={s.id}
-                aria-pressed={season === s.id}
-                onClick={() => setSeason(s.id)}
-              >
-                <strong>{s.leagueName}</strong>
-                <span>{s.name}</span>
-              </button>
-            ))}
-          </div>
-          {(page > 1 || q.data.total > 20) && (
-            <nav aria-label="Seasons">
-              <button
-                disabled={page === 1 || q.isFetching}
-                onClick={() => {
-                  setSeason("");
-                  setPage((p) => p - 1);
-                }}
-              >
-                Previous
-              </button>
-              <button
-                disabled={page * 20 >= q.data.total || q.isFetching}
-                onClick={() => {
-                  setSeason("");
-                  setPage((p) => p + 1);
-                }}
-              >
-                Next
-              </button>
-            </nav>
-          )}
-        </>
-      )}
-      {season && (
-        <SeasonRegistration key={season} id={season} org={org} sport={sport} />
+    <section className="space-y-6 py-6">
+      <h2 className="text-2xl font-bold">Choose a league</h2>
+      <RegistrationDirectory
+        key={sport}
+        path={`/season-registration/leagues?sport=${encodeURIComponent(sport)}`}
+        label="Leagues"
+        selected={league?.id}
+        onSelect={setLeague}
+      />
+      {league && (
+        <section key={league.id} className="space-y-4">
+          <h2 className="text-2xl font-bold">
+            {league.name} · Choose a season
+          </h2>
+          <RegistrationDirectory
+            path={`/season-registration/leagues/${league.id}/seasons?`}
+            label="Published seasons"
+            onSelect={(s) => navigateSeason(s.id)}
+          />
+        </section>
       )}
     </section>
   );
 }
-function SeasonRegistration({
-  id,
-  org,
-  sport,
+function navigateSeason(id: string) {
+  window.location.assign(
+    `/season-registration?season=${encodeURIComponent(id)}`,
+  );
+}
+function RegistrationDirectory({
+  path,
+  label,
+  selected,
+  onSelect,
 }: {
-  id: string;
-  org: string;
-  sport: string;
+  path: string;
+  label: string;
+  selected?: string;
+  onSelect: (s: DirectoryItem) => void;
 }) {
-  const auth = useAuth();
+  const [page, setPage] = useState(1);
   const q = useQuery({
-    queryKey: ["registration-public-season", sport, org, id],
-    queryFn: () => readTeamSeason(id, org, sport),
-    staleTime: 60000,
+    queryKey: ["registration-directory", path, page],
+    staleTime: 30000,
     retry: false,
+    queryFn: async () => {
+      const response = await apiFetch(`${path}&page=${page}`, {
+        skipAuth: true,
+        noRefresh: true,
+      });
+      if (!response.ok) throw new Error(`${label} could not load.`);
+      const json = await response.json();
+      return (json.data ?? json) as { items: DirectoryItem[]; total: number };
+    },
   });
-  if (q.isPending) return <p role="status">Loading available teams…</p>;
-  if (q.isError)
-    return (
-      <p role="alert">
-        Teams couldn’t load.{" "}
-        <button onClick={() => q.refetch()}>Try again</button>
-      </p>
-    );
-  const teams = q.data.teams.filter((t) => t.recruiting);
   return (
-    <div className="cl-hub-registration">
-      <h3>{q.data.name} · Available teams</h3>
-      {!teams.length ? (
-        <p>
-          No teams are accepting public join requests for this season. Contact
-          the organization for invitation options.
+    <div className="space-y-4">
+      {q.isPending ? (
+        <p role="status">Loading {label.toLowerCase()}…</p>
+      ) : q.isError ? (
+        <p role="alert">
+          {q.error.message}{" "}
+          <button className="underline" onClick={() => void q.refetch()}>
+            Try again
+          </button>
         </p>
+      ) : !q.data.items.length ? (
+        <p>No {label.toLowerCase()} are published yet.</p>
       ) : (
-        <>
-          {!auth.isAuthenticated && (
-            <Link
-              className="sport-hub-more"
-              href={`/auth?next=${encodeURIComponent(`/sports/${sport}/registration`)}`}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {q.data.items.map((s) => (
+            <button
+              key={s.id}
+              onClick={() => onSelect(s)}
+              aria-pressed={selected === s.id}
+              className={`min-w-0 overflow-hidden rounded-2xl border bg-card text-left text-card-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${selected === s.id ? "border-primary ring-2 ring-primary" : "border-border"}`}
             >
-              Sign in or create an account to join →
-            </Link>
-          )}
-          <div className="cl-hub-registration-grid">
-            {teams.map((t) => (
-              <article key={t.id}>
-                <p className="cl-eyebrow">
-                  {q.data.divisions.find((v) => v.id === t.divisionId)?.name}
-                </p>
-                <h4>{t.name}</h4>
-                <TeamRecruitment seasonId={id} teamId={t.id} sportKey={sport} />
-              </article>
-            ))}
-          </div>
-        </>
+              {s.headerUrl && (
+                <img
+                  src={s.headerUrl}
+                  alt=""
+                  className="h-24 w-full object-cover"
+                  loading="lazy"
+                  onError={(e) => (e.currentTarget.style.display = "none")}
+                />
+              )}
+              <div className="flex items-center gap-4 p-5">
+                <RegistrationLogo url={s.logoUrl} name={s.name} />
+                <div className="min-w-0">
+                  <h3 className="break-words text-lg font-bold">{s.name}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {s.organizationName || `${s.startsOn} – ${s.endsOn}`}
+                  </p>
+                  <span className="mt-2 block text-sm font-semibold text-primary">
+                    {s.startsOn
+                      ? "Register for this season →"
+                      : "View seasons →"}
+                  </span>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+      {(page > 1 || (q.data?.total || 0) > 20) && (
+        <nav aria-label={label} className="flex gap-4">
+          <button
+            disabled={page === 1 || q.isFetching}
+            onClick={() => setPage((p) => p - 1)}
+          >
+            Previous
+          </button>
+          <span>Page {page}</span>
+          <button
+            disabled={page * 20 >= (q.data?.total || 0) || q.isFetching}
+            onClick={() => setPage((p) => p + 1)}
+          >
+            Next
+          </button>
+        </nav>
       )}
     </div>
+  );
+}
+export function RegistrationLogo({
+  url,
+  name,
+}: {
+  url?: string | null;
+  name: string;
+}) {
+  const [failed, setFailed] = useState(false);
+  return url && !failed ? (
+    <img
+      src={url}
+      alt={`${name} logo`}
+      onError={() => setFailed(true)}
+      className="h-16 w-16 shrink-0 rounded-xl border border-border bg-background object-contain p-1"
+    />
+  ) : (
+    <span
+      aria-label={`${name} logo placeholder`}
+      className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-muted text-xl font-bold"
+    >
+      {name.slice(0, 2).toUpperCase()}
+    </span>
   );
 }
 function EventRegistration({ sport }: { sport: string }) {

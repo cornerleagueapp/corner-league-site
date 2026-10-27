@@ -113,7 +113,7 @@ let sandbox = null,
   queries = [],
   search = "?season=season",
   location = "/sports/soccer/organizations/org";
-const gameCard = compile("client/src/components/team-sports/GameCard.tsx", {wouter:{Link:({href,children})=>React.createElement('a',{href},children)}});
+const gameCard = compile("client/src/components/team-sports/GameCard.tsx", {"./TeamLogo":{default:()=>null},wouter:{Link:({href,children})=>React.createElement('a',{href},children)}});
 const component = compile("client/src/components/team-sports/TeamSeasons.tsx", {
   "./GameCard": gameCard,
   "@/components/admissions/AdmissionOffer": { AdmissionOffer: () => null },
