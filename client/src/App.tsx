@@ -1,3 +1,5 @@
+import OfficialInvitation from "@/pages/official-invitation";
+import OfficialAssignments from "@/pages/official-assignments";
 import SeasonRegistration from "@/pages/season-registration";
 import LeagueInvitation from "@/pages/league-invitation";
 import SportRegistrationPage from "@/pages/sport-registration";
@@ -389,6 +391,8 @@ function Router() {
     <Switch>
       <Route path="/season-registration" component={SeasonRegistration} />
       <Route path="/league-invitation" component={LeagueInvitation} />
+      <Route path="/official-invitation" component={OfficialInvitation} />
+      <Route path="/official-assignments" component={OfficialAssignments} />
       <Route path="/sports/:sportKey/organizations/:id">
         <AppShell guestMode>
           <ErrorBoundary>

@@ -42,6 +42,8 @@ export type PublicTeamSeason = {
   }[];
   games: {
     competition?: {
+      category?: string;
+      tournamentName?: string;
       id: string;
       kind: "round-robin" | "double-round-robin" | "single-elimination";
       bye?: boolean;

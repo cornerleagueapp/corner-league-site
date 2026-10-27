@@ -37,16 +37,21 @@ export default function TeamBracket({
             className="min-w-0 rounded-2xl border border-cl-border p-4"
           >
             <summary className="min-h-11 cursor-pointer font-bold">
-              Single elimination {index + 1} ·{" "}
-              {season.divisions.find(
-                (d) =>
-                  d.id ===
-                  season.teams.find(
-                    (t) =>
-                      t.id ===
-                      games.find((g) => g.competition?.id === id)?.homeTeamId,
-                  )?.divisionId,
-              )?.name ?? "Division"}
+              {games.find((g) => g.competition?.id === id)?.competition
+                ?.tournamentName || `Single elimination ${index + 1}`}{" "}
+              ·{" "}
+              {games.find((g) => g.competition?.id === id)?.competition
+                ?.category ||
+                season.divisions.find(
+                  (d) =>
+                    d.id ===
+                    season.teams.find(
+                      (t) =>
+                        t.id ===
+                        games.find((g) => g.competition?.id === id)?.homeTeamId,
+                    )?.divisionId,
+                )?.name ||
+                "Division"}
             </summary>
             {champion && (
               <p

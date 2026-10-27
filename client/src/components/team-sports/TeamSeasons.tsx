@@ -1,4 +1,5 @@
-import GameCard, {teamHref} from "./GameCard";
+import SeasonCalendar from "./SeasonCalendar";
+import GameCard, { teamHref } from "./GameCard";
 import TeamBracket from "./TeamBracket";
 import ConsumerBrandingHero from "@/components/branding/ConsumerBrandingHero";
 // Phase 2/3: AdmissionOffer remains in @/components/admissions/AdmissionOffer.
@@ -83,10 +84,18 @@ function SeasonBrowser({
     <section className="mt-6 space-y-5 rounded-2xl border border-cl-border bg-cl-surface p-5 text-cl-ink">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-2xl font-bold">Leagues & seasons</h2>
-        <button type="button" disabled={list.isFetching || season.isFetching}
+        <button
+          type="button"
+          disabled={list.isFetching || season.isFetching}
           className="min-h-11 rounded-xl border border-cl-border px-4 py-2 disabled:opacity-50"
-          onClick={() => { void list.refetch(); if (id) void season.refetch(); }}>
-          {list.isFetching || season.isFetching ? "Refreshing…" : "Refresh seasons"}
+          onClick={() => {
+            void list.refetch();
+            if (id) void season.refetch();
+          }}
+        >
+          {list.isFetching || season.isFetching
+            ? "Refreshing…"
+            : "Refresh seasons"}
         </button>
       </div>
       {list.isPending ? (
@@ -113,25 +122,30 @@ function SeasonBrowser({
             ))}
           </div>
           {!list.data.items.length && (
-            <p className="text-cl-muted">No published seasons yet. Leagues and seasons appear here once the organizer publishes a season.</p>
+            <p className="text-cl-muted">
+              No published seasons yet. Leagues and seasons appear here once the
+              organizer publishes a season.
+            </p>
           )}
-          {(page > 1 || list.data.total > 20) && <div className="flex flex-wrap items-center gap-4">
-            <button
-              disabled={page === 1}
-              className="min-h-11 disabled:opacity-40"
-              onClick={() => setPage((p) => p - 1)}
-            >
-              Previous seasons
-            </button>
-            <span>Page {page}</span>
-            <button
-              disabled={page * 20 >= list.data.total}
-              className="min-h-11 disabled:opacity-40"
-              onClick={() => setPage((p) => p + 1)}
-            >
-              Next seasons
-            </button>
-          </div>}
+          {(page > 1 || list.data.total > 20) && (
+            <div className="flex flex-wrap items-center gap-4">
+              <button
+                disabled={page === 1}
+                className="min-h-11 disabled:opacity-40"
+                onClick={() => setPage((p) => p - 1)}
+              >
+                Previous seasons
+              </button>
+              <span>Page {page}</span>
+              <button
+                disabled={page * 20 >= list.data.total}
+                className="min-h-11 disabled:opacity-40"
+                onClick={() => setPage((p) => p + 1)}
+              >
+                Next seasons
+              </button>
+            </div>
+          )}
         </>
       )}
       {id &&
@@ -160,6 +174,7 @@ export function SeasonDetails({
   data: PublicTeamSeason;
   sandbox?: boolean;
 }) {
+  const [scheduleView, setScheduleView] = useState("list");
   const [division, setDivision] = useState(""),
     [status, setStatus] = useState("all"),
     [teamPage, setTeamPage] = useState(1),
@@ -170,7 +185,14 @@ export function SeasonDetails({
   const name = (id: string) => d.teams.find((t) => t.id === id)?.name ?? "Team";
   return (
     <div className="min-w-0 space-y-6">
-      {!sandbox && <Link href={`/season-registration?season=${encodeURIComponent(d.id)}`} className="inline-flex min-h-11 items-center rounded-xl border border-cl-border bg-cl-surface px-4 py-2 font-semibold text-cl-ink">Season registration</Link>}
+      {!sandbox && (
+        <Link
+          href={`/season-registration?season=${encodeURIComponent(d.id)}`}
+          className="inline-flex min-h-11 items-center rounded-xl border border-cl-border bg-cl-surface px-4 py-2 font-semibold text-cl-ink"
+        >
+          Season registration
+        </Link>
+      )}
 
       <ConsumerBrandingHero
         kind="season"
@@ -207,13 +229,71 @@ export function SeasonDetails({
         </select>
       </label>
       <TeamBracket season={d} division={division} />
-      <section className="space-y-5"><h4 className="text-xl font-black">Teams by division</h4>
-        {d.divisions.filter(v=>!division||v.id===division).map(v=><div key={v.id} className="cl-division-card"><header><h5>{v.name}</h5><span>{d.teams.filter(t=>t.divisionId===v.id).length} teams</span></header><div className="cl-division-teams">{d.teams.filter(t=>t.divisionId===v.id).map(t=>{const record=d.standings.find(s=>s.divisionId===v.id)?.rows.find(r=>r.teamId===t.id);return <div key={t.id}>{sandbox?<strong>{t.name}</strong>:<Link href={teamHref(d.sportKey,d.id,t.id,d.organizationId)}><strong>{t.name}</strong><span>{record?`${record.wins}–${record.losses}`:'—'} <span aria-hidden="true">→</span></span></Link>}{/* Enrollment is season-wide via the Season registration link above. */}</div>})}</div></div>)}
+      <section className="space-y-5">
+        <h4 className="text-xl font-black">Teams by division</h4>
+        {d.divisions
+          .filter((v) => !division || v.id === division)
+          .map((v) => (
+            <div key={v.id} className="cl-division-card">
+              <header>
+                <h5>{v.name}</h5>
+                <span>
+                  {d.teams.filter((t) => t.divisionId === v.id).length} teams
+                </span>
+              </header>
+              <div className="cl-division-teams">
+                {d.teams
+                  .filter((t) => t.divisionId === v.id)
+                  .map((t) => {
+                    const record = d.standings
+                      .find((s) => s.divisionId === v.id)
+                      ?.rows.find((r) => r.teamId === t.id);
+                    return (
+                      <div key={t.id}>
+                        {sandbox ? (
+                          <strong>{t.name}</strong>
+                        ) : (
+                          <Link
+                            href={teamHref(
+                              d.sportKey,
+                              d.id,
+                              t.id,
+                              d.organizationId,
+                            )}
+                          >
+                            <strong>{t.name}</strong>
+                            <span>
+                              {record ? `${record.wins}–${record.losses}` : "—"}{" "}
+                              <span aria-hidden="true">→</span>
+                            </span>
+                          </Link>
+                        )}
+                        {/* Enrollment is season-wide via the Season registration link above. */}
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+          ))}
       </section>
       <div>
-        <h4 className="mb-3 text-lg font-bold">
-          Games
-        </h4>
+        <h4 className="mb-3 text-lg font-bold">Games</h4>
+        <div
+          role="group"
+          aria-label="Schedule view"
+          className="mb-4 flex gap-2"
+        >
+          {["list", "calendar"].map((mode) => (
+            <button
+              key={mode}
+              aria-pressed={scheduleView === mode}
+              onClick={() => setScheduleView(mode)}
+              className={`min-h-11 rounded-xl border px-4 py-2 font-semibold ${scheduleView === mode ? "border-blue-600 bg-blue-600 text-white" : "border-cl-border bg-cl-surface text-cl-ink"}`}
+            >
+              {mode === "list" ? "List" : "Calendar"}
+            </button>
+          ))}
+        </div>
         <label className="mb-3 block">
           Game status
           <select
@@ -238,16 +318,43 @@ export function SeasonDetails({
             No published games match these filters.
           </p>
         )}
-        <div className="space-y-3">
-          {games.items.map(g=><GameCard key={g.id} sandbox={sandbox} data={{seasonId:d.id,organizationId:d.organizationId,sportKey:d.sportKey,periodLabel:d.periodLabel,scoreLabel:d.scoreLabel,game:g,result:d.results.find(r=>r.gameId===g.id)||null,teams:d.teams,playerStats:d.playerStats||[]}}/>)}
-        </div>
+        {scheduleView === "calendar" ? (
+          <SeasonCalendar
+            key={d.id}
+            season={d}
+            games={view.games}
+            sandbox={sandbox}
+          />
+        ) : (
+          <div className="space-y-3">
+            {games.items.map((g) => (
+              <GameCard
+                key={g.id}
+                sandbox={sandbox}
+                data={{
+                  seasonId: d.id,
+                  organizationId: d.organizationId,
+                  sportKey: d.sportKey,
+                  periodLabel: d.periodLabel,
+                  scoreLabel: d.scoreLabel,
+                  game: g,
+                  result: d.results.find((r) => r.gameId === g.id) || null,
+                  teams: d.teams,
+                  playerStats: d.playerStats || [],
+                }}
+              />
+            ))}
+          </div>
+        )}
       </div>
-      <Pages
-        label="games"
-        page={games.page}
-        pages={games.pages}
-        onChange={setGamePage}
-      />
+      {scheduleView === "list" && (
+        <Pages
+          label="games"
+          page={games.page}
+          pages={games.pages}
+          onChange={setGamePage}
+        />
+      )}
       <div>
         <h4 className="mb-3 text-lg font-bold">Standings</h4>
         <p className="mb-3 text-sm text-cl-muted">
@@ -320,7 +427,20 @@ export function SeasonDetails({
                   {s.rows.map((r) => (
                     <tr key={r.teamId}>
                       <th scope="row" className="whitespace-nowrap p-3">
-                        {sandbox?r.name:<Link href={teamHref(d.sportKey,d.id,r.teamId,d.organizationId)}>{r.name}</Link>}
+                        {sandbox ? (
+                          r.name
+                        ) : (
+                          <Link
+                            href={teamHref(
+                              d.sportKey,
+                              d.id,
+                              r.teamId,
+                              d.organizationId,
+                            )}
+                          >
+                            {r.name}
+                          </Link>
+                        )}
                       </th>
                       {[
                         r.position ?? "—",

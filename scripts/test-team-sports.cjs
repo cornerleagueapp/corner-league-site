@@ -113,8 +113,14 @@ let sandbox = null,
   queries = [],
   search = "?season=season",
   location = "/sports/soccer/organizations/org";
-const gameCard = compile("client/src/components/team-sports/GameCard.tsx", {"./TeamLogo":{default:()=>null},wouter:{Link:({href,children})=>React.createElement('a',{href},children)}});
+const gameCard = compile("client/src/components/team-sports/GameCard.tsx", {
+  "./TeamLogo": { default: () => null },
+  wouter: {
+    Link: ({ href, children }) => React.createElement("a", { href }, children),
+  },
+});
 const component = compile("client/src/components/team-sports/TeamSeasons.tsx", {
+  "./SeasonCalendar": { default: () => null, SeasonCalendar: () => null },
   "./GameCard": gameCard,
   "@/components/admissions/AdmissionOffer": { AdmissionOffer: () => null },
   "@/lib/teamSports": team,
@@ -202,11 +208,18 @@ const component = compile("client/src/components/team-sports/TeamSeasons.tsx", {
   assert(!html.includes("Race Results"));
   assert(html.includes("Refresh seasons"));
   assert(!html.includes("Previous seasons"));
-  search = ""; listRows = [];
-  const empty = renderToStaticMarkup(React.createElement(component.default, {organizationId:"org",sportKey:"soccer"}));
+  search = "";
+  listRows = [];
+  const empty = renderToStaticMarkup(
+    React.createElement(component.default, {
+      organizationId: "org",
+      sportKey: "soccer",
+    }),
+  );
   assert(empty.includes("once the organizer publishes a season"));
   assert(!empty.includes("Previous seasons"));
-  search = "?season=season"; listRows = [{id:"season",name:"Fall",leagueName:"League"}];
+  search = "?season=season";
+  listRows = [{ id: "season", name: "Fall", leagueName: "League" }];
   queries = [];
   sandbox = { id: "org", account: "super-admin" };
   html = renderToStaticMarkup(
