@@ -16,9 +16,10 @@ export async function hubGamePage(
   sport: string,
   status: string,
   page = 1,
+  range?: { from: string; to: string },
 ): Promise<HubGamePage> {
   const data = await publicSportData<HubGamePage>(
-    `/team-sports/games?${new URLSearchParams({ sportKey: sport, status, page: String(page), limit: "6" })}`,
+    `/team-sports/games?${new URLSearchParams({ sportKey: sport, status, page: String(page), limit: "6", ...range })}`,
   );
   if (
     data.sportKey !== sport ||

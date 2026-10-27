@@ -1,3 +1,7 @@
+import EventDateScroller, {
+  useEventDay,
+} from "@/components/events/EventDateScroller";
+import { dayWindow } from "@/lib/eventDay";
 import NationwideMap from "@/components/landing/NationwideMap";
 import EventOrganizationFilter from "@/components/sport-hub/EventOrganizationFilter";
 import { sportVisual } from "@/lib/sportVisuals";
@@ -21,16 +25,18 @@ type Page = {
 export default function TeamGameDirectory({
   sport,
   organizationId,
+  dateBrowsing = false,
 }: {
   sport: string;
   organizationId?: string;
+  dateBrowsing?: boolean;
 }) {
-  const [year, setYear] = useState(
-      "",
-    ),
+  const [year, setYear] = useState(""),
     [status, setStatus] = useState("all"),
     [page, setPage] = useState(1),
     [selectedOrg, setSelectedOrg] = useState("");
+  const [day, setDay] = useEventDay();
+  const range = dateBrowsing ? dayWindow(day) : null;
   const scopedOrg = organizationId || selectedOrg;
   const q = useQuery({
     queryKey: [
@@ -40,6 +46,8 @@ export default function TeamGameDirectory({
       year,
       status,
       page,
+      range?.from,
+      range?.to,
     ],
     queryFn: async () => {
       const params = new URLSearchParams({
@@ -48,7 +56,11 @@ export default function TeamGameDirectory({
         page: String(page),
         limit: "12",
       });
-      if (year) params.set("year", year);
+      if (year && !dateBrowsing) params.set("year", year);
+      if (range) {
+        params.set("from", range.from);
+        params.set("to", range.to);
+      }
       if (scopedOrg) params.set("organizationId", scopedOrg);
       const d = await publicSportData<Page>(`/team-sports/games?${params}`);
       if (
@@ -77,8 +89,26 @@ export default function TeamGameDirectory({
           {q.data ? `${q.data.total} matchups` : ""}
         </span>
       </div>
+      {dateBrowsing && (
+        <EventDateScroller
+          value={day}
+          onChange={(value) => {
+            setDay(value);
+            setPage(1);
+          }}
+        />
+      )}
       <div className="cl-sport-filters">
-        {!organizationId && <EventOrganizationFilter sport={sport} value={selectedOrg} onChange={value => {setSelectedOrg(value);setPage(1);}} />}
+        {!organizationId && (
+          <EventOrganizationFilter
+            sport={sport}
+            value={selectedOrg}
+            onChange={(value) => {
+              setSelectedOrg(value);
+              setPage(1);
+            }}
+          />
+        )}
         <label>
           Status
           <select
@@ -95,26 +125,28 @@ export default function TeamGameDirectory({
             ))}
           </select>
         </label>
-        <label>
-          Year
-          <select
-            value={year}
-            onChange={(e) => {
-              setYear(e.target.value);
-              setPage(1);
-            }}
-          >
-            <option value="">All years</option>
-            {Array.from(
-              { length: 21 },
-              (_, i) => new Date().getFullYear() + 5 - i,
-            ).map((y) => (
-              <option key={y} value={y}>
-                {y}
-              </option>
-            ))}
-          </select>
-        </label>
+        {!dateBrowsing && (
+          <label>
+            Year
+            <select
+              value={year}
+              onChange={(e) => {
+                setYear(e.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="">All years</option>
+              {Array.from(
+                { length: 21 },
+                (_, i) => new Date().getFullYear() + 5 - i,
+              ).map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
       </div>
       <p className="text-sm text-cl-muted">
         Times are shown in your local time zone. Live labels follow the
@@ -133,7 +165,9 @@ export default function TeamGameDirectory({
         </div>
       ) : !q.data.items.length ? (
         <p className="cl-sport-empty">
-          No published games match these filters.
+          {dateBrowsing
+            ? "No published games on this date match your filters. Try another day or choose All games."
+            : "No published games match these filters."}
         </p>
       ) : (
         <div className="cl-game-grid">
@@ -154,13 +188,24 @@ export default function TeamGameDirectory({
           ))}
         </div>
       )}
-      {!organizationId && q.data && <NationwideMap key={`${sport}:${scopedOrg}:${year}:${status}:${page}`} sportKey={sport} sportLabel={sportVisual(sport).label} pageOnly events={q.data.items.map(d => ({
-        id: `${d.seasonId}:${d.game.id}`,
-        name: d.teams.map(t => t.name).join(" vs "),
-        startDate: d.game.startsAt, endDate: d.game.startsAt,
-        location: d.game.venue, organizationId: d.organizationId, organizationName: d.organizationName,
-        href: `${sportOrganization(sport, d.organizationId)}?section=competition&season=${encodeURIComponent(d.seasonId)}#game-${encodeURIComponent(d.game.id)}`,
-      }))} />}
+      {!organizationId && q.data && (
+        <NationwideMap
+          key={`${sport}:${scopedOrg}:${year}:${status}:${page}`}
+          sportKey={sport}
+          sportLabel={sportVisual(sport).label}
+          pageOnly
+          events={q.data.items.map((d) => ({
+            id: `${d.seasonId}:${d.game.id}`,
+            name: d.teams.map((t) => t.name).join(" vs "),
+            startDate: d.game.startsAt,
+            endDate: d.game.startsAt,
+            location: d.game.venue,
+            organizationId: d.organizationId,
+            organizationName: d.organizationName,
+            href: `${sportOrganization(sport, d.organizationId)}?section=competition&season=${encodeURIComponent(d.seasonId)}#game-${encodeURIComponent(d.game.id)}`,
+          }))}
+        />
+      )}
       {(page > 1 || (q.data?.total || 0) > 12) && (
         <nav className="cl-sport-pagination" aria-label="Games pages">
           <button

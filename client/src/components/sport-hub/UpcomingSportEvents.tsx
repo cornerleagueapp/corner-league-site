@@ -1,3 +1,7 @@
+import EventDateScroller, {
+  useEventDay,
+} from "@/components/events/EventDateScroller";
+import { dayWindow } from "@/lib/eventDay";
 import { isTeamSport } from "@/lib/sportRegistration";
 import TeamGameDirectory from "@/components/team-sports/TeamGameDirectory";
 import LoadingCards from "@/components/ui/LoadingCards";
@@ -30,26 +34,34 @@ function EventPhoto({ event, sport }: { event: HubEvent; sport: string }) {
   );
 }
 export default function UpcomingSportEvents({ sport }: { sport: string }) {
-  return isTeamSport(sport) ? <TeamGameDirectory key={sport} sport={sport} /> : <UpcomingRaceEvents key={sport} sport={sport} />;
+  return isTeamSport(sport) ? (
+    <TeamGameDirectory key={sport} sport={sport} dateBrowsing />
+  ) : (
+    <UpcomingRaceEvents key={sport} sport={sport} />
+  );
 }
 function UpcomingRaceEvents({ sport }: { sport: string }) {
-  const [count, setCount] = useState(6);
+  const [page, setPage] = useState(1);
+  const [day, setDay] = useEventDay();
+  const range = dayWindow(day);
   const query = useQuery({
-    queryKey: ["sport-hub-events", sport],
+    queryKey: ["sport-hub-events", sport, range.from, range.to, page],
     queryFn: async ({ signal }) => {
       const response = await apiFetch(
-        `/sport-event?sportKey=${encodeURIComponent(sport)}&page=1&limit=50&order=DESC&sortBy=startDate`,
+        `/sport-event?sportKey=${encodeURIComponent(sport)}&page=${page}&limit=12&order=ASC&sortBy=startDate&from=${encodeURIComponent(range.from)}&to=${encodeURIComponent(range.to)}`,
         { skipAuth: true, noRefresh: true, signal },
       );
       if (!response.ok) throw new Error("Unable to load upcoming events.");
-      return upcomingHubEvents(await response.json(), sport);
+      const body = await response.json();
+      return {
+        items: upcomingHubEvents(body, sport, 0),
+        hasNextPage: !!(body.data ?? body).meta?.hasNextPage,
+      };
     },
     staleTime: 60_000,
     retry: 1,
   });
-  const events = (query.data ?? []).filter(
-    (event) => Date.parse(event.endDate) >= Date.now(),
-  );
+  const events = query.data?.items ?? [];
   return (
     <section
       id="upcoming-events"
@@ -57,11 +69,18 @@ function UpcomingRaceEvents({ sport }: { sport: string }) {
       aria-labelledby="upcoming-title"
     >
       <div className="sport-section-heading">
-        <h2 id="upcoming-title">Upcoming events</h2>
+        <h2 id="upcoming-title">Events & schedule</h2>
         <span className="text-sm text-cl-muted">
           {events.length > 0 ? "Published event dates" : "Around your sport"}
         </span>
       </div>
+      <EventDateScroller
+        value={day}
+        onChange={(value) => {
+          setDay(value);
+          setPage(1);
+        }}
+      />
       {query.isPending ? (
         <LoadingCards label="Loading events…" />
       ) : query.isError ? (
@@ -76,13 +95,13 @@ function UpcomingRaceEvents({ sport }: { sport: string }) {
         </div>
       ) : !events.length ? (
         <p className="sport-hub-empty">
-          New event dates will appear here when organizations publish them.
-          Explore the organizations below in the meantime.
+          No published events for this date. Choose another day to explore the
+          schedule.
         </p>
       ) : (
         <>
           <div className="sport-event-grid">
-            {events.slice(0, count).map((event) => (
+            {events.map((event) => (
               <article className="sport-event-card" key={event.id}>
                 <EventPhoto
                   key={event.imageUrl ?? "default"}
@@ -110,15 +129,27 @@ function UpcomingRaceEvents({ sport }: { sport: string }) {
               </article>
             ))}
           </div>
-          {events.length > count && (
-            <button
-              className="sport-hub-more"
-              onClick={() => setCount((value) => value + 6)}
-            >
-              Show more events
-            </button>
-          )}
         </>
+      )}
+      {(page > 1 || query.data?.hasNextPage) && (
+        <nav
+          className="cl-sport-pagination"
+          aria-label="Selected date event pages"
+        >
+          <button
+            disabled={page === 1 || query.isFetching}
+            onClick={() => setPage((p) => p - 1)}
+          >
+            Previous page
+          </button>
+          <span>Page {page}</span>
+          <button
+            disabled={!query.data?.hasNextPage || query.isFetching}
+            onClick={() => setPage((p) => p + 1)}
+          >
+            Next page
+          </button>
+        </nav>
       )}
     </section>
   );

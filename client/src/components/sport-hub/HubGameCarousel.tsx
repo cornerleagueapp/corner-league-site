@@ -1,18 +1,25 @@
+import EventDateScroller, {
+  useEventDay,
+} from "@/components/events/EventDateScroller";
+import { dayWindow } from "@/lib/eventDay";
 import TeamLogo from "@/components/team-sports/TeamLogo";
 import { gameHref } from "@/components/team-sports/GameCard";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { loadHubGames, shortName, type HubGame } from "@/lib/hubGames";
+import { hubGamePage, shortName, type HubGame } from "@/lib/hubGames";
 import { readTeamSeason } from "@/lib/teamSports";
 import { sportOrganization } from "@/lib/sportNavigation";
 import { gameStatus } from "@/components/team-sports/GameCard";
 export default function HubGameCarousel({ sport }: { sport: string }) {
+  const [day, setDay] = useEventDay();
+  const [page, setPage] = useState(1);
+  const range = dayWindow(day);
   const strip = useRef<HTMLDivElement>(null);
   const q = useQuery({
-    queryKey: ["sport-hub-score-strip", sport],
-    queryFn: () => loadHubGames(sport),
+    queryKey: ["sport-hub-score-strip", sport, range.from, range.to, page],
+    queryFn: () => hubGamePage(sport, "all", page, range),
     staleTime: 30000,
     retry: false,
   });
@@ -36,6 +43,14 @@ export default function HubGameCarousel({ sport }: { sport: string }) {
         </div>
         <Link href={`/sports/${sport}/events`}>All events →</Link>
       </div>
+      <EventDateScroller
+        value={day}
+        onChange={(value) => {
+          setDay(value);
+          setPage(1);
+          strip.current?.scrollTo({ left: 0 });
+        }}
+      />
       {q.isPending ? (
         <p role="status" className="cl-hub-empty">
           Loading games…
@@ -45,10 +60,10 @@ export default function HubGameCarousel({ sport }: { sport: string }) {
           Games couldn’t load.{" "}
           <button onClick={() => q.refetch()}>Try again</button>
         </div>
-      ) : !q.data.length ? (
+      ) : !q.data.items.length ? (
         <p className="cl-hub-empty">
-          Published games will appear here once organizations share their
-          schedules.
+          No published games for this date. Choose another day to explore the
+          schedule.
         </p>
       ) : (
         <>
@@ -63,7 +78,7 @@ export default function HubGameCarousel({ sport }: { sport: string }) {
               role="region"
               aria-label="Game cards, scroll horizontally"
             >
-              {q.data.map((d) => (
+              {q.data.items.map((d) => (
                 <CompactGame key={`${d.seasonId}:${d.game.id}`} data={d} />
               ))}
             </div>
@@ -72,10 +87,30 @@ export default function HubGameCarousel({ sport }: { sport: string }) {
             </button>
           </div>
           <p className="cl-hub-caption">
-            Live games and upcoming matchups first; recent results when no games
-            are scheduled. Times are local. Swipe or use the arrows for more.
+            Games for your selected local date. Swipe or use the card arrows for
+            more.
           </p>
         </>
+      )}
+      {(page > 1 || (q.data?.total || 0) > 6) && (
+        <nav
+          className="cl-sport-pagination"
+          aria-label="Selected date game pages"
+        >
+          <button
+            disabled={page === 1 || q.isFetching}
+            onClick={() => setPage((p) => p - 1)}
+          >
+            Previous page
+          </button>
+          <span>Page {page}</span>
+          <button
+            disabled={q.isFetching || page * 6 >= (q.data?.total || 0)}
+            onClick={() => setPage((p) => p + 1)}
+          >
+            Next page
+          </button>
+        </nav>
       )}
     </section>
   );

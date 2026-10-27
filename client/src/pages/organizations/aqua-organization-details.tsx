@@ -1,3 +1,7 @@
+import EventDateScroller, {
+  useEventDay,
+} from "@/components/events/EventDateScroller";
+import { dayWindow } from "@/lib/eventDay";
 import TeamGameDirectory from "@/components/team-sports/TeamGameDirectory";
 // Future: OrganizationFacilities and OrganizationShop remain available in their feature modules.
 import TeamSeasons from "@/components/team-sports/TeamSeasons";
@@ -100,6 +104,12 @@ function OrganizationCommunityPage(props: Props) {
   const section = organizationSection(search, sections);
   const sportLabel =
     org?.sportProfile?.label ?? sportVisual(primarySportKey).label;
+  const [eventDay, setEventDay] = useEventDay();
+  const eventRange = dayWindow(eventDay);
+  const changeEventDay = (value: string) => {
+    setEventDay(value);
+    setEventPage(1);
+  };
   const eventsQuery = useQuery({
     queryKey: [
       "organization-community-events",
@@ -107,6 +117,8 @@ function OrganizationCommunityPage(props: Props) {
       orgId,
       primarySportKey,
       eventPage,
+      sandbox ? null : eventRange.from,
+      sandbox ? null : eventRange.to,
     ],
     enabled:
       !!org &&
@@ -115,7 +127,7 @@ function OrganizationCommunityPage(props: Props) {
       (section === "overview" || section === "events"),
     queryFn: async ({ signal }) => {
       const response = await pageFetch(
-        `/sport-event/organization/${encodeURIComponent(orgId)}?page=${eventPage}&limit=12&order=DESC&sortBy=startDate`,
+        `/sport-event/organization/${encodeURIComponent(orgId)}?page=${eventPage}&limit=12&order=DESC&sortBy=startDate${sandbox ? "" : `&from=${encodeURIComponent(eventRange.from)}&to=${encodeURIComponent(eventRange.to)}`}`,
         { method: "GET", skipAuth: true, noRefresh: true, signal },
       );
       const json = await response.json();
@@ -332,9 +344,15 @@ function OrganizationCommunityPage(props: Props) {
                         View events →
                       </Link>
                     </div>
+                    {!team && !sandbox && (
+                      <EventDateScroller
+                        value={eventDay}
+                        onChange={changeEventDay}
+                      />
+                    )}
                     <EventStatus
                       query={eventsQuery}
-                      empty="New events will appear here when available."
+                      empty="No events match this date. Choose another day to explore the schedule."
                     />
                     {!eventsQuery.isError && (
                       <OrganizationEventCards
@@ -363,6 +381,7 @@ function OrganizationCommunityPage(props: Props) {
               <TeamGameDirectory
                 sport={primarySportKey}
                 organizationId={org.id}
+                dateBrowsing
               />
             )}
             {section === "events" && !team && (
@@ -375,9 +394,15 @@ function OrganizationCommunityPage(props: Props) {
                       : "Organization events"}
                   </p>
                 </div>
+                {!sandbox && (
+                  <EventDateScroller
+                    value={eventDay}
+                    onChange={changeEventDay}
+                  />
+                )}
                 <EventStatus
                   query={eventsQuery}
-                  empty="No events are available on this page."
+                  empty="No events match this date. Choose another day to explore the schedule."
                 />
                 {!eventsQuery.isError && (
                   <OrganizationEventCards

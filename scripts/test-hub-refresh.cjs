@@ -9,7 +9,21 @@ function compile(rel, mocks = {}) {
   const f = path.resolve(rel),
     m = new Module(f, module);
   m.paths = module.paths;
-  m.require = (n) => mocks[n] ?? require(n);
+  m.require = (n) => {
+    if (n === "@/components/events/EventDateScroller")
+      return {
+        default: () => null,
+        useEventDay: () => ["2027-02-04", () => {}],
+      };
+    if (n === "@/lib/eventDay")
+      return {
+        dayWindow: () => ({
+          from: "2027-02-04T00:00:00Z",
+          to: "2027-02-05T00:00:00Z",
+        }),
+      };
+    return mocks[n] ?? require(n);
+  };
   m._compile(
     ts.transpileModule(fs.readFileSync(f, "utf8"), {
       compilerOptions: {
@@ -120,25 +134,28 @@ const api = compile("client/src/lib/hubGames.ts", {
       useQuery: (config) => {
         if (config.queryKey[0] === "sport-hub-score-strip")
           return {
-            data: [
-              {
-                ...game("final"),
-                organizationId: "org",
-                organizationName: "Crown Town League",
-                seasonId: "season",
-                game: {
-                  id: "final",
-                  startsAt: "2026-10-25T12:00:00Z",
-                  homeTeamId: "a",
-                  awayTeamId: "b",
+            data: {
+              total: 1,
+              items: [
+                {
+                  ...game("final"),
+                  organizationId: "org",
+                  organizationName: "Crown Town League",
+                  seasonId: "season",
+                  game: {
+                    id: "final",
+                    startsAt: "2026-10-25T12:00:00Z",
+                    homeTeamId: "a",
+                    awayTeamId: "b",
+                  },
+                  result: { status: "final", homeScore: 0, awayScore: 12 },
+                  teams: [
+                    { id: "a", name: "Home Team" },
+                    { id: "b", name: "Away Team" },
+                  ],
                 },
-                result: { status: "final", homeScore: 0, awayScore: 12 },
-                teams: [
-                  { id: "a", name: "Home Team" },
-                  { id: "b", name: "Away Team" },
-                ],
-              },
-            ],
+              ],
+            },
           };
         enabled.push(config.enabled);
         return {};
