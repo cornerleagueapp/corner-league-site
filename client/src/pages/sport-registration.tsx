@@ -176,22 +176,24 @@ export function RegistrationLogo({
   name,
 }: {
   url?: string | null;
-  name: string;
+  name?: string | null;
 }) {
+  const label =
+    typeof name === "string" && name.trim() ? name.trim() : "Corner League";
   const [failed, setFailed] = useState(false);
   return url && !failed ? (
     <img
       src={url}
-      alt={`${name} logo`}
+      alt={`${label} logo`}
       onError={() => setFailed(true)}
       className="h-16 w-16 shrink-0 rounded-xl border border-border bg-background object-contain p-1"
     />
   ) : (
     <span
-      aria-label={`${name} logo placeholder`}
+      aria-label={`${label} logo placeholder`}
       className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-muted text-xl font-bold"
     >
-      {name.slice(0, 2).toUpperCase()}
+      {label.slice(0, 2).toUpperCase()}
     </span>
   );
 }

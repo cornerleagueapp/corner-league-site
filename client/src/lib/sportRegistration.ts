@@ -143,7 +143,11 @@ export function unwrapSportData<T>(json: unknown): T {
     throw new Error("Invalid registration response.");
   const value = json as { data?: T; status?: boolean };
   if (value.status === false) throw new Error("Registration request failed.");
-  return (value.data ?? json) as T;
+  // A successful envelope with data:null means there is no athlete profile.
+  // Do not turn the envelope itself into an athlete object.
+  return (
+    Object.prototype.hasOwnProperty.call(value, "data") ? value.data : json
+  ) as T;
 }
 export async function publicSportData<T>(path: string): Promise<T> {
   const response = await apiFetch(path, { skipAuth: true, noRefresh: true });
