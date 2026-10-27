@@ -951,3 +951,22 @@
 .cl-mobile-sport-list button span{min-width:0;overflow-wrap:anywhere}
 .cl-sidebar-sports[data-collapsed="true"] button{justify-content:center;padding-inline:0;gap:0}
 .cl-sidebar-sports[data-collapsed="true"] .cl-sport-icon{margin-inline:auto}
+
+/* Portal dialogs inherit the active document theme rather than forcing light. */
+.community-people-dialog {
+ --cl-surface: inherit; --cl-subtle: inherit; --cl-ink: inherit;
+ --cl-muted: inherit; --cl-border: inherit; --cl-accent: inherit;
+ background: rgb(var(--cl-surface)); color: rgb(var(--cl-ink));
+ border-color: rgb(var(--cl-border)); box-shadow: 0 24px 80px #0005;
+ scrollbar-gutter: stable; padding-top: 26px;
+}
+.community-people-dialog .community-dialog-close { color: inherit; background: rgb(var(--cl-subtle)); width:44px; height:44px; display:grid; place-items:center; border-radius:12px; }
+.community-person-row { padding:16px 0; display:grid; gap:12px; border-bottom:1px solid rgb(var(--cl-border)); }
+.community-person-identity, .profile-picker-row { display:flex; gap:14px; align-items:center; min-width:0; color:inherit; }
+.profile-list-avatar { width:48px;height:48px;flex:0 0 48px;display:grid;place-items:center;border-radius:50%;overflow:hidden;background:rgb(var(--cl-subtle));color:rgb(var(--cl-accent));font-weight:800;border:1px solid rgb(var(--cl-border)); }
+.profile-list-avatar img { width:100%;height:100%;object-fit:cover; }
+.profile-picker-row { padding:14px;border:1px solid rgb(var(--cl-border));border-radius:14px;background:rgb(var(--cl-subtle));text-decoration:none; }
+.profile-picker-row:hover { border-color:rgb(var(--cl-accent)); }
+.community-people-dialog button:focus-visible, .community-people-dialog a:focus-visible { outline:2px solid rgb(var(--cl-accent));outline-offset:3px; }
+.community-people-dialog .community-person-row > div { flex-wrap:wrap; }
+.community-people-dialog > h2 { padding-right:48px; }

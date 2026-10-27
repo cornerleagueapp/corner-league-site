@@ -25,6 +25,7 @@ assert.doesNotMatch(render(React.createElement(Avatar, { username: 'jake', pictu
 assert.match(render(React.createElement(Avatar, { username: 'jake', picture: 'https://example.com/avatar.png' })), /<img/);
 const noop = () => null;
 const Page = compile('client/src/pages/profile/user-profile.tsx', {
+  '@/components/team-sports/ProfileHonors': {default:noop,__esModule:true},
   '@/components/community/PeopleDialog': {default: () => null,__esModule:true},
   '@/components/community/FollowedResults': {default: () => null,__esModule:true},
   '@/components/community/OrganizationFollowing': {FollowedOrganizations: () => null},
@@ -34,7 +35,7 @@ const Page = compile('client/src/pages/profile/user-profile.tsx', {
   '@/components/community/ProfilePhotoViewer': {default: Avatar, __esModule:true},
   '@/components/community/ProfileHeader': {default: ({sport}) => React.createElement('div', {'data-sport':sport}), __esModule:true},
   '@/components/sport-hub/SportArtwork': { default: ({sport}) => React.createElement('div', {'data-sport': sport}), __esModule: true },
-  '@/components/sport-registration/AthleteAccountLinks': { default: noop, __esModule: true },
+  '@/components/sport-registration/AthleteAccountLinks': { default: ({racer}) => React.createElement('button', {'data-profile':racer?.profileUrl}, 'Verified athlete'), __esModule: true },
   '@/components/community/Publishing': { PublicationList: noop },
   '@/components/community/RacerIdentityCard': { default: noop, __esModule: true },
   '@/components/community/FollowedAthletesPanel': { default: noop, __esModule: true },

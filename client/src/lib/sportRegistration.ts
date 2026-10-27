@@ -78,6 +78,7 @@ export type SportAthlete = {
   profileUrl?: string;
 };
 export type AthleteInput = {
+  contactPhone?: string;
   sportKey: string;
   name: string;
   nickname: string;

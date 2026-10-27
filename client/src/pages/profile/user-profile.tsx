@@ -10,7 +10,7 @@ import { PublicationList } from "@/components/community/Publishing";
 import { useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
-import { ShieldCheck, RefreshCw, Share2 } from "lucide-react";
+import { RefreshCw, Share2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { getCommunityProfile } from "@/lib/communityApi";
 import { socialRequest } from "@/lib/socialApi";
@@ -95,16 +95,7 @@ export default function UserProfilePage({ username }: { username: string }) {
                   .join(" ") || person.username}
               </h1>
               <p className="mt-1 text-cl-muted">@{person.username}</p>
-              {racer?.isVerifiedAthlete && racer.profileUrl && (
-                <Link
-                  href={racer.profileUrl}
-                  className="profile-verified-badge"
-                >
-                  <ShieldCheck size={16} />
-                  Verified athlete · Racer profile
-                </Link>
-              )}
-              <AthleteAccountLinks username={person.username} />
+              <AthleteAccountLinks key={person.id} username={person.username} racer={racer} />
               <p className="mt-4 whitespace-pre-wrap break-words text-sm leading-relaxed text-cl-muted">
                 {person.bio}
               </p>

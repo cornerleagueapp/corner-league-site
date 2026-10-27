@@ -1,3 +1,4 @@
+import ProfileListAvatar from "./ProfileListAvatar";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
@@ -171,12 +172,13 @@ function People({
       ) : (
         <>
           {query.data.items.map((person) => (
-            <div key={person.id} className="border-b border-cl-border py-3">
+            <div key={person.id} className="community-person-row">
               <Link
                 href={`/profile/${encodeURIComponent(person.username)}`}
-                className="flex min-h-11 items-center border-b border-cl-border py-3 font-semibold text-cl-accent"
+                className="community-person-identity"
               >
-                @{person.username}
+                <ProfileListAvatar key={person.profilePicture} src={person.profilePicture} name={person.firstName || person.username} />
+                <span className="min-w-0"><strong className="block break-words">{[person.firstName,person.lastName].filter(Boolean).join(" ") || person.username}</strong><span className="block break-all text-sm text-cl-muted">@{person.username}</span></span>
               </Link>
               <UserSocialControls targetId={person.id} />
             </div>

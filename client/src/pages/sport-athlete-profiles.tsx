@@ -145,13 +145,7 @@ export default function SportAthleteProfiles() {
               />
             )
           )}
-          {[
-            "basketball",
-            "soccer",
-            "hockey",
-            "baseball",
-            "american-football",
-          ].includes(selected) &&
+          {
             profiles.data?.find((p) => p.sportKey === selected)?.id && (
               <PrivateTeamContact
                 profileId={
@@ -243,6 +237,7 @@ function ProfileForm({
   profile?: SportAthlete;
   onSave: () => Promise<void>;
 }) {
+  const [phone, setPhone] = useState("");
   const [form, setForm] = useState<AthleteInput>(
     profile
       ? {
@@ -268,7 +263,10 @@ function ProfileForm({
     setBusy(true);
     setError("");
     try {
+      if (!profile && !/^(?=(?:\D*\d){7,15}\D*$)\+?[0-9() .-]{7,40}$/.test(phone.trim()))
+        throw new Error("Enter a valid contact phone number, including area code.");
       await saveSportAthlete({
+        ...(!profile ? { contactPhone: phone.trim() } : {}),
         sportKey: form.sportKey,
         name: form.name,
         nickname: form.nickname,
@@ -328,6 +326,17 @@ function ProfileForm({
           />
         </label>
       ))}
+      {!profile && <label className="block">
+        Contact phone number
+        <input type="tel" autoComplete="tel" required maxLength={40}
+          value={phone} disabled={busy}
+          onChange={e => setPhone(e.target.value)} className={inputClass}
+          aria-describedby="athlete-phone-help" />
+        <span id="athlete-phone-help" className="mt-2 block text-sm text-cl-muted">
+          Private contact information for season registration. It will not appear on your public profile.
+          You can update it in Private team contact after creating your profile.
+        </span>
+      </label>}
       <label className="block">
         Skill level
         <select
