@@ -1,3 +1,4 @@
+import AthletePositionPicker from "@/components/community/AthletePositionPicker";
 import SeasonRegistrationHistory from "@/components/team-sports/SeasonRegistrationHistory";
 import AthleteDetailsFields from "@/components/community/AthleteDetailsFields";
 import PrivateTeamContact from "@/components/team-sports/PrivateTeamContact";
@@ -246,6 +247,7 @@ function ProfileForm({
       ? {
           ...initial(sportKey),
           ...profile,
+          positions: profile.presentation?.positions || [],
           dateOfBirth: profile.dateOfBirth ?? "",
           equipmentDescription: profile.equipmentDescription ?? "",
         }
@@ -275,6 +277,7 @@ function ProfileForm({
         );
       await saveSportAthlete({
         ...(!profile ? { contactPhone: phone.trim() } : {}),
+        positions: form.positions || [],
         height: form.height,
         weight: form.weight,
         school: form.school,
@@ -337,6 +340,12 @@ function ProfileForm({
           />
         </label>
       ))}
+      <AthletePositionPicker
+        sport={sportKey}
+        value={form.positions || []}
+        onChange={(positions) => setForm((f) => ({ ...f, positions }))}
+        disabled={busy}
+      />
       <AthleteDetailsFields
         value={form}
         onChange={(details) => setForm((f) => ({ ...f, ...details }))}

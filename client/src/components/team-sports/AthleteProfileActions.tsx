@@ -1,3 +1,4 @@
+import AthletePositionPicker from "@/components/community/AthletePositionPicker";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
@@ -139,6 +140,7 @@ function Editor({ p }: { p: SportAthlete }) {
     [nickname, setNickname] = useState(p.nickname),
     [location, setLocation] = useState(p.location),
     [website, setWebsite] = useState(p.presentation?.website || "");
+  const [positions, setPositions] = useState(p.presentation?.positions || []);
   const revision = p.presentation?.revision || 0;
   const change = useMutation({
     mutationFn: ({
@@ -193,6 +195,12 @@ function Editor({ p }: { p: SportAthlete }) {
           onChange={(e) => setBio(e.target.value)}
         />
       </label>
+      <AthletePositionPicker
+        sport={p.sportKey}
+        value={positions}
+        onChange={setPositions}
+        disabled={change.isPending}
+      />
       <label>
         Website or social link (HTTPS)
         <input
@@ -209,7 +217,7 @@ function Editor({ p }: { p: SportAthlete }) {
           change.mutate({
             method: "PATCH",
             path: `/sport-athlete-social/${p.id}/presentation`,
-            body: { revision, bio, nickname, location, website },
+            body: { revision, bio, nickname, location, website, positions },
           })
         }
       >

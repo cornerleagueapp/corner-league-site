@@ -1,9 +1,12 @@
 import { Link, useLocation } from "wouter";
 import { ChevronRight, Home } from "lucide-react";
-import { breadcrumbsFor } from "@/lib/breadcrumbs";
+import { breadcrumbsFor, type Breadcrumb } from "@/lib/breadcrumbs";
 export default function Breadcrumbs() {
   const [location] = useLocation();
   const items = breadcrumbsFor(location);
+  return <BreadcrumbTrail items={items} />;
+}
+export function BreadcrumbTrail({ items }: { items: Breadcrumb[] }) {
   if (!items.length) return null;
   return (
     <nav className="consumer-breadcrumbs" aria-label="Breadcrumb">

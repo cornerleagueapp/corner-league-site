@@ -58,6 +58,7 @@ export type SportAthlete = {
   school?: string | null;
   age?: number | null;
   presentation?: {
+    positions?: string[];
     revision?: number;
     website?: string;
     headerImageUrl?: string;
@@ -81,6 +82,7 @@ export type SportAthlete = {
   profileUrl?: string;
 };
 export type AthleteInput = {
+  positions?: string[];
   height?: number | null;
   weight?: number | null;
   school?: string | null;

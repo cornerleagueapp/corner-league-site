@@ -1,3 +1,4 @@
+import { BreadcrumbTrail } from "@/components/navigation/Breadcrumbs";
 import { useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useSearch } from "wouter";
@@ -52,6 +53,16 @@ export default function SeasonRegistration() {
     next = `/season-registration?season=${encodeURIComponent(id)}`;
   return (
     <main className="mx-auto w-full max-w-2xl px-4 py-10 text-foreground">
+      <BreadcrumbTrail
+        items={[
+          { label: "Home", href: "/" },
+          {
+            label: "Registration",
+            ...(data ? { href: `/sports/${data.sportKey}/registration` } : {}),
+          },
+          ...(data ? [{ label: data.name }] : []),
+        ]}
+      />
       <PageSEO
         title="Season registration"
         canonicalPath="/season-registration"

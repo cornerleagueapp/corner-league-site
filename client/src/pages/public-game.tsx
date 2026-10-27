@@ -1,3 +1,5 @@
+import { BreadcrumbTrail } from "@/components/navigation/Breadcrumbs";
+import { sportVisual } from "@/lib/sportVisuals";
 import { Link, useRoute, useSearch } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { readTeamSeason } from "@/lib/teamSports";
@@ -59,15 +61,22 @@ export default function PublicGamePage() {
         title={`${teams[0].name} vs ${teams[1].name} · Corner League`}
         canonicalPath={`/sports/${p.sportKey}/games/${d.id}/${g.id}?org=${org}`}
       />
-      <nav aria-label="Breadcrumb" className="cl-match-crumb">
-        <Link href={sportOrganization(p.sportKey, org)}>Organization</Link> /{" "}
-        <Link
-          href={`${sportOrganization(p.sportKey, org)}?section=competition&season=${d.id}`}
-        >
-          {d.name}
-        </Link>{" "}
-        / Game
-      </nav>
+      <BreadcrumbTrail
+        items={[
+          { label: "Home", href: "/" },
+          {
+            label: sportVisual(p.sportKey).label,
+            href: `/sports/${p.sportKey}`,
+          },
+          { label: "Organization", href: sportOrganization(p.sportKey, org) },
+          {
+            label: d.name,
+            href: `${sportOrganization(p.sportKey, org)}?section=competition&season=${d.id}`,
+          },
+          { label: "Game" },
+        ]}
+      />
+
       <header
         className="cl-match-scoreboard"
         style={{

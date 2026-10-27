@@ -1,3 +1,5 @@
+import { BreadcrumbTrail } from "@/components/navigation/Breadcrumbs";
+import { sportVisual } from "@/lib/sportVisuals";
 import { useRoute, useSearch, Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { readTeamSeason } from "@/lib/teamSports";
@@ -75,15 +77,22 @@ export default function PublicTeamPage() {
         title={`${t.name} · ${d.name} · Corner League`}
         canonicalPath={teamHref(p.sportKey, d.id, t.id, org)}
       />
-      <nav className="mb-5 text-sm text-cl-muted" aria-label="Breadcrumb">
-        <Link href={sportOrganization(p.sportKey, org)}>Organization</Link> /{" "}
-        <Link
-          href={`${sportOrganization(p.sportKey, org)}?section=competition&season=${d.id}`}
-        >
-          {d.name}
-        </Link>{" "}
-        / {t.name}
-      </nav>
+      <BreadcrumbTrail
+        items={[
+          { label: "Home", href: "/" },
+          {
+            label: sportVisual(p.sportKey).label,
+            href: `/sports/${p.sportKey}`,
+          },
+          { label: "Organization", href: sportOrganization(p.sportKey, org) },
+          {
+            label: d.name,
+            href: `${sportOrganization(p.sportKey, org)}?section=competition&season=${d.id}`,
+          },
+          { label: t.name },
+        ]}
+      />
+
       <header
         className="cl-team-hero"
         style={{

@@ -970,3 +970,15 @@
 .community-people-dialog button:focus-visible, .community-people-dialog a:focus-visible { outline:2px solid rgb(var(--cl-accent));outline-offset:3px; }
 .community-people-dialog .community-person-row > div { flex-wrap:wrap; }
 .community-people-dialog > h2 { padding-right:48px; }
+
+.consumer-breadcrumbs a:focus-visible {
+  outline: 2px solid rgb(var(--cl-accent));
+  outline-offset: 2px;
+}
+.consumer-breadcrumbs :is(a, [aria-current="page"]) {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}

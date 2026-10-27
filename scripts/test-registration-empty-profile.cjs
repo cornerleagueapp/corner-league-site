@@ -83,6 +83,7 @@ const page = load("client/src/pages/season-registration.tsx", {
   },
   "@/lib/apiClient": {},
   "@/lib/sportRegistration": contract,
+  "@/components/navigation/Breadcrumbs": { BreadcrumbTrail: "nav" },
   "@/seo/usePageSEO": { PageSEO: "seo" },
   "@/components/ui/button": { Button: "button" },
   "./sport-registration": { RegistrationLogo: logo },

@@ -179,6 +179,12 @@ export default function SportAthletePublic({
                   {p.bio || "This athlete hasn’t added a bio yet."}
                 </p>
                 <dl className="mt-4 flex flex-wrap gap-6 text-sm">
+                  {!!p.presentation?.positions?.length && (
+                    <div>
+                      <dt className="text-cl-muted">Positions</dt>
+                      <dd>{p.presentation.positions.join(" / ")}</dd>
+                    </div>
+                  )}
                   {p.height != null && (
                     <div>
                       <dt className="text-cl-muted">Height</dt>
