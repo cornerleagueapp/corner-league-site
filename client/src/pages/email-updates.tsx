@@ -30,18 +30,23 @@ export default function EmailUpdates() {
     setError("");
     try {
       const r = unwrapSportData<{ message: string }>(
-        await (
-          await apiRequest(
-            "POST",
-            `/marketing/${proof.action}`,
-            { token: proof.token },
-            { refreshOn401: false, logoutOn401: false },
-          )
-        ).json(),
+        await apiRequest(
+          "POST",
+          `/marketing/${proof.action}`,
+          { token: proof.token },
+          { refreshOn401: false, logoutOn401: false },
+        ),
       );
-      setMessage(r.message);
+      setMessage(
+        r.message ||
+          (proof.action === "confirm"
+            ? "Your email subscription is confirmed."
+            : "You have been unsubscribed from marketing emails."),
+      );
     } catch (e) {
-      setError((e as Error).message);
+      setError(
+        "We couldn’t update your email preferences. Please try again. If this link has expired, request a new subscription email.",
+      );
     } finally {
       writing.current = false;
       setBusy(false);
@@ -73,7 +78,7 @@ export default function EmailUpdates() {
             <button
               disabled={busy || !/^[a-f0-9]{64}$/.test(proof.token)}
               onClick={() => void perform()}
-              className="mt-5 min-h-11 rounded-xl bg-cl-accent px-5 py-3 font-semibold text-white disabled:opacity-50"
+              className="mt-5 min-h-11 rounded-xl bg-cl-accent px-5 py-3 font-semibold text-cl-contrast disabled:opacity-50"
             >
               {busy
                 ? "Updating…"

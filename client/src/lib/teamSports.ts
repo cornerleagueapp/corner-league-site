@@ -11,6 +11,16 @@ export type TeamPlayer = {
   position: string;
 };
 export type PublicTeamSeason = {
+  excellence?: {
+    publishedAt: string;
+    allStarGameId: string | null;
+    awards: {
+      title: string;
+      name: string;
+      group: string | null;
+      profileId: string | null;
+    }[];
+  } | null;
   playerStats?: {
     gameId: string;
     teamId: string;

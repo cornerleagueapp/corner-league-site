@@ -1,3 +1,4 @@
+import SeasonExcellence from "./SeasonExcellence";
 import TeamLogo from "./TeamLogo";
 import SeasonCalendar from "./SeasonCalendar";
 import GameCard, { teamHref } from "./GameCard";
@@ -215,6 +216,7 @@ export function SeasonDetails({
           {d.startsOn} – {d.endsOn} · Published season
         </p>
       </div>
+      {!sandbox && <SeasonExcellence season={d} />}
       <label className="block space-y-2">
         Division
         <select
