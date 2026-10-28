@@ -1,3 +1,4 @@
+import SeasonWaiverRecords from "@/pages/season-waiver-records";
 import OfficialInvitation from "@/pages/official-invitation";
 import OfficialAssignments from "@/pages/official-assignments";
 import SeasonRegistration from "@/pages/season-registration";
@@ -393,6 +394,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/season-registration" component={SeasonRegistration} />
+      <Route path="/season-waiver-records" component={SeasonWaiverRecords} />
       <Route path="/league-invitation" component={LeagueInvitation} />
       <Route path="/official-invitation" component={OfficialInvitation} />
       <Route path="/official-assignments" component={OfficialAssignments} />

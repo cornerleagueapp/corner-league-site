@@ -106,6 +106,7 @@ let data = null,
   error = null,
   writes = [];
 const mocks = {
+  "@/components/navigation/Breadcrumbs": { BreadcrumbTrail: "BreadcrumbTrail" },
   react: h.react,
   "@tanstack/react-query": {
     useQuery: () => ({
@@ -125,6 +126,16 @@ const mocks = {
     },
   },
   "@/lib/sportRegistration": { unwrapSportData: (x) => x },
+  "@/components/waivers/SeasonWaivers": {
+    SeasonWaiverSigning: "SeasonWaiverSigning",
+    useSeasonWaivers: () => ({
+      data: { complete: true },
+      isPending: false,
+      isError: false,
+      refetch: async () => {},
+    }),
+    waiverBlockedReason: () => null,
+  },
   "@/seo/usePageSEO": { PageSEO: "SEO" },
   "@/components/ui/button": { Button: "Button" },
   "./sport-registration": { RegistrationLogo: "Logo" },
@@ -157,7 +168,7 @@ const one = (t, type) => nodes(t, (n) => n.type === type)[0];
   };
   t = render();
   assert.equal(one(t, "Button").props.disabled, true);
-  assert.ok(copy(t).includes("private contact email/phone"));
+  assert.ok(copy(t).includes("phone number"));
   data.phone = "555";
   t = render();
   one(t, "input").props.onChange({ target: { value: "Coach Pat" } });

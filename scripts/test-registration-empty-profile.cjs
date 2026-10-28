@@ -46,6 +46,16 @@ const logo = load("client/src/pages/sport-registration.tsx", {
   wouter: {},
   "@tanstack/react-query": {},
   "@/lib/sportRegistration": contract,
+  "@/components/waivers/SeasonWaivers": {
+    SeasonWaiverSigning: "SeasonWaiverSigning",
+    useSeasonWaivers: () => ({
+      data: { complete: true },
+      isPending: false,
+      isError: false,
+      refetch: async () => {},
+    }),
+    waiverBlockedReason: () => null,
+  },
   "@/lib/sportVisuals": {},
   "@/lib/apiClient": {},
   "@/lib/sportHubEvents": {},
@@ -83,6 +93,16 @@ const page = load("client/src/pages/season-registration.tsx", {
   },
   "@/lib/apiClient": {},
   "@/lib/sportRegistration": contract,
+  "@/components/waivers/SeasonWaivers": {
+    SeasonWaiverSigning: "SeasonWaiverSigning",
+    useSeasonWaivers: () => ({
+      data: { complete: true },
+      isPending: false,
+      isError: false,
+      refetch: async () => {},
+    }),
+    waiverBlockedReason: () => null,
+  },
   "@/components/navigation/Breadcrumbs": { BreadcrumbTrail: "nav" },
   "@/seo/usePageSEO": { PageSEO: "seo" },
   "@/components/ui/button": { Button: "button" },

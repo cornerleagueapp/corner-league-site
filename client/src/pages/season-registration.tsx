@@ -1,3 +1,8 @@
+import {
+  SeasonWaiverSigning,
+  useSeasonWaivers,
+  waiverBlockedReason,
+} from "@/components/waivers/SeasonWaivers";
 import { BreadcrumbTrail } from "@/components/navigation/Breadcrumbs";
 import { useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -196,6 +201,7 @@ function RegistrationForm({
         await apiRequest("GET", `/season-registration/${id}/athlete`),
       ),
   });
+  const waiverQuery = useSeasonWaivers(id, profile.data?.id, account);
   const p = profile.data,
     edit = `/create-racer-profile?athletes=1&sport=${encodeURIComponent(sport)}&next=${encodeURIComponent(`/season-registration?season=${id}`)}`,
     missing = [
@@ -203,7 +209,11 @@ function RegistrationForm({
       !p?.phone?.trim() && "phone number",
       p?.age == null && "date of birth",
     ].filter(Boolean),
-    ready = missing.length === 0;
+    ready =
+      missing.length === 0 &&
+      waiverQuery.data?.complete === true &&
+      !waiverQuery.isError &&
+      !waiverQuery.isFetching;
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!p || !ready || writing.current) return;
@@ -219,6 +229,7 @@ function RegistrationForm({
       setDone(true);
     } catch (e) {
       setError((e as Error).message);
+      void waiverQuery.refetch();
       onRefresh();
     } finally {
       writing.current = false;
@@ -240,6 +251,14 @@ function RegistrationForm({
         <Button asChild variant="outline">
           <Link href="/notifications">View notifications</Link>
         </Button>
+        {p && (
+          <SeasonWaiverSigning
+            season={id}
+            profile={p.id}
+            account={account}
+            query={waiverQuery}
+          />
+        )}
       </div>
     );
   if (profile.isPending)
@@ -277,6 +296,13 @@ function RegistrationForm({
               ? "The organizer has removed your entry from this season. Contact them if you need to rejoin."
               : "Contact the organizer or use your invitation email to complete the next step."}
         </p>
+        <SeasonWaiverSigning
+          season={id}
+          profile={p.id}
+          account={account}
+          query={waiverQuery}
+          readOnly={!active}
+        />
         {active && (
           <Button asChild variant="outline">
             <Link href="/notifications">View notifications</Link>
@@ -287,9 +313,20 @@ function RegistrationForm({
   }
   if (!open)
     return (
-      <p role="status" className="rounded-xl bg-muted p-4">
-        {closedReason || "Registration is closed for this season."}
-      </p>
+      <>
+        <p role="status" className="rounded-xl bg-muted p-4">
+          {closedReason || "Registration is closed for this season."}
+        </p>
+        {p && (
+          <SeasonWaiverSigning
+            season={id}
+            profile={p.id}
+            account={account}
+            query={waiverQuery}
+            readOnly
+          />
+        )}
+      </>
     );
   if (!p)
     return (
@@ -328,12 +365,18 @@ function RegistrationForm({
       <Link href={edit} className="block text-primary underline">
         Update athlete profile or contact details
       </Link>
-      {!ready && (
+      {missing.length > 0 && (
         <p role="alert">
           Missing: {missing.join(", ")}. Update your athlete profile or private
           contact details, then return here.
         </p>
       )}
+      <SeasonWaiverSigning
+        season={id}
+        profile={p.id}
+        account={account}
+        query={waiverQuery}
+      />
       <label className="block font-medium">
         Who referred you? (optional)
         <input
@@ -365,8 +408,9 @@ function RegistrationForm({
           role="status"
           className="rounded-xl border border-border bg-muted p-3 text-sm"
         >
-          Registration cannot be confirmed yet. Please add: {missing.join(", ")}
-          .
+          {missing.length
+            ? `Registration cannot be confirmed yet. Please add: ${missing.join(", ")}.`
+            : waiverBlockedReason(waiverQuery)}
         </p>
       )}
       <Button

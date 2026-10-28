@@ -302,6 +302,13 @@ export function registrationReturnPath(
 ): string | undefined {
   if (
     path &&
+    /^\/season-waiver-records\?season=[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}&signature=[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      path,
+    )
+  )
+    return path;
+  if (
+    path &&
     /^\/season-registration\?season=[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
       path,
     )
