@@ -1,3 +1,4 @@
+import { statLabel } from "@/lib/sportStatistics";
 import TeamLogo from "./TeamLogo";
 import { Link } from "wouter";
 import { teamHref } from "./GameCard";
@@ -151,7 +152,7 @@ export default function AthleteTeamPerformance({
                   className="rounded-2xl border border-cl-border p-4"
                 >
                   <p className="text-sm text-cl-muted">
-                    {labels[k] || k} / game
+                    {labels[k] || statLabel(k)} / game
                   </p>
                   <p className="mt-2 text-3xl font-black">
                     {season.summary!.averages[k] ?? 0}
@@ -177,7 +178,9 @@ export default function AthleteTeamPerformance({
                     {[
                       "Date",
                       "Opponent",
-                      ...(q.data?.metrics || []).map((k) => labels[k] || k),
+                      ...(q.data?.metrics || []).map(
+                        (k) => labels[k] || statLabel(k),
+                      ),
                     ].map((k) => (
                       <th
                         className="whitespace-nowrap border-b border-cl-border p-3"

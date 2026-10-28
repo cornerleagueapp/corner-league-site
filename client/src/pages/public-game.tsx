@@ -1,3 +1,8 @@
+import {
+  statTotals,
+  derivedStatistics,
+  statLabel,
+} from "@/lib/sportStatistics";
 import { BreadcrumbTrail } from "@/components/navigation/Breadcrumbs";
 import { sportVisual } from "@/lib/sportVisuals";
 import { Link, useRoute, useSearch } from "wouter";
@@ -165,7 +170,7 @@ export default function PublicGamePage() {
             )}
             {metrics.map((m) => (
               <div className="cl-leader-category" key={m}>
-                <h3>{m.replace(/_/g, " ")}</h3>
+                <h3>{statLabel(m)}</h3>
                 <div>
                   {teams.map((t) => {
                     const candidates = rows.filter(
@@ -277,9 +282,35 @@ export default function PublicGamePage() {
               ))}
             </div>
             <p className="text-cl-muted">
-              Totals from recorded player statistics; unrecorded values are not
-              treated as zero.
+              Totals from submitted player box scores. Percentages use combined attempts; a dash means no denominator was recorded.
             </p>
+            {Object.keys(
+              derivedStatistics(statTotals(rows, d.sportKey), d.sportKey),
+            ).map((k) => {
+              const a = derivedStatistics(
+                statTotals(
+                  rows.filter((r) => r.teamId === teams[0].id),
+                  d.sportKey,
+                ),
+                d.sportKey,
+              )[k];
+              const b = derivedStatistics(
+                statTotals(
+                  rows.filter((r) => r.teamId === teams[1].id),
+                  d.sportKey,
+                ),
+                d.sportKey,
+              )[k];
+              return a === null && b === null ? null : (
+                <div className="cl-comparison" key={k}>
+                  <div>
+                    <strong>{a ?? "—"}</strong>
+                    <span>{statLabel(k)}</span>
+                    <strong>{b ?? "—"}</strong>
+                  </div>
+                </div>
+              );
+            })}
             {metrics.map((m) => {
               const a = total(teams[0].id, m),
                 b = total(teams[1].id, m);
@@ -287,7 +318,7 @@ export default function PublicGamePage() {
                 <div className="cl-comparison" key={m}>
                   <div>
                     <strong>{a ?? "—"}</strong>
-                    <span>{m}</span>
+                    <span>{statLabel(m)}</span>
                     <strong>{b ?? "—"}</strong>
                   </div>
                   <div className="cl-comparison-bar">
@@ -295,7 +326,8 @@ export default function PublicGamePage() {
                       <span
                         key={i}
                         style={{
-                          flex: v === null ? 0 : v || 0.01,
+                          flex:
+                            v === null ? 0 : Math.max(0.01, Math.abs(v || 0)),
                           backgroundColor: teamColor(teams[i].primaryColor),
                         }}
                       />

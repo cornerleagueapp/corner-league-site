@@ -1,3 +1,8 @@
+import {
+  statTotals,
+  derivedStatistics,
+  statLabel,
+} from "@/lib/sportStatistics";
 import { BreadcrumbTrail } from "@/components/navigation/Breadcrumbs";
 import { sportVisual } from "@/lib/sportVisuals";
 import { useRoute, useSearch, Link, useLocation } from "wouter";
@@ -183,7 +188,28 @@ export default function PublicTeamPage() {
         )}
         {tab === "stats" && (
           <>
-            <h2>Player stats</h2>
+            <h2>Team & player statistics</h2>
+            <div className="my-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+              {Object.entries({
+                ...statTotals(rows, d.sportKey),
+                ...derivedStatistics(statTotals(rows, d.sportKey), d.sportKey),
+              })
+                .filter(
+                  ([k, v]) =>
+                    v !== null &&
+                    (metrics.includes(k) ||
+                      !Object.keys(statTotals(rows, d.sportKey)).includes(k)),
+                )
+                .map(([k, v]) => (
+                  <div
+                    key={k}
+                    className="rounded-xl border border-cl-border bg-cl-surface p-4"
+                  >
+                    <p className="text-sm text-cl-muted">{statLabel(k)}</p>
+                    <strong className="text-xl">{v ?? "—"}</strong>
+                  </div>
+                ))}
+            </div>
             <p className="mb-4 text-cl-muted">
               Season totals from published final games. GP counts games with
               recorded player stats.
@@ -203,7 +229,7 @@ export default function PublicTeamPage() {
                       <th>Player</th>
                       <th>GP</th>
                       {metrics.map((m) => (
-                        <th key={m}>{m.toUpperCase()}</th>
+                        <th key={m}>{statLabel(m)}</th>
                       ))}
                     </tr>
                   </thead>
