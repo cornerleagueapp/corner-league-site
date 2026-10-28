@@ -102,7 +102,8 @@ export function SeasonWaiverSigning({
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [showHistory, setShowHistory] = useState(false),
-    [page, setPage] = useState(1);
+    [page, setPage] = useState(1),
+    [notice, setNotice] = useState("");
   const writing = useRef(false);
   const reasonId = useId();
   const history = useQuery({
@@ -157,6 +158,9 @@ export function SeasonWaiverSigning({
         },
       );
       setSelected(null);
+      setNotice(
+        "Signature recorded. Download your signing record below. If you have not registered yet, finish the remaining waivers and confirm season registration separately.",
+      );
       await query.refetch();
       if (showHistory) await history.refetch();
     } catch (e) {
@@ -184,7 +188,11 @@ export function SeasonWaiverSigning({
   const stale =
       !!selected &&
       !query.data?.items.some((w) => w.revisionId === selected.revisionId),
-    guardian = query.data?.guardianRequired;
+    guardian = query.data?.guardianRequired,
+    required = query.data?.items.filter((w) => w.required) || [],
+    completed = required.filter(
+      (w) => w.signature && (!guardian || w.signature.capacity === "guardian"),
+    ).length;
   return (
     <section
       id="season-waivers"
@@ -198,6 +206,14 @@ export function SeasonWaiverSigning({
           Signing does not submit your season registration.
         </p>
       </div>
+      {!!notice && (
+        <p
+          role="status"
+          className="rounded-xl border border-primary/30 bg-primary/10 p-3 text-sm"
+        >
+          {notice}
+        </p>
+      )}
       {query.isPending && <p role="status">Loading season waivers…</p>}
       {query.isError && (
         <div role="alert">
@@ -213,6 +229,27 @@ export function SeasonWaiverSigning({
       )}
       {query.data && (
         <>
+          {required.length > 0 && (
+            <div
+              className="space-y-2 rounded-xl bg-muted p-3"
+              aria-label="Required waiver progress"
+            >
+              <p className="text-sm font-semibold">
+                {completed} of {required.length} required documents signed
+              </p>
+              <progress
+                className="h-2 w-full accent-primary"
+                max={required.length}
+                value={completed}
+                aria-label="Required documents signed"
+              />
+              <p className="text-sm text-muted-foreground">
+                {query.data.complete
+                  ? "Required waivers complete. Confirm registration separately if you have not already joined."
+                  : "Complete each required document before confirming registration. Optional documents do not block registration."}
+              </p>
+            </div>
+          )}
           {!query.data.items.length && (
             <p>No active waivers are required for this season.</p>
           )}

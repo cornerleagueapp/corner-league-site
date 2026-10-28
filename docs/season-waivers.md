@@ -32,3 +32,23 @@ private receipt login/download was checked independently of public season data.
 A full consumer npm build could not run here because installed dependencies are
 absent from the workspace; run npm run build in your installed repo. Physical
 Safari, live email and live DB migration remain unverified.
+
+## Completion clarity follow-up
+
+Apply after the initial season-waivers patches. Required waivers show an accessible
+progress bar and signed/required count. Optional documents do not block or inflate
+progress; under-18 progress requires guardian capacity. Successful signing displays
+an explicit receipt message while explaining registration must be confirmed
+separately. Already-registered players retain their existing-registration screen.
+
+Staff reminder emails link to the season registration page. Sign in to the same
+profile-owning account; complete the missing documents there. A reminder is not
+an invitation or registration acceptance, and does not add B2B access. Guardian
+authority remains self-attested through that account. This follow-up does not
+add a separate guardian invitation flow or change racing/event registrations.
+
+QA: open reminder link logged out, sign in and return to the same season; confirm
+existing membership is displayed without a duplicate form. Sign each required
+revision and verify progress, receipt PDF and final registration gating. Check
+optional-only seasons and a new required revision. Full production build, real
+email delivery and physical mobile Safari remain unverified locally.
