@@ -26,8 +26,15 @@ export default function TermsPage() {
                 <div className="text-sm text-cl-muted">
                   <strong>Effective Date:</strong> 01/01/2025
                   <br />
-                  <strong>Last Updated:</strong> 10/13/2026
+                  <strong>Last Updated:</strong> 10/28/2026
                 </div>
+
+                <section id="team-sms" aria-labelledby="team-sms-heading">
+                  <h2 id="team-sms-heading" className="text-xl font-semibold text-cl-ink mb-3">Optional team text alerts</h2>
+                  <p className="mb-4">Players, parents/guardians and other contacts can choose operational SMS alerts for a specific season. Registration does not automatically subscribe a number. Opt-in requires affirmative consent and phone verification. Message frequency varies and message/data rates may apply. SMS consent is not required to register or participate.</p>
+                  <p className="mb-4">We store contact details, consent and verification records and delivery status to provide this feature. Twilio processes phone verification and message delivery. Authorized organization staff can target eligible team contacts. SMS opt-in is not permission for marketing campaigns; mobile information and SMS consent are not shared with third parties or affiliates for marketing or promotional purposes.</p>
+                  <p className="mb-4">Disable a season contact from its Team text alerts preferences, or reply STOP to stop alerts from the shared Corner League sender across seasons. Reply HELP for help or visit our contact page. START removes the sender-level block but does not automatically restore season subscriptions; opt in and verify again. Messages already submitted to the provider may still arrive. SMS is not a guaranteed emergency notification channel.</p>
+                </section>
 
                 <section aria-labelledby="marketing-privacy">
                   <h2 id="marketing-privacy" className="text-xl font-semibold text-cl-ink mb-3">Optional Corner League email updates</h2>

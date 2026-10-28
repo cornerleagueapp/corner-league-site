@@ -100,6 +100,7 @@ const { RegistrationForm } = load(
     "@/components/ui/button": { Button: "Button" },
     "./sport-registration": { RegistrationLogo: "Logo" },
     "@/components/navigation/Breadcrumbs": { BreadcrumbTrail: "Breadcrumbs" },
+    "@/components/sms/SeasonSmsContacts": { SeasonSmsContacts: "SmsContacts" },
     "@/components/waivers/SeasonWaivers": {
       SeasonWaiverSigning: "Waivers",
       useSeasonWaivers: () => gate,

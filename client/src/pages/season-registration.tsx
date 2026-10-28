@@ -1,3 +1,4 @@
+import { SeasonSmsContacts } from "@/components/sms/SeasonSmsContacts";
 import {
   SeasonWaiverSigning,
   useSeasonWaivers,
@@ -252,12 +253,21 @@ function RegistrationForm({
           <Link href="/notifications">View notifications</Link>
         </Button>
         {p && (
-          <SeasonWaiverSigning
-            season={id}
-            profile={p.id}
-            account={account}
-            query={waiverQuery}
-          />
+          <>
+            <SeasonWaiverSigning
+              season={id}
+              profile={p.id}
+              account={account}
+              query={waiverQuery}
+            />
+            <SeasonSmsContacts
+              season={id}
+              profile={p.id}
+              account={account}
+              name={p.contactName || p.name}
+              phone={p.phone}
+            />
+          </>
         )}
       </div>
     );
@@ -296,13 +306,22 @@ function RegistrationForm({
               ? "The organizer has removed your entry from this season. Contact them if you need to rejoin."
               : "Contact the organizer or use your invitation email to complete the next step."}
         </p>
-        <SeasonWaiverSigning
-          season={id}
-          profile={p.id}
-          account={account}
-          query={waiverQuery}
-          readOnly={!active}
-        />
+        <>
+          <SeasonWaiverSigning
+            season={id}
+            profile={p.id}
+            account={account}
+            query={waiverQuery}
+            readOnly={!active}
+          />
+          <SeasonSmsContacts
+            season={id}
+            profile={p.id}
+            account={account}
+            name={p.contactName || p.name}
+            phone={p.phone}
+          />
+        </>
         {active && (
           <Button asChild variant="outline">
             <Link href="/notifications">View notifications</Link>
@@ -318,13 +337,22 @@ function RegistrationForm({
           {closedReason || "Registration is closed for this season."}
         </p>
         {p && (
-          <SeasonWaiverSigning
-            season={id}
-            profile={p.id}
-            account={account}
-            query={waiverQuery}
-            readOnly
-          />
+          <>
+            <SeasonWaiverSigning
+              season={id}
+              profile={p.id}
+              account={account}
+              query={waiverQuery}
+              readOnly
+            />
+            <SeasonSmsContacts
+              season={id}
+              profile={p.id}
+              account={account}
+              name={p.contactName || p.name}
+              phone={p.phone}
+            />
+          </>
         )}
       </>
     );
@@ -371,12 +399,21 @@ function RegistrationForm({
           contact details, then return here.
         </p>
       )}
-      <SeasonWaiverSigning
-        season={id}
-        profile={p.id}
-        account={account}
-        query={waiverQuery}
-      />
+      <>
+        <SeasonWaiverSigning
+          season={id}
+          profile={p.id}
+          account={account}
+          query={waiverQuery}
+        />
+        <SeasonSmsContacts
+          season={id}
+          profile={p.id}
+          account={account}
+          name={p.contactName || p.name}
+          phone={p.phone}
+        />
+      </>
       <label className="block font-medium">
         Who referred you? (optional)
         <input

@@ -126,6 +126,7 @@ const mocks = {
     },
   },
   "@/lib/sportRegistration": { unwrapSportData: (x) => x },
+  "@/components/sms/SeasonSmsContacts": { SeasonSmsContacts: "SmsContacts" },
   "@/components/waivers/SeasonWaivers": {
     SeasonWaiverSigning: "SeasonWaiverSigning",
     useSeasonWaivers: () => ({

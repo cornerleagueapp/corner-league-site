@@ -46,6 +46,7 @@ const logo = load("client/src/pages/sport-registration.tsx", {
   wouter: {},
   "@tanstack/react-query": {},
   "@/lib/sportRegistration": contract,
+  "@/components/sms/SeasonSmsContacts": { SeasonSmsContacts: "SmsContacts" },
   "@/components/waivers/SeasonWaivers": {
     SeasonWaiverSigning: "SeasonWaiverSigning",
     useSeasonWaivers: () => ({
@@ -93,6 +94,7 @@ const page = load("client/src/pages/season-registration.tsx", {
   },
   "@/lib/apiClient": {},
   "@/lib/sportRegistration": contract,
+  "@/components/sms/SeasonSmsContacts": { SeasonSmsContacts: "SmsContacts" },
   "@/components/waivers/SeasonWaivers": {
     SeasonWaiverSigning: "SeasonWaiverSigning",
     useSeasonWaivers: () => ({
