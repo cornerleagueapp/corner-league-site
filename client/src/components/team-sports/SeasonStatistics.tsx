@@ -1,4 +1,9 @@
 import {
+  leaderCategories,
+  percentageCategory,
+  playerLeaders,
+} from "@/lib/seasonLeaders";
+import {
   orderedStatKeys,
   recordedDerivedStats,
   derivedStatDisplay,
@@ -33,14 +38,12 @@ export default function SeasonStatistics({
       ),
     }))
     .filter((item) => item.rates.length > 0);
-  const chosen = metrics.includes(metric) ? metric : metrics[0] || "";
-  const leaders = [...players]
-    .sort(
-      (a, b) =>
-        (b.totals[chosen] || 0) - (a.totals[chosen] || 0) ||
-        a.name.localeCompare(b.name),
-    )
-    .slice(0, 10);
+  const categories = leaderCategories(d.sportKey, metrics);
+  const chosen = categories.some((c) => c.key === metric)
+    ? metric
+    : categories[0]?.key || "";
+  const rate = percentageCategory(d.sportKey, chosen);
+  const leaders = playerLeaders(players, d.sportKey, chosen);
   return (
     <section className="min-w-0 space-y-5" aria-label="Season statistics">
       <h2 className="text-2xl font-bold">Stats & Leaders</h2>
@@ -65,7 +68,7 @@ export default function SeasonStatistics({
             ))}
           </select>
         </label>
-        {metrics.length > 0 && (
+        {categories.length > 0 && (
           <label className="space-y-2 text-sm font-semibold">
             Leader category
             <select
@@ -73,9 +76,9 @@ export default function SeasonStatistics({
               value={chosen}
               onChange={(e) => setMetric(e.target.value)}
             >
-              {metrics.map((m) => (
-                <option key={m} value={m}>
-                  {statLabel(m)}
+              {categories.map((c) => (
+                <option key={c.key} value={c.key}>
+                  {c.label}
                 </option>
               ))}
             </select>
@@ -93,6 +96,19 @@ export default function SeasonStatistics({
             <h3 className="text-xl font-bold">
               Player leaders · {statLabel(chosen)}
             </h3>
+            {rate && (
+              <p className="text-sm text-cl-muted">
+                Season percentage from recorded makes ÷ attempts in final games,
+                including tournaments. At least one recorded attempt is
+                required; makes and attempts are shown for context.
+              </p>
+            )}
+            {rate && !leaders.length && (
+              <p className="rounded-xl border border-cl-border bg-cl-subtle p-5 text-cl-muted">
+                No players have recorded attempts for this percentage in the
+                selected division yet.
+              </p>
+            )}
             <ol className="divide-y divide-cl-border rounded-xl border border-cl-border">
               {leaders.map((p, i) => (
                 <li key={p.profileId} className="flex items-center gap-3 p-4">
@@ -112,7 +128,18 @@ export default function SeasonStatistics({
                       · {p.games} games
                     </p>
                   </div>
-                  <strong>{(p.totals[chosen] || 0).toLocaleString()}</strong>
+                  <div className="shrink-0 text-right">
+                    <strong>
+                      {rate
+                        ? `${p.value.toLocaleString(undefined, { maximumFractionDigits: 1 })}%`
+                        : p.value.toLocaleString()}
+                    </strong>
+                    {rate && (
+                      <p className="mt-1 text-xs text-cl-muted">
+                        {p.made} / {p.attempts} made
+                      </p>
+                    )}
+                  </div>
                 </li>
               ))}
             </ol>

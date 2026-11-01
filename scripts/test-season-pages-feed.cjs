@@ -236,7 +236,7 @@ for (const key of nav.seasonTabs.map((t) => t[0])) {
     assert.doesNotMatch(html, /Team statistics/);
   }
   if (key === "stats") {
-    assert.doesNotMatch(html, /Shooting percentages|FG%|3P%|FT%/);
+    assert.doesNotMatch(html, /Shooting percentages/);
     assert.match(html, /Alice/);
     assert.match(html, /Team statistics/);
     assert.doesNotMatch(html, />99</);
@@ -357,8 +357,50 @@ tab = "stats";
 const shooting = render(React.createElement(Page));
 assert.match(shooting, /Shooting percentages/);
 assert.match(shooting, />0%</);
-assert.doesNotMatch(shooting, /3P%|FT%/);
+assert.doesNotMatch(shooting, />3P%<\/dt>|>FT%<\/dt>/);
 season.playerStats = savedStats;
 console.log(
   "PASS basketball stat ordering, no duplicate Teams tab, legacy links, hidden unrecorded efficiency and preserved zero percentages",
+);
+
+const leaderTools = compile("client/src/lib/seasonLeaders.ts");
+const makePlayer = (id, values) => ({
+  profileId: id,
+  name: id,
+  teamIds: ["a"],
+  games: values.length,
+  rows: values.map((values) => ({ values })),
+  totals: { points: 10 },
+});
+const percentageRows = leaderTools.playerLeaders(
+  [
+    makePlayer("weighted", [
+      { fieldGoalsMade: 1, fieldGoalsAttempted: 1 },
+      { fieldGoalsMade: 1, fieldGoalsAttempted: 9 },
+    ]),
+    makePlayer("zero", [{ fieldGoalsMade: 0, fieldGoalsAttempted: 4 }]),
+    makePlayer("no-attempts", [{ fieldGoalsMade: 0, fieldGoalsAttempted: 0 }]),
+    makePlayer("missing", [{ fieldGoalsAttempted: 4 }]),
+    makePlayer("invalid", [{ fieldGoalsMade: 5, fieldGoalsAttempted: 4 }]),
+  ],
+  "basketball",
+  "fieldGoalPercentage",
+);
+assert.deepEqual(
+  percentageRows.map((p) => [p.profileId, p.value, p.made, p.attempts]),
+  [
+    ["weighted", 20, 2, 10],
+    ["zero", 0, 0, 4],
+  ],
+);
+assert.deepEqual(
+  leaderTools.leaderCategories("basketball", []).map((c) => c.key),
+  ["fieldGoalPercentage", "threePointPercentage", "freeThrowPercentage"],
+);
+assert.deepEqual(
+  leaderTools.leaderCategories("soccer", ["goals"]).map((c) => c.key),
+  ["goals"],
+);
+console.log(
+  "PASS percentage leaders: weighted season makes/attempts, real zero, missing/invalid data exclusion and sport-specific categories",
 );

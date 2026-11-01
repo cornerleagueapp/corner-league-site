@@ -1,0 +1,7 @@
+# Basketball percentage leaders
+
+Apply after the basketball stat/navigation and schedule-toggle color hotfixes. Adds FG%, 3P% and FT% to basketball's Leader category selector. Other sports' categories and team-stat columns are unchanged.
+
+Rankings use total recorded makes divided by total recorded attempts across the player's published final-game rows, including tournaments and team transfers, within the selected division. They do not average per-game percentages. Only complete finite nonnegative make/attempt pairs with makes no greater than attempts contribute. Players need at least one recorded attempt; real zero percentages remain eligible. Equal percentages sort by more attempts, then name. Rows show made/attempted context. Missing shooting data produces an explicit empty state rather than fabricated percentages. Existing seven basic counting stats cannot produce shooting percentages; organizers must record makes and attempts in game results.
+
+Validation: consumer TypeScript/Vite build, focused season/feed tests and pure regressions for weighted rates, missing/invalid inputs, zero attempts and real zero. Eight light/dark mobile/desktop browser scenarios exercise all three category selectors with and without shooting data, plus automated WCAG A/AA and overflow checks. Existing legacy-test failures documented in the earlier patch are unchanged. No migration, dependency or environment change.
