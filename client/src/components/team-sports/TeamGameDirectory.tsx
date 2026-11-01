@@ -1,3 +1,4 @@
+import { seasonHref } from "@/lib/seasonNavigation";
 import EventDateScroller, {
   useEventDay,
 } from "@/components/events/EventDateScroller";
@@ -175,7 +176,7 @@ export default function TeamGameDirectory({
             <div className="min-w-0" key={`${d.seasonId}:${d.game.id}`}>
               <div className="cl-game-context">
                 <Link
-                  href={`${sportOrganization(sport, d.organizationId)}?section=competition&season=${d.seasonId}`}
+                  href={seasonHref(sport, d.seasonId, d.organizationId)}
                 >
                   {d.organizationName}
                 </Link>
@@ -202,7 +203,7 @@ export default function TeamGameDirectory({
             location: d.game.venue,
             organizationId: d.organizationId,
             organizationName: d.organizationName,
-            href: `${sportOrganization(sport, d.organizationId)}?section=competition&season=${encodeURIComponent(d.seasonId)}#game-${encodeURIComponent(d.game.id)}`,
+            href: seasonHref(sport, d.seasonId, d.organizationId, "schedule"),
           }))}
         />
       )}

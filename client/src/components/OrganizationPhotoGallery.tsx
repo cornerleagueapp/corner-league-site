@@ -20,19 +20,22 @@ import {
 export default function OrganizationPhotoGallery({
   organizationId,
   athleteId,
+  seasonId,
   canRemoveTag = false,
 }: {
   organizationId?: string;
   athleteId?: string;
+  seasonId?: string;
   canRemoveTag?: boolean;
 }) {
   const id = organizationId || athleteId;
   if (!id) return null;
   return (
     <Gallery
-      key={`${organizationId ? "organizations" : "athletes"}:${id}`}
+      key={`${organizationId ? "organizations" : "athletes"}:${id}:${seasonId || "all"}`}
       scope={organizationId ? "organizations" : "athletes"}
       id={id}
+      seasonId={seasonId}
       canRemoveTag={canRemoveTag}
     />
   );
@@ -41,10 +44,12 @@ function Gallery({
   scope,
   id,
   canRemoveTag,
+  seasonId,
 }: {
   scope: "organizations" | "athletes";
   id: string;
   canRemoveTag: boolean;
+  seasonId?: string;
 }) {
   const { sandbox, fetch: pageFetch } = useOrganizationPageApi();
   const [page, setPage] = useState(1),
@@ -57,18 +62,19 @@ function Gallery({
       "organization-gallery",
       scope,
       id,
+      ...(seasonId ? [seasonId] : []),
       page,
       ...(sandbox ? [sandbox.account] : []),
     ],
     queryFn: () =>
       sandbox
         ? pageFetch(
-            `/organization-gallery/${scope}/${id}?page=${page}&limit=12`,
+            `/organization-gallery/${scope}/${id}?page=${page}&limit=12${seasonId ? `&seasonId=${encodeURIComponent(seasonId)}` : ""}`,
           ).then(async (res) => {
             if (!res.ok) throw new Error("Private gallery unavailable");
             return galleryResponse(await res.json());
           })
-        : loadOrganizationGallery(scope, id, page),
+        : loadOrganizationGallery(scope, id, page, seasonId),
     gcTime: sandbox ? 0 : 1800000,
     staleTime: 60000,
     refetchOnWindowFocus: true,
@@ -101,13 +107,17 @@ function Gallery({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-lg font-semibold">
           {scope === "organizations"
-            ? "Photo Gallery"
+            ? seasonId
+              ? "Season photos"
+              : "Photo Gallery"
             : "Tagged Organization Photos"}
         </h2>
       </div>
       <p className="mt-2 text-sm text-cl-muted">
         {scope === "organizations"
-          ? "Photos and moments shared by this organization."
+          ? seasonId
+            ? "Published photos assigned to this season by the organizer."
+            : "Photos and moments shared by this organization."
           : "Photos shared by organizations featuring this athlete."}{" "}
         Newest capture dates first (UTC).
       </p>
@@ -118,7 +128,15 @@ function Gallery({
       ) : null}
       {query.isError ? (
         <p role="alert" className="mt-4 text-cl-danger">
-          Photos could not load. <button type="button" className="ml-2 underline" disabled={query.isFetching} onClick={() => void query.refetch()}>{query.isFetching ? "Retrying…" : "Try again"}</button>
+          Photos could not load.{" "}
+          <button
+            type="button"
+            className="ml-2 underline"
+            disabled={query.isFetching}
+            onClick={() => void query.refetch()}
+          >
+            {query.isFetching ? "Retrying…" : "Try again"}
+          </button>
         </p>
       ) : null}
       {error ? (

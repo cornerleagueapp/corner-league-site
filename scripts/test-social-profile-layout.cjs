@@ -48,7 +48,7 @@ const Page = compile('client/src/pages/profile/user-profile.tsx', {
 const draw = () => render(React.createElement(Page,{username:'jake'}));
 let html = draw();
 assert.doesNotMatch(html,/Search Users|Community profile/); assert.match(html,/Verified athlete/); assert.match(html,/data-compose="true"/);
-assert.match(html,/data-sport="jet-ski"/); assert.match(html,/aria-pressed="true"[^>]*>Posts/);
+assert.match(html,/data-sport="jet-ski"/); assert.match(html,/aria-pressed="true"[^>]*>Feed/);
 assert.doesNotMatch(html,/Favorite teams|Find people/); assert.ok(!queries.some(q=>q[0]==='profile-teams'));
 auth = {user:{id:'b'},isAuthenticated:true}; assert.match(draw(),/data-compose="false"/);
 auth = {user:null,isAuthenticated:false}; assert.doesNotMatch(draw(),/Search Users/);

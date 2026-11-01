@@ -1,3 +1,4 @@
+import { seasonHref } from "@/lib/seasonNavigation";
 import {
   statTotals,
   derivedStatistics,
@@ -92,7 +93,7 @@ export default function PublicTeamPage() {
           { label: "Organization", href: sportOrganization(p.sportKey, org) },
           {
             label: d.name,
-            href: `${sportOrganization(p.sportKey, org)}?section=competition&season=${d.id}`,
+            href: seasonHref(p.sportKey, d.id, org),
           },
           { label: t.name },
         ]}

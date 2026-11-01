@@ -10,7 +10,7 @@ export default function SeasonExcellence({
   sandbox?: boolean;
 }) {
   const honors = d.excellence;
-  if (!honors?.awards.length) return null;
+  if (!honors || (!honors.awards.length && !honors.allStarGameId)) return null;
   const groups = [
     ...new Set(honors.awards.filter((a) => a.group).map((a) => a.group!)),
   ];

@@ -410,18 +410,24 @@ export function PostCard({ post }: { post: SocialPost }) {
   return (
     <article className={`social-post-card ${socialBox}`}>
       <div className="mb-4 flex flex-wrap items-start justify-between gap-2">
-        <div className="social-post-author"><AccountAvatar picture={post.author.profilePicture} username={post.author.username} /><div>
-          <Link
-            href={`/profile/${encodeURIComponent(post.author.username)}`}
-            className="text-sm font-bold text-cl-accent"
-          >
-            @{post.author.username}
-          </Link>
-          <p className="mt-1 text-xs text-cl-muted">
-            {post.athlete ? `Athlete update · ${post.athlete.name} · ` : ""}
-            {new Date(post.createdAt).toLocaleString()}
-          </p>
-        </div></div>
+        <div className="social-post-author">
+          <AccountAvatar
+            picture={post.author.profilePicture}
+            username={post.author.username}
+          />
+          <div>
+            <Link
+              href={`/profile/${encodeURIComponent(post.author.username)}`}
+              className="text-sm font-bold text-cl-accent"
+            >
+              @{post.author.username}
+            </Link>
+            <p className="mt-1 text-xs text-cl-muted">
+              {post.athlete ? `Athlete update · ${post.athlete.name} · ` : ""}
+              {new Date(post.createdAt).toLocaleString()}
+            </p>
+          </div>
+        </div>
         {post.canEdit && (
           <div className="flex gap-2">
             <button
@@ -489,7 +495,9 @@ export function PostCard({ post }: { post: SocialPost }) {
         </p>
       )}
       {post.mediaUrls.length > 0 && (
-        <div className={`social-post-media mt-4 grid gap-2 ${post.mediaUrls.length > 1 ? "sm:grid-cols-2" : ""}`}>
+        <div
+          className={`social-post-media mt-4 grid gap-2 ${post.mediaUrls.length > 1 ? "sm:grid-cols-2" : ""}`}
+        >
           {post.mediaUrls.map((url, index) => (
             <a
               key={`${url}-${index}`}
@@ -569,11 +577,13 @@ function Feed({
   athleteId,
   feed = "all",
   compose = false,
+  title,
 }: {
   username?: string;
   athleteId?: string;
-  feed?: "all" | "following";
+  feed?: "all" | "following" | "followers";
   compose?: boolean;
+  title?: string;
 }) {
   const { user, isAuthenticated } = useAuth();
   const [page, setPage] = useState(1);
@@ -591,13 +601,15 @@ function Feed({
       ),
     staleTime: 30_000,
     retry: false,
-    enabled: feed !== "following" || isAuthenticated,
+    enabled: feed === "all" || isAuthenticated,
   });
   return (
     <div className="social-post-feed space-y-4">
       {compose && <PostComposer key={String(user?.id)} athleteId={athleteId} />}
       <div className="flex items-center justify-between">
-        <h2 className="font-bold">{athleteId ? "Athlete updates" : "Posts"}</h2>
+        <h2 className="font-bold">
+          {title || (athleteId ? "Athlete updates" : "Posts")}
+        </h2>
         <button
           aria-label="Refresh posts"
           className={socialButton}
@@ -610,7 +622,7 @@ function Feed({
           />
         </button>
       </div>
-      {feed === "following" && !isAuthenticated ? (
+      {feed !== "all" && !isAuthenticated ? (
         <Link href="/auth?next=%2Ffeed" className={socialButton}>
           Sign in for your feed
         </Link>
@@ -623,9 +635,11 @@ function Feed({
           {!query.data.items.length && (
             <div className={socialBox}>
               <p className="text-cl-muted">
-                {feed === "following"
-                  ? "Follow people or athletes to see their updates here."
-                  : "No posts yet."}
+                {feed === "followers"
+                  ? "Your followers have not shared any posts yet."
+                  : feed === "following"
+                    ? "Follow people or athletes to see their updates here."
+                    : "No posts yet."}
               </p>
             </div>
           )}
@@ -645,12 +659,14 @@ function Feed({
 export default function SocialPostFeed(props: {
   username?: string;
   athleteId?: string;
-  feed?: "all" | "following";
+  feed?: "all" | "following" | "followers";
   compose?: boolean;
+  title?: string;
 }) {
+  const { user } = useAuth();
   return (
     <Feed
-      key={`${props.username}:${props.athleteId}:${props.feed}`}
+      key={`${user?.id}:${props.username}:${props.athleteId}:${props.feed}`}
       {...props}
     />
   );

@@ -1,3 +1,4 @@
+import { seasonHref } from "@/lib/seasonNavigation";
 import EventDateScroller, {
   useEventDay,
 } from "@/components/events/EventDateScroller";
@@ -51,7 +52,7 @@ export default function AquaOrganizationDetailsPage(props: Props) {
 }
 function OrganizationCommunityPage(props: Props) {
   const { sandbox, fetch: pageFetch } = useOrganizationPageApi();
-  const [location] = useLocation(),
+  const [location, navigate] = useLocation(),
     search = useSearch();
   const orgId = props.params.id;
   const [eventPage, setEventPage] = useState(1);
@@ -139,6 +140,11 @@ function OrganizationCommunityPage(props: Props) {
     gcTime: sandbox ? 0 : undefined,
     retry: 1,
   });
+  useEffect(() => {
+    const season = new URLSearchParams(search).get("season");
+    if (season && team && org && !sandbox)
+      navigate(seasonHref(primarySportKey, season, orgId), { replace: true });
+  }, [search, team, org, sandbox, navigate, orgId, primarySportKey]);
   useEffect(() => {
     if (org?.primarySportKey && !sandbox) rememberSport(org.primarySportKey);
   }, [org?.id, org?.primarySportKey, scope]);

@@ -1,3 +1,4 @@
+import { seasonHref } from "@/lib/seasonNavigation";
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
@@ -109,7 +110,7 @@ function Invitations({ account }: { account: string }) {
                 ))}
                 <Link
                   className="inline-flex min-h-11 items-center text-cl-accent underline"
-                  href={`/sports/${r.sportKey}/organizations/${r.organizationId}?season=${r.seasonId}`}
+                  href={seasonHref(r.sportKey, r.seasonId, r.organizationId)}
                 >
                   View published season
                 </Link>

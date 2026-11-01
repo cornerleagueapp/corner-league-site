@@ -95,7 +95,11 @@ export default function UserProfilePage({ username }: { username: string }) {
                   .join(" ") || person.username}
               </h1>
               <p className="mt-1 text-cl-muted">@{person.username}</p>
-              <AthleteAccountLinks key={person.id} username={person.username} racer={racer} />
+              <AthleteAccountLinks
+                key={person.id}
+                username={person.username}
+                racer={racer}
+              />
               <p className="mt-4 whitespace-pre-wrap break-words text-sm leading-relaxed text-cl-muted">
                 {person.bio}
               </p>
@@ -182,7 +186,12 @@ export default function UserProfilePage({ username }: { username: string }) {
       )}
       <div className="grid min-w-0 gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
         <aside className="profile-about space-y-5">
-          <RacerIdentityCard key={person.id} username={person.username} profile={racer} isOwn={isOwn} />
+          <RacerIdentityCard
+            key={person.id}
+            username={person.username}
+            profile={racer}
+            isOwn={isOwn}
+          />
           <section className={socialBox}>
             <h2 className="font-bold">About</h2>
             <p className="mt-3 whitespace-pre-wrap break-words text-sm text-cl-muted">
@@ -194,7 +203,7 @@ export default function UserProfilePage({ username }: { username: string }) {
           <nav aria-label="Profile content" className="profile-content-nav">
             {(
               [
-                ["posts", "Posts"],
+                ["posts", "Feed"],
                 ["athletes", "Athletes"],
                 ["results", "Results"],
                 ["articles", "Articles"],
@@ -218,7 +227,11 @@ export default function UserProfilePage({ username }: { username: string }) {
             </>
           )}
           {tab === "posts" && (
-            <SocialPostFeed username={username} compose={isOwn} />
+            <ProfileFeed
+              key={`${person.id}:${isOwn}:${user?.id}`}
+              username={username}
+              isOwn={isOwn}
+            />
           )}
           {tab === "articles" && (
             <section className="profile-articles space-y-4">
@@ -236,5 +249,59 @@ export default function UserProfilePage({ username }: { username: string }) {
         </section>
       </div>
     </main>
+  );
+}
+
+export function ProfileFeed({
+  username,
+  isOwn,
+}: {
+  username: string;
+  isOwn: boolean;
+}) {
+  const [filter, setFilter] = useState<"mine" | "followers">("mine");
+  const mode = isOwn ? filter : "mine";
+  return (
+    <section className="space-y-4" aria-label="Profile feed">
+      {isOwn && (
+        <div className="rounded-2xl border border-cl-border bg-cl-surface p-4">
+          <div
+            role="group"
+            aria-label="Feed filter"
+            className="flex flex-wrap gap-2"
+          >
+            {(
+              [
+                ["mine", "My posts"],
+                ["followers", "Followers’ posts"],
+              ] as const
+            ).map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                aria-pressed={mode === value}
+                onClick={() => setFilter(value)}
+                className={`${socialButton} ${mode === value ? "border-cl-accent bg-cl-subtle text-cl-accent" : ""}`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <p className="mt-3 text-sm text-cl-muted">
+            {mode === "mine"
+              ? "Updates you have shared with the community."
+              : "Public posts from people who follow you. Only you can see this personalized feed on your profile."}
+          </p>
+        </div>
+      )}
+      <SocialPostFeed
+        username={mode === "mine" ? username : undefined}
+        feed={mode === "followers" ? "followers" : "all"}
+        compose={isOwn}
+        title={
+          isOwn ? (mode === "mine" ? "My posts" : "Followers’ posts") : "Posts"
+        }
+      />
+    </section>
   );
 }

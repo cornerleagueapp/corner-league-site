@@ -1,3 +1,4 @@
+import PublicSeasonPage from "@/pages/public-season";
 import SeasonWaiverRecords from "@/pages/season-waiver-records";
 import OfficialInvitation from "@/pages/official-invitation";
 import OfficialAssignments from "@/pages/official-assignments";
@@ -432,6 +433,9 @@ function Router() {
             <SportOrganizationDirectory />
           </ErrorBoundary>
         </AppShell>
+      </Route>
+      <Route path="/sports/:sportKey/seasons/:seasonId">
+        <AppShell guestMode><ErrorBoundary><PublicSeasonPage /></ErrorBoundary></AppShell>
       </Route>
       <Route path="/sports/:sportKey/games/:seasonId/:gameId">
         <AppShell guestMode>
