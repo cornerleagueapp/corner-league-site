@@ -1,3 +1,4 @@
+import LocalDiscoveryPage from '@/features/local-discovery/LocalDiscoveryPage';
 import PublicSeasonPage from "@/pages/public-season";
 import SeasonWaiverRecords from "@/pages/season-waiver-records";
 import OfficialInvitation from "@/pages/official-invitation";
@@ -434,6 +435,7 @@ function Router() {
           </ErrorBoundary>
         </AppShell>
       </Route>
+      <Route path="/local-discovery/:id"><AppShell guestMode><ErrorBoundary><LocalDiscoveryPage/></ErrorBoundary></AppShell></Route>
       <Route path="/sports/:sportKey/seasons/:seasonId">
         <AppShell guestMode><ErrorBoundary><PublicSeasonPage /></ErrorBoundary></AppShell>
       </Route>

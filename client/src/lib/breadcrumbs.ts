@@ -30,6 +30,7 @@ const labels: Record<string, string> = {
   athlete: "Athlete",
 };
 export function breadcrumbsFor(path: string): Breadcrumb[] {
+  if (path.startsWith("/local-discovery/")) return [];
   // Team pages render named organization/season breadcrumbs from their loaded data.
   if (/^\/sports\/[^/]+\/(teams|games|seasons)\//.test(path)) return [];
   const parts = path.split(/[?#]/)[0].split("/").filter(Boolean);

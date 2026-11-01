@@ -1,5 +1,6 @@
+import {localOpportunity,type LocalOpportunity} from '@/features/local-discovery/data';
 import { apiFetch } from '@/lib/apiClient';
-export type DiscoveryItem={id:string;name:string;kind:string;href:string;sport?:string;imageUrl?:string|null;detail?:string;date?:string;contentType?:string};
+export type DiscoveryItem={id:string;name:string;kind:string;href:string;sport?:string;imageUrl?:string|null;detail?:string;date?:string;contentType?:string;local?:LocalOpportunity};
 export type DiscoveryGroup={kind:string;items:DiscoveryItem[];hasNextPage:boolean;signInRequired?:boolean};
 export const categories=['all','athletes','users','organizations','events','articles'];
 export const labels:Record<string,string>={all:'All results',athletes:'Athletes',users:'Users',organizations:'Organizations',events:'Events',articles:'Articles & posts'};
@@ -11,7 +12,7 @@ export async function discovery<T>(path:string,params:Record<string,string>,sign
  const data=json.data;
  if(!data || (!Array.isArray(data.groups) && !Array.isArray(data.items)))throw new Error('Invalid search response.');
  const items = data.groups ? data.groups.flatMap((g:DiscoveryGroup)=>g.items) : [...data.items,...(data.upcoming||[]),...(data.organizations||[])];
- for(const i of items) if(!i || typeof i.id!=='string' || typeof i.name!=='string' || typeof i.href!=='string' || !/^\/(?!\/)/.test(i.href))throw new Error('Invalid search result.');
+ for(const i of items) {if(i?.kind==='local')localOpportunity(i.local);if(!i || typeof i.id!=='string' || typeof i.name!=='string' || typeof i.href!=='string' || !/^\/(?!\/)/.test(i.href))throw new Error('Invalid search result.');}
  return data;
 }
 
