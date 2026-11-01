@@ -1,3 +1,4 @@
+import { orderedStatKeys } from "@/lib/statPresentation";
 import { seasonHref } from "@/lib/seasonNavigation";
 import {
   statTotals,
@@ -76,7 +77,10 @@ export default function PublicTeamPage() {
   const rows = (d.playerStats || []).filter(
     (r) => r.teamId === t.id && finals.has(r.gameId),
   );
-  const metrics = [...new Set(rows.flatMap((r) => Object.keys(r.values)))];
+  const metrics = orderedStatKeys(
+    d.sportKey,
+    rows.flatMap((r) => Object.keys(r.values)),
+  );
   return (
     <main className="consumer-document-page p-3 sm:p-6 text-cl-ink min-w-0">
       <PageSEO

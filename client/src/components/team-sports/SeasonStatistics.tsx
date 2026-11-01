@@ -1,13 +1,13 @@
+import {
+  orderedStatKeys,
+  recordedDerivedStats,
+  derivedStatDisplay,
+} from "@/lib/statPresentation";
 import { useState } from "react";
 import { Link } from "wouter";
 import type { PublicTeamSeason } from "@/lib/teamSports";
 import { seasonStats } from "@/lib/seasonStatistics";
-import {
-  SPORT_STATS,
-  statTotals,
-  statLabel,
-  derivedStatistics,
-} from "@/lib/sportStatistics";
+import { SPORT_STATS, statTotals, statLabel } from "@/lib/sportStatistics";
 import { athleteHref, teamHref } from "./GameCard";
 import TeamLogo from "./TeamLogo";
 export default function SeasonStatistics({
@@ -18,9 +18,21 @@ export default function SeasonStatistics({
   const [division, setDivision] = useState(""),
     [metric, setMetric] = useState("");
   const { teams, rows, players } = seasonStats(d, division);
-  const metrics = (SPORT_STATS[d.sportKey] || []).filter((m) =>
-    rows.some((r) => m in r.values),
+  const metrics = orderedStatKeys(
+    d.sportKey,
+    (SPORT_STATS[d.sportKey] || []).filter((m) =>
+      rows.some((r) => m in r.values),
+    ),
   );
+  const efficiency = teams
+    .map((team) => ({
+      team,
+      rates: recordedDerivedStats(
+        rows.filter((r) => r.teamId === team.id),
+        d.sportKey,
+      ),
+    }))
+    .filter((item) => item.rates.length > 0);
   const chosen = metrics.includes(metric) ? metric : metrics[0] || "";
   const leaders = [...players]
     .sort(
@@ -163,32 +175,42 @@ export default function SeasonStatistics({
                 </tbody>
               </table>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {teams.map((t) => {
-                const teamRows = rows.filter((r) => r.teamId === t.id);
-                return teamRows.length ? (
-                  <div
-                    key={t.id}
-                    className="rounded-xl border border-cl-border bg-cl-subtle p-4"
-                  >
-                    <h4 className="font-bold">{t.name}</h4>
-                    <dl className="mt-2 space-y-1 text-sm">
-                      {Object.entries(
-                        derivedStatistics(
-                          statTotals(teamRows, d.sportKey),
-                          d.sportKey,
-                        ),
-                      ).map(([key, value]) => (
-                        <div key={key} className="flex justify-between gap-3">
-                          <dt className="text-cl-muted">{statLabel(key)}</dt>
-                          <dd>{value}</dd>
-                        </div>
-                      ))}
-                    </dl>
-                  </div>
-                ) : null;
-              })}
-            </div>
+            {efficiency.length > 0 && (
+              <section
+                className="space-y-3"
+                aria-label="Recorded team efficiency"
+              >
+                <h3 className="text-xl font-bold">
+                  {d.sportKey === "basketball"
+                    ? "Shooting percentages"
+                    : "Team efficiency"}
+                </h3>
+                <p className="text-sm text-cl-muted">
+                  Calculated only where the required stats and attempts are
+                  recorded.
+                </p>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {efficiency.map(({ team, rates }) => (
+                    <div
+                      key={team.id}
+                      className="rounded-xl border border-cl-border bg-cl-subtle p-4"
+                    >
+                      <h4 className="font-bold">{team.name}</h4>
+                      <dl className="mt-2 space-y-1 text-sm">
+                        {rates.map(([key, value]) => (
+                          <div key={key} className="flex justify-between gap-3">
+                            <dt className="text-cl-muted">{statLabel(key)}</dt>
+                            <dd className="font-semibold">
+                              {derivedStatDisplay(key, value)}
+                            </dd>
+                          </div>
+                        ))}
+                      </dl>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
           </section>
         </>
       )}

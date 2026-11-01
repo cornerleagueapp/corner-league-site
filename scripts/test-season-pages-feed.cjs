@@ -204,7 +204,7 @@ const compile = loader(baseMocks),
   stats = compile("client/src/lib/seasonStatistics.ts");
 assert.deepEqual(
   nav.seasonTabs.map((t) => t[0]),
-  ["overview", "schedule", "standings", "teams", "stats", "awards", "photos"],
+  ["overview", "schedule", "standings", "stats", "awards", "photos"],
 );
 assert.equal(
   nav.seasonHref("basketball", "a/b", "o&x", "stats"),
@@ -236,6 +236,7 @@ for (const key of nav.seasonTabs.map((t) => t[0])) {
     assert.doesNotMatch(html, /Team statistics/);
   }
   if (key === "stats") {
+    assert.doesNotMatch(html, /Shooting percentages|FG%|3P%|FT%/);
     assert.match(html, /Alice/);
     assert.match(html, /Team statistics/);
     assert.doesNotMatch(html, />99</);
@@ -297,4 +298,67 @@ assert.doesNotMatch(
 assert.equal(captured.compose, false);
 console.log(
   "PASS dedicated season tabs/routes, registration, summary, final-only stats, scoped photo cache, all-star game without awards, error states and owner-only profile filters",
+);
+
+const presentation = compile("client/src/lib/statPresentation.ts");
+const raw = [
+  "blocks",
+  "points",
+  "steals",
+  "assists",
+  "minutes",
+  "rebounds",
+  "turnovers",
+];
+assert.deepEqual(presentation.orderedStatKeys("basketball", raw), [
+  "points",
+  "rebounds",
+  "assists",
+  "blocks",
+  "steals",
+  "turnovers",
+  "minutes",
+]);
+assert.deepEqual(presentation.orderedStatKeys("soccer", ["assists", "goals"]), [
+  "assists",
+  "goals",
+]);
+assert.deepEqual(
+  presentation.recordedDerivedStats([{ values: { points: 12 } }], "basketball"),
+  [],
+);
+assert.deepEqual(
+  presentation.recordedDerivedStats(
+    [{ values: { fieldGoalsMade: 0, fieldGoalsAttempted: 4 } }],
+    "basketball",
+  ),
+  [["fieldGoalPercentage", 0]],
+);
+assert.deepEqual(
+  presentation.recordedDerivedStats(
+    [{ values: { fieldGoalsAttempted: 4 } }],
+    "basketball",
+  ),
+  [],
+);
+assert.equal(presentation.derivedStatDisplay("fieldGoalPercentage", 0), "0%");
+assert.match(
+  nav.seasonHref("basketball", "season", "org", "teams"),
+  /tab=standings/,
+);
+const savedStats = season.playerStats;
+season.playerStats = [
+  {
+    ...savedStats[0],
+    values: { points: 20, fieldGoalsMade: 0, fieldGoalsAttempted: 4 },
+  },
+];
+tab = "stats";
+const shooting = render(React.createElement(Page));
+assert.match(shooting, /Shooting percentages/);
+assert.match(shooting, />0%</);
+assert.doesNotMatch(shooting, /3P%|FT%/);
+season.playerStats = savedStats;
+console.log(
+  "PASS basketball stat ordering, no duplicate Teams tab, legacy links, hidden unrecorded efficiency and preserved zero percentages",
 );

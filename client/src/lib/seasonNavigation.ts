@@ -2,7 +2,6 @@ export const seasonTabs = [
   ["overview", "Overview"],
   ["schedule", "Schedule & Results"],
   ["standings", "Standings"],
-  ["teams", "Teams"],
   ["stats", "Stats & Leaders"],
   ["awards", "Awards & All-Stars"],
   ["photos", "Photos"],
@@ -14,6 +13,6 @@ export function seasonHref(
   tab = "overview",
 ) {
   const query = new URLSearchParams({ org });
-  if (tab !== "overview") query.set("tab", tab);
+  if (tab !== "overview") query.set("tab", tab === "teams" ? "standings" : tab);
   return `/sports/${encodeURIComponent(sport)}/seasons/${encodeURIComponent(season)}?${query}`;
 }

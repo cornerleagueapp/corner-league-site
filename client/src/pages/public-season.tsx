@@ -12,8 +12,10 @@ export default function PublicSeasonPage() {
   const [, p] = useRoute("/sports/:sportKey/seasons/:seasonId");
   const params = new URLSearchParams(useSearch()),
     org = params.get("org") || "";
-  const tab = seasonTabs.some(([key]) => key === params.get("tab"))
-    ? params.get("tab")!
+  const requestedTab =
+    params.get("tab") === "teams" ? "standings" : params.get("tab");
+  const tab = seasonTabs.some(([key]) => key === requestedTab)
+    ? requestedTab!
     : "overview";
   const q = useQuery({
     queryKey: ["team-season", "public", "guest", org, p?.sportKey, p?.seasonId],

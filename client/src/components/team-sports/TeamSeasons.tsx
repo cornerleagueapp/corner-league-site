@@ -472,12 +472,32 @@ export function SeasonDetails({
                     className="rounded-xl border border-cl-border p-3"
                   >
                     <p className="font-bold">
-                      <span className="inline-flex items-center gap-2">
-                        <TeamLogo
-                          team={d.teams.find((t) => t.id === r.teamId)}
-                        />
-                        {r.name}
-                      </span>{" "}
+                      {sandbox ? (
+                        <>
+                          {" "}
+                          <span className="inline-flex items-center gap-2">
+                            <TeamLogo
+                              team={d.teams.find((t) => t.id === r.teamId)}
+                            />
+                            {r.name}
+                          </span>{" "}
+                        </>
+                      ) : (
+                        <Link
+                          className="inline-flex min-h-11 items-center gap-2 text-cl-accent"
+                          href={teamHref(
+                            d.sportKey,
+                            d.id,
+                            r.teamId,
+                            d.organizationId,
+                          )}
+                        >
+                          <TeamLogo
+                            team={d.teams.find((t) => t.id === r.teamId)}
+                          />
+                          {r.name}
+                        </Link>
+                      )}{" "}
                       · #{r.position ?? "—"} · {r.points} points ·{" "}
                       {((r.winPercentage ?? 0) * 100).toFixed(1)}%
                     </p>

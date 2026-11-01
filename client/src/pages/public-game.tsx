@@ -1,3 +1,4 @@
+import { orderedStatKeys } from "@/lib/statPresentation";
 import { seasonHref } from "@/lib/seasonNavigation";
 import {
   statTotals,
@@ -51,7 +52,10 @@ export default function PublicGamePage() {
   const rows = (g.status === "cancelled" ? [] : d.playerStats || []).filter(
     (s) => s.gameId === g.id,
   );
-  const metrics = [...new Set(rows.flatMap((s) => Object.keys(s.values)))];
+  const metrics = orderedStatKeys(
+    d.sportKey,
+    rows.flatMap((s) => Object.keys(s.values)),
+  );
   const standing = (id: string) =>
     d.standings.flatMap((s) => s.rows).find((s) => s.teamId === id);
   const teamLink = (id: string) => teamHref(p.sportKey, d.id, id, org);
@@ -247,7 +251,7 @@ export default function PublicGamePage() {
                       <tr>
                         <th>Player</th>
                         {metrics.map((m) => (
-                          <th key={m}>{m}</th>
+                          <th key={m}>{statLabel(m)}</th>
                         ))}
                       </tr>
                     </thead>
@@ -283,7 +287,8 @@ export default function PublicGamePage() {
               ))}
             </div>
             <p className="text-cl-muted">
-              Totals from submitted player box scores. Percentages use combined attempts; a dash means no denominator was recorded.
+              Totals from submitted player box scores. Percentages use combined
+              attempts; a dash means no denominator was recorded.
             </p>
             {Object.keys(
               derivedStatistics(statTotals(rows, d.sportKey), d.sportKey),
