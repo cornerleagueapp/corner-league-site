@@ -5,8 +5,14 @@ export default function FeedPagination({
   busy,
   onPage,
   atLimit = false,
+  totalItems,
+  totalPages,
+  partial = false,
 }: {
   atLimit?: boolean;
+  totalItems?: number | null;
+  totalPages?: number | null;
+  partial?: boolean;
   page: number;
   count: number;
   hasNext: boolean;
@@ -19,7 +25,11 @@ export default function FeedPagination({
       aria-label="Latest updates pages"
     >
       <p role="status" aria-live="polite">
-        Page {page + 1} · {count} {count === 1 ? "update" : "updates"}
+        Page {page + 1}
+        {totalPages && totalPages > 0 ? ` of ${totalPages}` : ""} ·{" "}
+        {Number.isSafeInteger(totalItems) && totalItems! >= 0
+          ? `${page * 12 + 1}–${page * 12 + count} of ${totalItems} updates`
+          : `${count} ${count === 1 ? "update" : "updates"}`}
       </p>
       <div>
         <button
@@ -40,9 +50,11 @@ export default function FeedPagination({
       </div>
       {!hasNext && count > 0 && (
         <small>
-          {atLimit
-            ? "You’ve reached the browsing limit. Refresh for the latest updates."
-            : "You’re all caught up."}
+          {partial
+            ? "Some discovery articles are temporarily unavailable. Refresh to check again."
+            : atLimit
+              ? "You’ve reached the browsing limit. Refresh for the latest updates."
+              : "End of the currently available updates."}
         </small>
       )}
     </nav>

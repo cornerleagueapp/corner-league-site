@@ -1,5 +1,6 @@
 export type LocalOpportunity = {
   id: string;
+  imageUrl?: string | null;
   title: string;
   summary: string;
   sport: string;
@@ -47,6 +48,7 @@ export function localOpportunity(value: unknown): LocalOpportunity {
     !safeSourceUrl(d.source.url) ||
     !safeSourceUrl(d.sourceUrl) ||
     !safeSourceUrl(d.actionUrl) ||
+    (d.imageUrl != null && !safeSourceUrl(d.imageUrl)) ||
     ![d.lastVerifiedAt, d.expiresAt].every(
       (v) => typeof v === "string" && Number.isFinite(Date.parse(v)),
     ) ||

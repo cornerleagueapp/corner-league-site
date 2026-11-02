@@ -118,3 +118,25 @@ const newsDetail = renderToStaticMarkup(
 assert.match(newsDetail, /Publication date unavailable/);
 assert.match(newsDetail, /original publisher/);
 assert.doesNotMatch(newsDetail, /provides the program/);
+
+const photo = renderToStaticMarkup(
+  React.createElement(Card, {
+    item: {
+      ...row,
+      type: "announcement",
+      sport: "volleyball",
+      imageUrl: "https://cdn.example.org/volleyball.jpg",
+    },
+  }),
+);
+assert.match(photo, /class="local-discovery-photo"/);
+assert.match(photo, /src="https:\/\/cdn.example.org\/volleyball.jpg"/);
+assert.match(photo, /referrerPolicy="no-referrer"/);
+assert.doesNotMatch(photo, /local-discovery-fallback-art/);
+const volleyball = renderToStaticMarkup(
+  React.createElement(Card, { item: { ...row, sport: "volleyball" } }),
+);
+assert.match(volleyball, /local-discovery-fallback-art/);
+assert.throws(() =>
+  data.localOpportunity({ ...row, imageUrl: "javascript:alert(1)" }),
+);

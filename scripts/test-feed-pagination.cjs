@@ -34,7 +34,10 @@ assert.match(
   render({ page: 2, count: 2, hasNext: false }),
   /Page 3 · 2 updates/,
 );
-assert.match(render({ page: 2, count: 2, hasNext: false }), /all caught up/);
+assert.match(
+  render({ page: 2, count: 2, hasNext: false }),
+  /currently available updates/,
+);
 assert.match(render({ busy: true }), /disabled="">Loading/);
 assert.match(
   render({ page: 49, hasNext: false, atLimit: true }),
@@ -42,4 +45,13 @@ assert.match(
 );
 console.log(
   "PASS consumer pagination first/middle/last/loading/limit states and accessible controls",
+);
+
+assert.match(
+  render({ page: 1, count: 12, totalItems: 48, totalPages: 4 }),
+  /Page 2 of 4.*13–24 of 48 updates/,
+);
+assert.match(
+  render({ hasNext: false, partial: true }),
+  /temporarily unavailable/,
 );

@@ -15,6 +15,8 @@ type FeedPage = {
   page: number;
   hasNextPage: boolean;
   nextCursor: string | null;
+  totalItems?: number | null;
+  totalPages?: number | null;
   upcoming: DiscoveryItem[];
   organizations: DiscoveryItem[];
   hasMoreEvents?: boolean;
@@ -145,6 +147,12 @@ function AllSportsFeed() {
               hasNext={hasNext}
               busy={feed.isFetching}
               onPage={(next) => void goToPage(next)}
+              totalItems={first?.totalItems}
+              totalPages={first?.totalPages}
+              partial={Boolean(
+                first?.localDiscoveryUnavailable ||
+                current?.localDiscoveryUnavailable,
+              )}
               atLimit={Boolean(current?.hasNextPage && !hasNext)}
             />
           )}

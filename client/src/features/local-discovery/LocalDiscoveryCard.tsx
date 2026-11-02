@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { Link } from "wouter";
 import { MapPin, ExternalLink } from "lucide-react";
 import SportArtwork from "@/components/sport-hub/SportArtwork";
 import { SPORT_VISUALS } from "@/lib/sportVisuals";
 import {
+  safeSourceUrl,
   localDate,
   localKind,
   localSport,
@@ -16,16 +18,64 @@ export default function LocalDiscoveryCard({
   item: LocalOpportunity;
   detail?: boolean;
 }) {
+  const [failedImage, setFailedImage] = useState<string | null>(null);
+  const image =
+    safeSourceUrl(d.imageUrl) && failedImage !== d.imageUrl ? d.imageUrl : null;
   const news = d.type === "announcement";
   return (
     <article
       className={`local-discovery-card ${detail ? "local-discovery-detail" : ""}`}
     >
       <div className="local-discovery-art" aria-hidden="true">
-        {Object.prototype.hasOwnProperty.call(SPORT_VISUALS, d.sport) ? (
+        {image ? (
+          <img
+            className="local-discovery-photo"
+            src={image}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            referrerPolicy="no-referrer"
+            onError={() => setFailedImage(image)}
+          />
+        ) : Object.prototype.hasOwnProperty.call(SPORT_VISUALS, d.sport) ? (
           <SportArtwork sport={d.sport} />
         ) : (
-          <MapPin size={46} />
+          <svg
+            className="local-discovery-fallback-art"
+            viewBox="0 0 240 300"
+            preserveAspectRatio="xMidYMid slice"
+          >
+            <defs>
+              <linearGradient id={`news-art-${d.id}`} x2="1" y2="1">
+                <stop stopColor="#153b4b" />
+                <stop offset="1" stopColor="#27646b" />
+              </linearGradient>
+            </defs>
+            <rect width="240" height="300" fill={`url(#news-art-${d.id})`} />
+            <path
+              d="M-25 240 120 130 270 240M120 130v170M-20 270h280M25 201l190 0"
+              fill="none"
+              stroke="#83d8dd"
+              strokeWidth="2"
+              opacity=".4"
+            />
+            <g
+              transform="translate(120 130)"
+              fill="#f0eee3"
+              stroke="#23444e"
+              strokeWidth="2.5"
+            >
+              <circle r="47" />
+              <path
+                d={
+                  d.sport === "volleyball"
+                    ? "M0-47Q-25-12 0 0Q25 12 26 39M-44 17Q-2 26 0 0Q2-26 21-42M-21 42Q5 3 0 0Q-5-3-26-39"
+                    : "M0-47V47M-47 0H47M-34-34Q12 0-34 34M34-34Q-12 0 34 34"
+                }
+                fill="none"
+              />
+            </g>
+          </svg>
         )}
         <span>Local discovery</span>
       </div>
