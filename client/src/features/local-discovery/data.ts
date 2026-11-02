@@ -68,7 +68,7 @@ export const localKind: Record<string, string> = {
   registration: "Registration opportunity",
   event: "Local event",
   "open-play": "Open play",
-  announcement: "Program update",
+  announcement: "News & updates",
 };
 export const localSport = (sport: string) =>
   sport

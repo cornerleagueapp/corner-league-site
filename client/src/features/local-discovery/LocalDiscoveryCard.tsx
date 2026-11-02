@@ -16,6 +16,7 @@ export default function LocalDiscoveryCard({
   item: LocalOpportunity;
   detail?: boolean;
 }) {
+  const news = d.type === "announcement";
   return (
     <article
       className={`local-discovery-card ${detail ? "local-discovery-detail" : ""}`}
@@ -46,54 +47,62 @@ export default function LocalDiscoveryCard({
           {d.city} · {d.county} County
         </p>
         <p>{d.summary}</p>
-        <dl className="local-discovery-facts">
-          <div>
-            <dt>Who</dt>
-            <dd>
-              {d.eligibility ||
-                { youth: "Youth", adult: "Adults", all: "All ages" }[
-                  d.audience
-                ] ||
-                d.audience}
-            </dd>
-          </div>
-          {d.startsAt && (
-            <div>
-              <dt>Starts</dt>
-              <dd>
-                <time dateTime={d.startsAt}>{localDate(d.startsAt)}</time>
-              </dd>
-            </div>
-          )}
-          {d.endsAt && detail && (
-            <div>
-              <dt>Ends</dt>
-              <dd>
-                <time dateTime={d.endsAt}>{localDate(d.endsAt)}</time>
-              </dd>
-            </div>
-          )}
-          {d.registrationOpensAt && (
-            <div>
-              <dt>Registration opens</dt>
-              <dd>
-                <time dateTime={d.registrationOpensAt}>
-                  {localDate(d.registrationOpensAt)}
-                </time>
-              </dd>
-            </div>
-          )}
-          {d.registrationClosesAt && (
-            <div>
-              <dt>Registration closes</dt>
-              <dd>
-                <time dateTime={d.registrationClosesAt}>
-                  {localDate(d.registrationClosesAt)}
-                </time>
-              </dd>
-            </div>
-          )}
-        </dl>
+        {(!news ||
+          d.startsAt ||
+          d.endsAt ||
+          d.registrationOpensAt ||
+          d.registrationClosesAt) && (
+          <dl className="local-discovery-facts">
+            {!news && (
+              <div>
+                <dt>Who</dt>
+                <dd>
+                  {d.eligibility ||
+                    { youth: "Youth", adult: "Adults", all: "All ages" }[
+                      d.audience
+                    ] ||
+                    d.audience}
+                </dd>
+              </div>
+            )}
+            {d.startsAt && (
+              <div>
+                <dt>Starts</dt>
+                <dd>
+                  <time dateTime={d.startsAt}>{localDate(d.startsAt)}</time>
+                </dd>
+              </div>
+            )}
+            {d.endsAt && detail && (
+              <div>
+                <dt>Ends</dt>
+                <dd>
+                  <time dateTime={d.endsAt}>{localDate(d.endsAt)}</time>
+                </dd>
+              </div>
+            )}
+            {d.registrationOpensAt && (
+              <div>
+                <dt>Registration opens</dt>
+                <dd>
+                  <time dateTime={d.registrationOpensAt}>
+                    {localDate(d.registrationOpensAt)}
+                  </time>
+                </dd>
+              </div>
+            )}
+            {d.registrationClosesAt && (
+              <div>
+                <dt>Registration closes</dt>
+                <dd>
+                  <time dateTime={d.registrationClosesAt}>
+                    {localDate(d.registrationClosesAt)}
+                  </time>
+                </dd>
+              </div>
+            )}
+          </dl>
+        )}
         <p className="local-discovery-source">
           Source:{" "}
           <a href={d.source.url} target="_blank" rel="noopener noreferrer">
@@ -101,17 +110,23 @@ export default function LocalDiscoveryCard({
           </a>
         </p>
         <p className="local-discovery-verified">
-          Last verified{" "}
-          <time dateTime={d.lastVerifiedAt}>{localDate(d.lastVerifiedAt)}</time>
           {d.sourcePublishedAt && (
             <>
-              {" "}
-              · Source published{" "}
+              <span>Published </span>
               <time dateTime={d.sourcePublishedAt}>
                 {localDate(d.sourcePublishedAt)}
               </time>
             </>
           )}
+          {(!news || detail) && (
+            <>
+              {d.sourcePublishedAt ? " · " : ""}Last verified{" "}
+              <time dateTime={d.lastVerifiedAt}>
+                {localDate(d.lastVerifiedAt)}
+              </time>
+            </>
+          )}
+          {news && !d.sourcePublishedAt && "Publication date unavailable"}
         </p>
         <div className="local-discovery-actions">
           <a
@@ -122,7 +137,9 @@ export default function LocalDiscoveryCard({
           >
             {d.type === "registration"
               ? "View registration"
-              : "View organizer details"}{" "}
+              : news
+                ? "Read article"
+                : "View organizer details"}{" "}
             <ExternalLink size={15} aria-hidden="true" />
           </a>
           {!detail && (
@@ -133,9 +150,19 @@ export default function LocalDiscoveryCard({
         </div>
         {detail && (
           <p className="local-discovery-disclaimer">
-            Listed for local discovery. {d.source.name} provides the program;
-            Corner League is not its organizer. Confirm availability, fees and
-            eligibility with the source. Dates use your device timezone.
+            {news ? (
+              <>
+                Article from {d.source.name}. Follow the source link to read the
+                full story. Corner League links to the original publisher.
+              </>
+            ) : (
+              <>
+                Listed for local discovery. {d.source.name} provides the
+                program; Corner League is not its organizer. Confirm
+                availability, fees and eligibility with the source.
+              </>
+            )}{" "}
+            Dates use your device timezone.
           </p>
         )}
       </div>

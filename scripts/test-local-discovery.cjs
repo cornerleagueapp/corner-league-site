@@ -91,3 +91,30 @@ assert.doesNotMatch(detail, /Sport artwork/);
 console.log(
   "Local discovery validation, attribution, safe links, fallback artwork and detail rendering passed",
 );
+
+const news = renderToStaticMarkup(
+  React.createElement(Card, {
+    item: {
+      ...row,
+      type: "announcement",
+      sourcePublishedAt: "2026-10-20T12:00:00Z",
+    },
+  }),
+);
+assert.match(news, /News &amp; updates/);
+assert.match(news, /Read article/);
+assert.match(news, /Published /);
+assert.match(news, /dateTime="2026-10-20T12:00:00Z"/);
+assert.doesNotMatch(
+  news,
+  /Last verified|<dt>Who<|View organizer details|local-discovery-facts/,
+);
+const newsDetail = renderToStaticMarkup(
+  React.createElement(Card, {
+    item: { ...row, type: "announcement" },
+    detail: true,
+  }),
+);
+assert.match(newsDetail, /Publication date unavailable/);
+assert.match(newsDetail, /original publisher/);
+assert.doesNotMatch(newsDetail, /provides the program/);
