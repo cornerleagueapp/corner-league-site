@@ -66,12 +66,15 @@ export default function SportAthleteProfiles() {
       ...availability.sports
         .filter((s) => isAthleteSport(s.key))
         .map((s) => s.key),
+      "baseball",
+      "softball",
       ...(profiles.data ?? []).map((p) => p.sportKey),
     ]),
   ];
   useEffect(() => {
-    if (!selected && visible.length) setSelected(visible[0]);
-  }, [visible.join("|"), selected]);
+    if (!selected && visible.length)
+      setSelected(visible.includes(availability.sportKey) ? availability.sportKey : visible[0]);
+  }, [visible.join("|"), selected, availability.sportKey]);
   return (
     <main className="mx-auto max-w-4xl space-y-6 p-4 py-10 text-cl-ink">
       <h1 className="text-3xl font-black">Your athlete profiles</h1>

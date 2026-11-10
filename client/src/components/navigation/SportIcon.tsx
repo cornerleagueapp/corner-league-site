@@ -14,4 +14,4 @@ const paths: Record<string,string>={
 'onewheel-racing':'M8 17a4 4 0 1 1 8 0 4 4 0 0 1-8 0 M2 17h6 M16 17h6 M10 4l4 4-4 5 6 3',
 'rc-racing':'M3 12l3-5h12l3 5v7H3z M3 12h18 M6 19v3 M18 19v3 M12 7V2 M6 15h2 M16 15h2',
 };
-export function SportIcon({sport}:{sport:string}){return <svg className="cl-sport-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[sport]||paths.marathon}/></svg>;}
+export function SportIcon({sport}:{sport:string}){return <svg className="cl-sport-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[sport==="softball"?"baseball":sport]||paths.marathon}/></svg>;}

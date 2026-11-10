@@ -54,6 +54,17 @@ export const SPORT_VISUALS: Readonly<Record<string, SportVisual>> = {
     accent: "154 28 43",
     initials: "BS",
   },
+  softball: {
+    label: "Softball",
+    tile: 3,
+    eventSport: "softball",
+    nav: "49 22 72",
+    navInk: "255 249 255",
+    navMuted: "222 202 239",
+    bright: "253 213 104",
+    accent: "107 48 146",
+    initials: "SB",
+  },
   golf: {
     label: "Golf",
     tile: 4,

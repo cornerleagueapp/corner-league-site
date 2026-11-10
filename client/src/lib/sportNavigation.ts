@@ -1,5 +1,5 @@
-// Phase 1 showcase only. Other sport implementations and records remain intact.
-export const SHOWCASE_SPORTS = ["jet-ski", "basketball"] as const;
+// Public sport tabs. Other sport implementations and records remain intact.
+export const SHOWCASE_SPORTS = ["jet-ski", "basketball", "softball"] as const;
 export const isShowcaseSport = (key: string) =>
   (SHOWCASE_SPORTS as readonly string[]).includes(key);
 export function sportRegistration(key: string) {

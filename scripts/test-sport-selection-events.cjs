@@ -1,5 +1,37 @@
 const assert = require('node:assert/strict'), fs = require('node:fs'), path = require('node:path'), Module = require('node:module'), ts = require('typescript'), React = require('react'), {renderToStaticMarkup:render} = require('react-dom/server');
-function compile(file, mocks={}) { const f=path.resolve(file),m=new Module(f,module);m.paths=module.paths;m.require=n=>mocks[n]??require(n);m._compile(ts.transpileModule(fs.readFileSync(f,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020,jsx:ts.JsxEmit.ReactJSX}}).outputText,f);return m.exports; }
+// These tests load TSX directly, outside Vite's @/ alias resolver.
+const sourceRoot = path.resolve("client/src");
+const dateScroller = { default: () => null, useEventDay: () => ["2027-02-04", () => {}] };
+function compile(file, mocks = {}, cache = new Map()) {
+  const f = path.resolve(file);
+  if (cache.has(f)) return cache.get(f).exports;
+  const m = new Module(f, module);
+  m.paths = Module._nodeModulePaths(path.dirname(f));
+  cache.set(f, m);
+  const nodeRequire = Module.createRequire(f);
+  m.require = (name) => {
+    if (Object.hasOwn(mocks, name)) return mocks[name];
+    if (name === "@/components/events/EventDateScroller") return dateScroller;
+    if (name === "@/lib/eventDay") {
+      return { dayWindow: () => ({ from: "2027-02-04T00:00:00Z", to: "2027-02-05T00:00:00Z" }) };
+    }
+    const local = name.startsWith("@/")
+      ? path.resolve(sourceRoot, name.slice(2))
+      : name.startsWith(".")
+        ? path.resolve(path.dirname(f), name)
+        : null;
+    if (local) {
+      const target = [local, local + ".ts", local + ".tsx", path.join(local, "index.ts"), path.join(local, "index.tsx")]
+        .find((candidate) => /\.tsx?$/.test(candidate) && fs.existsSync(candidate));
+      if (target) return compile(target, mocks, cache);
+    }
+    return nodeRequire(name);
+  };
+  m._compile(ts.transpileModule(fs.readFileSync(f, "utf8"), {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020, jsx: ts.JsxEmit.ReactJSX },
+  }).outputText, f);
+  return m.exports;
+}
 const nav=compile('client/src/lib/sportNavigation.ts'),visuals=compile('client/src/lib/sportVisuals.ts');
 let location='/sports/jet-ski/events',search='',stored='basketball',effects=[],catalog=[];
 const bus=new EventTarget();global.window={localStorage:{getItem:()=>stored,setItem:(_,v)=>stored=v},addEventListener:bus.addEventListener.bind(bus),removeEventListener:bus.removeEventListener.bind(bus),dispatchEvent:bus.dispatchEvent.bind(bus)};
@@ -11,14 +43,14 @@ search='';catalog=[{key:'basketball',label:'Basketball'}];assert.equal(read().sp
 location='/athlete/one';search='sport=basketball';assert.equal(read().sportKey,'basketball');assert.equal(stored,'basketball');
 location='/posts/one';search='sport=jet-ski';assert.equal(read().sportKey,'jet-ski');
 location='/sports/basketball/events';search='sport=jet-ski';assert.equal(read().sportKey,'basketball');
-assert.deepEqual(read().sports.map(s=>s.key),['jet-ski','basketball']);
+assert.deepEqual(read().sports.map(s=>s.key),['jet-ski','basketball','softball']);
 for (const sport of nav.SHOWCASE_SPORTS) {const more=nav.sportMoreLinks(sport);assert.equal(more[0].label,'Athletes');assert(more.every(l=>nav.routeSport(l.href.split('?')[0])===sport||new URL('https://test'+l.href).searchParams.get('sport')===sport));assert(more.some(l=>l.label==='Registration'));}
 assert.equal(nav.sportMoreLinks('basketball').length,2);assert(nav.sportMoreLinks('jet-ski').length>1);
 // Generic renders must not write their inferred fallback into shared storage.
 location='/profile';search='';stored='unlisted';read();assert.equal(stored,'unlisted');
 const wouter={Link:({href,children,...props})=>React.createElement('a',{href,...props},children)};
-const Map=compile('client/src/components/landing/NationwideMap.tsx', {react:{...React,default:React},wouter,'@assets/us-map-outline.svg':'/map.svg'}).default;
-const mapHTML=render(React.createElement(Map,{pageOnly:true,events:[{id:'known',name:'Race',startDate:'2026-10-24',endDate:'2026-10-25',location:'Lake Havasu, AZ'},{id:'unknown',name:'Game',startDate:'2026-10-24',endDate:'2026-10-25',location:'Demo Arena'}]}));
+const NationwideMap=compile('client/src/components/landing/NationwideMap.tsx', {react:{...React,default:React},wouter,'@assets/us-map-outline.svg':'/map.svg'}).default;
+const mapHTML=render(React.createElement(NationwideMap,{pageOnly:true,events:[{id:'known',name:'Race',startDate:'2026-10-24',endDate:'2026-10-25',location:'Lake Havasu, AZ'},{id:'unknown',name:'Game',startDate:'2026-10-24',endDate:'2026-10-25',location:'Demo Arena'}]}));
 assert(mapHTML.includes('United States event map'));assert(mapHTML.includes('1 events have no mapped location'));assert(mapHTML.includes('Map of this results page'));
 let configs=[],requested=[];
 const Games=compile('client/src/components/team-sports/TeamGameDirectory.tsx',{wouter,'@/components/landing/NationwideMap':{default:()=>null},'@/components/sport-hub/EventOrganizationFilter':{default:()=>null},'@/lib/sportVisuals':visuals,'@/lib/sportNavigation':nav,'./GameCard':{default:()=>null},'@tanstack/react-query':{useQuery:c=>{configs.push(c);return {isPending:true};}},'@/lib/sportRegistration':{publicSportData:async url=>{requested.push(url);return {sportKey:'basketball',items:[],total:0,page:1,limit:12};}}}).default;

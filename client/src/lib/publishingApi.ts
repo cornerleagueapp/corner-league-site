@@ -13,6 +13,7 @@ export const publishingSports = [
   "motocross",
   "boat-racing",
   "baseball",
+  "softball",
   "basketball",
   "golf",
   "other",

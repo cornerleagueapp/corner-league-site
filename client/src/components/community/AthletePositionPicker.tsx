@@ -1,4 +1,4 @@
-import { positionOptions } from "@/lib/athletePositions";
+import { positionLabel, positionOptions } from "@/lib/athletePositions";
 export default function AthletePositionPicker({
   sport,
   value,
@@ -36,7 +36,7 @@ export default function AthletePositionPicker({
                 )
               }
             />
-            {p}
+            {positionLabel(sport, p)}
           </label>
         ))}
       </div>

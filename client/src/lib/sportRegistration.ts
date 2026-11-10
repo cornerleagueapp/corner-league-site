@@ -12,6 +12,7 @@ export function isRacingSport(key: string): boolean {
 }
 export const teamSportKeys = [
   "baseball",
+  "softball",
   "american-football",
   "basketball",
   "soccer",
@@ -41,6 +42,7 @@ export const sportEquipmentLabels: Record<string, string> = {
 export const sportLabels: Record<string, string> = {
   golf: "Golf",
   baseball: "Baseball",
+  softball: "Softball",
   "american-football": "Football (American)",
   basketball: "Basketball",
   soccer: "Soccer",

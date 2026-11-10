@@ -52,6 +52,7 @@ export default function GameCard({
       soccer: "goals",
       hockey: "goals",
       baseball: "runs",
+      softball: "runs",
       "american-football": "touchdowns",
     } as Record<string, string>
   )[d.sportKey];
