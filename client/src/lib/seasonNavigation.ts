@@ -5,6 +5,7 @@ export const seasonTabs = [
   ["stats", "Stats & Leaders"],
   ["awards", "Awards & All-Stars"],
   ["photos", "Photos"],
+  ["rulebooks", "Rulebooks"],
 ] as const;
 export function seasonHref(
   sport: string,

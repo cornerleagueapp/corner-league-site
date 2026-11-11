@@ -1,3 +1,4 @@
+import SeasonRulebooks from "@/components/team-sports/SeasonRulebooks";
 import { useEffect, useRef } from "react";
 import { Link, useRoute, useSearch } from "wouter";
 import { useQuery } from "@tanstack/react-query";
@@ -88,22 +89,25 @@ export default function PublicSeasonPage() {
           data={d}
           tab={tab}
           navigation={
-            <nav
-              ref={navigationRef}
-              aria-label="Season sections"
-              className="flex min-w-0 gap-2 overflow-x-auto border-y border-cl-border py-3"
-            >
-              {seasonTabs.map(([key, label]) => (
-                <Link
-                  key={key}
-                  href={seasonHref(d.sportKey, d.id, org, key)}
-                  aria-current={tab === key ? "page" : undefined}
-                  className={`inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-xl border px-3 py-2 text-sm font-semibold ${tab === key ? "border-cl-accent bg-cl-subtle text-cl-accent" : "border-cl-border bg-cl-subtle text-cl-ink"}`}
-                >
-                  {label}
-                </Link>
-              ))}
-            </nav>
+            <>
+              <nav
+                ref={navigationRef}
+                aria-label="Season sections"
+                className="flex min-w-0 gap-2 overflow-x-auto border-y border-cl-border py-3"
+              >
+                {seasonTabs.map(([key, label]) => (
+                  <Link
+                    key={key}
+                    href={seasonHref(d.sportKey, d.id, org, key)}
+                    aria-current={tab === key ? "page" : undefined}
+                    className={`inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-xl border px-3 py-2 text-sm font-semibold ${tab === key ? "border-cl-accent bg-cl-subtle text-cl-accent" : "border-cl-border bg-cl-subtle text-cl-ink"}`}
+                  >
+                    {label}
+                  </Link>
+                ))}
+              </nav>
+              {tab === "rulebooks" && <SeasonRulebooks seasonId={d.id} />}
+            </>
           }
         />
       </section>
