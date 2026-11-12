@@ -32,6 +32,16 @@ export const SPORT_VISUALS: Readonly<Record<string, SportVisual>> = {
     accent: "174 57 8",
     initials: "BB",
   },
+  volleyball: {
+    label: "Volleyball", tile: -1, eventSport: "volleyball",
+    nav: "18 45 69", navInk: "248 253 255", navMuted: "192 219 235",
+    bright: "125 211 252", accent: "3 105 161", initials: "VB",
+  },
+  "flag-football": {
+    label: "Flag Football", tile: 2, eventSport: "flag football",
+    nav: "39 25 68", navInk: "254 250 255", navMuted: "216 202 238",
+    bright: "196 181 253", accent: "109 40 217", initials: "FF",
+  },
   "american-football": {
     label: "Football",
     tile: 2,

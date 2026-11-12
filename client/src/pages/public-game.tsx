@@ -49,6 +49,7 @@ export default function PublicGamePage() {
     ],
     r = d.results.find((r) => r.gameId === g.id),
     status = gameStatus(g, r || null);
+  const volleyball = d.sportKey === "volleyball";
   const rows = (g.status === "cancelled" ? [] : d.playerStats || []).filter(
     (s) => s.gameId === g.id,
   );
@@ -126,7 +127,7 @@ export default function PublicGamePage() {
           <div
             className="cl-score-scroll"
             role="region"
-            aria-label="Period scores"
+            aria-label={volleyball ? "Volleyball set scores" : "Period scores"}
             tabIndex={0}
           >
             <table>
@@ -136,7 +137,7 @@ export default function PublicGamePage() {
                   {r?.periods.map((v, i) => (
                     <th key={i}>{v.label}</th>
                   ))}
-                  <th>Total</th>
+                  <th>{volleyball ? "Sets won" : "Total"}</th>
                 </tr>
               </thead>
               <tbody>

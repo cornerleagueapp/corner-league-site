@@ -1,6 +1,8 @@
 import { socialRequest, parsePage, type Person, type Page } from "./socialApi";
 export const publishingSports = [
   "general",
+  "volleyball",
+  "flag-football",
   "american-football",
   "soccer",
   "hockey",
@@ -164,6 +166,8 @@ export function safePublishingUrl(value: unknown): string | null {
   }
 }
 export function publishingLabel(value: string) {
+  if (value === "volleyball") return "Volleyball";
+  if (value === "flag-football") return "Flag Football";
   if (value === "american-football" || value === "football") return "Football";
   if (value === "rc-racing") return "RC Racing";
   if (value === "running" || value === "track-running") return "Track & Running";

@@ -6,6 +6,8 @@ const paths: Record<string,string>={
 'boat-racing':'M2 15h20l-5 5H7z M7 15l3-7h6l3 7 M10 8V5h6 M2 23q3-2 6 0t6 0t6 0',
 'basketball':'M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0 M2 12h20 M12 2v20 M5 5q12 7 0 14 M19 5q-12 7 0 14',
 'baseball':'M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0 M6 4q7 8 0 16 M18 4q-7 8 0 16 M7 7l3 1 M7 16l3-1 M14 8l3-1 M14 15l3 1',
+volleyball:'M22 12a10 10 0 1 1-20 0a10 10 0 1 1 20 0 M12 12L8 3 M12 12l10 1 M12 12l-6 8 M15 4l-3 8 M19 18l-7-6 M3 9l9 3',
+'flag-football':'M4 22V3m0 1c6-5 10 5 16 0v11c-6 5-10-5-16 0',
 'american-football':'M3 21C0 8 8 0 21 3c3 13-5 21-18 18z M7 17L17 7 M9 11l4 4 M11 9l4 4',
 'golf':'M7 21V3l12 5-12 5 M4 21h8 M18 20a2 2 0 1 0 0 .1',
 'marathon':'M3 10l5-4 3 6 6 2 5 4v3H2v-5z M9 11l-3 2 M11 14l-3 2',

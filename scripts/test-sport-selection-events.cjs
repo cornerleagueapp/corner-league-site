@@ -43,7 +43,16 @@ search='';catalog=[{key:'basketball',label:'Basketball'}];assert.equal(read().sp
 location='/athlete/one';search='sport=basketball';assert.equal(read().sportKey,'basketball');assert.equal(stored,'basketball');
 location='/posts/one';search='sport=jet-ski';assert.equal(read().sportKey,'jet-ski');
 location='/sports/basketball/events';search='sport=jet-ski';assert.equal(read().sportKey,'basketball');
-assert.deepEqual(read().sports.map(s=>s.key),['jet-ski','basketball','softball']);
+assert.deepEqual(read().sports.map(s=>s.key),['jet-ski','basketball','volleyball','flag-football','american-football','softball']);
+for (const sport of ["volleyball", "flag-football", "american-football"]) {
+  location = nav.sportHub(sport);
+  assert.equal(read().sportKey, sport);
+  assert.equal(nav.routeSport(nav.sportDirectory(sport)), sport);
+}
+const {positionOptions} = compile('client/src/lib/athletePositions.ts');
+assert(positionOptions.volleyball.includes("L"));
+assert(positionOptions["flag-football"].includes("RUSH"));
+assert(!positionOptions["flag-football"].includes("LT"));
 for (const sport of nav.SHOWCASE_SPORTS) {const more=nav.sportMoreLinks(sport);assert.equal(more[0].label,'Athletes');assert(more.every(l=>nav.routeSport(l.href.split('?')[0])===sport||new URL('https://test'+l.href).searchParams.get('sport')===sport));assert(more.some(l=>l.label==='Registration'));}
 assert.equal(nav.sportMoreLinks('basketball').length,2);assert(nav.sportMoreLinks('jet-ski').length>1);
 // Generic renders must not write their inferred fallback into shared storage.

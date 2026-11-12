@@ -96,7 +96,7 @@ export default function GameCard({
                   {p.label}
                 </th>
               ))}
-              <th scope="col">Total</th>
+              <th scope="col">{d.sportKey === "volleyball" ? "Sets won" : "Total"}</th>
             </tr>
           </thead>
           <tbody>

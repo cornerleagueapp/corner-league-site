@@ -1,4 +1,40 @@
 // Keep these pure definitions in sync across the three Corner League repositories.
+const FOOTBALL_STATS = [
+    "touchdowns",
+    "yards",
+    "tackles",
+    "passingCompletions",
+    "passingAttempts",
+    "passingYards",
+    "passingTouchdowns",
+    "interceptionsThrown",
+    "rushingAttempts",
+    "rushingYards",
+    "rushingTouchdowns",
+    "receptions",
+    "targets",
+    "receivingYards",
+    "receivingTouchdowns",
+    "sacks",
+    "defensiveInterceptions",
+] as const;
+
+const DIAMOND_STATS = [
+  "runs",
+  "hits",
+  "rbi",
+  "atBats",
+  "doubles",
+  "triples",
+  "homeRuns",
+  "walks",
+  "strikeouts",
+  "stolenBases",
+  "errors",
+  "outsPitched",
+  "earnedRuns",
+] as const;
+
 export const SPORT_STATS: Record<string, readonly string[]> = {
   basketball: [
     "points",
@@ -42,40 +78,11 @@ export const SPORT_STATS: Record<string, readonly string[]> = {
     "hits",
     "penaltyMinutes",
   ],
-  baseball: [
-    "runs",
-    "hits",
-    "rbi",
-    "atBats",
-    "doubles",
-    "triples",
-    "homeRuns",
-    "walks",
-    "strikeouts",
-    "stolenBases",
-    "errors",
-    "outsPitched",
-    "earnedRuns",
-  ],
-  "american-football": [
-    "touchdowns",
-    "yards",
-    "tackles",
-    "passingCompletions",
-    "passingAttempts",
-    "passingYards",
-    "passingTouchdowns",
-    "interceptionsThrown",
-    "rushingAttempts",
-    "rushingYards",
-    "rushingTouchdowns",
-    "receptions",
-    "targets",
-    "receivingYards",
-    "receivingTouchdowns",
-    "sacks",
-    "defensiveInterceptions",
-  ],
+  baseball: DIAMOND_STATS,
+  softball: DIAMOND_STATS,
+  "american-football": FOOTBALL_STATS,
+  "flag-football": [...FOOTBALL_STATS.filter((key) => key !== "tackles"), "flagPulls"],
+  "volleyball": ["kills", "attackAttempts", "attackErrors", "assists", "serviceAces", "serviceErrors", "digs", "blocks", "receptionErrors"],
 };
 export const SIGNED_STATS = [
   "yards",
@@ -96,6 +103,7 @@ export function statLabel(key: string) {
         battingAverage: "Batting average",
         era: "ERA",
         completionPercentage: "Completion %",
+        hittingPercentage: "Hitting percentage",
       } as Record<string, string>
     )[key] ||
     key
@@ -142,12 +150,14 @@ export function derivedStatistics(
       savePercentage: rate(t.saves, t.saves + t.goalsAgainst),
       faceoffPercentage: rate(t.faceoffsWon, t.faceoffsTaken),
     };
-  if (sport === "baseball")
+  if ((sport === "baseball" || sport === "softball"))
     return {
       battingAverage: rate(t.hits, t.atBats, 1, 3),
-      era: rate(t.earnedRuns, t.outsPitched, 27, 2),
+      era: rate(t.earnedRuns, t.outsPitched, sport === "softball" ? 21 : 27, 2),
     };
-  if (sport === "american-football")
+  if (sport === "volleyball")
+    return { hittingPercentage: rate((t.kills || 0) - (t.attackErrors || 0), t.attackAttempts, 1, 3) };
+  if ((sport === "american-football" || sport === "flag-football"))
     return {
       completionPercentage: rate(t.passingCompletions, t.passingAttempts),
     };
@@ -158,6 +168,8 @@ export function statConsistencyError(
   v: Record<string, number>,
   sport: string,
 ): string | null {
+  if (sport === "volleyball" && "attackAttempts" in v && (v.kills || 0) + (v.attackErrors || 0) > v.attackAttempts)
+    return "Kills and attack errors cannot exceed attack attempts.";
   const pairs =
     sport === "basketball"
       ? [
@@ -172,11 +184,11 @@ export function statConsistencyError(
           ]
         : sport === "hockey"
           ? [["faceoffsWon", "faceoffsTaken"]]
-          : sport === "baseball"
+          : (sport === "baseball" || sport === "softball")
             ? v.atBats > 0
               ? [["hits", "atBats"]]
               : []
-            : sport === "american-football"
+            : (sport === "american-football" || sport === "flag-football")
               ? [
                   ["passingCompletions", "passingAttempts"],
                   ["receptions", "targets"],

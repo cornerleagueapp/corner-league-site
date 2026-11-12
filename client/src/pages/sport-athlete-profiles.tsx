@@ -67,6 +67,9 @@ export default function SportAthleteProfiles() {
         .filter((s) => isAthleteSport(s.key))
         .map((s) => s.key),
       "baseball",
+      "volleyball",
+      "flag-football",
+      "american-football",
       "softball",
       ...(profiles.data ?? []).map((p) => p.sportKey),
     ]),
