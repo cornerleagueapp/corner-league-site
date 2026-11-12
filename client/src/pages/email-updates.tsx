@@ -97,7 +97,7 @@ export default function EmailUpdates() {
         <NewsletterForm source="consumer-updates" />
       )}
       <p className="mt-6 text-sm text-cl-muted">
-        Campaign emails also include a Resend unsubscribe/preferences link. No
+        Campaign emails also include a Corner League unsubscribe link. No
         account login is required to use it.
       </p>
     </main>

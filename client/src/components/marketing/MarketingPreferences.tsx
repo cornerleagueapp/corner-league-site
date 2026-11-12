@@ -108,11 +108,11 @@ function AccountPreferences({
             {q.data.status === "confirmed" &&
               q.data.delivery === "suppressed" && (
                 <p className="text-sm text-cl-muted">
-                  Your email provider preference prevents campaigns. Use the
-                  preferences link in your latest campaign email to review it.
+                  Marketing emails are paused. If you still want to receive updates,
+                  request a new confirmation below.
                 </p>
               )}
-            {q.data.status !== "confirmed" && q.data.enabled && (
+            {(q.data.status !== "confirmed" || q.data.delivery === "suppressed") && q.data.enabled && (
               <>
                 <label className="flex items-start gap-3 text-sm">
                   <input
@@ -130,7 +130,7 @@ function AccountPreferences({
                   disabled={busy || !checked}
                   onClick={() => void change(true)}
                 >
-                  {q.data.status === "pending"
+                  {(q.data.status === "pending" || q.data.delivery === "suppressed")
                     ? "Request confirmation again"
                     : "Subscribe to email updates"}
                 </button>

@@ -49,7 +49,7 @@ export function marketingLabel(s: MarketingStatus) {
   if (s.status === "pending") return "Awaiting email confirmation";
   if (s.status === "confirmed")
     return s.delivery === "suppressed"
-      ? "Paused by your email provider preferences"
+      ? "Paused — confirm your subscription again"
       : "Subscribed to Corner League email updates";
   return "Marketing emails are off";
 }

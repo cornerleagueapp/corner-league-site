@@ -98,7 +98,7 @@ status = { ...status, status: "pending" };
 assert(markup().includes("Cancel email subscription request"));
 assert(markup().includes("Request confirmation again"));
 status = { ...status, status: "confirmed", delivery: "suppressed" };
-assert(markup().includes("Paused by your email provider preferences"));
+assert(markup().includes("Paused — confirm your subscription again"));
 assert(markup().includes("Unsubscribe from marketing emails"));
 assert(!markup().includes("Subscribe to email updates"));
 const a = prefs.MarketingInvitation();
