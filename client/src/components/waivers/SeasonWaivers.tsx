@@ -3,6 +3,11 @@ import { useId, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/apiClient";
 import { unwrapSportData } from "@/lib/sportRegistration";
+import {
+  hasDrawing,
+  SignatureDrawing,
+  type SignatureStrokes,
+} from "./SignatureDrawing";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,7 +23,7 @@ type Signature = {
   signerName: string;
   capacity: string;
 };
-type Waiver = {
+export type Waiver = {
   id: string;
   revisionId: string;
   revision: number;
@@ -29,7 +34,7 @@ type Waiver = {
   required: boolean;
   signature: Signature | null;
 };
-type Waivers = {
+export type Waivers = {
   seasonId: string;
   profileId: string;
   guardianRequired: boolean;
@@ -87,15 +92,27 @@ export function SeasonWaiverSigning({
   account,
   query,
   readOnly = false,
+  shared,
 }: {
   season: string;
   profile: string;
   account: string;
-  query: ReturnType<typeof useSeasonWaivers>;
+  query: Pick<
+    ReturnType<typeof useSeasonWaivers>,
+    "data" | "isPending" | "isError" | "error"
+  > & { refetch: () => Promise<unknown> };
+  shared?: {
+    path: string;
+    fields: Record<string, string>;
+    alreadySigned: boolean;
+    signatureId: string | null;
+  };
   readOnly?: boolean;
 }) {
   const [selected, setSelected] = useState<Waiver | null>(null),
     [name, setName] = useState(""),
+    [method, setMethod] = useState<"typed" | "drawn">("typed"),
+    [strokes, setStrokes] = useState<SignatureStrokes>([]),
     [relationship, setRelationship] = useState(""),
     [consent, setConsent] = useState(false),
     [authority, setAuthority] = useState(false),
@@ -104,11 +121,12 @@ export function SeasonWaiverSigning({
     [showHistory, setShowHistory] = useState(false),
     [page, setPage] = useState(1),
     [notice, setNotice] = useState("");
+  const [sharedReceipt, setSharedReceipt] = useState<string | null>(null);
   const writing = useRef(false);
   const reasonId = useId();
   const history = useQuery({
     queryKey: ["my-waiver-history", account, season, profile, page],
-    enabled: showHistory,
+    enabled: showHistory && !shared,
     retry: false,
     staleTime: 0,
     gcTime: 0,
@@ -133,35 +151,53 @@ export function SeasonWaiverSigning({
   function review(w: Waiver) {
     setSelected(w);
     setName("");
+    setStrokes([]);
+    setMethod("typed");
     setRelationship("");
     setConsent(false);
     setAuthority(false);
     setError("");
   }
   async function sign() {
-    if (!selected || writing.current) return;
+    if (
+      !selected ||
+      writing.current ||
+      (method === "drawn" && !hasDrawing(strokes))
+    )
+      return;
     writing.current = true;
     setBusy(true);
     setError("");
     try {
-      await apiRequest(
-        "POST",
-        `/season-registration/${season}/waivers/revisions/${selected.revisionId}/sign`,
-        {
-          profileId: profile,
-          signerName: name,
-          relationship,
-          capacity: query.data?.guardianRequired ? "guardian" : "athlete",
-          consentAccepted: consent,
-          authorityConfirmed: authority,
-          contentHash: selected.contentHash,
-        },
+      const result = unwrapSportData<{ signatureId: string | null }>(
+        await apiRequest(
+          "POST",
+          (shared?.path || "/season-registration/" + season + "/waivers") +
+            "/revisions/" +
+            selected.revisionId +
+            "/sign",
+          {
+            ...shared?.fields,
+            profileId: profile,
+            signerName: name.trim(),
+            signatureMethod: method,
+            ...(method === "drawn" ? { strokes } : {}),
+            relationship,
+            capacity: query.data?.guardianRequired ? "guardian" : "athlete",
+            consentAccepted: consent,
+            authorityConfirmed: authority,
+            contentHash: selected.contentHash,
+          },
+        ),
       );
+      if (shared) setSharedReceipt(result.signatureId);
       setSelected(null);
       setNotice(
-        "Signature recorded. Download your signing record below. If you have not registered yet, finish the remaining waivers and confirm season registration separately.",
+        shared
+          ? "Signature recorded."
+          : "Signature recorded. Download your signing record below. If you have not registered yet, finish the remaining waivers and confirm season registration separately.",
       );
-      await query.refetch();
+      if (!shared) await query.refetch();
       if (showHistory) await history.refetch();
     } catch (e) {
       setError((e as Error).message);
@@ -203,7 +239,9 @@ export function SeasonWaiverSigning({
         <h2 className="text-xl font-bold">Season waivers</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Review each document before signing. Your signing record is private.
-          Signing does not submit your season registration.
+          {shared
+            ? " This signing link does not register you for the season."
+            : " Signing does not submit your season registration."}
         </p>
       </div>
       {!!notice && (
@@ -217,7 +255,7 @@ export function SeasonWaiverSigning({
       {query.isPending && <p role="status">Loading season waivers…</p>}
       {query.isError && (
         <div role="alert">
-          <p>{query.error.message}</p>
+          <p>{query.error?.message || "Unable to load season waivers."}</p>
           <Button
             type="button"
             variant="outline"
@@ -266,10 +304,27 @@ export function SeasonWaiverSigning({
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className="min-w-0 break-words font-semibold">{w.title}</h3>
                 <span className="rounded-full bg-muted px-3 py-1 text-xs font-semibold">
-                  Revision {w.revision} · {w.required ? "Required" : "Optional"}
+                  Revision {w.revision}
+                  {!shared && (w.required ? " · Required" : " · Optional")}
                 </span>
               </div>
-              {w.signature ? (
+              {shared && (shared.alreadySigned || notice) ? (
+                <>
+                  <p>This waiver has been signed for this player.</p>
+                  {!!(sharedReceipt || shared.signatureId) && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={busy}
+                      onClick={() =>
+                        void receipt((sharedReceipt || shared.signatureId)!)
+                      }
+                    >
+                      Download signed PDF
+                    </Button>
+                  )}
+                </>
+              ) : w.signature ? (
                 <>
                   <p className="text-sm">
                     Signed by {w.signature.signerName} ·{" "}
@@ -293,7 +348,11 @@ export function SeasonWaiverSigning({
               ) : (
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <span className="text-sm text-muted-foreground">
-                    {w.required ? "Signature required" : "Optional signature"}
+                    {shared
+                      ? "Ready to sign"
+                      : w.required
+                        ? "Signature required"
+                        : "Optional signature"}
                   </span>
                   <Button
                     type="button"
@@ -308,17 +367,19 @@ export function SeasonWaiverSigning({
           ))}
         </>
       )}
-      <Button
-        type="button"
-        variant="outline"
-        onClick={() => {
-          setShowHistory((v) => !v);
-          setError("");
-        }}
-      >
-        {" "}
-        {showHistory ? "Hide signing history" : "View signing history"}
-      </Button>
+      {!shared && (
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => {
+            setShowHistory((v) => !v);
+            setError("");
+          }}
+        >
+          {" "}
+          {showHistory ? "Hide signing history" : "View signing history"}
+        </Button>
+      )}
       {showHistory && (
         <div className="space-y-3">
           <h3 className="font-semibold">Your signing history</h3>
@@ -431,6 +492,32 @@ export function SeasonWaiverSigning({
               autoComplete="name"
             />
           </label>
+          <fieldset className="space-y-2" disabled={busy}>
+            <legend className="font-medium">Signature method</legend>
+            <div className="flex flex-wrap gap-3">
+              {(["typed", "drawn"] as const).map((m) => (
+                <Button
+                  key={m}
+                  type="button"
+                  variant={method === m ? "default" : "outline"}
+                  aria-pressed={method === m}
+                  onClick={() => {
+                    setMethod(m);
+                    setConsent(false);
+                  }}
+                >
+                  {m === "typed" ? "Type signature" : "Draw signature"}
+                </Button>
+              ))}
+            </div>
+          </fieldset>
+          {method === "drawn" && (
+            <SignatureDrawing
+              strokes={strokes}
+              onChange={setStrokes}
+              disabled={busy}
+            />
+          )}
           {guardian && (
             <label className="block font-medium">
               Relationship to athlete
@@ -455,8 +542,9 @@ export function SeasonWaiverSigning({
               onChange={(e) => setConsent(e.target.checked)}
               className="mt-1 h-5 w-5 shrink-0"
             />
-            I have read this document and consent to its terms and use of my
-            typed name as my electronic signature.
+            {method === "typed"
+              ? "I have read this document, agree to its terms, and consent to use my typed name as my electronic signature."
+              : "I have read this document and agree to its terms. I consent to use my drawn mark as my electronic signature and provide my full name to identify my signing record."}
           </label>
           <label className="flex items-start gap-3 text-sm">
             <input
@@ -484,6 +572,7 @@ export function SeasonWaiverSigning({
           {(!consent ||
             !authority ||
             name.trim().length < 2 ||
+            (method === "drawn" && !hasDrawing(strokes)) ||
             (guardian && !relationship)) && (
             <p
               id={reasonId}
@@ -494,7 +583,8 @@ export function SeasonWaiverSigning({
               {guardian
                 ? ", choose their relationship to the athlete,"
                 : ""}{" "}
-              and select both confirmations to enable signing.
+              {method === "drawn" ? "draw your signature, " : ""}and select both
+              confirmations to enable signing.
             </p>
           )}
           <div className="flex flex-wrap justify-end gap-3">
@@ -515,6 +605,7 @@ export function SeasonWaiverSigning({
                 !consent ||
                 !authority ||
                 name.trim().length < 2 ||
+                (method === "drawn" && !hasDrawing(strokes)) ||
                 (!!guardian && !relationship)
               }
               onClick={() => void sign()}

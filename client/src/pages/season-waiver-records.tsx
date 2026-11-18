@@ -1,3 +1,4 @@
+import { SharedWaiverPage } from "@/components/waivers/SharedWaiverPage";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useSearch } from "wouter";
@@ -7,6 +8,19 @@ import { BreadcrumbTrail } from "@/components/navigation/Breadcrumbs";
 import { PageSEO } from "@/seo/usePageSEO";
 import { loadWaiverReceipt, saveWaiverReceipt } from "@/lib/waiverReceipts";
 export default function SeasonWaiverRecords() {
+  const params = new URLSearchParams(useSearch());
+  const share = params.get("share");
+  return share !== null ? (
+    <SharedWaiverPage
+      share={share}
+      season={params.get("season") || ""}
+      documentId={params.get("document") || ""}
+    />
+  ) : (
+    <PrivateWaiverRecord />
+  );
+}
+function PrivateWaiverRecord() {
   const params = new URLSearchParams(useSearch()),
     season = params.get("season") || "",
     signature = params.get("signature") || "",
