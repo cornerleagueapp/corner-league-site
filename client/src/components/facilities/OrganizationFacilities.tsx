@@ -15,6 +15,8 @@ type Facility = {
   opensAt: string;
   closesAt: string;
   policy: string;
+  policyRevision?: number;
+  weeklyHours?: { day: number; opens: string; closes: string }[] | null;
   revision: number;
 };
 type Reservation = {
@@ -34,6 +36,7 @@ type Page<T> = {
   organizationId: string;
   items: T[];
   total: number;
+  entitlement?: { enabled: boolean };
   hasNextPage: boolean;
 };
 type Availability = {
@@ -180,7 +183,7 @@ function Facilities({ org }: { org: string }) {
           ...t,
           units: Number(units),
           purpose,
-          policyRevision: selected.revision,
+          policyRevision: selected.policyRevision ?? selected.revision,
           acceptedPolicy: true,
         };
       const fingerprint = JSON.stringify({ facility: selected.id, ...body });
@@ -217,8 +220,7 @@ function Facilities({ org }: { org: string }) {
       <h2 className="text-2xl font-semibold">Facilities & access</h2>
       <p className="mt-2 text-cl-muted">
         Find a space for your sport and request a time. Approval is required.
-        These reservations are currently free; paid rentals will arrive with
-        billing.
+        These reservations do not collect rental payments.
       </p>
       {error ? (
         <p role="alert" className="mt-3 text-red-500">
@@ -243,6 +245,19 @@ function Facilities({ org }: { org: string }) {
         {catalog.data?.items.map((f) => (
           <article key={f.id} className={panel}>
             <h3 className="text-lg font-semibold">{f.name}</h3>
+            {f.weeklyHours && (
+              <p className="mt-2 text-sm text-cl-muted">
+                Opening hours ({f.timeZone}):{" "}
+                {f.weeklyHours.length
+                  ? f.weeklyHours
+                      .map(
+                        (h) =>
+                          `${["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][h.day]} ${h.opens}–${h.closes}`,
+                      )
+                      .join(" · ")
+                  : "Closed every day"}
+              </p>
+            )}
             <p className="mt-2 text-cl-muted">
               {f.kind.replace(/-/g, " ")} · {f.location} · Up to {f.capacity}{" "}
               people
@@ -264,7 +279,9 @@ function Facilities({ org }: { org: string }) {
       </div>
       {catalog.data?.total === 0 ? (
         <p className="mt-5 text-cl-muted">
-          This organization has not published facilities yet.
+          {catalog.data?.entitlement?.enabled === false
+            ? "New reservation requests are currently unavailable. Existing reservations remain available below."
+            : "This organization has not published facilities yet."}
         </p>
       ) : null}
       <div className="mt-4 flex flex-wrap items-center gap-3">
