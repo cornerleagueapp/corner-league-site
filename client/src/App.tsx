@@ -1,4 +1,5 @@
-import LocalDiscoveryPage from '@/features/local-discovery/LocalDiscoveryPage';
+import { ConcessionsPage } from "@/features/concessions/ConcessionsPage";
+import LocalDiscoveryPage from "@/features/local-discovery/LocalDiscoveryPage";
 import PublicSeasonPage from "@/pages/public-season";
 import SeasonWaiverRecords from "@/pages/season-waiver-records";
 import OfficialInvitation from "@/pages/official-invitation";
@@ -435,9 +436,19 @@ function Router() {
           </ErrorBoundary>
         </AppShell>
       </Route>
-      <Route path="/local-discovery/:id"><AppShell guestMode><ErrorBoundary><LocalDiscoveryPage/></ErrorBoundary></AppShell></Route>
+      <Route path="/local-discovery/:id">
+        <AppShell guestMode>
+          <ErrorBoundary>
+            <LocalDiscoveryPage />
+          </ErrorBoundary>
+        </AppShell>
+      </Route>
       <Route path="/sports/:sportKey/seasons/:seasonId">
-        <AppShell guestMode><ErrorBoundary><PublicSeasonPage /></ErrorBoundary></AppShell>
+        <AppShell guestMode>
+          <ErrorBoundary>
+            <PublicSeasonPage />
+          </ErrorBoundary>
+        </AppShell>
       </Route>
       <Route path="/sports/:sportKey/games/:seasonId/:gameId">
         <AppShell guestMode>
@@ -478,6 +489,15 @@ function Router() {
       </Route>
       <Route path="/home" component={Home} />
       <Route path="/about" component={Home} />
+      <Route path="/concessions/:organizationId">
+        {(p) => (
+          <AppShell guestMode>
+            <ErrorBoundary>
+              <ConcessionsPage organizationId={p.organizationId} />
+            </ErrorBoundary>
+          </AppShell>
+        )}
+      </Route>
       <Route path="/admissions/:key">
         {(p) => (
           <AppShell>

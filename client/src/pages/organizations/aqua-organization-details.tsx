@@ -1,3 +1,4 @@
+import { ConcessionsLink } from "@/features/concessions/ConcessionsPage";
 import { seasonHref } from "@/lib/seasonNavigation";
 import EventDateScroller, {
   useEventDay,
@@ -461,7 +462,7 @@ function OrganizationCommunityPage(props: Props) {
                 organizationId={org.id}
               />
             )}
-            {/* Shop and facilities are deferred until a future release. */}
+            {!sandbox && <ConcessionsLink organizationId={orgId} />}
           </section>
         </>
       )}
