@@ -1,4 +1,21 @@
-export const SHOWCASE_SPORTS = ["jet-ski", "basketball", "softball", "volleyball", "american-football", "flag-football"] as const;
+export const SHOWCASE_SPORTS = [
+  "jet-ski",
+  "basketball",
+  "baseball",
+  "softball",
+  "volleyball",
+  "american-football",
+  "flag-football",
+  "soccer",
+  "hockey",
+  "golf",
+  "tennis",
+  "pickleball",
+  "motocross",
+  "boat-racing",
+  "track-running",
+  "marathon",
+] as const;
 export const isShowcaseSport = (key: string) =>
   (SHOWCASE_SPORTS as readonly string[]).includes(key);
 export function sportRegistration(key: string) {

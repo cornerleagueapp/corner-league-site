@@ -111,6 +111,21 @@ assert.equal(
   "upcoming",
 );
 assert.equal(cards.gameStatus(game, null, Date.parse("2027-01-01")), "past");
+// Published racket results retain their format, individual scores and set tiebreaks.
+for (const sport of ["tennis", "pickleball"]) {
+  const racket = { format: "doubles", bestOf: 3, pointsTo: 15, tennisTiebreakTo: 7, decidingMatchTiebreak: false };
+  const r = { ...result, homeScore: 2, awayScore: 0, racket,
+    periods: [{ label: "Set 1", homeScore: 7, awayScore: 6, homeTiebreak: 8, awayTiebreak: 6 }, {label: "Set 2", homeScore: 6, awayScore: 3}] };
+  const rendered = render(React.createElement(cards.default, { data: {...data, sportKey: sport, periodLabel: sport === "tennis" ? "Set" : "Game", result: r} }));
+  assert(rendered.includes("Doubles"));
+  assert(rendered.includes(sport === "tennis" ? "Sets won" : "Games won"));
+  assert(rendered.includes("Set 1"));
+  if (sport === "tennis") assert(rendered.includes("8"));
+  if (sport === "pickleball") assert(rendered.includes("Play to 15, win by two"));
+}
+html = render(React.createElement(cards.default, {data: {...data, sportKey: "hockey", result: {...result, homeScore: 2, awayScore: 2, decision: "shootout", tiebreakWinnerId: "b"}}}));
+assert.equal((html.match(/cl-game-winner/g) || []).length, 1);
+assert(html.includes('class="cl-game-winner"><th scope="row"><a href="/sports/hockey/teams/season/b?org=org"'));
 const nav = compile("client/src/lib/sportNavigation.ts");
 assert.equal(nav.sportHub("basketball"), "/sports/basketball");
 assert.equal(
@@ -129,6 +144,12 @@ assert.equal(
   "jet-ski",
 );
 assert.equal(nav.sportHub("jet-ski"), "/scores/aqua");
+for (const sport of ["hockey", "golf", "volleyball", "tennis", "pickleball"]) assert(nav.isShowcaseSport(sport));
+for (const sport of ["onewheel-racing", "rc-racing"]) assert(!nav.isShowcaseSport(sport));
 console.log(
   "PASS published quarter scoreboards, tied scoring leaders, escaped names, scoped team/athlete links, sandbox isolation, lifecycle labels and route-authoritative sport navigation",
 );
+
+const positions = compile("client/src/lib/athletePositions.ts");
+assert.deepEqual(positions.positionOptions.tennis, ["S1", "D1", "D2"]);
+assert(positions.positionLabel("pickleball", "D1").includes("Doubles"));

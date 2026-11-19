@@ -49,7 +49,8 @@ export default function PublicGamePage() {
     ],
     r = d.results.find((r) => r.gameId === g.id),
     status = gameStatus(g, r || null);
-  const volleyball = d.sportKey === "volleyball";
+  const setsWon = ["volleyball", "tennis"].includes(d.sportKey);
+  const pickleball = d.sportKey === "pickleball";
   const rows = (g.status === "cancelled" ? [] : d.playerStats || []).filter(
     (s) => s.gameId === g.id,
   );
@@ -124,10 +125,18 @@ export default function PublicGamePage() {
                       ? "Result pending"
                       : status}
           </strong>
+          {r?.racket && <p className="text-sm text-cl-muted">
+            {r.racket.format === "doubles" ? "Doubles" : "Singles"} · Best of {r.racket.bestOf}
+            {pickleball ? ` · Play to ${r.racket.pointsTo}, win by two` : r.racket.decidingMatchTiebreak ? " · Deciding match tiebreak to 10" : ""}
+          </p>}
+          {r?.decision && r.decision !== "regulation" && <p>
+            {r.decision === "shootout" ? "Shootout" : "Overtime"}
+            {r.tiebreakWinnerId ? ` · Winner: ${teams.find((t) => t.id === r.tiebreakWinnerId)?.name || "Team"}` : ""}
+          </p>}
           <div
             className="cl-score-scroll"
             role="region"
-            aria-label={volleyball ? "Volleyball set scores" : "Period scores"}
+            aria-label={setsWon ? "Set scores" : pickleball ? "Game scores" : "Period scores"}
             tabIndex={0}
           >
             <table>
@@ -137,7 +146,7 @@ export default function PublicGamePage() {
                   {r?.periods.map((v, i) => (
                     <th key={i}>{v.label}</th>
                   ))}
-                  <th>{volleyball ? "Sets won" : "Total"}</th>
+                  <th>{setsWon ? "Sets won" : pickleball ? "Games won" : "Total"}</th>
                 </tr>
               </thead>
               <tbody>
@@ -151,7 +160,12 @@ export default function PublicGamePage() {
                         .slice(0, 4)}
                     </th>
                     {r?.periods.map((v, j) => (
-                      <td key={j}>{i ? v.homeScore : v.awayScore}</td>
+                      <td key={j}>
+                        {i ? v.homeScore : v.awayScore}
+                        {v.homeTiebreak != null && v.awayTiebreak != null && (
+                          <small className="block text-xs text-cl-muted">TB {i ? v.homeTiebreak : v.awayTiebreak}</small>
+                        )}
+                      </td>
                     ))}
                     <td>{r ? (i ? r.homeScore : r.awayScore) : "—"}</td>
                   </tr>

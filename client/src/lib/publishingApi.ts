@@ -6,6 +6,8 @@ export const publishingSports = [
   "american-football",
   "soccer",
   "hockey",
+  "tennis",
+  "pickleball",
   "track-running",
   "marathon",
   "onewheel-racing",

@@ -13,6 +13,8 @@ const diamondPositionLabels: Record<string, string> = {
 };
 
 const newPositionLabels: Record<string, Record<string, string>> = {
+  tennis: { S1: "Singles player", D1: "Doubles player 1", D2: "Doubles player 2" },
+  pickleball: { S1: "Singles player", D1: "Doubles player 1", D2: "Doubles player 2" },
   volleyball: { S: "Setter", OH: "Outside hitter", MB: "Middle blocker", OPP: "Opposite hitter", L: "Libero", DS: "Defensive specialist" },
   "flag-football": { QB: "Quarterback", C: "Center", WR: "Receiver", RB: "Running back", RUSH: "Rusher", CB: "Cornerback", S: "Safety", LB: "Linebacker" },
 };
@@ -23,6 +25,8 @@ export function positionLabel(sport: string, code: string) {
 }
 
 export const positionOptions: Record<string, string[]> = {
+  tennis: Object.keys(newPositionLabels.tennis),
+  pickleball: Object.keys(newPositionLabels.pickleball),
   basketball: ["PG", "SG", "SF", "PF", "C"],
   soccer: ["GK", "DF", "MF", "FW"],
   hockey: ["G", "D", "C", "LW", "RW"],

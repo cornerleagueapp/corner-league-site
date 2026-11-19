@@ -21,6 +21,10 @@ export function orderedStatKeys(sport: string, keys: Iterable<string>) {
   ];
 }
 const rateInputs: Record<string, string[]> = {
+  firstServePercentage: ["firstServesIn", "firstServeAttempts"],
+  breakPointPercentage: ["breakPointsWon", "breakPointChances"],
+  hittingPercentage: ["kills", "attackErrors", "attackAttempts"],
+  scoringPoints: ["goals", "assists"],
   fieldGoalPercentage: ["fieldGoalsMade", "fieldGoalsAttempted"],
   threePointPercentage: ["threePointersMade", "threePointersAttempted"],
   freeThrowPercentage: ["freeThrowsMade", "freeThrowsAttempted"],

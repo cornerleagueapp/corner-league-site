@@ -27,7 +27,7 @@ type Heat = {
 };
 type Finish = Participant & {
   splits?: { checkpointId: string; elapsedMs: number }[];
-  holeScores?: { hole: number; strokes: number }[];
+  holeScores?: { hole: number; strokes: number; pickedUp?: boolean }[];
   netStrokes?: number | null;
   netToPar?: number | null;
   stablefordPoints?: number | null;

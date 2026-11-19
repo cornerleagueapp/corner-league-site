@@ -11,6 +11,8 @@ export function isRacingSport(key: string): boolean {
   return (racingSportKeys as readonly string[]).includes(key);
 }
 export const teamSportKeys = [
+  "tennis",
+  "pickleball",
   "baseball",
   "softball",
   "volleyball",
@@ -42,6 +44,8 @@ export const sportEquipmentLabels: Record<string, string> = {
   "rc-racing": "RC vehicle, scale and power system",
 };
 export const sportLabels: Record<string, string> = {
+  tennis: "Tennis",
+  pickleball: "Pickleball",
   golf: "Golf",
   baseball: "Baseball",
   softball: "Softball",

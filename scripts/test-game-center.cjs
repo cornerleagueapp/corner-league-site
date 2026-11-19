@@ -97,7 +97,14 @@ const season = {
   ],
 };
 let data = season;
+const stats = compile("client/src/lib/sportStatistics.ts");
+const presentation = compile("client/src/lib/statPresentation.ts", { "./sportStatistics": stats });
 const Page = compile("client/src/pages/public-game.tsx", {
+  "@/lib/statPresentation": presentation,
+  "@/lib/sportStatistics": stats,
+  "@/lib/seasonNavigation": { seasonHref: () => "/sports/basketball/seasons/season?org=org" },
+  "@/components/navigation/Breadcrumbs": { BreadcrumbTrail: () => null },
+  "@/lib/sportVisuals": { sportVisual: () => ({label: "Sport"}) },
   wouter: {
     Link,
     useRoute: () => [
@@ -133,6 +140,17 @@ data = { ...season, results: [], playerStats: [] };
 const empty = render(React.createElement(Page));
 assert(empty.includes("Player statistics will appear here when published."));
 assert(!empty.includes("NaN"));
+for (const sportKey of ["tennis", "pickleball"]) {
+  data = {...season, sportKey, playerStats: [], results: [{...season.results[0], homeScore: 2, awayScore: 0,
+    racket: {format: "doubles", bestOf: 3, pointsTo: 11, decidingMatchTiebreak: false},
+    periods: [{label:"Set 1", homeScore: 7, awayScore: 6, homeTiebreak: 8, awayTiebreak: 6}]}]};
+  const racket = render(React.createElement(Page));
+  assert(racket.includes("Doubles"));
+  assert(racket.includes(sportKey === "tennis" ? "Sets won" : "Games won"));
+  assert(racket.includes("TB 8"));
+}
+data = {...season, sportKey: "hockey", results: [{...season.results[0], homeScore: 2, awayScore: 2, decision: "shootout", tiebreakWinnerId: "b"}]};
+assert(render(React.createElement(Page)).includes("Winner: Beta"));
 data = undefined;
 assert(render(React.createElement(Page)).includes("unavailable"));
 console.log(

@@ -174,7 +174,10 @@ export default function GolfEventResults({ data }: { data: PublicOperations }) {
                         {(h.holePars ?? []).map((_, i) => (
                           <td key={i} className="p-2">
                             {r.holeScores?.find((s) => s.hole === i + 1)
-                              ?.strokes ?? "—"}
+                              ?.pickedUp
+                              ? "Pick-up (0 pts)"
+                              : (r.holeScores?.find((s) => s.hole === i + 1)
+                                  ?.strokes ?? "—")}
                           </td>
                         ))}
                       </tr>

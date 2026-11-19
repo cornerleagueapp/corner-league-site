@@ -1,24 +1,4 @@
 // Keep these pure definitions in sync across the three Corner League repositories.
-const FOOTBALL_STATS = [
-    "touchdowns",
-    "yards",
-    "tackles",
-    "passingCompletions",
-    "passingAttempts",
-    "passingYards",
-    "passingTouchdowns",
-    "interceptionsThrown",
-    "rushingAttempts",
-    "rushingYards",
-    "rushingTouchdowns",
-    "receptions",
-    "targets",
-    "receivingYards",
-    "receivingTouchdowns",
-    "sacks",
-    "defensiveInterceptions",
-] as const;
-
 const DIAMOND_STATS = [
   "runs",
   "hits",
@@ -35,7 +15,38 @@ const DIAMOND_STATS = [
   "earnedRuns",
 ] as const;
 
+const FOOTBALL_STATS = [
+  "touchdowns",
+  "yards",
+  "tackles",
+  "passingCompletions",
+  "passingAttempts",
+  "passingYards",
+  "passingTouchdowns",
+  "interceptionsThrown",
+  "rushingAttempts",
+  "rushingYards",
+  "rushingTouchdowns",
+  "receptions",
+  "targets",
+  "receivingYards",
+  "receivingTouchdowns",
+  "sacks",
+  "defensiveInterceptions",
+] as const;
+
 export const SPORT_STATS: Record<string, readonly string[]> = {
+  tennis: [
+    "aces",
+    "doubleFaults",
+    "winners",
+    "unforcedErrors",
+    "firstServesIn",
+    "firstServeAttempts",
+    "breakPointsWon",
+    "breakPointChances",
+  ],
+  pickleball: ["aces", "winners", "unforcedErrors", "serviceFaults"],
   basketball: [
     "points",
     "rebounds",
@@ -65,6 +76,7 @@ export const SPORT_STATS: Record<string, readonly string[]> = {
     "passesAttempted",
     "tackles",
     "goalsConceded",
+    "ownGoals",
   ],
   hockey: [
     "goals",
@@ -80,9 +92,30 @@ export const SPORT_STATS: Record<string, readonly string[]> = {
   ],
   baseball: DIAMOND_STATS,
   softball: DIAMOND_STATS,
-  "american-football": FOOTBALL_STATS,
-  "flag-football": [...FOOTBALL_STATS.filter((key) => key !== "tackles"), "flagPulls"],
-  "volleyball": ["kills", "attackAttempts", "attackErrors", "assists", "serviceAces", "serviceErrors", "digs", "blocks", "receptionErrors"],
+  "american-football": [
+    ...FOOTBALL_STATS,
+    "fieldGoalsMade",
+    "fieldGoalsAttempted",
+    "extraPointsMade",
+    "extraPointsAttempted",
+    "twoPointConversions",
+    "safeties",
+  ],
+  "flag-football": [
+    ...FOOTBALL_STATS.filter((key) => key !== "tackles"),
+    "flagPulls",
+  ],
+  volleyball: [
+    "kills",
+    "attackAttempts",
+    "attackErrors",
+    "assists",
+    "serviceAces",
+    "serviceErrors",
+    "digs",
+    "blocks",
+    "receptionErrors",
+  ],
 };
 export const SIGNED_STATS = [
   "yards",
@@ -94,13 +127,18 @@ export function statLabel(key: string) {
   return (
     (
       {
+        touchdowns: "Touchdowns scored",
+        ownGoals: "Own goals against your team",
         fieldGoalPercentage: "FG%",
         threePointPercentage: "3P%",
         freeThrowPercentage: "FT%",
         passPercentage: "Pass completion %",
+        scoringPoints: "Points (goals + assists)",
+        shootingPercentage: "Shooting %",
         savePercentage: "Save %",
         faceoffPercentage: "Faceoff %",
         battingAverage: "Batting average",
+        rbi: "RBI",
         era: "ERA",
         completionPercentage: "Completion %",
         hittingPercentage: "Hitting percentage",
@@ -134,6 +172,11 @@ export function derivedStatistics(
     d > 0
       ? Math.round((n / d) * multiplier * 10 ** precision) / 10 ** precision
       : null;
+  if (sport === "tennis")
+    return {
+      firstServePercentage: rate(t.firstServesIn, t.firstServeAttempts),
+      breakPointPercentage: rate(t.breakPointsWon, t.breakPointChances),
+    };
   if (sport === "basketball")
     return {
       fieldGoalPercentage: rate(t.fieldGoalsMade, t.fieldGoalsAttempted),
@@ -147,17 +190,26 @@ export function derivedStatistics(
     };
   if (sport === "hockey")
     return {
+      scoringPoints: (t.goals || 0) + (t.assists || 0),
+      shootingPercentage: rate(t.goals, t.shots),
       savePercentage: rate(t.saves, t.saves + t.goalsAgainst),
       faceoffPercentage: rate(t.faceoffsWon, t.faceoffsTaken),
     };
-  if ((sport === "baseball" || sport === "softball"))
+  if (sport === "baseball" || sport === "softball")
     return {
       battingAverage: rate(t.hits, t.atBats, 1, 3),
       era: rate(t.earnedRuns, t.outsPitched, sport === "softball" ? 21 : 27, 2),
     };
   if (sport === "volleyball")
-    return { hittingPercentage: rate((t.kills || 0) - (t.attackErrors || 0), t.attackAttempts, 1, 3) };
-  if ((sport === "american-football" || sport === "flag-football"))
+    return {
+      hittingPercentage: rate(
+        (t.kills || 0) - (t.attackErrors || 0),
+        t.attackAttempts,
+        1,
+        3,
+      ),
+    };
+  if (sport === "american-football" || sport === "flag-football")
     return {
       completionPercentage: rate(t.passingCompletions, t.passingAttempts),
     };
@@ -168,32 +220,49 @@ export function statConsistencyError(
   v: Record<string, number>,
   sport: string,
 ): string | null {
-  if (sport === "volleyball" && "attackAttempts" in v && (v.kills || 0) + (v.attackErrors || 0) > v.attackAttempts)
+  if (
+    sport === "volleyball" &&
+    "attackAttempts" in v &&
+    (v.kills || 0) + (v.attackErrors || 0) > v.attackAttempts
+  )
     return "Kills and attack errors cannot exceed attack attempts.";
   const pairs =
-    sport === "basketball"
+    sport === "tennis"
       ? [
-          ["fieldGoalsMade", "fieldGoalsAttempted"],
-          ["threePointersMade", "threePointersAttempted"],
-          ["freeThrowsMade", "freeThrowsAttempted"],
+          ["firstServesIn", "firstServeAttempts"],
+          ["breakPointsWon", "breakPointChances"],
         ]
-      : sport === "soccer"
+      : sport === "basketball"
         ? [
-            ["shotsOnTarget", "shots"],
-            ["passesCompleted", "passesAttempted"],
+            ["fieldGoalsMade", "fieldGoalsAttempted"],
+            ["threePointersMade", "threePointersAttempted"],
+            ["freeThrowsMade", "freeThrowsAttempted"],
           ]
-        : sport === "hockey"
-          ? [["faceoffsWon", "faceoffsTaken"]]
-          : (sport === "baseball" || sport === "softball")
-            ? v.atBats > 0
-              ? [["hits", "atBats"]]
-              : []
-            : (sport === "american-football" || sport === "flag-football")
-              ? [
-                  ["passingCompletions", "passingAttempts"],
-                  ["receptions", "targets"],
-                ]
-              : [];
+        : sport === "soccer"
+          ? [
+              ["shotsOnTarget", "shots"],
+              ["passesCompleted", "passesAttempted"],
+            ]
+          : sport === "hockey"
+            ? [
+                ["faceoffsWon", "faceoffsTaken"],
+                ["goals", "shots"],
+              ]
+            : sport === "baseball" || sport === "softball"
+              ? v.atBats > 0
+                ? [["hits", "atBats"]]
+                : []
+              : sport === "american-football" || sport === "flag-football"
+                ? [
+                    ["passingCompletions", "passingAttempts"],
+                    ["receptions", "targets"],
+                    ["fieldGoalsMade", "fieldGoalsAttempted"],
+                    ["extraPointsMade", "extraPointsAttempted"],
+                    ["passingTouchdowns", "passingCompletions"],
+                    ["rushingTouchdowns", "rushingAttempts"],
+                    ["receivingTouchdowns", "receptions"],
+                  ]
+                : [];
   for (const [made, attempted] of pairs)
     if (made in v && attempted in v && v[made] > v[attempted])
       return `${statLabel(made)} cannot exceed ${statLabel(attempted).toLowerCase()}.`;
@@ -224,5 +293,16 @@ export function statConsistencyError(
     )
       return "Rebounds must equal offensive plus defensive rebounds.";
   }
+  if (
+    (sport === "baseball" || sport === "softball") &&
+    (v.doubles || 0) + (v.triples || 0) + (v.homeRuns || 0) > (v.hits || 0)
+  )
+    return "Doubles, triples and home runs cannot exceed total hits.";
+  if (
+    sport === "american-football" &&
+    (v.rushingTouchdowns || 0) + (v.receivingTouchdowns || 0) >
+      (v.touchdowns || 0)
+  )
+    return "Touchdowns scored must include rushing and receiving touchdowns. Passing touchdowns are separate.";
   return null;
 }

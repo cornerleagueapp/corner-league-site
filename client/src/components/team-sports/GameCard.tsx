@@ -78,6 +78,17 @@ export default function GameCard({
           })}
         </time>
       </header>
+      {r?.racket && (
+        <p className="text-sm text-cl-muted">
+          {r.racket.format === "singles" ? "Singles" : "Doubles"} · Best of{" "}
+          {r.racket.bestOf}
+          {d.sportKey === "pickleball"
+            ? ` · Play to ${r.racket.pointsTo}, win by two`
+            : r.racket.decidingMatchTiebreak
+              ? " · Deciding match tiebreak to 10"
+              : ""}
+        </p>
+      )}
       <div
         className="cl-score-scroll"
         role="region"
@@ -96,7 +107,13 @@ export default function GameCard({
                   {p.label}
                 </th>
               ))}
-              <th scope="col">{d.sportKey === "volleyball" ? "Sets won" : "Total"}</th>
+              <th scope="col">
+                {["volleyball", "tennis"].includes(d.sportKey)
+                  ? "Sets won"
+                  : d.sportKey === "pickleball"
+                    ? "Games won"
+                    : "Total"}
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -104,9 +121,10 @@ export default function GameCard({
               const name = d.teams.find((t) => t.id === id)?.name || "Team";
               const won =
                 r?.status === "final" &&
-                (i === 0
-                  ? r.homeScore > r.awayScore
-                  : r.awayScore > r.homeScore);
+                (r.tiebreakWinnerId === id ||
+                  (i === 0
+                    ? r.homeScore > r.awayScore
+                    : r.awayScore > r.homeScore));
               return (
                 <tr key={id} className={won ? "cl-game-winner" : ""}>
                   <th scope="row">
@@ -128,7 +146,14 @@ export default function GameCard({
                     <small>{i === 0 ? "Home" : "Away"}</small>
                   </th>
                   {r?.periods.map((p, n) => (
-                    <td key={n}>{i === 0 ? p.homeScore : p.awayScore}</td>
+                    <td key={n}>
+                      {i === 0 ? p.homeScore : p.awayScore}
+                      {p.homeTiebreak != null && p.awayTiebreak != null && (
+                        <small className="block text-xs text-cl-muted">
+                          TB {i === 0 ? p.homeTiebreak : p.awayTiebreak}
+                        </small>
+                      )}
+                    </td>
                   ))}
                   <td className="cl-game-total">
                     {r ? (i === 0 ? r.homeScore : r.awayScore) : "—"}

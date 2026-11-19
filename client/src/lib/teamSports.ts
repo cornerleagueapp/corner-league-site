@@ -73,13 +73,26 @@ export type PublicTeamSeason = {
     status: string;
   }[];
   results: {
+    racket?: {
+      format: "singles" | "doubles";
+      bestOf: 1 | 3 | 5;
+      pointsTo: 11 | 15 | 21;
+      tennisTiebreakTo: 7 | 10;
+      decidingMatchTiebreak: boolean;
+    };
     decision?: "regulation" | "overtime" | "shootout";
     gameId: string;
     status: string;
     homeScore: number;
     awayScore: number;
     tiebreakWinnerId: string | null;
-    periods: { label: string; homeScore: number; awayScore: number }[];
+    periods: {
+      label: string;
+      homeScore: number;
+      awayScore: number;
+      homeTiebreak?: number;
+      awayTiebreak?: number;
+    }[];
   }[];
   standings: {
     divisionId: string;
