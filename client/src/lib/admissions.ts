@@ -5,6 +5,10 @@ export type AdmissionType = {
   name: string;
   description: string;
   coverUrl: string | null;
+  revision: number;
+  taxBps?: number;
+  reserved?: number;
+  paidCheckoutReady?: boolean;
   capacity: number;
   issued: number;
   priceCents: number;
@@ -28,6 +32,9 @@ export type Ticket = {
   checkedInAt: string | null;
   createdAt: string;
   snapshot: {
+    accentColor?: string;
+    passLabel?: string;
+    passInstructions?: string;
     eventName: string;
     location: string;
     organizationName: string;
@@ -78,10 +85,11 @@ export async function admissionData<T>(
   return unwrapSportData(json) as T;
 }
 export function admissionAvailability(t: AdmissionType, now = Date.now()) {
-  if (t.priceCents > 0) return "Paid checkout coming soon";
-  if (t.issued >= t.capacity) return "Sold out";
+  if (t.priceCents > 0 && !t.paidCheckoutReady)
+    return "Online payments unavailable";
+  if (t.issued + (t.reserved || 0) >= t.capacity) return "Sold out";
   if (now < Date.parse(t.salesStart)) return "Reservations open soon";
   if (now > Date.parse(t.salesEnd)) return "Reservations closed";
-  return "Reserve free pass";
+  return t.priceCents > 0 ? "Buy tickets" : "Reserve free pass";
 }
 export const admissionKey = (key: string) => encodeURIComponent(key);

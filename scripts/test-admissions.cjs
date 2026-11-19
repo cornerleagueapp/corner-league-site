@@ -60,7 +60,7 @@ assert.equal(
 );
 assert.equal(
   data.admissionAvailability({ ...ticketType, priceCents: 100 }, now),
-  "Paid checkout coming soon",
+  "Online payments unavailable",
 );
 assert.equal(
   data.admissionAvailability(
@@ -68,6 +68,17 @@ assert.equal(
     now,
   ),
   "Reservations closed",
+);
+assert.equal(
+  data.admissionAvailability(
+    { ...ticketType, priceCents: 100, paidCheckoutReady: true },
+    now,
+  ),
+  "Buy tickets",
+);
+assert.equal(
+  data.admissionAvailability({ ...ticketType, reserved: 10 }, now),
+  "Sold out",
 );
 assert.match(data.admissionRequestId(), /^[a-f0-9-]{36}$/);
 let states = [],
@@ -109,6 +120,10 @@ let query = {
 const Link = (p) => React.createElement("a", p, p.children),
   SEO = () => null;
 const page = compile("client/src/pages/admissions/admissions.tsx", {
+  "@/components/admissions/PaidTicketCheckout": {
+    PaidTicketCheckout: "paid-checkout",
+    TicketOrders: "ticket-orders",
+  },
   "@/pages/organizations/SandboxContext": { useSandbox: () => null },
   react: hooks,
   "./admissions.css": {},
@@ -141,7 +156,7 @@ function draw() {
   assert(
     nodes(tree).some(
       (n) =>
-        n.props?.disabled && n.props.children === "Paid checkout coming soon",
+        n.props?.disabled && n.props.children === "Online payments unavailable",
     ),
   );
   await buttons[0].props.onClick();
@@ -249,7 +264,7 @@ function draw() {
   assert(app.includes('path="/admissions/:key"'));
   assert(
     fs
-      .readFileSync("client/src/components/sidebarPanel.tsx", "utf8")
+      .readFileSync("client/src/components/navigation/PublicTopNav.tsx", "utf8")
       .includes("My tickets"),
   );
   const css = fs.readFileSync(

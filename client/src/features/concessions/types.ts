@@ -4,6 +4,10 @@ export type Stand = {
   location: string;
   instructions: string;
   open: boolean;
+  serviceState?: string;
+  closesAt?: string | null;
+  opensAt?: string | null;
+  serviceLabel?: string;
   prepMinutes: number;
   taxBps: number;
   revision: number;

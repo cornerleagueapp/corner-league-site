@@ -1,3 +1,8 @@
+import {
+  PaidTicketCheckout,
+  TicketOrders,
+  type TicketCheckoutResponse,
+} from "@/components/admissions/PaidTicketCheckout";
 import { useSandbox } from "@/pages/organizations/SandboxContext";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
@@ -74,7 +79,9 @@ function AdmissionEventPage({
         sandboxId,
       ),
     staleTime: 15000,
+    refetchInterval: 15000,
   });
+  const [checkout, setCheckout] = useState<TicketCheckoutResponse | null>(null);
   const [busy, setBusy] = useState(""),
     [error, setError] = useState(""),
     [success, setSuccess] = useState(false),
@@ -97,6 +104,19 @@ function AdmissionEventPage({
     setBusy(t.id);
     setError("");
     try {
+      if (t.priceCents > 0) {
+        const r = await admissionData<TicketCheckoutResponse>(
+          `/admissions/events/${admissionKey(eventKey)}/checkout`,
+          {
+            typeId: t.id,
+            quantity,
+            requestId: pending.current.id,
+            revision: t.revision,
+          },
+        );
+        if (alive.current) setCheckout(r);
+        return;
+      }
       const r = await admissionData<{ ticketIds: string[] }>(
         `/admissions/events/${admissionKey(eventKey)}/claim`,
         { typeId: t.id, quantity, requestId: pending.current.id },
@@ -122,6 +142,20 @@ function AdmissionEventPage({
         description="Reserve event admission passes."
         noindex
       />
+      {checkout && (
+        <PaidTicketCheckout
+          account={String(user?.id || "")}
+          initial={checkout}
+          onClose={() => {
+            setCheckout(null);
+            pending.current = { signature: "", id: "" };
+            void q.refetch();
+            void qc.invalidateQueries({
+              queryKey: ["admission-tickets", user?.id],
+            });
+          }}
+        />
+      )}
       <div className="admissions-heading">
         <span className="admissions-eyebrow">Be there for the moment</span>
         <h1>{q.data?.event.name || "Event admission"}</h1>
@@ -211,11 +245,20 @@ function AdmissionEventPage({
                                 style: "currency",
                                 currency: t.currency,
                               }).format(t.priceCents / 100)}
-                          <small>per guest</small>
+                          <small>
+                            per guest
+                            {t.taxBps
+                              ? ` + ${(t.taxBps / 100).toFixed(2)}% tax`
+                              : ""}
+                          </small>
                         </div>
                         <p className="admission-muted">
-                          {Math.max(0, t.capacity - t.issued)} passes remaining
-                          · Entry {date(t.entryStart)} – {date(t.entryEnd)}
+                          {Math.max(
+                            0,
+                            t.capacity - t.issued - (t.reserved || 0),
+                          )}{" "}
+                          passes remaining · Entry {date(t.entryStart)} –{" "}
+                          {date(t.entryEnd)}
                         </p>
                         {isAuthenticated ? (
                           <button
@@ -223,15 +266,28 @@ function AdmissionEventPage({
                             disabled={
                               !!busy ||
                               !!sandboxId ||
-                              admissionAvailability(t) !== "Reserve free pass"
+                              quantity >
+                                Math.max(
+                                  0,
+                                  t.capacity - t.issued - (t.reserved || 0),
+                                ) ||
+                              !["Reserve free pass", "Buy tickets"].includes(
+                                admissionAvailability(t),
+                              )
                             }
                             onClick={() => void reserve(t)}
                           >
                             {sandboxId
                               ? "Private preview · reservations disabled"
                               : busy === t.id
-                                ? "Reserving…"
-                                : admissionAvailability(t)}
+                                ? "Preparing order…"
+                                : quantity >
+                                    Math.max(
+                                      0,
+                                      t.capacity - t.issued - (t.reserved || 0),
+                                    )
+                                  ? "Choose fewer guests"
+                                  : admissionAvailability(t)}
                           </button>
                         ) : (
                           <Link
@@ -286,6 +342,7 @@ function TicketWallet({ account }: { account: string }) {
         <h1>My tickets</h1>
         <p>Your event passes, ready at the gate.</p>
       </div>
+      <TicketOrders account={account} />
       {selected && (
         <TicketPass
           key={`${account}:${selected}`}
@@ -393,6 +450,7 @@ export function TicketPass({
     staleTime: 0,
     refetchOnMount: "always",
     refetchOnWindowFocus: true,
+    refetchInterval: 5000,
   });
   return (
     <section className="admission-pass-panel" aria-label="Selected ticket">
@@ -422,14 +480,23 @@ export function TicketPass({
           </button>
         </p>
       ) : (
-        <article className="admission-print-pass">
+        <article
+          className="admission-print-pass"
+          style={{
+            borderTop: `6px solid ${/^#[0-9a-fA-F]{6}$/.test(q.data.snapshot.accentColor || "") ? q.data.snapshot.accentColor : "#6D28D9"}`,
+          }}
+        >
           <Cover src={q.data.snapshot.coverUrl} />
           <div className="admission-pass-info">
             <span className="admissions-eyebrow">
-              Corner League · Event pass
+              {q.data.snapshot.passLabel || "Corner League · Event pass"}
             </span>
             <h2>{q.data.snapshot.eventName}</h2>
             <h3>{q.data.snapshot.typeName}</h3>
+            <p>{q.data.snapshot.description}</p>
+            {q.data.snapshot.passInstructions && (
+              <p>{q.data.snapshot.passInstructions}</p>
+            )}
             <p>{q.data.snapshot.organizationName}</p>
             <p>
               {date(q.data.snapshot.startsAt)}

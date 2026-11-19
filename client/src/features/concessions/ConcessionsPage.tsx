@@ -455,7 +455,16 @@ function Store({
               <section className="cc-stand">
                 <div>
                   <span className={`cc-status ${stand.open ? "is-open" : ""}`}>
-                    {stand.open ? "Open for orders" : "Ordering closed"}
+                    {stand.serviceState === "paused"
+                      ? "Temporarily paused"
+                      : stand.serviceState === "scheduled"
+                        ? "Opens soon"
+                        : stand.open
+                          ? "Open for orders"
+                          : "Ordering closed"}
+                    {stand.open && stand.closesAt
+                      ? ` · until ${new Date(stand.closesAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`
+                      : ""}
                   </span>
                   <h2>{stand.name}</h2>
                   <p>{stand.location}</p>
