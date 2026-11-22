@@ -273,63 +273,153 @@
   outline: 3px solid rgb(var(--cl-accent));
   outline-offset: 4px;
 }
-@media print {
-  @page {
-    size: auto;
-    margin: 10mm;
+
+/* Cards stay narrow even when only one ticket option exists. */
+.admissions-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 360px));
+  justify-content: start;
+}
+.admission-cover {
+  display: block;
+  height: auto;
+  aspect-ratio: 16/9;
+  object-fit: contain;
+  background: #0f172a;
+}
+.admission-card-body {
+  padding: 20px;
+}
+.admission-card h2 {
+  font-size: 21px;
+}
+.admission-ticket-modal {
+  width: calc(100vw - 24px) !important;
+  max-width: 580px !important;
+  max-height: calc(100dvh - 24px) !important;
+  padding: 20px !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  z-index: 2147483000 !important;
+}
+.admission-print-pass {
+  width: 100%;
+  flex: none;
+}
+.admission-print-pass .admission-cover {
+  aspect-ratio: 16/7;
+  height: auto;
+  max-height: 220px;
+}
+.pass-layout-split .admission-cover {
+  aspect-ratio: 4/3;
+  max-height: 300px;
+}
+.admission-pass-info p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.admission-print-pass .admissions-eyebrow,
+.admission-print-pass .admission-muted {
+  color: inherit;
+  opacity: 0.85;
+}
+.admission-pass-tools,
+.admission-wallet-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-right: 20px;
+}
+.admission-pass-tools .admission-primary,
+.admission-wallet-tools .admission-primary {
+  margin-top: 0;
+}
+.admission-breadcrumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 13px;
+  margin-bottom: 20px;
+}
+.admission-breadcrumbs a {
+  text-decoration: underline;
+}
+.admission-ticket-modal button:focus-visible {
+  outline: 3px solid #a78bfa;
+  outline-offset: 3px;
+}
+@media (max-width: 480px) {
+  .admission-ticket-modal {
+    padding: 16px !important;
   }
-  body.admission-print-mode {
-    background: white !important;
+  .admission-pass-info {
+    padding: 18px;
   }
-  body.admission-print-mode * {
-    visibility: hidden !important;
+  .admission-qr {
+    padding: 8px;
   }
-  body.admission-print-mode
-    *:has(.admission-print-pass)
-    > *:not(:has(.admission-print-pass)):not(.admission-print-pass) {
-    display: none !important;
-  }
-  body.admission-print-mode *:has(.admission-print-pass) {
-    position: static !important;
-    display: block !important;
-    height: auto !important;
-    min-height: 0 !important;
-    max-height: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    border: 0 !important;
-    background: white !important;
-    overflow: visible !important;
-    transform: none !important;
-  }
-  body.admission-print-mode .admission-print-pass,
-  body.admission-print-mode .admission-print-pass * {
-    visibility: visible !important;
-    overflow: visible !important;
-    print-color-adjust: exact;
-    -webkit-print-color-adjust: exact;
-  }
-  body.admission-print-mode .admission-print-pass {
-    position: static !important;
-    color: #092031;
+  .admission-qr img {
     width: 100%;
-    max-width: 480px;
-    margin: auto;
-    box-shadow: none;
-    border: 1px solid #ccc;
-    border-radius: 0;
-    break-inside: avoid;
+    height: auto;
+    aspect-ratio: 1;
   }
-  body.admission-print-mode .admission-print-pass .admission-cover {
-    height: 160px;
+  .admission-pass-tools .admission-primary {
+    padding: 10px 16px;
   }
-  body.admission-print-mode .admission-pass-info {
-    padding: 16px;
-  }
-  body.admission-print-mode .admission-print-pass h2 {
-    font-size: 22px;
-  }
-  body.admission-print-mode .admission-qr {
-    margin: 12px auto;
+}
+
+.admission-ticket-modal {
+  background: rgb(var(--cl-surface)) !important;
+  color: rgb(var(--cl-ink)) !important;
+  border-color: rgb(var(--cl-border)) !important;
+}
+
+.admission-card h2,
+.admission-print-pass h2 {
+  overflow-wrap: anywhere;
+}
+
+.admission-status.not_open {
+  background: #624200;
+  color: #fff1b0;
+}
+
+.admission-ticket-modal > p {
+  color: rgb(var(--cl-muted));
+}
+.admission-ticket-modal > button.absolute {
+  min-width: 44px;
+  min-height: 44px;
+  top: 8px;
+  right: 8px;
+}
+
+.admission-modal-header {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: rgb(var(--cl-surface));
+  margin: -20px -20px 0;
+  padding: 12px 20px;
+  border-bottom: 1px solid rgb(var(--cl-border));
+}
+.admission-modal-close {
+  min-width: 44px;
+  min-height: 44px;
+  flex-shrink: 0;
+  font-size: 26px;
+  color: inherit;
+}
+.admission-ticket-modal > button.absolute {
+  display: none;
+}
+@media (max-width: 480px) {
+  .admission-modal-header {
+    margin: -16px -16px 0;
+    padding: 10px 16px;
   }
 }

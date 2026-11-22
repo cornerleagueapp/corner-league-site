@@ -1,4 +1,13 @@
 import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { printAdmissionPass, registerAdmissionPrinting } from "./printTicket";
+import { saveAdmissionWallet } from "@/lib/admissions";
+import {
   PaidTicketCheckout,
   TicketOrders,
   type TicketCheckoutResponse,
@@ -29,13 +38,22 @@ import {
 import "./admissions.css";
 const date = (s: string) =>
   new Date(s).toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
-function Cover({ src }: { src: string | null }) {
+function Cover({
+  src,
+  fit = "contain",
+  position = 50,
+}: {
+  src: string | null;
+  fit?: "contain" | "cover";
+  position?: number;
+}) {
   const [failed, setFailed] = useState(false);
   return src && !failed ? (
     <img
       src={src}
       alt=""
       onError={() => setFailed(true)}
+      style={{ objectFit: fit, objectPosition: `center ${position}%` }}
       className="admission-cover"
     />
   ) : (
@@ -156,6 +174,15 @@ function AdmissionEventPage({
           }}
         />
       )}
+      <nav aria-label="Breadcrumb" className="admission-breadcrumbs">
+        <Link href="/">Home</Link>
+        <span aria-hidden="true">/</span>
+        <span>{q.data?.event.organizationName || "Admissions"}</span>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">
+          {q.data?.event.name || "Event admission"} · Admissions
+        </span>
+      </nav>
       <div className="admissions-heading">
         <span className="admissions-eyebrow">Be there for the moment</span>
         <h1>{q.data?.event.name || "Event admission"}</h1>
@@ -231,7 +258,11 @@ function AdmissionEventPage({
                 <div className="admissions-grid">
                   {q.data.items.map((t) => (
                     <article className="admission-card" key={t.id}>
-                      <Cover src={t.coverUrl} />
+                      <Cover
+                        src={t.coverUrl}
+                        fit={t.design?.coverFit}
+                        position={t.design?.coverPosition}
+                      />
                       <div className="admission-card-body">
                         <div className="admission-card-label">
                           Admission pass
@@ -428,21 +459,37 @@ export function TicketPass({
   account: string;
   close: () => void;
 }) {
-  const [qrReady, setQrReady] = useState(false);
-  useEffect(() => {
-    const before = () => {
-      if (document.querySelector(".admission-print-pass"))
-        document.body.classList.add("admission-print-mode");
-    };
-    const after = () => document.body.classList.remove("admission-print-mode");
-    window.addEventListener("beforeprint", before);
-    window.addEventListener("afterprint", after);
-    return () => {
-      window.removeEventListener("beforeprint", before);
-      window.removeEventListener("afterprint", after);
-      after();
-    };
-  }, [id]);
+  const [qrReady, setQrReady] = useState(false),
+    [walletBusy, setWalletBusy] = useState(""),
+    [walletError, setWalletError] = useState("");
+  const passElement = useRef<HTMLElement>(null);
+  useEffect(() => registerAdmissionPrinting(() => passElement.current), [id]);
+  const wallets = useQuery({
+    queryKey: ["admission-wallet-capabilities", account],
+    queryFn: () =>
+      admissionData<{ apple: boolean; google: boolean }>(
+        "/admissions/me/wallet/capabilities",
+      ),
+    enabled: !!account,
+    staleTime: 60000,
+    retry: false,
+  });
+  async function wallet(provider: "apple" | "google") {
+    if (walletBusy) return;
+    const popup =
+      provider === "google" ? window.open("about:blank", "_blank") : null;
+    if (popup) popup.opener = null;
+    setWalletBusy(provider);
+    setWalletError("");
+    try {
+      await saveAdmissionWallet(id, provider, popup);
+    } catch (e) {
+      popup?.close();
+      setWalletError((e as Error).message);
+    } finally {
+      setWalletBusy("");
+    }
+  }
   const q = useQuery({
     queryKey: ["admission-pass", account, id],
     queryFn: () =>
@@ -453,96 +500,167 @@ export function TicketPass({
     refetchInterval: 5000,
   });
   return (
-    <section className="admission-pass-panel" aria-label="Selected ticket">
-      <div className="admission-pass-tools">
-        <button className="admission-link" onClick={close}>
-          Close pass
-        </button>
-        <button
-          className="admission-primary"
-          disabled={!qrReady || !q.data?.qr || q.isFetching}
-          onClick={() => {
-            document.body.classList.add("admission-print-mode");
-            window.print();
-          }}
-        >
-          <Printer size={18} />
-          Print pass
-        </button>
-      </div>
-      {q.isPending ? (
-        <p role="status">Loading your pass…</p>
-      ) : q.isError ? (
-        <p role="alert">
-          Your pass is unavailable.{" "}
-          <button className="admission-link" onClick={() => void q.refetch()}>
-            Try again
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        if (!open) close();
+      }}
+    >
+      <DialogContent className="admission-ticket-modal">
+        <div className="admission-modal-header">
+          <DialogTitle>Your admission pass</DialogTitle>
+          <DialogClose asChild>
+            <button
+              aria-label="Close admission pass"
+              className="admission-modal-close"
+            >
+              ×
+            </button>
+          </DialogClose>
+        </div>
+        <DialogDescription>
+          Present this QR at the gate. Each pass admits one guest, once.
+        </DialogDescription>
+        <div className="admission-pass-tools">
+          <button
+            className="admission-primary"
+            disabled={!qrReady || !q.data?.qr || q.isFetching}
+            onClick={() => {
+              if (passElement.current)
+                void printAdmissionPass(passElement.current).catch(() =>
+                  setWalletError("Unable to print. Please try again."),
+                );
+            }}
+          >
+            <Printer size={18} />
+            Print pass
           </button>
-        </p>
-      ) : (
-        <article
-          className="admission-print-pass"
-          style={{
-            borderTop: `6px solid ${/^#[0-9a-fA-F]{6}$/.test(q.data.snapshot.accentColor || "") ? q.data.snapshot.accentColor : "#6D28D9"}`,
-          }}
-        >
-          <Cover src={q.data.snapshot.coverUrl} />
-          <div className="admission-pass-info">
-            <span className="admissions-eyebrow">
-              {q.data.snapshot.passLabel || "Corner League · Event pass"}
-            </span>
-            <h2>{q.data.snapshot.eventName}</h2>
-            <h3>{q.data.snapshot.typeName}</h3>
-            <p>{q.data.snapshot.description}</p>
-            {q.data.snapshot.passInstructions && (
-              <p>{q.data.snapshot.passInstructions}</p>
+        </div>
+        {!!walletError && (
+          <p role="alert" className="admission-error">
+            {walletError}
+          </p>
+        )}
+        <div className="admission-wallet-tools">
+          {wallets.data?.apple && (
+            <button
+              className="admission-primary"
+              disabled={!!walletBusy || !q.data?.qr || q.isFetching}
+              onClick={() => void wallet("apple")}
+            >
+              {walletBusy === "apple" ? "Preparing…" : "Add to Apple Wallet"}
+            </button>
+          )}
+          {wallets.data?.google && (
+            <button
+              className="admission-primary"
+              disabled={!!walletBusy || !q.data?.qr || q.isFetching}
+              onClick={() => void wallet("google")}
+            >
+              {walletBusy === "google" ? "Preparing…" : "Add to Google Wallet"}
+            </button>
+          )}
+        </div>
+        {q.isPending ? (
+          <p role="status">Loading your pass…</p>
+        ) : q.isError ? (
+          <p role="alert">
+            Your pass is unavailable.{" "}
+            <button className="admission-link" onClick={() => void q.refetch()}>
+              Try again
+            </button>
+          </p>
+        ) : (
+          <article
+            ref={passElement}
+            className={`admission-print-pass pass-layout-${q.data.snapshot.design?.layout || "classic"}`}
+            style={{
+              backgroundColor:
+                q.data.snapshot.design?.backgroundColor || "#FFFDF8",
+              color: q.data.snapshot.design?.textColor || "#092031",
+              borderTop: `6px solid ${/^#[0-9a-fA-F]{6}$/.test(q.data.snapshot.accentColor || "") ? q.data.snapshot.accentColor : "#6D28D9"}`,
+            }}
+          >
+            {q.data.snapshot.design?.layout !== "minimal" && (
+              <Cover
+                src={q.data.snapshot.coverUrl}
+                fit={q.data.snapshot.design?.coverFit}
+                position={q.data.snapshot.design?.coverPosition}
+              />
             )}
-            <p>{q.data.snapshot.organizationName}</p>
-            <p>
-              {date(q.data.snapshot.startsAt)}
-              <br />
-              {q.data.snapshot.location}
-            </p>
-            <span className={`admission-status ${q.data.status}`}>
-              {q.data.status.replace("_", " ")}
-            </span>
-            {q.data.entryStart && q.data.entryEnd && (
+            <div className="admission-pass-info">
+              <span className="admissions-eyebrow">
+                {q.data.snapshot.passLabel || "Corner League · Event pass"}
+              </span>
+              <h2>{q.data.snapshot.eventName}</h2>
+              <h3>{q.data.snapshot.typeName}</h3>
+              {q.data.snapshot.design?.showDescription !== false &&
+                !!q.data.snapshot.description && (
+                  <p className="pass-description">
+                    {q.data.snapshot.description}
+                  </p>
+                )}
+              {q.data.snapshot.passInstructions && (
+                <p>{q.data.snapshot.passInstructions}</p>
+              )}
+              <p>{q.data.snapshot.organizationName}</p>
               <p>
-                Entry window: {date(q.data.entryStart)} –{" "}
-                {date(q.data.entryEnd)}
+                {date(q.data.snapshot.startsAt)}
+                <br />
+                {q.data.snapshot.location}
               </p>
-            )}
-            {q.data.entryState === "not_open" && (
-              <p>Entry opens at the time shown above.</p>
-            )}
-            <div className="admission-qr">
-              {q.data.qr ? (
-                <img
-                  src={q.data.qr}
-                  alt="Your admission QR code"
-                  width="256"
-                  height="256"
-                  onLoad={() => setQrReady(true)}
-                  onError={() => setQrReady(false)}
-                />
-              ) : (
+              <span
+                className={`admission-status ${q.data.status} ${q.data.entryState || ""}`}
+              >
+                {q.data.entryState === "not_open"
+                  ? "Entry not open"
+                  : q.data.entryState === "expired"
+                    ? "Entry closed"
+                    : q.data.status.replace("_", " ")}
+              </span>
+              {q.data.entryStart && q.data.entryEnd && (
                 <p>
-                  {q.data.status === "checked_in"
-                    ? "This pass has already been admitted."
-                    : q.data.entryState === "expired"
-                      ? "This pass’s entry window has closed."
-                      : q.data.entryState === "event_unavailable"
-                        ? "This event is no longer available for entry."
-                        : "This pass has been cancelled."}
+                  Entry window: {date(q.data.entryStart)} –{" "}
+                  {date(q.data.entryEnd)}
                 </p>
               )}
+              {q.data.entryState === "not_open" && (
+                <p>Entry opens at the time shown above.</p>
+              )}
+              <div className="admission-qr">
+                {q.data.qr ? (
+                  <img
+                    src={q.data.qr}
+                    alt="Your admission QR code"
+                    width="256"
+                    height="256"
+                    onLoad={() => setQrReady(true)}
+                    onError={() => setQrReady(false)}
+                  />
+                ) : (
+                  <p>
+                    {q.data.status === "checked_in"
+                      ? "This pass has already been admitted."
+                      : q.data.entryState === "expired"
+                        ? "This pass’s entry window has closed."
+                        : q.data.entryState === "event_unavailable"
+                          ? "This event is no longer available for entry."
+                          : "This pass has been cancelled."}
+                  </p>
+                )}
+              </div>
+              <p className="admission-muted">Pass {id}</p>
+              <p>
+                {q.data.snapshot.design?.footerText ||
+                  "One guest · One entry · Keep this QR private"}
+              </p>
+              {q.data.checkedInAt && (
+                <p>Checked in {date(q.data.checkedInAt)}</p>
+              )}
             </div>
-            <p className="admission-muted">Pass {id}</p>
-            <p>One guest · One entry · Keep this QR private</p>
-            {q.data.checkedInAt && <p>Checked in {date(q.data.checkedInAt)}</p>}
-          </div>
-        </article>
-      )}
-    </section>
+          </article>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }

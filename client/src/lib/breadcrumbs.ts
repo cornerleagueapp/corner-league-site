@@ -1,6 +1,7 @@
 import { sportVisual } from "./sportVisuals";
 export type Breadcrumb = { label: string; href?: string };
 const labels: Record<string, string> = {
+  admissions: "Admissions",
   search_results: "Search results",
   scores: "Sports hub",
   aqua: "Jet Ski",
@@ -31,6 +32,7 @@ const labels: Record<string, string> = {
 };
 export function breadcrumbsFor(path: string): Breadcrumb[] {
   if (path.startsWith("/local-discovery/")) return [];
+  if (/^\/admissions\//.test(path)) return []; // The admissions page renders named breadcrumbs from its loaded event.
   // Team pages render named organization/season breadcrumbs from their loaded data.
   if (/^\/sports\/[^/]+\/(teams|games|seasons)\//.test(path)) return [];
   const parts = path.split(/[?#]/)[0].split("/").filter(Boolean);

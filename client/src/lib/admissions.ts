@@ -1,6 +1,16 @@
+export type PassDesign = {
+  layout?: "classic" | "split" | "minimal";
+  backgroundColor?: string;
+  textColor?: string;
+  coverFit?: "contain" | "cover";
+  coverPosition?: number;
+  showDescription?: boolean;
+  footerText?: string;
+};
 import { apiFetch } from "./apiClient";
 import { unwrapSportData } from "./sportRegistration";
 export type AdmissionType = {
+  design?: PassDesign | null;
   id: string;
   name: string;
   description: string;
@@ -19,6 +29,7 @@ export type AdmissionType = {
   entryEnd: string;
 };
 export type AdmissionEvent = {
+  organizationId?: string;
   key: string;
   name: string;
   location: string;
@@ -32,6 +43,7 @@ export type Ticket = {
   checkedInAt: string | null;
   createdAt: string;
   snapshot: {
+    design?: PassDesign | null;
     accentColor?: string;
     passLabel?: string;
     passInstructions?: string;
@@ -93,3 +105,44 @@ export function admissionAvailability(t: AdmissionType, now = Date.now()) {
   return t.priceCents > 0 ? "Buy tickets" : "Reserve free pass";
 }
 export const admissionKey = (key: string) => encodeURIComponent(key);
+
+export async function saveAdmissionWallet(
+  id: string,
+  provider: "apple" | "google",
+  popup?: Window | null,
+) {
+  const response = await apiFetch(
+    `/admissions/me/tickets/${encodeURIComponent(id)}/wallet/${provider}`,
+    { cache: "no-store" },
+  );
+  if (!response.ok) {
+    const data = await response.json().catch(() => null);
+    throw new Error(
+      data?.message || "Unable to save your pass. Please try again.",
+    );
+  }
+  if (provider === "google") {
+    const data = unwrapSportData(await response.json()) as { url?: string };
+    if (!data.url?.startsWith("https://pay.google.com/gp/v/save/"))
+      throw new Error("Wallet link is unavailable.");
+    if (popup) popup.location.replace(data.url);
+    else window.location.assign(data.url);
+  } else {
+    const blob = await response.blob();
+    if (
+      !blob.size ||
+      !response.headers
+        .get("content-type")
+        ?.includes("application/vnd.apple.pkpass")
+    )
+      throw new Error("Wallet pass is unavailable.");
+    const href = URL.createObjectURL(blob),
+      a = document.createElement("a");
+    a.href = href;
+    a.download = `cornerleague-${id}.pkpass`;
+    document.body.append(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(href), 60000);
+  }
+}

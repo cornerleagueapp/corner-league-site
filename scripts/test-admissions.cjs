@@ -137,6 +137,19 @@ const page = compile("client/src/pages/admissions/admissions.tsx", {
   },
   "@/seo/usePageSEO": { PageSEO: SEO },
   "@/lib/admissions": data,
+  "./printTicket": {
+    printAdmissionPass: async () => {},
+    registerAdmissionPrinting: () => () => {},
+  },
+  "@/components/ui/dialog": {
+    DialogClose: ({ children }) => children,
+    Dialog: ({ children }) =>
+      React.createElement("div", { role: "dialog" }, children),
+    DialogContent: ({ children }) => React.createElement("div", null, children),
+    DialogTitle: ({ children }) => React.createElement("h2", null, children),
+    DialogDescription: ({ children }) =>
+      React.createElement("p", null, children),
+  },
 });
 function nodes(n) {
   if (!n || typeof n !== "object") return [];
@@ -271,10 +284,15 @@ function draw() {
     "client/src/pages/admissions/admissions.css",
     "utf8",
   );
-  assert(css.includes("@media print"));
-  assert(css.includes("body.admission-print-mode *"));
+  const print = fs.readFileSync(
+    "client/src/pages/admissions/printTicket.ts",
+    "utf8",
+  );
+  assert(print.includes("allow-same-origin allow-modals"));
+  assert(print.includes("body>*:not(#cl-ticket-print-root)"));
+  assert(!print.includes("askrevan"));
   assert(!/body\s+\*\s*\{\s*visibility/.test(css));
-  assert(css.includes("min(100%, 300px)"));
+  assert(/min\(100%,\s*300px\)/.test(css));
   assert(css.includes("focus-visible"));
   console.log(
     "PASS admission reservation replay, free/paid/sold-out states, private account keys, pass markup, print readiness, revoked QR removal, and sandbox-safe event links.",
