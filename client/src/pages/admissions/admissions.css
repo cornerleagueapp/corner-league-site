@@ -423,3 +423,31 @@
     padding: 10px 16px;
   }
 }
+
+/* SVG is generated from validated ticket blocks, shared with PNG output. */
+.admission-print-pass.studio-pass-container {
+  border: 0 !important;
+  background: transparent !important;
+  overflow: visible;
+  max-width: 420px;
+  width: 100%;
+  padding: 0;
+}
+.studio-issued-pass {
+  margin: 0;
+  width: 100%;
+}
+.studio-issued-pass svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+}
+@media print {
+  .studio-pass-container {
+    max-width: 95mm !important;
+  }
+  .studio-issued-pass {
+    break-inside: avoid;
+  }
+}

@@ -1,4 +1,8 @@
 import {
+  StudioPass,
+  downloadTicketImage,
+} from "@/components/admissions/StudioPass";
+import {
   Dialog,
   DialogContent,
   DialogTitle,
@@ -463,6 +467,7 @@ export function TicketPass({
     [walletBusy, setWalletBusy] = useState(""),
     [walletError, setWalletError] = useState("");
   const passElement = useRef<HTMLElement>(null);
+  const [imageBusy, setImageBusy] = useState(false);
   useEffect(() => registerAdmissionPrinting(() => passElement.current), [id]);
   const wallets = useQuery({
     queryKey: ["admission-wallet-capabilities", account],
@@ -535,6 +540,21 @@ export function TicketPass({
             <Printer size={18} />
             Print pass
           </button>
+          {!!q.data?.snapshot.design?.sections && (
+            <button
+              className="admission-primary"
+              disabled={!qrReady || imageBusy || q.isFetching}
+              onClick={() => {
+                setImageBusy(true);
+                setWalletError("");
+                void downloadTicketImage(id)
+                  .catch((e) => setWalletError(e.message))
+                  .finally(() => setImageBusy(false));
+              }}
+            >
+              {imageBusy ? "Preparing image…" : "Download image"}
+            </button>
+          )}
         </div>
         {!!walletError && (
           <p role="alert" className="admission-error">
@@ -573,7 +593,7 @@ export function TicketPass({
         ) : (
           <article
             ref={passElement}
-            className={`admission-print-pass pass-layout-${q.data.snapshot.design?.layout || "classic"}`}
+            className={`admission-print-pass ${q.data.snapshot.design?.sections ? "studio-pass-container" : ""} pass-layout-${q.data.snapshot.design?.layout || "classic"}`}
             style={{
               backgroundColor:
                 q.data.snapshot.design?.backgroundColor || "#FFFDF8",
@@ -581,83 +601,89 @@ export function TicketPass({
               borderTop: `6px solid ${/^#[0-9a-fA-F]{6}$/.test(q.data.snapshot.accentColor || "") ? q.data.snapshot.accentColor : "#6D28D9"}`,
             }}
           >
-            {q.data.snapshot.design?.layout !== "minimal" && (
-              <Cover
-                src={q.data.snapshot.coverUrl}
-                fit={q.data.snapshot.design?.coverFit}
-                position={q.data.snapshot.design?.coverPosition}
-              />
-            )}
-            <div className="admission-pass-info">
-              <span className="admissions-eyebrow">
-                {q.data.snapshot.passLabel || "Corner League · Event pass"}
-              </span>
-              <h2>{q.data.snapshot.eventName}</h2>
-              <h3>{q.data.snapshot.typeName}</h3>
-              {q.data.snapshot.design?.showDescription !== false &&
-                !!q.data.snapshot.description && (
-                  <p className="pass-description">
-                    {q.data.snapshot.description}
-                  </p>
-                )}
-              {q.data.snapshot.passInstructions && (
-                <p>{q.data.snapshot.passInstructions}</p>
-              )}
-              <p>{q.data.snapshot.organizationName}</p>
-              <p>
-                {date(q.data.snapshot.startsAt)}
-                <br />
-                {q.data.snapshot.location}
-              </p>
-              <span
-                className={`admission-status ${q.data.status} ${q.data.entryState || ""}`}
-              >
-                {q.data.entryState === "not_open"
-                  ? "Entry not open"
-                  : q.data.entryState === "expired"
-                    ? "Entry closed"
-                    : q.data.status.replace("_", " ")}
-              </span>
-              {q.data.entryStart && q.data.entryEnd && (
-                <p>
-                  Entry window: {date(q.data.entryStart)} –{" "}
-                  {date(q.data.entryEnd)}
-                </p>
-              )}
-              {q.data.entryState === "not_open" && (
-                <p>Entry opens at the time shown above.</p>
-              )}
-              <div className="admission-qr">
-                {q.data.qr ? (
-                  <img
-                    src={q.data.qr}
-                    alt="Your admission QR code"
-                    width="256"
-                    height="256"
-                    onLoad={() => setQrReady(true)}
-                    onError={() => setQrReady(false)}
+            {q.data.snapshot.design?.sections ? (
+              <StudioPass ticket={q.data} onReady={setQrReady} />
+            ) : (
+              <>
+                {q.data.snapshot.design?.layout !== "minimal" && (
+                  <Cover
+                    src={q.data.snapshot.coverUrl}
+                    fit={q.data.snapshot.design?.coverFit}
+                    position={q.data.snapshot.design?.coverPosition}
                   />
-                ) : (
-                  <p>
-                    {q.data.status === "checked_in"
-                      ? "This pass has already been admitted."
-                      : q.data.entryState === "expired"
-                        ? "This pass’s entry window has closed."
-                        : q.data.entryState === "event_unavailable"
-                          ? "This event is no longer available for entry."
-                          : "This pass has been cancelled."}
-                  </p>
                 )}
-              </div>
-              <p className="admission-muted">Pass {id}</p>
-              <p>
-                {q.data.snapshot.design?.footerText ||
-                  "One guest · One entry · Keep this QR private"}
-              </p>
-              {q.data.checkedInAt && (
-                <p>Checked in {date(q.data.checkedInAt)}</p>
-              )}
-            </div>
+                <div className="admission-pass-info">
+                  <span className="admissions-eyebrow">
+                    {q.data.snapshot.passLabel || "Corner League · Event pass"}
+                  </span>
+                  <h2>{q.data.snapshot.eventName}</h2>
+                  <h3>{q.data.snapshot.typeName}</h3>
+                  {q.data.snapshot.design?.showDescription !== false &&
+                    !!q.data.snapshot.description && (
+                      <p className="pass-description">
+                        {q.data.snapshot.description}
+                      </p>
+                    )}
+                  {q.data.snapshot.passInstructions && (
+                    <p>{q.data.snapshot.passInstructions}</p>
+                  )}
+                  <p>{q.data.snapshot.organizationName}</p>
+                  <p>
+                    {date(q.data.snapshot.startsAt)}
+                    <br />
+                    {q.data.snapshot.location}
+                  </p>
+                  <span
+                    className={`admission-status ${q.data.status} ${q.data.entryState || ""}`}
+                  >
+                    {q.data.entryState === "not_open"
+                      ? "Entry not open"
+                      : q.data.entryState === "expired"
+                        ? "Entry closed"
+                        : q.data.status.replace("_", " ")}
+                  </span>
+                  {q.data.entryStart && q.data.entryEnd && (
+                    <p>
+                      Entry window: {date(q.data.entryStart)} –{" "}
+                      {date(q.data.entryEnd)}
+                    </p>
+                  )}
+                  {q.data.entryState === "not_open" && (
+                    <p>Entry opens at the time shown above.</p>
+                  )}
+                  <div className="admission-qr">
+                    {q.data.qr ? (
+                      <img
+                        src={q.data.qr}
+                        alt="Your admission QR code"
+                        width="256"
+                        height="256"
+                        onLoad={() => setQrReady(true)}
+                        onError={() => setQrReady(false)}
+                      />
+                    ) : (
+                      <p>
+                        {q.data.status === "checked_in"
+                          ? "This pass has already been admitted."
+                          : q.data.entryState === "expired"
+                            ? "This pass’s entry window has closed."
+                            : q.data.entryState === "event_unavailable"
+                              ? "This event is no longer available for entry."
+                              : "This pass has been cancelled."}
+                      </p>
+                    )}
+                  </div>
+                  <p className="admission-muted">Pass {id}</p>
+                  <p>
+                    {q.data.snapshot.design?.footerText ||
+                      "One guest · One entry · Keep this QR private"}
+                  </p>
+                  {q.data.checkedInAt && (
+                    <p>Checked in {date(q.data.checkedInAt)}</p>
+                  )}
+                </div>
+              </>
+            )}
           </article>
         )}
       </DialogContent>

@@ -31,6 +31,7 @@ export async function printAdmissionPass(element: HTMLElement) {
  .admission-cover-fallback{display:none} .admission-pass-info{padding:16px;text-align:center} h2{overflow-wrap:anywhere;font-size:21px;line-height:1.2;margin:10px 0}h3{font-size:15px;margin:8px 0}p{margin:8px 0;overflow-wrap:anywhere;white-space:pre-wrap}
  .admissions-eyebrow{font-size:10px;text-transform:uppercase;letter-spacing:.1em}.admission-status{font-size:10px;font-weight:bold}.admission-qr{background:white;padding:10px;margin:12px auto;width:200px;height:200px}.admission-qr img{display:block;width:180px;height:180px}
  .admission-muted{font-size:9px}.pass-description{display:none}
+ .studio-pass-container{border:0!important;background:transparent!important} .studio-issued-pass{margin:0} .studio-issued-pass svg{display:block;width:100%;height:auto;max-height:245mm} .sr-only{display:none}
  `;
   doc.head.appendChild(style);
   doc.body.appendChild(element.cloneNode(true));

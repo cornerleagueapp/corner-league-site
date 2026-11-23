@@ -120,6 +120,10 @@ let query = {
 const Link = (p) => React.createElement("a", p, p.children),
   SEO = () => null;
 const page = compile("client/src/pages/admissions/admissions.tsx", {
+  "@/components/admissions/StudioPass": {
+    StudioPass: "studio-pass",
+    downloadTicketImage: async () => {},
+  },
   "@/components/admissions/PaidTicketCheckout": {
     PaidTicketCheckout: "paid-checkout",
     TicketOrders: "ticket-orders",

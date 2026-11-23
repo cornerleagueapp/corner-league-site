@@ -1,12 +1,5 @@
-export type PassDesign = {
-  layout?: "classic" | "split" | "minimal";
-  backgroundColor?: string;
-  textColor?: string;
-  coverFit?: "contain" | "cover";
-  coverPosition?: number;
-  showDescription?: boolean;
-  footerText?: string;
-};
+import type { StudioDesign } from "./ticket-design";
+export type PassDesign = StudioDesign;
 import { apiFetch } from "./apiClient";
 import { unwrapSportData } from "./sportRegistration";
 export type AdmissionType = {
@@ -43,6 +36,7 @@ export type Ticket = {
   checkedInAt: string | null;
   createdAt: string;
   snapshot: {
+    guestName?: string;
     design?: PassDesign | null;
     accentColor?: string;
     passLabel?: string;
