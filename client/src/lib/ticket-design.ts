@@ -24,6 +24,11 @@ export type TicketBlock = {
   qrSize?: number;
   fit?: "cover" | "contain";
   position?: number;
+  horizontal?: number;
+  zoom?: number;
+  overlay?: number;
+  eventStyle?: "plain" | "matchup" | "plaque";
+
   hidden?: boolean;
   display?: "all" | "web" | "wallet";
 };
@@ -33,6 +38,10 @@ export type StudioDesign = {
   font?: "modern" | "editorial" | "athletic";
   backgroundImage?: string;
   radius?: number;
+  edge?: "cut" | "rounded";
+  topAccent?: boolean;
+  bottomAccent?: boolean;
+
   timeZone?: string;
   backgroundColor?: string;
   textColor?: string;
@@ -101,8 +110,28 @@ export function studioPreset(
         text: "{{organizationName}}",
         fontSize: 18,
       },
-      { id: "artwork", kind: "image", height: 180, fit: "cover" },
-      { id: "event", kind: "event", fontSize: 26 },
+      {
+        id: "artwork",
+        kind: "image",
+        height: style === "clubhouse" ? 330 : 420,
+        fit: "cover",
+      },
+      {
+        id: "event",
+        kind: "event",
+        fontSize: style === "courtside" ? 30 : 26,
+        eventStyle: style === "courtside" ? "matchup" : "plaque",
+        background:
+          style === "clubhouse"
+            ? "#DAD4BE"
+            : style === "matchpoint"
+              ? "#122C62"
+              : "#293754",
+        color: style === "clubhouse" ? "#173F36" : "#FFFFFF",
+      },
+      ...(style === "matchpoint"
+        ? [{ id: "rule", kind: "divider" as const }]
+        : []),
       { id: "guest", kind: "guest", text: "{{guestName}}", fontSize: 18 },
       { id: "qr", kind: "qr" },
       {
@@ -247,12 +276,17 @@ export function renderStudioTicket(
     height: number,
     fit: string,
     position: number,
+    horizontal: number,
+    zoom: number,
   ) {
     if (!url) return false;
     const src = images[url] || (assetReference(url) ? url : "");
     if (!src) return false;
+    const scale = bound(zoom, 100, 250, 100) / 100;
+    const x = (-(scale - 1) * 420 * bound(horizontal, 0, 100, 50)) / 100;
+    const offset = (-(scale - 1) * height * bound(position, 0, 100, 50)) / 100;
     parts.push(
-      `<image x="0" y="${top}" width="420" height="${height}" href="${esc(src)}" preserveAspectRatio="xMidY${position < 34 ? "Min" : position > 66 ? "Max" : "Mid"} ${fit === "contain" ? "meet" : "slice"}"/>`,
+      `<svg x="0" y="${top}" width="420" height="${height}" overflow="hidden"><image x="${x}" y="${offset}" width="${420 * scale}" height="${height * scale}" href="${esc(src)}" preserveAspectRatio="xMidY${position < 34 ? "Min" : position > 66 ? "Max" : "Mid"} ${fit === "contain" ? "meet" : "slice"}"/></svg>`,
     );
     return true;
   }
@@ -276,15 +310,54 @@ export function renderStudioTicket(
     }
     y += pad;
     if (b.kind === "image") {
-      const h = bound(b.height, 80, 300, 180);
+      const h = bound(b.height, 80, 500, 180);
       y = top;
-      picture(b.image, top, h, b.fit || "cover", b.position ?? 50);
+      picture(
+        b.image,
+        top,
+        h,
+        b.fit || "cover",
+        b.position ?? 50,
+        b.horizontal ?? 50,
+        b.zoom ?? 100,
+      );
+      if (b.text) {
+        parts.push(
+          `<g opacity="${bound(b.overlay, 50, 100, 65) / 100}">${rect(0, top, 420, h, "#000000")}</g>`,
+        );
+        y = top + 12;
+        text(
+          dynamicText(b.text, data, d.timeZone).slice(0, 90),
+          20,
+          "#FFFFFF",
+          align,
+          24,
+          true,
+        );
+      }
       y += h;
     } else if (b.kind === "divider") {
       parts.push(rect(pad, y, 420 - pad * 2, 1, hex(b.color, accent)));
       y += pad;
     } else if (b.kind === "event") {
-      text(data.eventName, size, color, align, pad, true);
+      const matchup =
+        b.eventStyle === "matchup" ? data.eventName.split(/\s+vs\.?\s+/i) : [];
+      if (matchup.length === 2) {
+        text(matchup[0], size, color, align, pad, true);
+        text("◆ VS ◆", 13, color, align, pad, true);
+        text(matchup[1], size, color, align, pad, true);
+      } else {
+        text(
+          b.eventStyle === "plaque"
+            ? data.eventName.toUpperCase()
+            : data.eventName,
+          size,
+          color,
+          align,
+          pad,
+          true,
+        );
+      }
       y += 10;
       for (const value of [
         data.typeName,
@@ -384,7 +457,11 @@ export function renderStudioTicket(
       "This design is too tall. Shorten text or remove sections.",
     );
   const radius = bound(d.radius, 0, 32, 20);
-  const clipId = `ticket-corners-${Math.round(y * 100)}-${radius}`;
+  const edge =
+    d.edge === "rounded"
+      ? `<rect width="420" height="${y}" rx="${radius}"/>`
+      : `<path d="M18 0 H192 A18 18 0 0 0 228 0 H402 L420 18 V${y - 18} L402 ${y} H228 A18 18 0 0 0 192 ${y} H18 L0 ${y - 18} V18 Z"/>`;
+  const clipId = `ticket-corners-${Math.round(y * 100)}-${radius}-${d.edge === "rounded" ? "round" : "cut"}`;
   const background =
     d.backgroundImage &&
     (images[d.backgroundImage] || assetReference(d.backgroundImage))
@@ -392,7 +469,7 @@ export function renderStudioTicket(
       : "";
   return {
     height: Math.ceil(y),
-    svg: `<svg xmlns="http://www.w3.org/2000/svg" width="840" height="${Math.ceil(y * 2)}" viewBox="0 0 420 ${y}" role="img" aria-label="Admission ticket"><defs><clipPath id="${clipId}"><rect width="420" height="${y}" rx="${radius}"/></clipPath></defs><g clip-path="url(#${clipId})">${rect(0, 0, 420, y, paper)}${background}${rect(0, 0, 420, 6, accent)}${parts.join("")}${rect(0, y - 6, 420, 6, accent)}</g></svg>`,
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" width="840" height="${Math.ceil(y * 2)}" viewBox="0 0 420 ${y}" role="img" aria-label="Admission ticket"><defs><clipPath id="${clipId}">${edge}</clipPath></defs><g clip-path="url(#${clipId})">${rect(0, 0, 420, y, paper)}${background}${d.topAccent === false ? "" : rect(0, 0, 420, 6, accent)}${parts.join("")}${d.bottomAccent === false ? "" : rect(0, y - 6, 420, 6, accent)}</g></svg>`,
   };
 }
 
@@ -440,7 +517,10 @@ export function studioDesignIssue(d: StudioDesign): string | null {
     for (const [key, min, max] of [
       ["padding", 10, 36],
       ["fontSize", 12, 32],
-      ["height", 80, 300],
+      ["height", 80, 500],
+      ["zoom", 100, 250],
+      ["horizontal", 0, 100],
+      ["overlay", 50, 100],
       ["qrSize", 180, 260],
       ["position", 0, 100],
     ] as const) {
