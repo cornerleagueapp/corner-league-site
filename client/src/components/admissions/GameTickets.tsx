@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import {
-  admissionAvailability,
+  isAdmissionBookable,
   admissionData,
   admissionKey,
   type AdmissionType,
@@ -34,7 +34,7 @@ export function GameTickets({
     staleTime: 30000,
     retry: false,
   });
-  if (!upcoming || !result.data?.items.some((t) => !admissionAvailability(t)))
+  if (!upcoming || !result.data?.items.some((t) => isAdmissionBookable(t)))
     return null;
   const link = (
     <Link

@@ -32,6 +32,8 @@ const labels: Record<string, string> = {
 };
 export function breadcrumbsFor(path: string): Breadcrumb[] {
   if (path.startsWith("/local-discovery/")) return [];
+  if (/^\/tickets\/season\/[^/]+$/.test(path))
+    return [{ label: "Home", href: "/" }, { label: "Upcoming game tickets" }];
   if (/^\/admissions\//.test(path)) return []; // The admissions page renders named breadcrumbs from its loaded event.
   // Team pages render named organization/season breadcrumbs from their loaded data.
   if (/^\/sports\/[^/]+\/(teams|games|seasons)\//.test(path)) return [];

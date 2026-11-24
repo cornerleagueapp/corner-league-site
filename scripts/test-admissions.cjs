@@ -54,6 +54,11 @@ const now = Date.now(),
     entryEnd: new Date(now + 10000).toISOString(),
   };
 assert.equal(data.admissionAvailability(ticketType, now), "Reserve free pass");
+assert.equal(data.isAdmissionBookable(ticketType, now), true);
+assert.equal(
+  data.isAdmissionBookable({ ...ticketType, issued: 10 }, now),
+  false,
+);
 assert.equal(
   data.admissionAvailability({ ...ticketType, issued: 10 }, now),
   "Sold out",

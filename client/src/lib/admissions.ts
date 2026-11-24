@@ -98,6 +98,10 @@ export function admissionAvailability(t: AdmissionType, now = Date.now()) {
   if (now > Date.parse(t.salesEnd)) return "Reservations closed";
   return t.priceCents > 0 ? "Buy tickets" : "Reserve free pass";
 }
+export function isAdmissionBookable(t: AdmissionType, now = Date.now()) {
+  const status = admissionAvailability(t, now);
+  return status === "Reserve free pass" || status === "Buy tickets";
+}
 export const admissionKey = (key: string) => encodeURIComponent(key);
 
 export async function saveAdmissionWallet(
