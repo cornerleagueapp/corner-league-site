@@ -13,12 +13,14 @@ export function GameTickets({
   startsAt,
   enabled,
   compact = false,
+  title,
 }: {
   season: string;
   game: string;
   startsAt: string;
   enabled: boolean;
   compact?: boolean;
+  title?: string;
 }) {
   const key = admissionKey(`game:${season}:${game}`);
   const upcoming = enabled && Date.parse(startsAt) > Date.now();
@@ -42,6 +44,16 @@ export function GameTickets({
       Get tickets
     </Link>
   );
+  if (title)
+    return (
+      <article className="admission-card">
+        <div className="admission-card-body">
+          <h2>{title}</h2>
+          <p>{new Date(startsAt).toLocaleString()}</p>
+          {link}
+        </div>
+      </article>
+    );
   return compact ? (
     link
   ) : (

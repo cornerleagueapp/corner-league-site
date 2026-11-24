@@ -1,3 +1,4 @@
+import SeasonTicketsPage from "@/pages/admissions/season-tickets";
 import { ConcessionsPage } from "@/features/concessions/ConcessionsPage";
 import LocalDiscoveryPage from "@/features/local-discovery/LocalDiscoveryPage";
 import PublicSeasonPage from "@/pages/public-season";
@@ -234,6 +235,10 @@ function PrivateRouter() {
           <Route path="/explore" component={ExploreFeedPage} />
           <Route path="/messages" component={MessagesPage} />
           <Route path="/notifications" component={NotificationsPage} />
+          <Route
+            path="/tickets/season/:seasonId"
+            component={SeasonTicketsPage}
+          />
           <Route path="/tickets" component={MyTicketsPage} />
           <Route path="/settings" component={Settings} />
           <Route path="/racepod" component={RacePodPage} />

@@ -437,7 +437,11 @@ function TicketWallet({ account }: { account: string }) {
         <div className="admissions-grid">
           {q.data.items.map((t) => (
             <article className="admission-card" key={t.id}>
-              <Cover src={t.snapshot.coverUrl} />
+              {t.snapshot.design?.sections?.length ? (
+                <StudioPass preview ticket={{ ...t, qr: null }} />
+              ) : (
+                <Cover src={t.snapshot.coverUrl} />
+              )}
               <div className="admission-card-body">
                 <span className={`admission-status ${t.status}`}>
                   {t.status === "checked_in"

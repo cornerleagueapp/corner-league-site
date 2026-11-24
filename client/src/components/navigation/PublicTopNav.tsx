@@ -23,6 +23,7 @@ import { logout } from "@/lib/logout";
 import {
   Bell,
   PenLine,
+  Ticket,
   Check,
   ChevronDown,
   CircleUserRound,
@@ -405,16 +406,17 @@ export default function PublicTopNav({
                   <button
                     type="button"
                     onClick={() => navigateFromAccount("/tickets")}
-                    className="consumer-account-org-link"
+                    className="flex w-full items-center gap-3 rounded-[15px] px-3 py-3 text-left text-sm font-bold text-cl-muted transition hover:bg-cl-subtle hover:text-cl-ink"
                   >
+                    <Ticket className="h-4 w-4 shrink-0 text-cl-accent" />
                     My tickets
                   </button>
                   <button
                     type="button"
                     onClick={() => navigateFromAccount("/writer")}
-                    className="consumer-account-org-link"
+                    className="flex w-full items-center gap-3 rounded-[15px] px-3 py-3 text-left text-sm font-bold text-cl-muted transition hover:bg-cl-subtle hover:text-cl-ink"
                   >
-                    <PenLine className="h-4 w-4 shrink-0" />
+                    <PenLine className="h-4 w-4 shrink-0 text-cl-accent" />
                     Writer studio
                   </button>
                   <div className="my-2 h-px bg-cl-subtle" />

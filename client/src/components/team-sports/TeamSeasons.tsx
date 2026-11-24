@@ -1,4 +1,3 @@
-import { GameTickets } from "@/components/admissions/GameTickets";
 import SeasonExcellence from "./SeasonExcellence";
 import TeamLogo from "./TeamLogo";
 import SeasonCalendar from "./SeasonCalendar";
@@ -214,7 +213,6 @@ export function SeasonDetails({
   tab?: string;
   navigation?: ReactNode;
 }) {
-  const [showTickets, setShowTickets] = useState(false);
   const [scheduleView, setScheduleView] = useState("list");
   const [division, setDivision] = useState(""),
     [status, setStatus] = useState("all"),
@@ -239,14 +237,12 @@ export function SeasonDetails({
         </p>
         {!sandbox && (
           <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              aria-expanded={showTickets}
+            <Link
+              href={`/tickets/season/${encodeURIComponent(d.id)}?org=${encodeURIComponent(d.organizationId)}&sport=${encodeURIComponent(d.sportKey)}`}
               className="inline-flex min-h-11 items-center rounded-xl border border-cl-border px-4 font-semibold"
-              onClick={() => setShowTickets(!showTickets)}
             >
               Get tickets
-            </button>
+            </Link>
             <Link
               href={`/season-registration?season=${encodeURIComponent(d.id)}`}
               className="inline-flex min-h-11 items-center rounded-xl border border-cl-border bg-cl-surface px-4 py-2 font-semibold text-cl-ink"
@@ -256,40 +252,6 @@ export function SeasonDetails({
           </div>
         )}
       </div>
-      {showTickets && !sandbox && (
-        <section className="cl-team-panel">
-          <h2>Upcoming game tickets</h2>
-          <p>Ticket links appear for games currently accepting reservations.</p>
-          <ul>
-            {d.games
-              .filter(
-                (g) =>
-                  g.status === "scheduled" &&
-                  Date.parse(g.startsAt) > Date.now(),
-              )
-              .sort((a, b) => Date.parse(a.startsAt) - Date.parse(b.startsAt))
-              .slice(0, 10)
-              .map((g) => (
-                <li
-                  key={g.id}
-                  className="flex flex-wrap items-center gap-3 py-2"
-                >
-                  <span>
-                    {name(g.homeTeamId)} vs {name(g.awayTeamId)} ·{" "}
-                    {new Date(g.startsAt).toLocaleString()}
-                  </span>
-                  <GameTickets
-                    compact
-                    season={d.id}
-                    game={g.id}
-                    startsAt={g.startsAt}
-                    enabled
-                  />
-                </li>
-              ))}
-          </ul>
-        </section>
-      )}
       {navigation}
       {tab === "overview" && <SeasonOverview season={d} />}
       {(tab === "awards" || tab === "all") &&
