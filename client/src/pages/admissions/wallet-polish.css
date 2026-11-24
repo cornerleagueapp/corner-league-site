@@ -1,0 +1,64 @@
+.admission-ticket-modal .admission-gate-note {
+  padding-block: 12px 4px;
+  line-height: 1.5;
+}
+
+.admission-ticket-modal .admission-pass-tools {
+  justify-content: flex-start;
+  padding-right: 0;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.admission-ticket-modal .admission-pass-tools .admission-primary {
+  min-height: 44px;
+  border: 1px solid rgb(var(--cl-border));
+  border-radius: 10px;
+  background: rgb(var(--cl-surface));
+  color: rgb(var(--cl-ink));
+  padding: 8px 14px;
+}
+
+.admission-ticket-modal .admission-pass-tools .admission-primary:hover:not(:disabled) {
+  border-color: currentColor;
+}
+
+.admission-ticket-modal .admission-wallet-tools {
+  align-items: center;
+  padding-right: 0;
+  margin-bottom: 4px;
+}
+
+.admission-wallet-apple {
+  padding: 5px;
+  min-height: 44px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.admission-wallet-apple img {
+  width: 144px;
+  height: auto;
+}
+
+.admission-wallet-apple:disabled {
+  cursor: not-allowed;
+}
+
+.admission-wallet-fallback {
+  display: none;
+}
+
+.admission-wallet-apple:has(img[hidden]) .admission-wallet-fallback {
+  display: inline-block;
+  padding: 9px 13px;
+  background: #000;
+  color: #fff;
+  border: 1px solid #777;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.admission-wallet-status {
+  font-size: 0.875rem;
+}

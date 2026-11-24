@@ -556,7 +556,7 @@ export function TicketPass({
             </button>
           </DialogClose>
         </div>
-        <DialogDescription>
+        <DialogDescription className="admission-gate-note">
           Present this QR at the gate. Each pass admits one guest, once.
         </DialogDescription>
         <div className="admission-pass-tools">
@@ -597,11 +597,19 @@ export function TicketPass({
         <div className="admission-wallet-tools">
           {wallets.data?.apple && (
             <button
-              className="admission-primary"
+              className="admission-wallet-apple"
               disabled={!!walletBusy || !q.data?.qr || q.isFetching}
               onClick={() => void wallet("apple")}
             >
-              {walletBusy === "apple" ? "Preparing…" : "Add to Apple Wallet"}
+              <img
+                src="/wallet/add-to-apple-wallet.svg"
+                alt="Add to Apple Wallet"
+                width={144}
+                onError={(event) => {
+                  event.currentTarget.hidden = true;
+                }}
+              />
+              <span className="admission-wallet-fallback">Add to Apple Wallet</span>
             </button>
           )}
           {wallets.data?.google && (
@@ -614,6 +622,7 @@ export function TicketPass({
             </button>
           )}
         </div>
+        {walletBusy && <p className="admission-wallet-status" role="status">Preparing wallet pass…</p>}
         {q.isPending ? (
           <p role="status">Loading your pass…</p>
         ) : q.isError ? (
