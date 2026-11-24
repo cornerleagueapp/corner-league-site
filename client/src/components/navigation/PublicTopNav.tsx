@@ -402,16 +402,13 @@ export default function PublicTopNav({
                     </span>
                   </button>
                   <MyRacerProfileLink onNavigate={navigateFromAccount} />
-                  {/* Phase 2/3: deferred ticket navigation; retained for restoration.
-<button
+                  <button
                     type="button"
                     onClick={() => navigateFromAccount("/tickets")}
                     className="consumer-account-org-link"
                   >
-                    <Ticket className="h-4 w-4 shrink-0" />
                     My tickets
                   </button>
-                  */}
                   <button
                     type="button"
                     onClick={() => navigateFromAccount("/writer")}

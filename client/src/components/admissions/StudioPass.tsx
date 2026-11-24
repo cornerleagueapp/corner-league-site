@@ -10,9 +10,11 @@ import {
 export function StudioPass({
   ticket,
   onReady,
+  preview = false,
 }: {
   ticket: Ticket;
-  onReady: (ready: boolean) => void;
+  onReady?: (ready: boolean) => void;
+  preview?: boolean;
 }) {
   const d = ticket.snapshot.design as StudioDesign;
   const [images, setImages] = useState<Record<string, string>>({}),
@@ -24,7 +26,7 @@ export function StudioPass({
     const controller = new AbortController();
     setLoading(true);
     setError("");
-    onReady(false);
+    onReady?.(false);
     void (async () => {
       const result: Record<string, string> = {};
       let bytes = 0;
@@ -66,8 +68,8 @@ export function StudioPass({
     };
   }, [signature]);
   useEffect(() => {
-    onReady(!loading && !error && !!ticket.qr);
-    return () => onReady(false);
+    onReady?.(!loading && !error && !!ticket.qr);
+    return () => onReady?.(false);
   }, [loading, error, ticket.qr, onReady]);
   if (loading) return <p role="status">Preparing your ticket artwork…</p>;
   if (error)
@@ -81,16 +83,22 @@ export function StudioPass({
       d,
       {
         ...ticket.snapshot,
-        ticketId: ticket.id,
+        ticketId: preview ? undefined : ticket.id,
         qr: ticket.qr,
-        status: ticket.entryState || ticket.status,
+        status: preview ? "preview" : ticket.entryState || ticket.status,
         entryStart: ticket.entryStart,
         entryEnd: ticket.entryEnd,
       },
       images,
     );
     return (
-      <figure className="studio-issued-pass">
+      <figure
+        className={
+          preview
+            ? "studio-issued-pass mx-auto w-48 max-w-full"
+            : "studio-issued-pass"
+        }
+      >
         <div dangerouslySetInnerHTML={{ __html: result.svg }} />
         <figcaption className="sr-only">
           {ticket.snapshot.eventName}. {ticket.snapshot.typeName}.{" "}

@@ -1,3 +1,4 @@
+import { GameTickets } from "@/components/admissions/GameTickets";
 import { orderedStatKeys } from "@/lib/statPresentation";
 import { seasonHref } from "@/lib/seasonNavigation";
 import {
@@ -125,18 +126,35 @@ export default function PublicGamePage() {
                       ? "Result pending"
                       : status}
           </strong>
-          {r?.racket && <p className="text-sm text-cl-muted">
-            {r.racket.format === "doubles" ? "Doubles" : "Singles"} · Best of {r.racket.bestOf}
-            {pickleball ? ` · Play to ${r.racket.pointsTo}, win by two` : r.racket.decidingMatchTiebreak ? " · Deciding match tiebreak to 10" : ""}
-          </p>}
-          {r?.decision && r.decision !== "regulation" && <p>
-            {r.decision === "shootout" ? "Shootout" : "Overtime"}
-            {r.tiebreakWinnerId ? ` · Winner: ${teams.find((t) => t.id === r.tiebreakWinnerId)?.name || "Team"}` : ""}
-          </p>}
+          {r?.racket && (
+            <p className="text-sm text-cl-muted">
+              {r.racket.format === "doubles" ? "Doubles" : "Singles"} · Best of{" "}
+              {r.racket.bestOf}
+              {pickleball
+                ? ` · Play to ${r.racket.pointsTo}, win by two`
+                : r.racket.decidingMatchTiebreak
+                  ? " · Deciding match tiebreak to 10"
+                  : ""}
+            </p>
+          )}
+          {r?.decision && r.decision !== "regulation" && (
+            <p>
+              {r.decision === "shootout" ? "Shootout" : "Overtime"}
+              {r.tiebreakWinnerId
+                ? ` · Winner: ${teams.find((t) => t.id === r.tiebreakWinnerId)?.name || "Team"}`
+                : ""}
+            </p>
+          )}
           <div
             className="cl-score-scroll"
             role="region"
-            aria-label={setsWon ? "Set scores" : pickleball ? "Game scores" : "Period scores"}
+            aria-label={
+              setsWon
+                ? "Set scores"
+                : pickleball
+                  ? "Game scores"
+                  : "Period scores"
+            }
             tabIndex={0}
           >
             <table>
@@ -146,7 +164,9 @@ export default function PublicGamePage() {
                   {r?.periods.map((v, i) => (
                     <th key={i}>{v.label}</th>
                   ))}
-                  <th>{setsWon ? "Sets won" : pickleball ? "Games won" : "Total"}</th>
+                  <th>
+                    {setsWon ? "Sets won" : pickleball ? "Games won" : "Total"}
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -163,7 +183,9 @@ export default function PublicGamePage() {
                       <td key={j}>
                         {i ? v.homeScore : v.awayScore}
                         {v.homeTiebreak != null && v.awayTiebreak != null && (
-                          <small className="block text-xs text-cl-muted">TB {i ? v.homeTiebreak : v.awayTiebreak}</small>
+                          <small className="block text-xs text-cl-muted">
+                            TB {i ? v.homeTiebreak : v.awayTiebreak}
+                          </small>
                         )}
                       </td>
                     ))}
@@ -183,6 +205,12 @@ export default function PublicGamePage() {
       </nav>
       <div className="cl-match-layout" id="game-overview">
         <aside>
+          <GameTickets
+            season={d.id}
+            game={g.id}
+            startsAt={g.startsAt}
+            enabled={g.status === "scheduled" && !r}
+          />
           <section className="cl-team-panel">
             <h2>Game leaders</h2>
             {!metrics.length && (

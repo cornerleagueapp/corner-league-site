@@ -262,11 +262,40 @@ function AdmissionEventPage({
                 <div className="admissions-grid">
                   {q.data.items.map((t) => (
                     <article className="admission-card" key={t.id}>
-                      <Cover
-                        src={t.coverUrl}
-                        fit={t.design?.coverFit}
-                        position={t.design?.coverPosition}
-                      />
+                      {t.design?.sections?.length && q.data?.event ? (
+                        <StudioPass
+                          preview
+                          ticket={{
+                            id: t.id,
+                            status: "valid",
+                            checkedInAt: null,
+                            createdAt: "",
+                            entryStart: t.entryStart,
+                            entryEnd: t.entryEnd,
+                            snapshot: {
+                              design: t.design,
+                              accentColor: (
+                                t as AdmissionType & { accentColor?: string }
+                              ).accentColor,
+                              eventName: q.data.event.name,
+                              typeName: t.name,
+                              description: t.description,
+                              coverUrl: t.coverUrl,
+                              location: q.data.event.location,
+                              organizationName: q.data.event.organizationName,
+                              startsAt: q.data.event.startsAt,
+                              endsAt: q.data.event.endsAt,
+                              eventKey,
+                            },
+                          }}
+                        />
+                      ) : (
+                        <Cover
+                          src={t.coverUrl}
+                          fit={t.design?.coverFit}
+                          position={t.design?.coverPosition}
+                        />
+                      )}
                       <div className="admission-card-body">
                         <div className="admission-card-label">
                           Admission pass

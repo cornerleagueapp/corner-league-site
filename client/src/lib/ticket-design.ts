@@ -16,6 +16,9 @@ export type TicketBlock = {
   image?: string;
   walletRole?: "hero" | "logo" | "none";
   background?: string;
+  backgroundMode?: "transparent" | "tinted" | "solid";
+  backgroundOpacity?: number;
+  artworkOpacity?: number;
   color?: string;
   align?: "left" | "center" | "right";
   padding?: number;
@@ -278,6 +281,7 @@ export function renderStudioTicket(
     position: number,
     horizontal: number,
     zoom: number,
+    opacity: number,
   ) {
     if (!url) return false;
     const src = images[url] || (assetReference(url) ? url : "");
@@ -286,7 +290,7 @@ export function renderStudioTicket(
     const x = (-(scale - 1) * 420 * bound(horizontal, 0, 100, 50)) / 100;
     const offset = (-(scale - 1) * height * bound(position, 0, 100, 50)) / 100;
     parts.push(
-      `<svg x="0" y="${top}" width="420" height="${height}" overflow="hidden"><image x="${x}" y="${offset}" width="${420 * scale}" height="${height * scale}" href="${esc(src)}" preserveAspectRatio="xMidY${position < 34 ? "Min" : position > 66 ? "Max" : "Mid"} ${fit === "contain" ? "meet" : "slice"}"/></svg>`,
+      `<svg x="0" y="${top}" width="420" height="${height}" overflow="hidden"><image opacity="${bound(opacity, 0, 100, 100) / 100}" x="${x}" y="${offset}" width="${420 * scale}" height="${height * scale}" href="${esc(src)}" preserveAspectRatio="xMidY${position < 34 ? "Min" : position > 66 ? "Max" : "Mid"} ${fit === "contain" ? "meet" : "slice"}"/></svg>`,
     );
     return true;
   }
@@ -302,8 +306,11 @@ export function renderStudioTicket(
       color = hex(b.color, ink);
     let backgroundIndex = -1;
     if (
-      b.background ||
-      (d.backgroundImage && b.kind !== "image" && b.kind !== "divider")
+      b.backgroundMode !== "transparent" &&
+      (b.backgroundMode === "tinted" ||
+        b.backgroundMode === "solid" ||
+        b.background ||
+        (d.backgroundImage && b.kind !== "image" && b.kind !== "divider"))
     ) {
       backgroundIndex = parts.length;
       parts.push("");
@@ -320,6 +327,7 @@ export function renderStudioTicket(
         b.position ?? 50,
         b.horizontal ?? 50,
         b.zoom ?? 100,
+        b.artworkOpacity ?? 100,
       );
       if (b.text) {
         parts.push(
@@ -394,7 +402,16 @@ export function renderStudioTicket(
         );
         y += qrSize + 30;
       } else {
-        text("Entry QR unavailable", 16, ink, "center", pad, true);
+        text(
+          state === "preview"
+            ? "QR issued after reservation"
+            : "Entry QR unavailable",
+          16,
+          ink,
+          "center",
+          pad,
+          true,
+        );
         y += 12;
       }
       if (data.entryStart && data.entryEnd) {
@@ -448,7 +465,7 @@ export function renderStudioTicket(
         hex(b.background, paper),
       ).replace(
         "<rect ",
-        !b.background && d.backgroundImage ? '<rect opacity="0.88" ' : "<rect ",
+        `<rect opacity="${b.backgroundMode === "solid" ? 1 : b.backgroundMode === "tinted" ? bound(b.backgroundOpacity, 0, 100, 65) / 100 : !b.background && d.backgroundImage ? 0.88 : 1}" `,
       );
   }
   y += 6;
@@ -521,6 +538,8 @@ export function studioDesignIssue(d: StudioDesign): string | null {
       ["zoom", 100, 250],
       ["horizontal", 0, 100],
       ["overlay", 50, 100],
+      ["backgroundOpacity", 0, 100],
+      ["artworkOpacity", 0, 100],
       ["qrSize", 180, 260],
       ["position", 0, 100],
     ] as const) {
