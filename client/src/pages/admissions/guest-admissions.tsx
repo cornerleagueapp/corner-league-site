@@ -78,7 +78,11 @@ export function GuestAdmission({ eventKey }: { eventKey: string }) {
             requestId: retry.current.id,
           })
         ).json(),
-      ) as { url?: string; state?: string };
+      ) as { url?: string; state?: string; free?: boolean };
+      if (data.free && data.state === "paid") {
+        window.location.assign("/guest-admission-complete");
+        return;
+      }
       if (
         !data.url ||
         new URL(data.url).origin !== "https://checkout.stripe.com"
@@ -107,7 +111,11 @@ export function GuestAdmission({ eventKey }: { eventKey: string }) {
       <div className="cl-box-office__masthead">
         <div className="cl-box-office__wrap cl-box-office__masthead-inner">
           <div className="cl-box-office__identity">
-            <img className="cl-box-office__crest" src={cornerLeagueLogo} alt="" />
+            <img
+              className="cl-box-office__crest"
+              src={cornerLeagueLogo}
+              alt=""
+            />
             <span>
               {organizer || "Corner League"}
               <small>ATHLETICS BOX OFFICE</small>
@@ -186,7 +194,7 @@ export function GuestAdmission({ eventKey }: { eventKey: string }) {
         )}
         {options.data && !options.data.items.length && (
           <p className="cl-box-office__notice">
-            No paid tickets are available for this event right now.
+            No tickets are available for this event right now.
           </p>
         )}
         {error && (
@@ -211,7 +219,11 @@ export function GuestAdmission({ eventKey }: { eventKey: string }) {
             return (
               <article key={type.id} className="cl-box-office__ticket">
                 <div className="cl-box-office__ticket-top">
-                  <span>ADMISSION PASS</span>
+                  <span>
+                    {type.coverage?.length
+                      ? "MULTI-EVENT PASS"
+                      : "ADMISSION PASS"}
+                  </span>
                   <span>
                     {available > 0 ? `${available} available` : "Sold out"}
                   </span>
@@ -280,7 +292,9 @@ export function GuestAdmission({ eventKey }: { eventKey: string }) {
                     {busy
                       ? "Opening checkout…"
                       : bookable
-                        ? "Continue to payment →"
+                        ? type.priceCents === 0
+                          ? "Reserve free passes →"
+                          : "Continue to payment →"
                         : admissionAvailability(type)}
                   </button>
                 </form>
@@ -304,8 +318,8 @@ export function GuestAdmissionComplete() {
       <div className="admissions-heading">
         <h1>Check your email for your tickets</h1>
         <p>
-          If your payment went through, we’ll email your private pass link after
-          confirming it. Check your spam folder if it doesn’t arrive.
+          We’ll email your private pass link once your reservation or payment is
+          confirmed. Check your spam folder if it doesn’t arrive.
         </p>
       </div>
     </main>

@@ -11,13 +11,14 @@ type BoxOffice = {
     name: string;
     location: string;
     startsAt: string;
-    options: { name: string; free: boolean }[];
+    options: { name: string; free: boolean; multi?: boolean }[];
   }[];
 };
 
 export default function SchoolBoxOffice({ org }: { org: string }) {
   const [search, setSearch] = useState("");
   const [price, setPrice] = useState("all");
+  const [passKind, setPassKind] = useState("all");
   const [date, setDate] = useState("");
   const office = useQuery({
     queryKey: ["school-box-office", org],
@@ -42,6 +43,7 @@ export default function SchoolBoxOffice({ org }: { org: string }) {
     const options = event.options.filter(
       (ticket) =>
         (price === "all" || ticket.free === (price === "free")) &&
+        (passKind === "all" || !!ticket.multi === (passKind === "multi")) &&
         (eventMatch || ticket.name.toLowerCase().includes(term)),
     );
     return options.length ? [{ ...event, options }] : [];
@@ -119,6 +121,19 @@ export default function SchoolBoxOffice({ org }: { org: string }) {
             </select>
           </label>
         </div>
+        <div className="cl-box-office__fields" style={{ marginTop: 12 }}>
+          <label>
+            Pass coverage
+            <select
+              value={passKind}
+              onChange={(e) => setPassKind(e.target.value)}
+            >
+              <option value="all">All passes</option>
+              <option value="single">Single event</option>
+              <option value="multi">Season & specialty passes</option>
+            </select>
+          </label>
+        </div>
         {office.isPending && (
           <p className="cl-box-office__notice" role="status">
             Loading events…
@@ -156,20 +171,12 @@ export default function SchoolBoxOffice({ org }: { org: string }) {
                 <h3>{event.name}</h3>
                 <p>{event.location}</p>
                 <p>{event.options.map((option) => option.name).join(" · ")}</p>
-                {event.options.some((option) => !option.free) && (
+                {event.options.length > 0 && (
                   <a
                     className="cl-box-office__button"
                     href={"/buy-tickets/" + admissionKey(event.key)}
                   >
-                    Buy tickets as a guest
-                  </a>
-                )}
-                {event.options.some((option) => option.free) && (
-                  <a
-                    className="cl-box-office__button"
-                    href={"/admissions/" + admissionKey(event.key)}
-                  >
-                    View free passes on Corner League
+                    Choose tickets & passes
                   </a>
                 )}
               </div>

@@ -3,6 +3,7 @@ export type PassDesign = StudioDesign;
 import { apiFetch } from "./apiClient";
 import { unwrapSportData } from "./sportRegistration";
 export type AdmissionType = {
+  coverage?: { key: string; startsAt: string; endsAt: string }[] | null;
   design?: PassDesign | null;
   id: string;
   name: string;
