@@ -1,3 +1,8 @@
+import {
+  GuestAdmission,
+  GuestAdmissionComplete,
+  GuestPasses,
+} from "@/pages/admissions/guest-admissions";
 import SeasonTicketsPage from "@/pages/admissions/season-tickets";
 import { ConcessionsPage } from "@/features/concessions/ConcessionsPage";
 import LocalDiscoveryPage from "@/features/local-discovery/LocalDiscoveryPage";
@@ -502,6 +507,18 @@ function Router() {
             </ErrorBoundary>
           </AppShell>
         )}
+      </Route>
+      <Route path="/buy-tickets/:key">
+        {(p) => (
+          <GuestAdmission key={p.key} eventKey={decodeURIComponent(p.key)} />
+        )}
+      </Route>
+      <Route
+        path="/guest-admission-complete"
+        component={GuestAdmissionComplete}
+      />
+      <Route path="/guest-passes/:id">
+        {(p) => <GuestPasses key={p.id} orderId={p.id} />}
       </Route>
       <Route path="/admissions/:key">
         {(p) => (

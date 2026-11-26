@@ -3,6 +3,19 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      // Keep the guest credential out of the address bar before analytics loads.
+      if (
+        /^\/guest-passes\/[^/]+\/?$/.test(location.pathname) &&
+        /^#[A-Za-z0-9_-]{43}$/.test(location.hash)
+      ) {
+        history.replaceState(
+          { ...history.state, guestPassToken: location.hash.slice(1) },
+          "",
+          location.pathname + location.search,
+        );
+      }
+    </script>
     <script src="/consumer-theme-init.js"></script>
     <meta
       name="viewport"
@@ -14,7 +27,13 @@
         background-color: #f7f4ec;
       }
     </style>
-    <style>html[data-color-mode="dark"],html[data-color-mode="dark"] body{background-color:#16181c;color:#f4f6f8}</style>
+    <style>
+      html[data-color-mode="dark"],
+      html[data-color-mode="dark"] body {
+        background-color: #16181c;
+        color: #f4f6f8;
+      }
+    </style>
     <title>
       Corner League Sports | Jet Ski Racing Results, Rankings & Athlete Profiles
     </title>
