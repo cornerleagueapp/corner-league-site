@@ -3,6 +3,7 @@ import {
   GuestAdmissionComplete,
   GuestPasses,
 } from "@/pages/admissions/guest-admissions";
+import SchoolBoxOffice from "@/pages/admissions/school-box-office";
 import SeasonTicketsPage from "@/pages/admissions/season-tickets";
 import { ConcessionsPage } from "@/features/concessions/ConcessionsPage";
 import LocalDiscoveryPage from "@/features/local-discovery/LocalDiscoveryPage";
@@ -519,6 +520,9 @@ function Router() {
       />
       <Route path="/guest-passes/:id">
         {(p) => <GuestPasses key={p.id} orderId={p.id} />}
+      </Route>
+      <Route path="/box-office/:org">
+        {(params) => <SchoolBoxOffice key={params.org} org={params.org} />}
       </Route>
       <Route path="/admissions/:key">
         {(p) => (
