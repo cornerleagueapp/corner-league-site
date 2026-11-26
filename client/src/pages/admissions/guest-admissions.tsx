@@ -1,3 +1,4 @@
+import cornerLeagueLogo from "@assets/CL_Logo.png";
 import { useRef, useState, type FormEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { StudioPass } from "@/components/admissions/StudioPass";
@@ -106,15 +107,7 @@ export function GuestAdmission({ eventKey }: { eventKey: string }) {
       <div className="cl-box-office__masthead">
         <div className="cl-box-office__wrap cl-box-office__masthead-inner">
           <div className="cl-box-office__identity">
-            <span className="cl-box-office__crest" aria-hidden="true">
-              {organizer
-                ?.trim()
-                .split(/\s+/)
-                .slice(0, 3)
-                .map((word) => word[0])
-                .join("")
-                .toUpperCase() || "CL"}
-            </span>
+            <img className="cl-box-office__crest" src={cornerLeagueLogo} alt="" />
             <span>
               {organizer || "Corner League"}
               <small>ATHLETICS BOX OFFICE</small>

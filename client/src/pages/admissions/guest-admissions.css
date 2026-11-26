@@ -46,14 +46,11 @@
   color: var(--box-lavender);
 }
 .cl-box-office__crest {
-  display: grid;
-  place-items: center;
+  display: block;
   flex: 0 0 48px;
-  aspect-ratio: 1;
-  background: var(--box-lavender);
-  color: #26153b;
-  clip-path: polygon(0 0, 100% 0, 100% 72%, 50% 100%, 0 72%);
-  padding-bottom: 6px;
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
 }
 .cl-box-office__powered {
   font-size: 0.8rem;
