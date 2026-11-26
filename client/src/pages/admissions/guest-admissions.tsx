@@ -13,6 +13,7 @@ import {
   type Ticket,
 } from "@/lib/admissions";
 import "./admissions.css";
+import "./guest-admissions.css";
 
 async function request(path: string, body?: unknown) {
   const response = await apiFetch(path, {
@@ -44,12 +45,16 @@ export function GuestAdmission({ eventKey }: { eventKey: string }) {
     retry: false,
   });
   const [email, setEmail] = useState(""),
-    [quantity, setQuantity] = useState(1),
+    [quantities, setQuantities] = useState<Record<string, number>>({}),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
   const active = useRef(false);
   const retry = useRef<{ signature: string; id: string } | null>(null);
-  async function checkout(event: FormEvent, type: AdmissionType) {
+  async function checkout(
+    event: FormEvent,
+    type: AdmissionType,
+    count: number,
+  ) {
     event.preventDefault();
     if (active.current) return;
     active.current = true;
@@ -57,7 +62,7 @@ export function GuestAdmission({ eventKey }: { eventKey: string }) {
     setError("");
     const input = {
       email: email.trim().toLowerCase(),
-      quantity,
+      quantity: count,
       typeId: type.id,
       revision: type.revision,
     };
@@ -90,104 +95,212 @@ export function GuestAdmission({ eventKey }: { eventKey: string }) {
       setBusy(false);
     }
   }
+  const game = options.data?.event;
+  const organizer = game?.organizationName;
+  const gameDate = game ? new Date(game.startsAt) : null;
+  const formatDate = (date: Date, format: Intl.DateTimeFormatOptions) =>
+    new Intl.DateTimeFormat(undefined, format).format(date);
+
   return (
-    <main className="admissions-page">
-      <div className="admissions-heading">
-        <span className="admissions-eyebrow">
-          {options.data?.event.organizationName || "Admission"}
-        </span>
-        <h1>{options.data?.event.name || "Buy tickets"}</h1>
-        {options.data && (
-          <p>
-            {new Date(options.data.event.startsAt).toLocaleString()} ·{" "}
-            {options.data.event.location}
+    <main className="cl-box-office">
+      <div className="cl-box-office__masthead">
+        <div className="cl-box-office__wrap cl-box-office__masthead-inner">
+          <div className="cl-box-office__identity">
+            <span className="cl-box-office__crest" aria-hidden="true">
+              {organizer
+                ?.trim()
+                .split(/\s+/)
+                .slice(0, 3)
+                .map((word) => word[0])
+                .join("")
+                .toUpperCase() || "CL"}
+            </span>
+            <span>
+              {organizer || "Corner League"}
+              <small>ATHLETICS BOX OFFICE</small>
+            </span>
+          </div>
+          <span className="cl-box-office__powered">
+            Powered by <strong>Corner League</strong>
+          </span>
+        </div>
+      </div>
+      <header className="cl-box-office__hero">
+        <div className="cl-box-office__wrap cl-box-office__hero-inner">
+          <div>
+            <p className="cl-box-office__kicker">LIVE EVENT / TICKETS</p>
+            <h1>{game?.name || "Event tickets"}</h1>
+            <p className="cl-box-office__hero-note">
+              Grab your tickets and be there for game day.
+            </p>
+          </div>
+          {gameDate && Number.isFinite(+gameDate) && (
+            <dl className="cl-box-office__details">
+              <div>
+                <dt>When</dt>
+                <dd>
+                  <time dateTime={game?.startsAt}>
+                    {formatDate(gameDate, {
+                      weekday: "short",
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                    {" · "}
+                    {formatDate(gameDate, {
+                      hour: "numeric",
+                      minute: "2-digit",
+                      timeZoneName: "short",
+                    })}
+                  </time>
+                </dd>
+              </div>
+              {game?.location && (
+                <div>
+                  <dt>Where</dt>
+                  <dd>{game.location}</dd>
+                </div>
+              )}
+            </dl>
+          )}
+        </div>
+      </header>
+      <section
+        className="cl-box-office__wrap cl-box-office__content"
+        aria-labelledby="box-office-tickets"
+      >
+        <div>
+          <h2 id="box-office-tickets">Choose your tickets</h2>
+          <p>Buy as a guest. Your passes will be sent to your email.</p>
+        </div>
+        {options.isPending && (
+          <p className="cl-box-office__notice" role="status">
+            Loading ticket options…
           </p>
         )}
-      </div>
-      {options.isPending && <p role="status">Loading ticket options…</p>}
-      {options.isError && (
-        <p role="alert">
-          {options.error.message}{" "}
-          <button onClick={() => void options.refetch()}>Retry</button>
-        </p>
-      )}
-      {options.data && !options.data.items.length && (
-        <p>No paid tickets are available for this event.</p>
-      )}
-      {error && (
-        <p role="alert" className="admission-error">
-          {error}
-        </p>
-      )}
-      <div className="admissions-grid">
-        {options.data?.items.map((type) => {
-          const available = Math.max(
-            0,
-            type.capacity - type.issued - (type.reserved || 0),
-          );
-          return (
-            <article key={type.id} className="admission-card">
-              <form
-                className="admission-card-body"
-                onSubmit={(event) => void checkout(event, type)}
-              >
-                <h2>{type.name}</h2>
-                <p>{type.description}</p>
-                <p className="admission-price">
-                  {new Intl.NumberFormat(undefined, {
-                    style: "currency",
-                    currency: type.currency,
-                  }).format(type.priceCents / 100)}{" "}
-                  <small>
-                    per ticket
-                    {type.taxBps ? ` + ${type.taxBps / 100}% tax` : ""}
-                  </small>
-                </p>
-                <p>{available} available</p>
-                <p>
-                  <label>
-                    Email for ticket delivery
-                    <br />
-                    <input
-                      required
-                      type="email"
-                      autoComplete="email"
-                      maxLength={254}
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                    />
-                  </label>
-                </p>
-                <p>
-                  <label>
-                    Tickets
-                    <br />
-                    <select
-                      value={quantity}
-                      onChange={(e) => setQuantity(Number(e.target.value))}
-                    >
-                      {Array.from(
-                        { length: Math.max(1, Math.min(10, available)) },
-                        (_, i) => (
-                          <option key={i + 1}>{i + 1}</option>
-                        ),
-                      )}
-                    </select>
-                  </label>
-                </p>
-                <button
-                  className="admission-primary"
-                  disabled={
-                    busy || quantity > available || !isAdmissionBookable(type)
-                  }
+        {options.isError && (
+          <div className="cl-box-office__notice" role="alert">
+            <p>{options.error.message}</p>
+            <button
+              className="cl-box-office__button"
+              type="button"
+              disabled={options.isFetching}
+              onClick={() => void options.refetch()}
+            >
+              {options.isFetching ? "Checking…" : "Try again"}
+            </button>
+          </div>
+        )}
+        {options.data && !options.data.items.length && (
+          <p className="cl-box-office__notice">
+            No paid tickets are available for this event right now.
+          </p>
+        )}
+        {error && (
+          <p
+            role="alert"
+            className="cl-box-office__notice cl-box-office__notice--error"
+          >
+            {error}
+          </p>
+        )}
+        <div className="cl-box-office__grid">
+          {options.data?.items.map((type) => {
+            const available = Math.max(
+              0,
+              type.capacity - type.issued - (type.reserved || 0),
+            );
+            const count = Math.min(
+              quantities[type.id] ?? 1,
+              Math.max(1, available),
+            );
+            const bookable = available > 0 && isAdmissionBookable(type);
+            return (
+              <article key={type.id} className="cl-box-office__ticket">
+                <div className="cl-box-office__ticket-top">
+                  <span>ADMISSION PASS</span>
+                  <span>
+                    {available > 0 ? `${available} available` : "Sold out"}
+                  </span>
+                </div>
+                <form
+                  className="cl-box-office__ticket-body"
+                  onSubmit={(event) => {
+                    if (bookable && !busy) void checkout(event, type, count);
+                    else event.preventDefault();
+                  }}
                 >
-                  {busy ? "Opening checkout…" : admissionAvailability(type)}
-                </button>
-              </form>
-            </article>
-          );
-        })}
-      </div>
+                  <h3>{type.name}</h3>
+                  {type.description && <p>{type.description}</p>}
+                  <p className="cl-box-office__price">
+                    {new Intl.NumberFormat(undefined, {
+                      style: "currency",
+                      currency: type.currency,
+                    }).format(type.priceCents / 100)}
+                    <small>
+                      per ticket
+                      {type.taxBps ? ` + ${type.taxBps / 100}% tax` : ""}
+                    </small>
+                  </p>
+                  {bookable && (
+                    <div className="cl-box-office__fields">
+                      <label>
+                        Email for ticket delivery
+                        <input
+                          required
+                          type="email"
+                          autoComplete="email"
+                          maxLength={254}
+                          value={email}
+                          onChange={(event) => setEmail(event.target.value)}
+                          placeholder="you@example.com"
+                        />
+                      </label>
+                      <label>
+                        Quantity
+                        <select
+                          value={count}
+                          onChange={(event) =>
+                            setQuantities((previous) => ({
+                              ...previous,
+                              [type.id]: Number(event.target.value),
+                            }))
+                          }
+                        >
+                          {Array.from(
+                            { length: Math.min(10, available) },
+                            (_, index) => (
+                              <option key={index + 1} value={index + 1}>
+                                {index + 1}
+                              </option>
+                            ),
+                          )}
+                        </select>
+                      </label>
+                    </div>
+                  )}
+                  <button
+                    className="cl-box-office__button"
+                    type="submit"
+                    disabled={busy || !bookable}
+                  >
+                    {busy
+                      ? "Opening checkout…"
+                      : bookable
+                        ? "Continue to payment →"
+                        : admissionAvailability(type)}
+                  </button>
+                </form>
+              </article>
+            );
+          })}
+        </div>
+        {options.data?.items.some(isAdmissionBookable) && (
+          <p className="cl-box-office__payment-note">
+            Payment is handled by Stripe. Keep your emailed ticket link private.
+          </p>
+        )}
+      </section>
     </main>
   );
 }
